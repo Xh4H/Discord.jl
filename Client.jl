@@ -2,10 +2,12 @@ module Client
 
     include("./WebSocket/Manager.jl")
     include("./Utils/Emitter.jl")
+    include("./API/Request.jl")
 
     evs = Events()
 
     import .WSManager
+    import .Request: APIRequest, client
 
     mutable struct Self
         token::String
@@ -13,6 +15,7 @@ module Client
 
     function init(token::String)
         structure = Self(token)
+        client.token = token
         connect(structure)
     end
 
@@ -31,4 +34,5 @@ module Client
     function send(name, args...)
         emit(evs, name, args...)
     end
+
 end

@@ -22,7 +22,7 @@ on(e::Events, name::AbstractString, handlers::Vector) = begin
         on(e, name, f)
     end
 end
-        
+
 off(e::Events, name::AbstractString, f::Function) = begin
     haskey(e, name) || return
     if isa(e[name], Function)

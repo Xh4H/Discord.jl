@@ -11,14 +11,16 @@ module WSHandler
     function handleEvent(data, mainClient) # content is the key "d"
         eventName = data["t"]
         content = data["d"]
-        eventName = lowercase(eventName) # We treat event names in lowercase
+        #println(content)
 
-        if eventName == "ready"
+        if eventName == "READY"
             username = content["user"]["username"]
             WSLogger.log("Client is ready as: $username", "Log")
-            mainClient.send("READY")
-        elseif eventName == "guild_create"
-            mainClient.send("GUILD_CREATE", content)
+            mainClient.send(eventName)
+        elseif eventName == "GUILD_CREATE"
+            mainClient.send(eventName, content)
+        elseif eventName == "MESSAGE_CREATE"
+            mainClient.send(eventName, content)
         else
             WSLogger.log("Unhandled event $eventName:", "Warning")
         end
