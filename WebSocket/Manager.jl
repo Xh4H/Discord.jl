@@ -52,16 +52,16 @@ module WSManager
     function sendHeartbeat(ms::Int64, connection::OpenTrick.IOWrapper, payload::Dict)
         parsedPayload = payload |> JSON.json #Parse the payload back to JSON
         @async write(connection, parsedPayload)
-        log("Sent heartbeat successfully to the WS", "Debug")
+        WSLogger.log("Sent heartbeat successfully to the WS", "Debug")
         heartbeatLoop(sendHeartbeat, ms, connection, payload)
     end
 
     function eventLoop(connection::OpenTrick.IOWrapper)
         while isopen(connection)
             parsedData = connection |> read |> String |> JSON.parse
-            println(parsedData["op"]) # We will call handleEvent after we manage to debug this. what do we need to debug
+            @async WSLogger.log("Received $(parsedData["t"]) with OPCode $(parsedData["op"])", "Log")
+
             if parsedData["op"] != 11
-                println(parsedData["t"])
                 @async WSHandler.handleEvent(parsedData)
             end
         end
