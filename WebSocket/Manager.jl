@@ -25,8 +25,9 @@ module WSManager
         heartbeatPayload = Constants.heartbeatPayload
 
         # Start the eventloop / event chain and start the
-        @async eventLoop(connection, mainClient)
-
+        eventLoopTask = @task eventLoop(connection, mainClient)
+        schedule(eventLoopTask)
+        yield()
         #identify to the WebSocket
         identify(client, connection)
 
@@ -58,7 +59,7 @@ module WSManager
     function eventLoop(connection::OpenTrick.IOWrapper, mainClient)
         while isopen(connection)
             parsedData = connection |> read |> String |> JSON.parse
-            @async WSLogger.log("Received $(parsedData["t"]) with OPCode $(parsedData["op"])", "Log")
+            WSLogger.log("Received $(parsedData["t"]) with OPCode $(parsedData["op"])", "Log")
 
             if parsedData["op"] != 11
                 @async WSHandler.handleEvent(parsedData, mainClient)
