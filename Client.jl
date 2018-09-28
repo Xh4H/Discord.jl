@@ -11,10 +11,15 @@ module Client
 
     mutable struct Self
         token::String
+        users::Dict
+        channels::Dict
+        guilds::Dict
+        presences::Dict
+        emojis::Dict
     end
 
     function init(token::String)
-        structure = Self(token)
+        structure = Self(token, Dict(), Dict(), Dict(), Dict(), Dict())
         client.token = token
         connect(structure)
     end
