@@ -3,7 +3,7 @@ module Request
     using JSON
 
     global token = ""
-    const BASE_URL = "https://discordapp.com/api/v7"
+    const BASE_URL = "https://discordapp.com/api/v7/"
 
     mutable struct APIRequest
         token
@@ -11,21 +11,28 @@ module Request
 
     global client = APIRequest("")
 
+    headers = Dict(
+        "Authorization" => "",
+        "User-Agent" => "JuliCord 0.1",
+        "Content-Type" => "application/json"
+    )
+
+    function createRequest(method::String, endpoint::String, payload = "", query = "", files = "")
+        url = BASE_URL * endpoint
+        payload = payload |> JSON.json
+
+        # Treat query if exist (add query to url (url?bla=ble&..)
+
+        if headers["Authorization"] == ""
+            headers["Authorization"] = "Bot $(client.token)"
+        end
+
+        return HTTP.request(method, url, headers, payload)
+    end
+
     function sendMessage(channelID, content)
-        println(client)
-
-        payloadSend = Dict(
-            "content" => content
-        ) |> JSON.json
-
-        headers = Dict(
-            "Authorization" => "Bot $(client.token)",
-            "User-Agent" => "JuliCord 0.1",
-            "Content-Type" => "application/json",
-            "Content-Length" => payloadSend |> length
-        )
-
-        return HTTP.request("POST", "$BASE_URL/channels/$channelID/messages", headers, payloadSend)
+        payload = Dict("content" => content)
+        return createRequest("POST", "channels/$channelID/messages", payload)
     end
 
     function getToken()
