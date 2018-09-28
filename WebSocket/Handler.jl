@@ -1,10 +1,11 @@
 module WSHandler
     include("Logger.jl")
+    include("../Structs/User.jl")
 
     using Base
     using Dates
     import .WSLogger
-
+    import .User
     import JSON
 
 
@@ -14,7 +15,22 @@ module WSHandler
         #println(content)
 
         if eventName == "READY"
-            username = content["user"]["username"]
+            @async begin
+                try
+                    user = content["user"]
+                    username = user["username"]
+                    id = user["id"]
+                    discriminator = user["discriminator"]
+                    avatar = user["avatar"]
+                    bot = user["bot"]
+                    userObject = User.Self(username, id, discriminator, avatar, bot)
+
+                    println("The client's username is $(userObject.username)")
+                catch err
+                    println(err)
+                end
+            end
+
             WSLogger.log("Client is ready as: $username", "Log")
             mainClient.send(eventName)
         elseif eventName == "GUILD_CREATE"
@@ -25,5 +41,4 @@ module WSHandler
             WSLogger.log("Unhandled event $eventName:", "Warning")
         end
     end
-
 end
