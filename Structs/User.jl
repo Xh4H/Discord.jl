@@ -1,15 +1,11 @@
 module User
-
+    export Self, serialize
     mutable struct Self
         username::String
         id::String
         discriminator::String
         avatar::String
         bot::Bool
-        mfa_enabled::Bool
-        locale::String
-        verified::Bool
-        email::Any
     end
 
     # Returns a Dictionary of the supplied User
