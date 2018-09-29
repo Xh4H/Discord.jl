@@ -18,7 +18,7 @@ Client.on("READY", ready)
 Client.on("GUILD_CREATE", guildCreate)
 
 # Obviously you can also do
-#Client.on("READY", () => println("Im ready mommy."))
+# Client.on("READY", () => println("Im ready mommy."))
 
 
 Client.init("token")
