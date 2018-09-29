@@ -16,7 +16,7 @@ module WSManager
 
 
     # Establish a WebSocket connection to Discord
-    function start(client, mainClient)
+    function start(mainClient)
         # ERROR: LoadError: SystemError: opening file wss://gateway.discord.gg/?v=6&encoding=json: Invalid argument
         connection = opentrick(WebSockets.open, "$(Constants.WebSocketDetails["url"])$(Constants.WebSocketDetails["path"])")
         heartbeatInterval = extractHeartbeat(connection)
@@ -25,10 +25,10 @@ module WSManager
         heartbeatPayload = Constants.heartbeatPayload
 
         # Start the eventloop / event chain and start the
-        @async eventLoop(connection, client, mainClient)
+        @async eventLoop(connection, mainClient)
 
         #identify to the WebSocket
-        identify(client, connection)
+        identify(mainClient, connection)
 
         # Start the heartbeat loop
         heartbeatLoop(sendHeartbeat, heartbeatInterval, connection, heartbeatPayload)
@@ -55,19 +55,19 @@ module WSManager
         heartbeatLoop(sendHeartbeat, ms, connection, payload)
     end
 
-    function eventLoop(connection::OpenTrick.IOWrapper, client, mainClient)
+    function eventLoop(connection::OpenTrick.IOWrapper, mainClient)
         while isopen(connection)
             parsedData = connection |> read |> String |> JSON.parse
             @async WSLogger.log("Received $(parsedData["t"]) with OPCode $(parsedData["op"])", "Log")
 
             if parsedData["op"] != 11
-                @async WSHandler.handleEvent(parsedData, client, mainClient)
+                @async WSHandler.handleEvent(mainClient, parsedData)
             end
         end
     end
 
-    function identify(client, connection::OpenTrick.IOWrapper)
-        parsedIdentify = Constants.identifyDict(client.token) |> JSON.json
+    function identify(mainClient, connection::OpenTrick.IOWrapper)
+        parsedIdentify = Constants.identifyDict(mainClient.token) |> JSON.json
         write(connection, parsedIdentify)
     end
 end
