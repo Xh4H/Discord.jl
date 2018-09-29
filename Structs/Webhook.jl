@@ -12,7 +12,7 @@ module Webhook
         token::String
     end
 
-    function construct(userData)
-        return Structs.construct(userData, Self)
+    function construct(data)
+        return Structs.construct(data, Self)
     end
 end
