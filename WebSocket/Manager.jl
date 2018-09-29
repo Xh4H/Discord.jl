@@ -62,7 +62,7 @@ module WSManager
                 parsedData = connection |> read |> String |> JSON.parse
                 WSLogger.log("Received $(parsedData["t"]) with OPCode $(parsedData["op"])", "Log")
 
-                if parsedData["op"] != 11
+                if parsedData["op"] != 11 # Heartbeat ack
                     WSHandler.handleEvent(parsedData, client, mainClient)
                 end
             end
