@@ -14,7 +14,7 @@ module Client
     setChannels(c) = (global channels = c)
     setGuilds(g) = (global guilds = g)
     setPresences(p) = (global presences = p)
-    setEmojis(e) = (global enojis = e)
+    setEmojis(e) = (global emojis = e)
     setUser(u) = (global user = u)
 
     function init(token::String)
