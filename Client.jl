@@ -9,23 +9,22 @@ module Client
     import .WSManager
     import .Request: APIRequest, client
 
-    mutable struct Self
-        token::String
-        users::Dict
-        channels::Dict
-        guilds::Dict
-        presences::Dict
-        emojis::Dict
-    end
+    setToken(t) = (global token = t)
+    setUsers(u) = (global users = u)
+    setChannels(c) = (global channels = c)
+    setGuilds(g) = (global guilds = g)
+    setPresences(p) = (global presences = p)
+    setEmojis(e) = (global enojis = e)
+    setUser(u) = (global user = u)
 
     function init(token::String)
-        structure = Self(token, Dict(), Dict(), Dict(), Dict(), Dict())
-        client.token = token
-        connect(structure)
+        setToken(token) # set the token in global scope (Client.token is valid)
+        client.token = Client.token # Pass the toke request handler
+        connect()
     end
 
-    function connect(client1::Self)
-        WSManager.start(client1, Client)
+    function connect()
+        WSManager.start(Client)
     end
 
     function on(name::String, fn::Function)
