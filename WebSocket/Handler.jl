@@ -15,8 +15,8 @@ module WSHandler
         accessExporter = uppercasefirst("$(eventName)Event") |> Symbol
         @async begin
             try
-                a = getfield(EventExporter, accessExporter)
-                a.executeEvent(client, content, mainClient)
+                eventFun = getfield(EventExporter, accessExporter)
+                eventFun.executeEvent(client, content, mainClient)
             catch err
                 println(err)
                 println("I'm not being able to handle $eventName yet")
