@@ -10,7 +10,7 @@ module User
     end
 
     # Returns a Dictionary of the supplied User
-    function serialize(user)
+    function _serialize(user)
         serialized = Dict()
         for i in fieldnames(Self)
             value = getfield(user, i)
@@ -27,6 +27,7 @@ module User
             field = i |> String
             push!(data, userData[field])
         end
-        return Self(data...)
+        user = Self(data...)
+        return _serialize(user)
     end
 end
