@@ -3,8 +3,8 @@ module Snowflake
     function getUnix(snowflake::String)
         snowflake = parse(Int64, snowflake)
         timestamp = Integer(snowflake >> 22) + DISCORD_EPOCH
-        timestampString = String(timestamp)
+        timestampString = repr(timestamp)
 
-        return SubString(timestampString, 1, length(timestampString) - 3))
+        return SubString(timestampString, 1, length(timestampString) - 3)
     end
 end
