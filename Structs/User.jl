@@ -1,5 +1,6 @@
 module User
-    export Self, serialize
+    export Self, serialize, construct
+
     mutable struct Self
         username::String
         id::String
@@ -16,5 +17,16 @@ module User
             serialized[i] = value
         end
         return serialized
+    end
+
+    function construct(userData)
+        wantedFields = fieldnames(Self)
+        data  = []
+
+        for i in wantedFields
+            field = i |> String
+            push!(data, userData[field])
+        end
+        return Self(data...)
     end
 end
