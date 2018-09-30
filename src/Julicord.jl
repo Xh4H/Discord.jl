@@ -11,6 +11,10 @@ module Julicord
     # Utils
     include("./Utils/Snowflake.jl")
     include("./Utils/Constants.jl")
+    # WebSocket
+    include("./WebSocket/Manager.jl")
+    include("./WebSocket/Handler.jl")
+    include("./WebSocket/Logger.jl")
 
     export Client,
     Request,
@@ -19,6 +23,7 @@ module Julicord
     # Structs
     Emoji, User, Webhook,
     # Utils
-    Snowflake, Constants
+    Snowflake, Constants,
+    Manager, Handler, Logger
 
 end # module
