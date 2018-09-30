@@ -1,10 +1,9 @@
 module Snowflake
     DISCORD_EPOCH = 1420070400000
+    
     function getUnix(snowflake::String)
-        snowflake = parse(Int64, snowflake)
-        timestamp = Integer(snowflake >> 22) + DISCORD_EPOCH
-        timestampString = repr(timestamp)
+        snowflakeNumber = parse(Int64, snowflake)
 
-        return SubString(timestampString, 1, length(timestampString) - 3)
+        return Int(round(((snowflakeNumber >> 22) + DISCORD_EPOCH)/ 1000))
     end
 end
