@@ -1,6 +1,6 @@
 module Request
     using HTTP
-    using JSON
+    import JSON
 
     const BASE_URL = "https://discordapp.com/api/v7/"
 
@@ -23,10 +23,15 @@ module Request
         # Treat query if exist (add query to url (url?bla=ble&..)
 
         if headers["Authorization"] == ""
-            headers["Authorization"] = "Bot $(client.token)"
+            headers["Authorization"] = "Bot"
         end
 
-        return HTTP.request(method, url, headers, payload)
+        try
+            return HTTP.request(method, url, headers, payload)
+        catch err
+            body = err.response.body
+            return String(body) |> JSON.parse
+        end
     end
 
     function sendMessage(channelID, content)
