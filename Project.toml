@@ -4,3 +4,7 @@ uuid = "91c305b0-c482-11e8-244f-23e78ed5e04c"
 version = "0.1.0"
 
 [deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+WebSockets = "104b5d7c-a370-577a-8038-80a2059c5097"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
