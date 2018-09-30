@@ -19,7 +19,7 @@ module Client
 
     function init(token::String)
         setToken(token) # set the token in global scope (Client.token is valid)
-        client.token = token # Pass the toke request handler
+        client.token = token # Pass the token request handler
         connect()
     end
 
