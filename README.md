@@ -1,5 +1,5 @@
 <div align="center">
-        <p> <img src="https://i.imgur.com/thVPjJo.jpg"/> </p>
+        <p> <img src="https://i.imgur.com/xRvoaDG.png"/> </p>
         <p><i><b>A simple solution to create Discord bots using Julia</b></i></p>
 </div>
 
