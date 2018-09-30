@@ -1,6 +1,9 @@
-# Julicord
-
-## Bot Sample
+## Julicord
+<div align="center">
+        <p> <img src="https://i.imgur.com/thVPjJo.jpg"/> </p>
+        <p><i><b>A simple solution to create Discord bots using Julia</b></i></p>
+</div>
+### Bot Sample
 
 ```julia
 include("Client.jl")
