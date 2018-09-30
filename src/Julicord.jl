@@ -1,6 +1,7 @@
 module Julicord
-    include("./Client.jl")
+
     include("./API/Request.jl")
+    include("./Client.jl")
     # Events
     include("./Events/ready.jl")
     include("./Events/EventExporter.jl")
