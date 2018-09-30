@@ -1,8 +1,10 @@
-## Julicord
 <div align="center">
         <p> <img src="https://i.imgur.com/thVPjJo.jpg"/> </p>
         <p><i><b>A simple solution to create Discord bots using Julia</b></i></p>
 </div>
+
+## Julicord
+
 ### Bot Sample
 
 ```julia
