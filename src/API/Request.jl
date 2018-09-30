@@ -23,7 +23,7 @@ module Request
         # Treat query if exist (add query to url (url?bla=ble&..)
 
         if headers["Authorization"] == ""
-            headers["Authorization"] = "Bot"
+            headers["Authorization"] = "Bot $(client.token)"
         end
 
         try
