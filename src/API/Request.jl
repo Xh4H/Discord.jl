@@ -8,7 +8,7 @@ module Request
         token
     end
 
-    setToken(t) = (global token = t)
+    client = APIRequest("")
 
     headers = Dict(
         "Authorization" => "",
