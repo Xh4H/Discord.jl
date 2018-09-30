@@ -6,7 +6,7 @@ module Julicord
     include("./Events/EventExporter.jl")
     # Structs
     include("./Structs/Emoji.jl")
-    include("./Structs/User.jl.jl")
+    include("./Structs/User.jl")
     include("./Structs/Webhook.jl")
     # Utils
     include("./Utils/Snowflake.jl")
