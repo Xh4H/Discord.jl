@@ -7,7 +7,7 @@ module Client
     evs = Events()
 
     import .WSManager
-    import .Request: APIRequest, client
+    import .Request
 
     setToken(t) = (global token = t)
     setUsers(u) = (global users = u)
@@ -19,7 +19,7 @@ module Client
 
     function init(token::String)
         setToken(token) # set the token in global scope (Client.token is valid)
-        client.token = Client.token # Pass the toke request handler
+        Request.setToken(token) # Pass the toke request handler
         connect()
     end
 
