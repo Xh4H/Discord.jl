@@ -27,7 +27,8 @@ module Request
         end
 
         try
-            return HTTP.request(method, url, headers, payload)
+            response = HTTP.request(method, url, headers, payload)
+            return String(response.body) |> JSON.parse
         catch err
             body = err.response.body
             return String(body) |> JSON.parse
