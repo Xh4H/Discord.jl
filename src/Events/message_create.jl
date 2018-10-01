@@ -1,5 +1,5 @@
 module Message_createEvent
-    import ...Message
+    import ..Message
 
     function executeEvent(mainClient, content)
         Message.pretty(content)

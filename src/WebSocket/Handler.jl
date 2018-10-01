@@ -1,7 +1,7 @@
 module WSHandler
 
     import ..WSLogger
-    import ..EventExporter
+    # import ..EventExporter
 
     using Base
     using Dates
@@ -14,10 +14,10 @@ module WSHandler
         eventName = lowercase(data["t"])
         content = data["d"]
         accessExporter = uppercasefirst("$(eventName)Event") |> Symbol
+        @eval import ...$accessExporter
         @async begin
             try
-                eventFun = getfield(EventExporter, accessExporter)
-                eventFun.executeEvent(mainClient, content)
+                @eval $accessExporter.executeEvent($mainClient, $content)
             catch err
                 println(err)
                 println("I'm not being able to handle $eventName yet")
