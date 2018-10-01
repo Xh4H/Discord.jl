@@ -5,7 +5,6 @@ module Julicord
     include("./Utils/Constants.jl") # Constants
 
     include("./WebSocket/Logger.jl") # WSLogger
-    include("./Events/EventExporter.jl") # EventExporter
     include("./WebSocket/Handler.jl") # WSHandler
     include("./WebSocket/Manager.jl") # WSManager
 
@@ -14,19 +13,21 @@ module Julicord
     include("./Structs/Emoji.jl") # Emoji struct
     include("./Structs/User.jl") # User struct
     include("./Structs/Webhook.jl") # Webhook struct
+    include("./Structs/Message.jl")
 
     include("./Events/ready.jl") # Ready event
     include("./Events/message_create.jl") # Message_create event
     include("./Events/presence_update.jl") # Presence_update event
+    include("./Events/guild_create.jl") # Guild_create event
 
 
 
     export Client,
     Request,
     # Events
-    EventExporter, ReadyEvent, Presence_updateEvent, Message_createEvent
+    ReadyEvent, Presence_updateEvent, Message_createEvent, Guild_createEvent,
     # Structs
-    Emoji, User, Webhook,
+    Emoji, User, Webhook, Message,
     # Utils
     Snowflake, Constants,
     WSManager, WSHandler, WSLogger
