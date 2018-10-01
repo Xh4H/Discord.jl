@@ -5,24 +5,23 @@ module Client
     import ..WSManager
 
     evs = Events()
-
-    setToken(t) = (global token = t)
-    setWS(ws) = (global WS = ws)
-    setUsers(u) = (global users = u)
+    
     setChannels(c) = (global channels = c)
-    setGuilds(g) = (global guilds = g)
     setEmojis(e) = (global emojis = e)
+    setGuilds(g) = (global guilds = g)
+    setToken(t) = (global token = t)
     setUser(u) = (global user = u)
+    setUsers(u) = (global users = u)
+    setWS(ws) = (global WS = ws)
     
     function init(token::String)
-        setToken(token) # set the token in global scope (Client.token is valid)
-        setUsers(Dict())
         setChannels(Dict())
-        setGuilds(Dict())
         setEmojis(Dict())
+        setGuilds(Dict())
+        setToken(token) # set the token in global scope (Client.token is valid)
         setUser(Dict())
-
-
+        setUsers(Dict())
+        
         Request.client.token = token # Pass the token request handler
         connect()
     end
