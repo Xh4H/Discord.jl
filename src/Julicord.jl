@@ -1,37 +1,30 @@
 module Julicord
 
-    include("./API/Request.jl") # Request
-    include("./Utils/Snowflake.jl") # Snowflake
-    include("./Utils/Constants.jl") # Constants
+export Snowflake,
+    Client,
+    state,
+    add_handler!,
+    clear_handlers!
 
-    include("./WebSocket/Logger.jl") # WSLogger
-    include("./WebSocket/Handler.jl") # WSHandler
-    include("./WebSocket/Manager.jl") # WSManager
+using HTTP
+using JSON
+using OpenTrick
+using WebSockets
 
-    include("./Client.jl") # Client
+# Discord API base.
+const DISCORD_API = "https://discordapp.com/api/v6"
 
-    include("./Structs/Emoji.jl") # Emoji struct
-    include("./Structs/User.jl") # User struct
-    include("./Structs/Message.jl") # Message struct
-    include("./Structs/Webhook.jl") # Webhook struct
+# Discord's form of ID.
+const Snowflake = Int64
+snowflake(s::Union{<:AbstractString, Nothing}) = s === nothing ? nothing : parse(Int64, s)
 
-    include("./Events/ready.jl") # Ready event
-    include("./Events/message_create.jl") # Message_create event
-    include("./Events/presence_update.jl") # Presence_update event
-    include("./Events/guild_create.jl") # Guild_create event
-    include("./Events/typing_start.jl") # Typing_start event
-    include("./Events/typing_stop.jl") # Typing_stop event
-    include("./Events/message_update.jl") # Message_update event
+# Events.
 
+include("events.jl")
+using .Events
 
-    export Client,
-    Request,
-    # Events
-    ReadyEvent, Presence_updateEvent, Message_createEvent, Guild_createEvent, Typing_startEvent, Typing_stopEvent, Message_updateEvent,
-    # Structs
-    Emoji, User, Webhook, Message,
-    # Utils
-    Snowflake, Constants,
-    WSManager, WSHandler, WSLogger
+# Client.
 
-end # module
+include("client.jl")
+
+end
