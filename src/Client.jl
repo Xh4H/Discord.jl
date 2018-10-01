@@ -10,7 +10,6 @@ module Client
     setUsers(u) = (global users = u)
     setChannels(c) = (global channels = c)
     setGuilds(g) = (global guilds = g)
-    setPresences(p) = (global presences = p)
     setEmojis(e) = (global emojis = e)
     setUser(u) = (global user = u)
 
@@ -19,7 +18,6 @@ module Client
         setUsers(Dict())
         setChannels(Dict())
         setGuilds(Dict())
-        setPresences(Dict())
         setEmojis(Dict())
         setUser(Dict())
 
