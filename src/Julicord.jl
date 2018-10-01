@@ -11,6 +11,7 @@ module Julicord
     include("./Client.jl") # Client
 
     include("./Structs/Emoji.jl") # Emoji struct
+    include("./Structs/Message.jl") # Message struct
     include("./Structs/User.jl") # User struct
     include("./Structs/Webhook.jl") # Webhook struct
     include("./Structs/Message.jl")
@@ -27,7 +28,11 @@ module Julicord
     # Events
     ReadyEvent, Presence_updateEvent, Message_createEvent, Guild_createEvent,
     # Structs
+<<<<<<< HEAD
     Emoji, User, Webhook, Message,
+=======
+    Emoji, User, Message, Webhook,
+>>>>>>> a247dd540fedbfb335dcd50a08e1e30df99abc82
     # Utils
     Snowflake, Constants,
     WSManager, WSHandler, WSLogger
