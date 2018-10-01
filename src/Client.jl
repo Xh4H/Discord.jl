@@ -21,6 +21,7 @@ module Client
         setEmojis(Dict())
         setUser(Dict())
 
+
         Request.client.token = token # Pass the token request handler
         connect()
     end
@@ -41,4 +42,39 @@ module Client
         emit(evs, name, args...)
     end
 
+    # functions related to Discord
+    function getUser(id)
+        if id == user["id"]
+            return user
+        else
+            cachedUser = users[id]
+
+            if cachedUser != nothing
+                return cachedUser
+            else # In case an edge case happens and we did not cache a user.
+                local data, err = Request.createRequest("GET", "/users/$id")
+
+                if !err
+                    users[data["id"]] = data
+                end
+                return data
+            end
+        end
+    end
+
+    function getMyself()
+        return user
+    end
+
+    # Params should be a dict containig at least one of the following fields:
+    # · username
+    # · avatar
+    function modifyMyself(params)
+        local data, err = Request.createRequest("PATCH", "/users/@me", nil, params) #params are querystrings
+
+        if !err
+            user = data
+        end
+        return data
+    end
 end
