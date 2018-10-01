@@ -16,6 +16,14 @@ module Client
 
     function init(token::String)
         setToken(token) # set the token in global scope (Client.token is valid)
+        setUsers(Dict())
+        setChannels(Dict())
+        setGuilds(Dict())
+        setPresences(Dict())
+        setEmojis(Dict())
+        setUser(Dict())
+
+
         Request.client.token = token # Pass the token request handler
         connect()
     end
