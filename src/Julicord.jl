@@ -1,22 +1,20 @@
 module Julicord
 
-    include("./API/Request.jl")
-    # Utils
-    include("./Utils/Snowflake.jl")
-    include("./Utils/Constants.jl")
-    # WebSocket
-    include("./WebSocket/Logger.jl")
-    include("./Events/EventExporter.jl")
-    include("./WebSocket/Handler.jl")
-    include("./WebSocket/Manager.jl")
+    include("./API/Request.jl") # Request
+    include("./Utils/Snowflake.jl") # Snowflake
+    include("./Utils/Constants.jl") # Constants
 
-    include("./Client.jl")
-    include("./Events/ready.jl")
+    include("./WebSocket/Logger.jl") # WSLogger
+    include("./Events/EventExporter.jl") # EventExporter
+    include("./WebSocket/Handler.jl") # WSHandler
+    include("./WebSocket/Manager.jl") # WSManager
 
-    # Structs
-    include("./Structs/Emoji.jl")
-    include("./Structs/User.jl")
-    include("./Structs/Webhook.jl")
+    include("./Client.jl") # Client
+    include("./Events/ready.jl") # Ready event
+
+    include("./Structs/Emoji.jl") # Emoji struct
+    include("./Structs/User.jl") # User struct
+    include("./Structs/Webhook.jl") # Webhook struct
 
 
 
@@ -28,6 +26,6 @@ module Julicord
     Emoji, User, Webhook,
     # Utils
     Snowflake, Constants,
-    Manager, Handler, Logger
+    WSManager, WSHandler, WSLogger
 
 end # module
