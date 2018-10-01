@@ -2,7 +2,7 @@ module Request
     using HTTP
     import JSON
 
-    const BASE_URL = "https://discordapp.com/api/v7/"
+    const BASE_URL = "https://discordapp.com/api/v7"
 
     mutable struct APIRequest
         token
@@ -20,7 +20,7 @@ module Request
         url = BASE_URL * endpoint
         payload = payload |> JSON.json
 
-        # Treat query if exist (add query to url (url?bla=ble&..)
+        # Treat query if exist (add query to url (url?bla=ble&..))
 
         if headers["Authorization"] == ""
             headers["Authorization"] = "Bot $(client.token)"
@@ -37,7 +37,7 @@ module Request
 
     function sendMessage(channelID, content)
         payload = Dict("content" => content)
-        return createRequest("POST", "channels/$channelID/messages", payload)
+        return createRequest("POST", "/channels/$channelID/messages", payload)
     end
 
     function getToken()
