@@ -12,7 +12,7 @@ module Julicord
 
     include("./Client.jl")
     include("./Events/ready.jl")
-    
+
     # Structs
     include("./Structs/Emoji.jl")
     include("./Structs/User.jl")
@@ -20,14 +20,14 @@ module Julicord
 
 
 
-    # export Client,
-    # Request,
-    # # Events
-    # EventExporter, ReadyEvent,
-    # # Structs
-    # Emoji, User, Webhook,
-    # # Utils
-    # Snowflake, Constants,
-    # Manager, Handler, Logger
+    export Client,
+    Request,
+    # Events
+    EventExporter, ReadyEvent,
+    # Structs
+    Emoji, User, Webhook,
+    # Utils
+    Snowflake, Constants,
+    Manager, Handler, Logger
 
 end # module
