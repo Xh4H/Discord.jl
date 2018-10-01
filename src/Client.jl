@@ -7,12 +7,13 @@ module Client
     evs = Events()
 
     setToken(t) = (global token = t)
+    setWS(ws) = (global WS = ws)
     setUsers(u) = (global users = u)
     setChannels(c) = (global channels = c)
     setGuilds(g) = (global guilds = g)
     setEmojis(e) = (global emojis = e)
     setUser(u) = (global user = u)
-
+    
     function init(token::String)
         setToken(token) # set the token in global scope (Client.token is valid)
         setUsers(Dict())
