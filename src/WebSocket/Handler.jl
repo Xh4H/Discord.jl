@@ -1,7 +1,6 @@
 module WSHandler
 
     import ..WSLogger
-    # import ..EventExporter
 
     using Base
     using Dates
@@ -10,7 +9,6 @@ module WSHandler
 
 
     function handleEvent(mainClient, data)
-        # println(data)
         eventName = lowercase(data["t"])
         content = data["d"]
         accessExporter = uppercasefirst("$(eventName)Event") |> Symbol
