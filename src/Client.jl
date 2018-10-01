@@ -21,7 +21,6 @@ module Client
         setEmojis(Dict())
         setUser(Dict())
 
-
         Request.client.token = token # Pass the token request handler
         connect()
     end
