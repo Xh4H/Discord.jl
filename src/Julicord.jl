@@ -11,10 +11,9 @@ module Julicord
     include("./Client.jl") # Client
 
     include("./Structs/Emoji.jl") # Emoji struct
-    include("./Structs/Message.jl") # Message struct
     include("./Structs/User.jl") # User struct
+    include("./Structs/Message.jl") # Message struct
     include("./Structs/Webhook.jl") # Webhook struct
-    include("./Structs/Message.jl")
 
     include("./Events/ready.jl") # Ready event
     include("./Events/message_create.jl") # Message_create event
