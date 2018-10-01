@@ -10,18 +10,21 @@ module Julicord
     include("./WebSocket/Manager.jl") # WSManager
 
     include("./Client.jl") # Client
-    include("./Events/ready.jl") # Ready event
 
     include("./Structs/Emoji.jl") # Emoji struct
     include("./Structs/User.jl") # User struct
     include("./Structs/Webhook.jl") # Webhook struct
+
+    include("./Events/ready.jl") # Ready event
+    include("./Events/message_create.jl") # Message_create event
+    include("./Events/presence_update.jl") # Presence_update event
 
 
 
     export Client,
     Request,
     # Events
-    EventExporter, ReadyEvent,
+    EventExporter, ReadyEvent, Presence_updateEvent, Message_createEvent
     # Structs
     Emoji, User, Webhook,
     # Utils
