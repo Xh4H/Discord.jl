@@ -30,7 +30,13 @@ module Request
             response = HTTP.request(method, url, headers, payload)
             return String(response.body) |> JSON.parse
         catch err
+
+            if err.response.status == 400
+                return Dict("message" => "400: Bad Request")
+            end
+
             body = err.response.body
+
             return String(body) |> JSON.parse
         end
     end
