@@ -1,3 +1,5 @@
 module User
-    # On hang
+    import ..Request
+
+    test() = "$(Request.client)"
 end

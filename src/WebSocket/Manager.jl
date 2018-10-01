@@ -1,19 +1,18 @@
 module WSManager
-    include("./Logger.jl")
+
     using Base
     using Dates
     using OpenTrick
-    using .WSLogger
 
     import WebSockets
     import JSON
 
-    include("../Utils/Constants.jl")
-    include("Handler.jl")
+    # include("../Utils/Constants.jl")
+    # include("Handler.jl")
 
-    import .Constants
-    import .WSHandler
-
+    import ..WSHandler
+    import ..Constants
+    using ..WSLogger
 
     # Establish a WebSocket connection to Discord
     function start(mainClient)

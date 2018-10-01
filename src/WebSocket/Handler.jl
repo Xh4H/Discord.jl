@@ -1,6 +1,7 @@
 module WSHandler
-    include("Logger.jl")
-    include("../Events/EventExporter.jl")
+
+    import ..WSLogger
+    import ..EventExporter
 
     using Base
     using Dates

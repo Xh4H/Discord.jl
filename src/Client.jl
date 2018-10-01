@@ -1,13 +1,10 @@
 module Client
 
-    include("./WebSocket/Manager.jl")
     include("./Utils/Emitter.jl")
-    include("./API/Request.jl")
+    import ..Request
+    import ..WSManager
 
     evs = Events()
-
-    import .WSManager
-    import .Request: client, APIRequest
 
     setToken(t) = (global token = t)
     setUsers(u) = (global users = u)
@@ -19,7 +16,7 @@ module Client
 
     function init(token::String)
         setToken(token) # set the token in global scope (Client.token is valid)
-        client.token = token # Pass the token request handler
+        Request.client.token = token # Pass the token request handler
         connect()
     end
 
