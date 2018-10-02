@@ -5,87 +5,124 @@ const conn_properties = Dict(
     "\$device" => "Julicord",
 )
 
-struct Client
+"""
+    Client(token::String) -> Client
+
+A Discord bot.
+
+# Arguments
+* `token::String`: The bot's token.
+"""
+mutable struct Client
     token::String
     heartbeat_interval::Int
     heartbeat_seq::Union{Int, Nothing}
-    conn::OpenTrick.IOWrapper
     state::Dict{String, Any}
     handlers::Dict
+    conn::Union{OpenTrick.IOWrapper, Nothing}
 
     function Client(token::String)
-        # Get the gateway URL and connect to it.
-        resp = HTTP.get("$DISCORD_API/gateway")
-        d = JSON.parse(String(resp.body))
-        url = "$(d["url"])?v=$API_VERSION&encoding=json"
-        conn = opentrick(WebSockets.open, url)
-
-        # Receive HELLO, get heartbeat interval.
-        data, ok = readjson(conn)
-        if !ok
-            @error "reading HELLO failed"
-            return
-        end
-        heartbeat_interval = data["d"]["heartbeat_interval"]
-
-        # Write the first heartbeat.
-        if !writejson(conn, Dict("op" => 1, "d" => nothing))
-            @error "writing HEARTBEAT failed"
-            return
-        end
-
-        # Read the heartbeat ack.
-        _, ok = readjson(conn)
-        if !ok
-            @error "reading HEARTBEAT_ACK failed"
-            return
-        end
-
-        # Write the IDENTIFY.
-        if !writejson(conn, Dict(
-            "op" => 2,
-            "d" => Dict(
-                "token" => startswith(token, "Bot ") ? token : "Bot " * token,
-                "properties" => conn_properties,
-            ),
-        ))
-            @error "writing IDENTIFY failed"
-            return
-        end
-
-        # Read the READY message, and assign initial state.
-        data, ok = readjson(conn)
-        if !ok
-            @error "reading READY failed"
-            return
-        end
-        state = data["d"]
-
-        c = new(token, heartbeat_interval, nothing, conn, state, Dict())
-
-        @async maintain_heartbeat(c)
-        @async event_loop(c)
-
-        return c
+        token = startswith(token, "Bot ") ? token : "Bot $token"
+        return new(token, 0, nothing, Dict(), Dict())
     end
+end
+
+
+"""
+    open(c::Client)
+
+Logs in to the Discord gateway and begins reading events.
+"""
+function Base.open(c::Client)
+    # Get the gateway URL and connect to it.
+    resp = HTTP.get("$DISCORD_API/gateway")
+    d = JSON.parse(String(resp.body))
+    url = "$(d["url"])?v=$API_VERSION&encoding=json"
+    conn = opentrick(WebSockets.open, url)
+    c.conn = conn
+
+    # Receive HELLO, get heartbeat interval.
+    data, ok = readjson(conn)
+    if !ok
+        error("reading HELLO failed")
+        return
+    end
+    c.heartbeat_interval = data["d"]["heartbeat_interval"]
+
+    # Write the first heartbeat.
+    if !writejson(conn, Dict("op" => 1, "d" => nothing))
+         error("writing HEARTBEAT failed")
+        return
+    end
+
+    # Read the heartbeat ack.
+    _, ok = readjson(conn)
+    if !ok
+        error("reading HEARTBEAT_ACK failed")
+        return
+    end
+
+    # Write the IDENTIFY.
+    if !writejson(conn, Dict(
+        "op" => 2,
+        "d" => Dict(
+            "token" => c.token,
+            "properties" => conn_properties,
+        ),
+    ))
+        error("writing IDENTIFY failed")
+        return
+    end
+
+    # Read the READY message, and assign initial state.
+    data, ok = readjson(conn)
+    ok || error("reading READY failed")
+    c.state = data["d"]
+
+    @async maintain_heartbeat(c)
+    @async event_loop(c)
+
+    return nothing
 end
 
 Base.isopen(c::Client) = isopen(c.conn)
 Base.close(c::Client) = close(c.conn)
 
+"""
+    state(c::Client) -> Dict{String, Any}
+
+Get the client state.
+"""
 state(c::Client) = c.state
+
+"""
+    user(c::Client) -> Dict{String, Any}
+
+Get the client's bot user.
+"""
 user(c::Client) = get(c.state, "user", Dict{String, Any}())
 
 # Event handlers.
 
-function add_handler!(c::Client, event::Type{<:AbstractEvent}, handler::Function)
-    if haskey(c.handlers, event)
-        push!(c.handlers[event], handler)
+"""
+    add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
+
+Add a handler for the given event type.
+The handler is appended the event's current handlers.
+"""
+function add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
+    if haskey(c.handlers, evt)
+        push!(c.handlers[evt], func)
     else
-        c.handlers[event] = [handler]
+        c.handlers[evt] = [func]
     end
 end
 
+"""
+    clear_handlers!(c::Client, evt::Type{<:AbstractEvent})
+
+Removes all handlers for the given event type.
+"""
 clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, event)
 
 # Heartbeat maintenance.
