@@ -19,11 +19,12 @@ mutable struct Client
     heartbeat_seq::Union{Int, Nothing}
     state::Dict{String, Any}  # TODO: This should be a struct.
     handlers::Dict
+    closed::Bool
     conn::OpenTrick.IOWrapper
 
     function Client(token::String)
         token = startswith(token, "Bot ") ? token : "Bot $token"
-        return new(token, 0, nothing, Dict(), Dict())
+        return new(token, 0, nothing, Dict(), Dict(), true)
     end
 end
 
@@ -40,6 +41,7 @@ function Base.open(c::Client)
     url = "$(d["url"])?v=$API_VERSION&encoding=json"
     conn = opentrick(WebSockets.open, url)
     c.conn = conn
+    c.closed = false
 
     # Receive HELLO, get heartbeat interval.
     data, ok = readjson(conn)
@@ -74,7 +76,12 @@ function Base.open(c::Client)
 end
 
 Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
-Base.close(c::Client) = isdefined(c, :conn) && close(c.conn)
+
+function Base.close(c::Client)
+    isdefined(c, :conn) || return
+    c.closed = true
+    close(c.conn)
+end
 
 """
     state(c::Client) -> Dict{String, Any}
@@ -120,6 +127,7 @@ send_heartbeat(c::Client) = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat
 function maintain_heartbeat(c::Client)
     while isopen(c.conn)
         if !send_heartbeat(c)
+            c.closed && return
             @error "writing HEARTBEAT failed"
         else
             sleep(c.heartbeat_interval / 1000)
@@ -133,6 +141,7 @@ function event_loop(c::Client)
     while isopen(c.conn)
         data, ok = readjson(c.conn)
         if !ok
+            c.closed && return
             @error "read from websocket failed"
             continue
         end
