@@ -43,36 +43,24 @@ function Base.open(c::Client)
 
     # Receive HELLO, get heartbeat interval.
     data, ok = readjson(conn)
-    if !ok
-        error("reading HELLO failed")
-        return
-    end
+    ok || error("reading HELLO failed")
     c.heartbeat_interval = data["d"]["heartbeat_interval"]
 
     # Write the first heartbeat.
-    if !writejson(conn, Dict("op" => 1, "d" => nothing))
-         error("writing HEARTBEAT failed")
-        return
-    end
+    send_heartbeat(c) || error("writing HEARTBEAT failed")
 
     # Read the heartbeat ack.
     _, ok = readjson(conn)
-    if !ok
-        error("reading HEARTBEAT_ACK failed")
-        return
-    end
+    ok ||error("reading HEARTBEAT_ACK failed")
 
     # Write the IDENTIFY.
-    if !writejson(conn, Dict(
+    writejson(conn, Dict(
         "op" => 2,
         "d" => Dict(
             "token" => c.token,
             "properties" => conn_properties,
         ),
-    ))
-        error("writing IDENTIFY failed")
-        return
-    end
+    )) || error("writing IDENTIFY failed")
 
     # Read the READY message, and assign initial state.
     data, ok = readjson(conn)
@@ -127,7 +115,7 @@ clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, e
 
 # Heartbeat maintenance.
 
-send_heartbeat(c::Client) = writejson(c.conn, Dict("op" => 2, "d" => c.heartbeat_seq))
+send_heartbeat(c::Client) = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
 
 function maintain_heartbeat(c::Client)
     while isopen(c.conn)
