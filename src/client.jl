@@ -59,7 +59,7 @@ function Base.open(c::Client)
 
     # Read the heartbeat ack.
     _, ok = readjson(conn)
-    ok ||error("reading HEARTBEAT_ACK failed")
+    ok || error("reading HEARTBEAT_ACK failed")
 
     # Write the IDENTIFY.
     writejson(conn, Dict(
@@ -161,7 +161,11 @@ function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
     evt = convert(AbstractEvent, data)
     for handler in get(c.handlers, typeof(evt), [])
-        handler(evt)
+        @async try
+            handler(evt)
+        catch e
+            @error sprint(showerror, e)
+        end
     end
 end
 
