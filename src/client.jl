@@ -1,3 +1,9 @@
+export Client,
+    state,
+    me,
+    add_handler!,
+    clear_handlers!
+
 # Properties for gateway connections.
 const conn_properties = Dict(
     "\$os" => String(Sys.KERNEL),
@@ -18,7 +24,7 @@ mutable struct Client
     heartbeat_interval::Int
     heartbeat_seq::Union{Int, Nothing}
     state::Dict{String, Any}  # TODO: This should be a struct.
-    handlers::Dict
+    handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
     closed::Bool
     conn::OpenTrick.IOWrapper
 
@@ -91,11 +97,11 @@ Get the client state.
 state(c::Client) = c.state
 
 """
-    user(c::Client) -> Dict{String, Any}
+    me(c::Client) -> Dict{String, Any}
 
 Get the client's bot user.
 """
-user(c::Client) = get(c.state, "user", Dict{String, Any}())
+me(c::Client) = get(c.state, "user", Dict{String, Any}())
 
 # Event handlers.
 
@@ -109,7 +115,7 @@ function add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
     if haskey(c.handlers, evt)
         push!(c.handlers[evt], func)
     else
-        c.handlers[evt] = [func]
+        c.handlers[evt] = Function[func]
     end
 end
 

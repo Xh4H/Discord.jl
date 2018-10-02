@@ -4,7 +4,7 @@ export AbstractEvent,
     UnknownEvent,
     MessageDelete
 
-import ..Julicord: Snowflake, snowflake
+using ..Julicord: Snowflake, snowflake
 
 abstract type AbstractEvent end
 

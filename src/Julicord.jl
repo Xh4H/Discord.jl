@@ -1,12 +1,5 @@
 module Julicord
 
-export Snowflake,
-    Client,
-    user,
-    state,
-    add_handler!,
-    clear_handlers!
-
 using HTTP
 using JSON
 using OpenTrick
