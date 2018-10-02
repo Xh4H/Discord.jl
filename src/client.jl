@@ -1,8 +1,8 @@
 # Properties for gateway connections.
 const conn_properties = Dict(
     "\$os" => String(Sys.KERNEL),
-    "\$browser" => "Discord.jl",
-    "\$device" => "Discord.jl",
+    "\$browser" => "Julicord",
+    "\$device" => "Julicord",
 )
 
 struct Client
@@ -14,14 +14,10 @@ struct Client
     handlers::Dict
 
     function Client(token::String)
-        if !startswith(token, "Bot ")
-            throw(ArgumentError("bot token must be of format 'Bot <token>'"))
-        end
-
         # Get the gateway URL and connect to it.
         resp = HTTP.get("$DISCORD_API/gateway")
         d = JSON.parse(String(resp.body))
-        url = "$(d["url"])?v=6&encoding=json"
+        url = "$(d["url"])?v=$API_VERSION&encoding=json"
         conn = opentrick(WebSockets.open, url)
 
         # Receive HELLO, get heartbeat interval.
@@ -49,7 +45,7 @@ struct Client
         if !writejson(conn, Dict(
             "op" => 2,
             "d" => Dict(
-                "token" => token,
+                "token" => startswith(token, "Bot ") ? token : "Bot " * token,
                 "properties" => conn_properties,
             ),
         ))

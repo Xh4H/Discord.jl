@@ -11,8 +11,9 @@ using JSON
 using OpenTrick
 using WebSockets
 
-# Discord API base.
-const DISCORD_API = "https://discordapp.com/api/v6"
+# Discord API version and base URL.
+const API_VERSION = 6
+const DISCORD_API = "https://discordapp.com/api/v$API_VERSION"
 
 # Discord's form of ID.
 const Snowflake = Int64
