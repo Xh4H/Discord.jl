@@ -74,6 +74,7 @@ Base.isopen(c::Client) = isopen(c.conn)
 Base.close(c::Client) = close(c.conn)
 
 state(c::Client) = c.state
+user(c::Client) = get(c.state, "user", Dict{String, Any}())
 
 # Event handlers.
 
