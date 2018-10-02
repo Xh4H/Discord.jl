@@ -17,9 +17,9 @@ mutable struct Client
     token::String
     heartbeat_interval::Int
     heartbeat_seq::Union{Int, Nothing}
-    state::Dict{String, Any}
+    state::Dict{String, Any}  # TODO: This should be a struct.
     handlers::Dict
-    conn::Union{OpenTrick.IOWrapper, Nothing}
+    conn::OpenTrick.IOWrapper
 
     function Client(token::String)
         token = startswith(token, "Bot ") ? token : "Bot $token"
@@ -73,8 +73,8 @@ function Base.open(c::Client)
     return nothing
 end
 
-Base.isopen(c::Client) = isopen(c.conn)
-Base.close(c::Client) = close(c.conn)
+Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
+Base.close(c::Client) = isdefined(c, :conn) && close(c.conn)
 
 """
     state(c::Client) -> Dict{String, Any}
@@ -145,7 +145,7 @@ end
 function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
     evt = convert(AbstractEvent, data)
-    for handler in get(c.handlers, typeof(t), [])
+    for handler in get(c.handlers, typeof(evt), [])
         handler(evt)
     end
 end

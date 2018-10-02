@@ -11,7 +11,15 @@ abstract type AbstractEvent end
 struct UnknownEvent <: AbstractEvent
     t::String
     d::Dict{String, Any}
-    s::Union{String, Nothing}
+    s::Union{Int, Nothing}
+end
+
+function Base.convert(::Type{UnknownEvent}, data::Dict)
+    return UnknownEvent(
+        data["t"],
+        data["d"],
+        data["s"],
+    )
 end
 
 include(joinpath("events", "message_delete.jl"))
