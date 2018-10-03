@@ -159,8 +159,8 @@ end
 
 function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
-    evt = convert(AbstractEvent, data)
-    for handler in get(c.handlers, typeof(evt), [])
+    evt = AbstractEvent(data)
+    for handler in get(c.handlers, typeof(evt), Function[])
         @async try
             handler(evt)
         catch e

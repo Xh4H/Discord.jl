@@ -1,5 +1,6 @@
 module Julicord
 
+using Dates
 using HTTP
 using JSON
 using OpenTrick
@@ -11,7 +12,14 @@ const DISCORD_API = "https://discordapp.com/api/v$API_VERSION"
 
 # Discord's form of ID.
 const Snowflake = Int64
-snowflake(s::Union{<:AbstractString, Nothing}) = s === nothing ? nothing : parse(Int64, s)
+function snowflake(s::Union{AbstractString, Nothing, Missing})
+    return isa(s, AbstractString) ? parse(Int64, s) : s
+end
+
+# Convert a string to a DateTime.
+function datetime(s::Union{AbstractString, Nothing, Missing})
+    return isa(s, AbstractString) ? DateTime(s[1:end-1], ISODateTimeFormat) : s
+end
 
 # Events.
 
