@@ -5,26 +5,18 @@
 
 ## Julicord
 
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://Julicord.github.io/Julicord/stable)
+[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://Julicord.github.io/Julicord/latest)
+[![Build Status](https://travis-ci.com/Julicord/Julicord.svg?branch=master)](https://travis-ci.com/Julicord/Julicord)
+[![CodeCov](https://codecov.io/gh/Julicord/Julicord/branch/master/graph/badge.svg)](https://codecov.io/gh/Julicord/Julicord)
+
 ### Bot Sample
 
 ```julia
-include("Client.jl")
-import .Client
+using Julicord
+using Julicord.Events
 
-function ready()
-    println("good morning")
-end
-
-function guildCreate(guild)
-    println(guild["id"])
-end
-
-Client.on("READY", ready)
-Client.on("GUILD_CREATE", guildCreate)
-
-# Obviously you can also do
-# Client.on("READY", () -> println("Im ready mommy."))
-
-
-Client.init("token")
+c = Client("token")
+add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))
+open(c)
 ```
