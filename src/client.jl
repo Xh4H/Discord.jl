@@ -138,6 +138,13 @@ function Base.close(c::Client)
 end
 
 """
+    wait(c::Client)
+
+Wait for an open client to close.
+"""
+Base.wait(c::Client) = isopen(c) && wait(c.conn.cond)
+
+"""
     state(c::Client) -> Dict{String, Any}
 
 Get the client state.
@@ -267,9 +274,9 @@ function handle_error(c::Client, e::Exception)
     end
 end
 
-function handle_close(c::Client, e::Exception)
+function handle_close(c::Client, e::WebSocketClosedError)
     code = closecode(e)
-    code === nothing && return nothing
+    code === nothing && throw(e)
     err = get(CLOSE_CODES, code, :UNKNOWN_ERROR)
 
     if err === :UNKNOWN_ERROR

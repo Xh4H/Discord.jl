@@ -5,10 +5,10 @@
 
 ## Julicord
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://Julicord.github.io/Julicord/stable)
-[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://Julicord.github.io/Julicord/latest)
-[![Build Status](https://travis-ci.com/Julicord/Julicord.svg?branch=master)](https://travis-ci.com/Julicord/Julicord)
-[![CodeCov](https://codecov.io/gh/Julicord/Julicord/branch/master/graph/badge.svg)](https://codecov.io/gh/Julicord/Julicord)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://PurgePJ.github.io/Julicord/stable)
+[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://PurgePJ.github.io/Julicord/latest)
+[![Build Status](https://travis-ci.com/PurgePJ/Julicord.svg?branch=master)](https://travis-ci.com/PurgePJ/Julicord)
+[![CodeCov](https://codecov.io/gh/PurgePJ/Julicord/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Julicord)
 
 ### Bot Sample
 
@@ -19,4 +19,5 @@ using Julicord.Events
 c = Client("token")
 add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))
 open(c)
+wait(c)
 ```
