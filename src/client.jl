@@ -185,7 +185,9 @@ clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, e
 
 function maintain_heartbeat(c::Client, ch::Channel)
     while isopen(ch) && isopen(c.conn)
-        if !heartbeat(c) && isopen(ch)
+        if c.last_heartbeat > c.last_ack
+            reconnect(c; statusnumber=1001)
+        elseif !heartbeat(c) && isopen(ch)
             @error "writing HEARTBEAT failed"
         elseif isopen(ch)
             sleep(c.heartbeat_interval / 1000)
@@ -227,8 +229,8 @@ function heartbeat(c::Client, ::Dict=Dict())
     return ok
 end
 
-function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true)
-    close(c)
+function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true, statusnumber::Int=1000)
+    close(c; statusnumber=statusnumber)
     open(c; resume=resume)
 end
 
