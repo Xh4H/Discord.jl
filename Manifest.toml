@@ -3,9 +3,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryProvider]]
 deps = ["Libdl", "Pkg", "SHA", "Test"]
-git-tree-sha1 = "48c147e63431adbcee69bc40b04c3f0fec0a4982"
+git-tree-sha1 = "38be61810f280c3c478f5c38aaf387f8f9199275"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.0"
+version = "0.5.1"
 
 [[Dates]]
 deps = ["Printf"]
@@ -17,9 +17,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[HTTP]]
 deps = ["Base64", "Dates", "Distributed", "IniFile", "MbedTLS", "Sockets", "Test"]
-git-tree-sha1 = "b881f69331e85642be315c63d05ed65d6fc8a05b"
+git-tree-sha1 = "8a0f75e8b09df01d9f1ba9ad3fbf8b4983595d20"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "0.7.1"
+version = "0.6.14"
 
 [[IniFile]]
 deps = ["Test"]
@@ -65,9 +65,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[OpenTrick]]
 deps = ["Pkg", "Test"]
-git-tree-sha1 = "426d912aa6baa9ea19a0a208f1a2ec925bf94b57"
+git-tree-sha1 = "736a351668235653b4dc6dedb88566b4beba0ade"
 uuid = "102dff8d-99cb-5cc2-9bf9-d9fe3a2e5e7a"
-version = "0.1.0"
+version = "0.2.0"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
@@ -107,6 +107,6 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[WebSockets]]
 deps = ["Base64", "Dates", "Distributed", "HTTP", "MbedTLS", "Pkg", "Random", "Sockets", "Test"]
-git-tree-sha1 = "ba1baf9b1943d3d6e3f1379c04de2760f4f9da78"
+git-tree-sha1 = "f23986a5f20ed2ed68b462e0fdec20d6a4468757"
 uuid = "104b5d7c-a370-577a-8038-80a2059c5097"
-version = "1.0.0"
+version = "1.0.3"

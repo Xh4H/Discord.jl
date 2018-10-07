@@ -130,11 +130,11 @@ end
 
 Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
 
-function Base.close(c::Client)
+function Base.close(c::Client; statusnumber::Int=1000)
     isdefined(c, :conn) || return
     close(c.hb_chan)
     close(c.rl_chan)
-    close(c.conn)
+    close(c.conn; statusnumber=statusnumber)
 end
 
 """
