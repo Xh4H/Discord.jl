@@ -23,14 +23,26 @@ mutable struct Client
     token::String
     heartbeat_interval::Int
     heartbeat_seq::Union{Int, Nothing}
+    last_heartbeat::DateTime
+    last_ack::DateTime
     state::Dict{String, Any}  # TODO: This should be a struct.
     handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
-    closed::Bool
+    hb_chan::Channel
+    el_chan::Channel
     conn::OpenTrick.IOWrapper
 
     function Client(token::String)
         token = startswith(token, "Bot ") ? token : "Bot $token"
-        return new(token, 0, nothing, Dict(), Dict(), true)
+        return new(
+            token,
+            0,
+            nothing,
+            unix2datetime(0),
+            Dict(),
+            Dict(),
+            Channel(0),
+            Channel(0),
+        )
     end
 end
 
@@ -38,28 +50,30 @@ end
 """
     open(c::Client)
 
-Logs in to the Discord gateway and begins reading events.
+Log in to the Discord gateway and begin reading events.
 """
 function Base.open(c::Client)
+    isopen(c) && @error "Client is already open"
+
     # Get the gateway URL and connect to it.
     resp = HTTP.get("$DISCORD_API/gateway")
     d = JSON.parse(String(resp.body))
     url = "$(d["url"])?v=$API_VERSION&encoding=json"
     conn = opentrick(WebSockets.open, url)
     c.conn = conn
-    c.closed = false
 
     # Receive HELLO, get heartbeat interval.
     data, ok = readjson(conn)
     ok || error("reading HELLO failed")
-    c.heartbeat_interval = data["d"]["heartbeat_interval"]
+    hello(c, data)
 
     # Write the first heartbeat.
     send_heartbeat(c) || error("writing HEARTBEAT failed")
 
     # Read the heartbeat ack.
-    _, ok = readjson(conn)
+    data, ok = readjson(conn)
     ok || error("reading HEARTBEAT_ACK failed")
+    heartbeat_ack(c, data)
 
     # Write the IDENTIFY.
     writejson(conn, Dict(
@@ -75,8 +89,8 @@ function Base.open(c::Client)
     ok || error("reading READY failed")
     c.state = data["d"]
 
-    @async maintain_heartbeat(c)
-    @async event_loop(c)
+    c.hb_chan = Channel(ch -> maintain_heartbeat(c, ch))
+    c.el_chan = Channel(ch -> event_loop(c, ch))
 
     return nothing
 end
@@ -85,7 +99,8 @@ Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
 
 function Base.close(c::Client)
     isdefined(c, :conn) || return
-    c.closed = true
+    close(c.hb_chan)
+    close(c.el_chan)
     close(c.conn)
 end
 
@@ -128,12 +143,18 @@ clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, e
 
 # Heartbeat maintenance.
 
-send_heartbeat(c::Client) = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
+function send_heartbeat(c::Client)
+    ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
+    if ok
+        c.last_heartbeat = now()
+    end
+    return ok
+end
 
-function maintain_heartbeat(c::Client)
+function maintain_heartbeat(c::Client, ch::Channel)
     while isopen(c.conn)
         if !send_heartbeat(c)
-            c.closed && return
+            isopen(ch) || return
             @error "writing HEARTBEAT failed"
         else
             sleep(c.heartbeat_interval / 1000)
@@ -143,15 +164,15 @@ end
 
 # Event loop.
 
-function event_loop(c::Client)
+function event_loop(c::Client, ch::Channel)
     while isopen(c.conn)
         data, ok = readjson(c.conn)
         if !ok
-            c.closed && return
+            isopen(ch) || return
             @error "read from websocket failed"
-            continue
+        else
+            haskey(HANDLERS, data["op"]) && HANDLERS[data["op"]](c, data)
         end
-        haskey(HANDLERS, data["op"]) && HANDLERS[data["op"]](c, data)
     end
 end
 
@@ -173,8 +194,8 @@ heartbeat(c::Client, ::Dict) = send_heartbeat(c)
 
 reconnect(::Client, ::Dict) = nothing
 invalid_session(::Client, ::Dict) = nothing
-hello(::Client, ::Dict) = nothing
-heartbeat_ack(::Client, ::Dict) = nothing
+hello(c::Client, data::Dict) = c.heartbeat_interval = data["d"]["heartbeat_interval"]
+heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
 const HANDLERS = Dict(
