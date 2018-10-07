@@ -1,3 +1,5 @@
+export MessageDelete
+
 struct MessageDelete <: AbstractEvent
     id::Snowflake
     channel_id::Snowflake

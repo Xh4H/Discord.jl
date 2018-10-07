@@ -1,8 +1,6 @@
 module Events
 
-export AbstractEvent,
-    UnknownEvent,
-    MessageDelete
+export AbstractEvent, UnknownEvent
 
 using ..Julicord: Snowflake, snowflake
 

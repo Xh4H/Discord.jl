@@ -21,13 +21,9 @@ function datetime(s::Union{AbstractString, Nothing, Missing})
     return isa(s, AbstractString) ? DateTime(s[1:end-1], ISODateTimeFormat) : s
 end
 
-# Events.
-
+include("types.jl")
 include("events.jl")
 using .Events
-
-# Client.
-
 include("client.jl")
 
 end
