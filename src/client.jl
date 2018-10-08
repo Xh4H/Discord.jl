@@ -171,6 +171,8 @@ me(c::Client) = get(c.state.state, "user", Dict{String, Any}())
     add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
 
 Add a handler for the given event type.
+The handler should be a function which takes two arguments: A [`Client`](@ref) and an 
+[`AbstractEvent`](@ref) (or a subtype).
 The handler is appended the event's current handlers.
 """
 function add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
@@ -227,7 +229,7 @@ function dispatch(c::Client, data::Dict)
 
     for handler in get(c.handlers, typeof(evt), Function[])
         @async try
-            handler(evt)
+            handler(c, evt)
         catch e
             @error sprint(showerror, e)
         end
