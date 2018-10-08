@@ -39,7 +39,7 @@ mutable struct Client
     heartbeat_seq::Union{Int, Nothing}
     last_heartbeat::DateTime
     last_ack::DateTime
-    state::Dict{String, Any}  # TODO: This should be a struct.
+    state::Cache
     handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
     hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
@@ -47,17 +47,17 @@ mutable struct Client
 
     function Client(token::String)
         token = startswith(token, "Bot ") ? token : "Bot $token"
-        
+
         return new(
-            token,
-            0,
-            nothing,
-            unix2datetime(0),
-            unix2datetime(0),
-            Dict(),
-            Dict(),
-            Channel(0),
-            Channel(0),
+            token,             # token
+            0,                 # heartbeat_interval
+            nothing,           # heartbeat_seq
+            unix2datetime(0),  # last_heartbeat
+            unix2datetime(0),  # last_ack
+            Cache(),           # state
+            Dict(),            # handlers
+            Channel(0),        # hb_chan
+            Channel(0),        # rl_chan
             # conn left undef, it gets assigned in open.
         )
     end
@@ -101,7 +101,7 @@ function Base.open(c::Client; resume::Bool=false)
             "op" => 6,
             "d" => Dict(
                 "token" => c.token,
-                "session_id" => get(c.state, "session_id", ""),
+                "session_id" => get(c.state.state, "session_id", ""),
                 "seq" => c.heartbeat_seq,
             ),
         )) || error("writing RESUME failed")
@@ -121,7 +121,12 @@ function Base.open(c::Client; resume::Bool=false)
         op = get(OPCODES, data["op"], data["op"])
         op === :DISPATCH || error("expected opcode DISPATCH, received $op")
         data["t"] == "READY" || error("expected event type READY, received $(data["t"])")
-        c.state = data["d"]
+        merge!(c.state.state, data["d"])
+
+        for g in get(data["d"], "guilds", [])
+            guild = AbstractGuild(g)
+            c.state.guilds[guild.id] = guild
+        end
     end
 
     c.hb_chan = Channel(ch -> maintain_heartbeat(c, ch))
@@ -158,7 +163,7 @@ state(c::Client) = c.state
 
 Get the client's bot user.
 """
-me(c::Client) = get(c.state, "user", Dict{String, Any}())
+me(c::Client) = get(c.state.state, "user", Dict{String, Any}())
 
 # Event handlers.
 
