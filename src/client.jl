@@ -6,23 +6,23 @@ export Client,
 
 # Properties for gateway connections.
 const conn_properties = Dict(
-    "\$os" => String(Sys.KERNEL),
+    "\$os"      => String(Sys.KERNEL),
     "\$browser" => "Julicord",
-    "\$device" => "Julicord",
+    "\$device"  => "Julicord",
 )
 
 const OPCODES = Dict(
-    0 => :DISPATCH,
-    1 => :HEARTBEAT,
-    2 => :IDENTIFY,
-    3 => :STATUS_UPDATE,
-    4 => :VOICE_STATUS_UPDATE,
-    6 => :RESUME,
-    7 => :RECONNECT,
-    8 => :REQUEST_GUILD_MEMBERS,
-    9 => :INVALID_SESSION,
-    10 => :HELLO,
-    11 => :HEARTBEAT_ACK,
+    0 =>    :DISPATCH,
+    1 =>    :HEARTBEAT,
+    2 =>    :IDENTIFY,
+    3 =>    :STATUS_UPDATE,
+    4 =>    :VOICE_STATUS_UPDATE,
+    6 =>    :RESUME,
+    7 =>    :RECONNECT,
+    8 =>    :REQUEST_GUILD_MEMBERS,
+    9 =>    :INVALID_SESSION,
+    10 =>   :HELLO,
+    11 =>   :HEARTBEAT_ACK,
 )
 
 """
@@ -212,6 +212,7 @@ end
 function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
     evt = AbstractEvent(data)
+
     for handler in get(c.handlers, typeof(evt), Function[])
         @async try
             handler(evt)
@@ -223,9 +224,11 @@ end
 
 function heartbeat(c::Client, ::Dict=Dict())
     ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
+
     if ok
         c.last_heartbeat = now()
     end
+
     return ok
 end
 
@@ -244,16 +247,15 @@ heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
 const HANDLERS = Dict(
-    0 => dispatch,
-    1 => heartbeat,
-    7 => reconnect,
-    9 => invalid_session,
-    10 => hello,
-    11 => heartbeat_ack,
+    0   => dispatch,
+    1   => heartbeat,
+    7   => reconnect,
+    9   => invalid_session,
+    10  => hello,
+    11  => heartbeat_ack,
 )
 
 # Error handling
-
 const CLOSE_CODES = Dict(
     4000 => :UNKNOWN_ERROR,
     4001 => :UNKNOWN_OPCODE,
@@ -322,5 +324,6 @@ writejson(conn, body) = writeguarded(conn, JSON.json(body))
 
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
+
     return match === nothing ? nothing : parse(Int, String(first(m.captures)))
 end
