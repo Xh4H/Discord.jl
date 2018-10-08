@@ -41,7 +41,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Julicord.add_handler!-Tuple{Client,Type{#s230} where #s230<:AbstractEvent,Function}",
+    "location": "index.html#Julicord.add_handler!-Tuple{Client,Type{#s244} where #s244<:AbstractEvent,Function}",
     "page": "Home",
     "title": "Julicord.add_handler!",
     "category": "method",
@@ -49,7 +49,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Julicord.clear_handlers!-Tuple{Client,Type{#s230} where #s230<:AbstractEvent}",
+    "location": "index.html#Julicord.clear_handlers!-Tuple{Client,Type{#s244} where #s244<:AbstractEvent}",
     "page": "Home",
     "title": "Julicord.clear_handlers!",
     "category": "method",
