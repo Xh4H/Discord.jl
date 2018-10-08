@@ -28,6 +28,8 @@ A message.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object).
 """
 @from_dict struct Message
+    # TODO: Most of these should probably be optional.
+    # https://discordapp.com/developers/docs/topics/gateway#message-update
     id::Snowflake
     channel_id::Snowflake
     guild_id::Union{Snowflake, Nothing}

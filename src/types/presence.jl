@@ -21,10 +21,6 @@ function Base.:(==)(ps::PresenceStatus, s::AbstractString)
         ps === PS_OFFLINE && s == "offline"
 end
 
-"""
-A user presence.
-More details [here](https://discordapp.com/developers/docs/topics/gateway#presence-update).
-"""
 struct Presence
     user::User
     roles::Vector{Snowflake}
@@ -33,12 +29,3 @@ struct Presence
     status::Union{PresenceStatus, String}
 end
 
-function Presence(d::Dict)
-    return Presence(
-        User(d["user"]),
-        snowflake.(d["roles"]),
-        haskey(d, "game") ? Activity(d["game"]) : missing,
-        snowflake(d["guild_id"]),
-        PresenceStatus(d["status"]),
-    )
-end
