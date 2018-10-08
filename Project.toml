@@ -1,0 +1,14 @@
+name = "Julicord"
+uuid = "91c305b0-c482-11e8-244f-23e78ed5e04c"
+authors = ["TheOnlyArtz <gamesil456@gmail.com>", "PurgePJ <sindur.esl@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+OpenTrick = "102dff8d-99cb-5cc2-9bf9-d9fe3a2e5e7a"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+WebSockets = "104b5d7c-a370-577a-8038-80a2059c5097"
