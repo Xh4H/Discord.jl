@@ -8,7 +8,7 @@ makedocs(;
     ],
     repo="https://github.com/PurgePJ/Julicord/blob/{commit}{path}#L{line}",
     sitename="Julicord",
-    authors="TheOnlyArtz <gamesil456@gmail.com>, PurgePJ <sindur.esl@gmail.com>",
+    authors="PurgePJ <sindur.esl@gmail.com>, christopher-dG <chrisadegraaf@gmail.com>",
     assets=[],
 )
 
