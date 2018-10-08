@@ -41,12 +41,13 @@ mutable struct Client
     last_ack::DateTime
     state::Dict{String, Any}  # TODO: This should be a struct.
     handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
-    hb_chan::Channel
-    rl_chan::Channel
+    hb_chan::Channel # hearbeat channel 
+    rl_chan::Channel # read_loop channel
     conn::OpenTrick.IOWrapper
 
     function Client(token::String)
         token = startswith(token, "Bot ") ? token : "Bot $token"
+        
         return new(
             token,
             0,
