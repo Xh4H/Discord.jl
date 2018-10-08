@@ -2,7 +2,7 @@ struct Cache
     guilds::Dict{Snowflake, AbstractGuild}
     channels::Dict{Snowflake, DiscordChannel}
     users::Dict{Snowflake, User}
-    members::Dict{Snowflake, GuildMember}
+    members::Dict{Snowflake, Member}
     state::Dict{String, Any}
 end
 

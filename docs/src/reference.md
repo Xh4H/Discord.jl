@@ -1,0 +1,6 @@
+```@index
+```
+
+```@autodocs
+Modules = [Julicord]
+```

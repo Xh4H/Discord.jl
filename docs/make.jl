@@ -5,6 +5,7 @@ makedocs(;
     format=:html,
     pages=[
         "Home" => "index.md",
+        "Reference" => "reference.md",
     ],
     repo="https://github.com/PurgePJ/Julicord/blob/{commit}{path}#L{line}",
     sitename="Julicord",

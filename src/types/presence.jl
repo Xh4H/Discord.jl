@@ -29,6 +29,10 @@ struct Presence
     status::Union{PresenceStatus, String}
 end
 
+"""
+A user presence.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#presence-update).
+"""
 function Presence(d::Dict)
     return Presence(
         User(d["user"]),

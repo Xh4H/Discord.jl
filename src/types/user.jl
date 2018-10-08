@@ -14,5 +14,5 @@ More details [here](https://discordapp.com/developers/docs/resources/user#user-o
     locale::Union{String, Missing}
     verified::Union{Bool, Missing}
     email::Union{String, Missing}
-    member::Union{Dict, Missing}  # It's a GuildMember, but we haven't defined that yet.
+    member::Union{Dict, Missing}  # It's a Member, but we haven't defined that yet.
 end

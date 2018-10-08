@@ -1,8 +1,5 @@
 # Julicord
 
-```@index
 ```
-
-```@autodocs
-Modules = [Julicord]
+TODO: user-friendly documentation.
 ```

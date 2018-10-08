@@ -1,12 +1,12 @@
 """
-A voice state.
+A users's voice connection status.
 More details [here](https://discordapp.com/developers/docs/resources/voice#voice-state-object).
 """
 @from_dict struct VoiceState
     guild_id::Union{Snowflake, Missing}
     channel_id::Union{Snowflake, Nothing}
     user_id::Snowflake
-    member::Union{GuildMember, Nothing}
+    member::Union{Member, Nothing}
     session_id::String
     deaf::Bool
     mute::Bool

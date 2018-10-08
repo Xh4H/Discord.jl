@@ -1,3 +1,7 @@
+"""
+An invite to a guild.
+More details [here](https://discordapp.com/developers/docs/resources/invite#invite-object).
+"""
 @from_dict struct Invite
     code::String
     guild::Union{Guild, Missing}

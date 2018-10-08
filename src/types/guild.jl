@@ -49,7 +49,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
     unavailable::Union{Bool, Missing}
     member_count::Union{Int, Missing}
     voice_states::Union{Vector{VoiceState}, Missing}
-    members::Union{Vector{GuildMember}, Missing}
+    members::Union{Vector{Member}, Missing}
     channels::Union{Vector{DiscordChannel}, Missing}
     presences::Union{Vector{Presence}, Missing}
 end

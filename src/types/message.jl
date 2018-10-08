@@ -34,7 +34,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
     author::User  # TODO: Deal with the note about non-standard user structure.
-    member::Union{GuildMember, Missing}
+    member::Union{Member, Missing}
     content::String
     timestamp::DateTime
     edited_timestamp::Union{DateTime, Nothing}

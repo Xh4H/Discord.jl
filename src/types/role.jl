@@ -1,5 +1,5 @@
 """
-A role.
+A user role.
 More details [here](https://discordapp.com/developers/docs/topics/permissions#role-object).
 """
 @from_dict struct Role

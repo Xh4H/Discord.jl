@@ -52,10 +52,10 @@ end
 
 struct GuildMemberAdd <: AbstractEvent
     guild_id::Snowflake
-    member::GuildMember
+    member::Member
 end
 
-GuildMemberAdd(d::Dict) = GuildMemberAdd(snowflake(d["guild_id"]), GuildMember(d))
+GuildMemberAdd(d::Dict) = GuildMemberAdd(snowflake(d["guild_id"]), Member(d))
 
 struct GuildMemberRemove <: AbstractEvent
     guild_id::Snowflake
@@ -71,7 +71,7 @@ end
 
 @from_dict struct GuildMembersChunk <: AbstractEvent
     guild_id::Snowflake
-    members::Vector{GuildMember}
+    members::Vector{Member}
 end
 
 @from_dict struct GuildRoleCreate <: AbstractEvent
