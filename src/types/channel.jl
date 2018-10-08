@@ -1,4 +1,4 @@
-@enum ChannelType GUILD_TEXT DM GUILD_VOICE GROUP_DM GUILD_CATEGORY
+@enum ChannelType CT_GUILD_TEXT CT_DM CT_GUILD_VOICE CT_GROUP_DM CT_GUILD_CATEGORY
 
 # TODO: Parametric DiscordChannel based on ChannelType.
 

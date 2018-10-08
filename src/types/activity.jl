@@ -1,5 +1,12 @@
-@enum ActivityType GAME STREAMING LISTENING
-@enum ActivityFlags INSTANCE=1<<0 JOIN=1<<1 SPECTATE=1<<2 JOIN_REQUEST=1<<3 SYNC=1<<4 PLAY=1<<5
+@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING
+@enum ActivityFlags begin
+    AF_INSTANCE=1<<0
+    AF_JOIN=1<<1
+    AF_SPECTATE=1<<2
+    AF_JOIN_REQUEST=1<<3
+    AF_SYNC=1<<4
+    AF_PLAY=1<<5
+end
 
 struct ActivityTimestamps
     start::Union{DateTime, Nothing}
@@ -37,7 +44,7 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#activi
 """
 @from_dict struct Activity
     name::String
-    _type::ActivityType
+    type::ActivityType
     url::Union{String, Nothing, Missing}
     timestamps::Union{ActivityTimestamps, Nothing}
     application_id::Union{Snowflake, Nothing}

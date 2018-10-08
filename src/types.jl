@@ -51,14 +51,19 @@ macro from_dict(ex)
     end
 end
 
+include(joinpath("types", "activity.jl"))
+include(joinpath("types", "attachment.jl"))
+include(joinpath("types", "embed.jl"))
 include(joinpath("types", "user.jl"))
 include(joinpath("types", "emoji.jl"))
+include(joinpath("types", "reaction.jl"))
 include(joinpath("types", "role.jl"))
 include(joinpath("types", "overwrite.jl"))
 include(joinpath("types", "channel.jl"))
-include(joinpath("types", "activity.jl"))
 include(joinpath("types", "presence.jl"))
 include(joinpath("types", "guild_member.jl"))
 include(joinpath("types", "voice_state.jl"))
 include(joinpath("types", "guild.jl"))
+include(joinpath("types", "message.jl"))
+
 

@@ -14,4 +14,7 @@ More details [here](https://discordapp.com/developers/docs/resources/user#user-o
     locale::Union{String, Nothing, Missing}
     verified::Union{Bool, Nothing, Missing}
     email::Union{String, Nothing, Missing}
+    # TODO: User can apparently also have a partial member field
+    # in a Message's mentions field, but GuildMember depends on User.
+    # member::Union{GuildMember, Missing}
 end
