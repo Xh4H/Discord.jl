@@ -10,17 +10,18 @@ using Test
 
 # A test case which covers all possible field types.
 @from_dict struct Foo
-    x::String
-    y::DateTime
-    z::Snowflake
-    a::Vector{String}
-    b::Union{Int, Nothing}
-    c::Union{Int, Missing}
+    a::String
+    b::DateTime
+    c::Snowflake
+    d::Vector{String}
+    e::Union{Int, Nothing}
+    f::Union{Int, Missing}
+    g::Union{Vector{String}, Nothing, Missing}
 end
 
 # A test case which is a subtype.
 @from_dict struct Bar <: Integer
-    x::Int
+    a::Int
 end
 
 @testset "Julicord" begin
@@ -44,30 +45,39 @@ end
 
     @testset "@from_dict" begin
         d = Dict(
-            "x" => "foo",
-            "y" => "2018-10-08T05:20:22.782Z",
-            "z" => "1234567890",
-            "a" => ["a", "b", "c"],
-            "b" => 1,
-            "c" => 2,
+            "a" => "foo",
+            "b" => "2018-10-08T05:20:22.782Z",
+            "c" => "1234567890",
+            "d" => ["a", "b", "c"],
+            "e" => 1,
+            "f" => 2,
+            "g" => ["a", "b", "c"],
         )
 
         f = Foo(d)
-        @test f.x == "foo"
-        @test f.y == DateTime(2018, 10, 8, 5, 20, 22, 782)
-        @test f.z == 1234567890
-        @test f.a == ["a", "b", "c"]
-        @test f.b == 1
-        @test f.c == 2
+        @test f.a == "foo"
+        @test f.b == DateTime(2018, 10, 8, 5, 20, 22, 782)
+        @test f.c == 1234567890
+        @test f.d == ["a", "b", "c"]
+        @test f.e == 1
+        @test f.f == 2
+        @test f.g == ["a", "b", "c"]
 
-        d["b"] = nothing
-        delete!(d, "c")
+        d["e"] = nothing
+        delete!(d, "f")
+        delete!(d, "g")
 
         f = Foo(d)
-        @test f.b === nothing
-        @test f.c === missing
+        @test f.e === nothing
+        @test ismissing(f.f)
+        @test ismissing(f.g)
 
-        b = Bar(Dict("x" => 1))
-        @test b.x == 1
+        d["g"] = nothing
+
+        f = Foo(d)
+        @test f.g === nothing
+
+        b = Bar(Dict("a" => 1))
+        @test b.a == 1
     end
 end

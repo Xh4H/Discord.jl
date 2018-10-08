@@ -23,7 +23,9 @@ function field(k::String, t::Expr)
         if t.args[1] === :Vector && isa(t.args[2], Symbol)
             :($(t.args[2]).(d[$k]))
         elseif t.args[1] === :Union
-            if t.args[3] === :Nothing
+            if :Nothing in t.args && :Missing in t.args
+                :(haskey(d, $k) ? d[$k] === nothing ? nothing : $(field(k, t.args[2])) : missing)
+            elseif t.args[3] === :Nothing
                 :(d[$k] === nothing ? nothing : $(field(k, t.args[2])))
             elseif t.args[3] === :Missing
                 :(haskey(d, $k) ? $(field(k, t.args[2])) : missing)
@@ -50,3 +52,13 @@ macro from_dict(ex)
 end
 
 include(joinpath("types", "user.jl"))
+include(joinpath("types", "emoji.jl"))
+include(joinpath("types", "role.jl"))
+include(joinpath("types", "overwrite.jl"))
+include(joinpath("types", "channel.jl"))
+include(joinpath("types", "activity.jl"))
+include(joinpath("types", "presence.jl"))
+include(joinpath("types", "guild_member.jl"))
+include(joinpath("types", "voice_state.jl"))
+include(joinpath("types", "guild.jl"))
+
