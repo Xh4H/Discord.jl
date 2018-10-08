@@ -37,7 +37,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
     default_message_notifications::MessageNotificationLevel
     explicit_content_filter::ExplicitContentFilterLevel
     roles::Vector{Role}
-    emojies::Vector{Emoji}
+    emojis::Vector{Emoji}
     features::Vector{String}
     mfa_level::MFALevel
     application_id::Union{Snowflake, Missing}
