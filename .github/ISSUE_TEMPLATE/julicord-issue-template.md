@@ -4,9 +4,8 @@ about: Steps to report an issue with Julicord
 
 ---
 
-name: 🐛 Bug Report
-
-about: My PC isn't working as expected 🤔
+## About
+My PC isn't working as expected 🤔
 
 
 ## Bug Report
