@@ -1,6 +1,6 @@
 """
 A Webhook.
-More details [here](https://discordapp.com/developers/docs/resources/webhook#webhook-objec)t.
+More details [here](https://discordapp.com/developers/docs/resources/webhook#webhook-object).
 """
 @from_dict struct Webhook
     id::Union{Snowflake, Missing}
