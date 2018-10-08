@@ -14,7 +14,6 @@
 
 ```julia
 using Julicord
-using Julicord.Events
 
 c = Client("token")
 add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))

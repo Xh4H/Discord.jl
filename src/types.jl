@@ -1,58 +1,50 @@
+# Discord's form of ID.
+const Snowflake = Int64
+# Discord sends strings, but it's easier to work with integers.
+snowflake(s::AbstractString) = parse(Int64, s)
+
+# Discord sends a trailing "Z". Maybe we actually need to think about time zones.
+datetime(s::AbstractString) = DateTime(s[1:end-1], ISODateTimeFormat)
+
 function field(k::String, t::Symbol)
-    return if t === :String
-        :(data[$k])
+    return if t === :Snowflake
+        :(snowflake(d[$k]))
     elseif t === :DateTime
-        :(datetime(data[$k]))
-    elseif t === :Snowflake
-        :(snowflake(data[$k]))
+        :(datetime(d[$k]))
+    elseif isprimitivetype(eval(t))
+        :(d[$k])
     else
-        :($t(data[$k]))
+        :($t(d[$k]))
     end
 end
 
 function field(k::String, t::Expr)
-    if t.head === :curly
+    ex = if t.head === :curly
         if t.args[1] === :Vector && isa(t.args[2], Symbol)
-            vector(k, t.args[2])
+            :($(t.args[2]).(d[$k]))
         elseif t.args[1] === :Union
-            maybe(k, t.args[2:end])
-        else
-            error("uncaught case: k=$k, t=$t")
+            if t.args[3] === :Nothing
+                :(d[$k] === nothing ? nothing : $(field(k, t.args[2])))
+            elseif t.args[3] === :Missing
+                :(haskey(d, $k) ? $(field(k, t.args[2])) : missing)
+            end
         end
-    else
-        error("uncaught case: k=$k, t=$t")
     end
-end
-
-vector(k::String, t::Symbol) = :($t.(data[$k]))
-
-nullable(k::String, t::Symbol) = :(data[$k] === nothing ? nothing : field($k, Symbol($t)))
-optional(k::String, t::Symbol) = :(haskey(data, $k) ? field($k, Symbol($t)) : missing)
-
-
-function maybe(k::String, t::Vector)
-    @assert length(t) == 2
-    return if t[2] === :Nothing
-        nullable(k, t[1])
-    elseif t[2] === :Missing
-        optional(k, t[1])
-    else
-        error("uncaught case: k=$k, t=$t")
-    end
+    ex === nothing && error("uncaught case: k=$k, t=$t") || return ex
 end
 
 macro from_dict(ex)
     @assert ex.head === :struct
-    name = ex.args[2]
+    name = isa(ex.args[2], Symbol) ? ex.args[2] : ex.args[2].args[1]
     args = map(
         e -> field(string(e.args[1]), e.args[2]),
         filter(e -> isa(e, Expr), ex.args[3].args),
     )
 
     quote
-        $ex
-        Base.@__doc__ function $(esc(name))(data::Dict)
-            return $name($(args...))
+        $(esc(ex))
+        Base.@__doc__ function $(esc(name))(d::Dict)
+            return $(esc(name))($(args...))
         end
     end
 end

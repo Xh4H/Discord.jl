@@ -2,7 +2,7 @@ export User
 
 """
 A Discord user. 
-See [here](https://discordapp.com/developers/docs/resources/user#user-object) for details.
+More details [here](https://discordapp.com/developers/docs/resources/user#user-object).
 """
 @from_dict struct User
     id::Snowflake
