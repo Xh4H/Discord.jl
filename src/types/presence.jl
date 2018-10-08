@@ -7,5 +7,5 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#presen
     roles::Vector{Snowflake}
     game::Union{Activity, Missing}
     guild_id::Snowflake
-    status::String
+    status::String # should be an enum (either "idle", "dnd", "online", or "offline")
 end
