@@ -53,3 +53,8 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
     channels::Union{Vector{Channel}, Nothing}
     presences::Union{Vector{Presence}, Nothing}
 end
+
+@from_dict struct GuildEmbed
+    enabled::Bool
+    channel_id::Union{Snowflake, Missing}
+end

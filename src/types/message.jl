@@ -8,7 +8,6 @@
     MT_CHANNEL_PINNED_MESSAGE
     MT_GUILD_MEMBER_JOIN
 end
-
 @enum MessageActivityType MAT_JOIN MAT_SPECTATE MAT_LISTEN MAT_JOIN_REQUEST
 
 @from_dict struct MessageActivity

@@ -1,7 +1,5 @@
-export User
-
 """
-A Discord user. 
+A Discord user.
 More details [here](https://discordapp.com/developers/docs/resources/user#user-object).
 """
 @from_dict struct User
@@ -14,7 +12,5 @@ More details [here](https://discordapp.com/developers/docs/resources/user#user-o
     locale::Union{String, Nothing, Missing}
     verified::Union{Bool, Nothing, Missing}
     email::Union{String, Nothing, Missing}
-    # TODO: User can apparently also have a partial member field
-    # in a Message's mentions field, but GuildMember depends on User.
-    # member::Union{GuildMember, Missing}
+    member::Union{Dict, Missing}  # It's a GuildMember, but we haven't defined that yet.
 end
