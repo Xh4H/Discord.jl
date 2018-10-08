@@ -218,7 +218,12 @@ end
 
 function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
-    evt = AbstractEvent(data)
+    evt = try
+        AbstractEvent(data)
+    catch e
+        @error sprint(showerror, e)
+        UnknownEvent(data)
+    end
 
     for handler in get(c.handlers, typeof(evt), Function[])
         @async try

@@ -3,11 +3,11 @@ An emoji.
 More details [here](https://discordapp.com/developers/docs/resources/emoji#emoji-object).
 """
 @from_dict struct Emoji
-    id::Union{Snowflake, Missing}
+    id::Union{Snowflake, Nothing}
     name::String
-    roles::Union{Vector{Snowflake}, Nothing}
-    user::Union{User, Nothing}
-    require_colons::Union{Bool, Nothing}
-    managed::Union{Bool, Nothing}
-    animated::Union{Bool, Nothing}
+    roles::Union{Vector{Snowflake}, Missing}
+    user::Union{User, Missing}
+    require_colons::Union{Bool, Missing}
+    managed::Union{Bool, Missing}
+    animated::Union{Bool, Missing}
 end

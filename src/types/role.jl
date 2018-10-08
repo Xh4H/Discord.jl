@@ -6,7 +6,7 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#ro
     id::Snowflake
     name::String
     color::Int
-    hoise::Bool
+    hoist::Bool
     position::Int
     permissions::Int
     managed::Bool

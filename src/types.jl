@@ -53,6 +53,7 @@ end
 
 include(joinpath("types", "overwrite.jl"))
 include(joinpath("types", "role.jl"))
+include(joinpath("types", "guild_embed.jl"))
 include(joinpath("types", "attachment.jl"))
 include(joinpath("types", "voice_region.jl"))
 include(joinpath("types", "activity.jl"))

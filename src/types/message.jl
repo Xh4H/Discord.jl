@@ -1,6 +1,6 @@
 @enum MessageType begin
     MT_DEFAULT
-    MTNRECIPIENT_ADD
+    MT_RECIPIENT_ADD
     MT_RECIPIENT_REMOVE
     MT_CALL
     MT_CHANNEL_NAME_CHANGE
@@ -12,7 +12,7 @@ end
 
 @from_dict struct MessageActivity
     type::MessageActivityType
-    party_id::Union{String, Nothing}
+    party_id::Union{String, Missing}
 end
 
 @from_dict struct MessageApplication
@@ -32,23 +32,23 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
     # https://discordapp.com/developers/docs/topics/gateway#message-update
     id::Snowflake
     channel_id::Snowflake
-    guild_id::Union{Snowflake, Nothing}
-    author::User
-    member::Union{GuildMember, Nothing}
+    guild_id::Union{Snowflake, Missing}
+    author::User  # TODO: Deal with the note about non-standard user structure.
+    member::Union{GuildMember, Missing}
     content::String
     timestamp::DateTime
-    edited_timestamp::Union{DateTime, Missing}
+    edited_timestamp::Union{DateTime, Nothing}
     tts::Bool
     mention_everyone::Bool
     mentions::Vector{User}
     mention_roles::Vector{Snowflake}
     attachments::Vector{Attachment}
     embeds::Vector{Embed}
-    reactions::Union{Vector{Reaction}, Nothing}
+    reactions::Union{Vector{Reaction}, Missing}
     nonce::Union{Snowflake, Nothing, Missing}
     pinned::Bool
-    webhook_id::Union{Snowflake, Nothing}
+    webhook_id::Union{Snowflake, Missing}
     type::MessageType
-    activity::Union{MessageActivity, Nothing}
-    application::Union{MessageApplication, Nothing}
+    activity::Union{MessageActivity, Missing}
+    application::Union{MessageApplication, Missing}
 end

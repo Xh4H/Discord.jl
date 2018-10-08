@@ -1,7 +1,7 @@
 @from_dict struct Invite
     code::String
-    guild::Union{Guild, Nothing}
+    guild::Union{Guild, Missing}
     channel::DiscordChannel
-    approximate_presence_cound::Union{Int, Nothing}
-    approximate_member_count::Union{Int, Nothing}
+    approximate_presence_cound::Union{Int, Missing}
+    approximate_member_count::Union{Int, Missing}
 end

@@ -23,16 +23,16 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
 @from_dict struct Guild <: AbstractGuild
     id::Snowflake
     name::String
-    icon::Union{String, Missing}
-    splash::Union{String, Missing}
-    owner::Union{Bool, Nothing}
+    icon::Union{String, Nothing}
+    splash::Union{String, Nothing}
+    owner::Union{Bool, Missing}
     owner_id::Snowflake
-    permissions::Union{Int, Nothing}
+    permissions::Union{Int, Missing}
     region::String
-    afk_channel_id::Union{Snowflake, Missing}
+    afk_channel_id::Union{Snowflake, Nothing}
     afk_timeout::Int
-    embed_enabled::Union{Bool, Nothing}
-    embed_channel_id::Union{Snowflake, Nothing}
+    embed_enabled::Union{Bool, Missing}
+    embed_channel_id::Union{Snowflake, Missing}
     verification_level::VerificationLevel
     default_message_notifications::MessageNotificationLevel
     explicit_content_filter::ExplicitContentFilterLevel
@@ -40,21 +40,16 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
     emojis::Vector{Emoji}
     features::Vector{String}
     mfa_level::MFALevel
-    application_id::Union{Snowflake, Missing}
-    widget_enabled::Union{Bool, Nothing}
-    widget_channel_id::Union{Snowflake, Nothing}
-    system_channel_id::Union{Snowflake, Missing}
-    joined_at::Union{DateTime, Nothing}
-    large::Union{Bool, Nothing}
-    unavailable::Union{Bool, Nothing}
-    member_count::Union{Int, Nothing}
-    voice_states::Union{Vector{VoiceState}, Nothing}
-    members::Union{Vector{GuildMember}, Nothing}
-    channels::Union{Vector{DiscordChannel}, Nothing}
-    presences::Union{Vector{Presence}, Nothing}
-end
-
-@from_dict struct GuildEmbed
-    enabled::Bool
-    channel_id::Union{Snowflake, Missing}
+    application_id::Union{Snowflake, Nothing}
+    widget_enabled::Union{Bool, Missing}
+    widget_channel_id::Union{Snowflake, Missing}
+    system_channel_id::Union{Snowflake, Nothing}
+    joined_at::Union{DateTime, Missing}
+    large::Union{Bool, Missing}
+    unavailable::Union{Bool, Missing}
+    member_count::Union{Int, Missing}
+    voice_states::Union{Vector{VoiceState}, Missing}
+    members::Union{Vector{GuildMember}, Missing}
+    channels::Union{Vector{Channel}, Missing}
+    presences::Union{Vector{Presence}, Missing}
 end

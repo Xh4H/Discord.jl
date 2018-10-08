@@ -10,20 +10,20 @@ Note: The name `Channel` is already used, hence the prefix.
 @from_dict struct DiscordChannel
     id::Snowflake
     type::ChannelType
-    guild_id::Union{Snowflake, Nothing}
-    position::Union{Int, Nothing}
-    permission_overwrites::Union{Vector{Overwrite}, Nothing}
-    name::Union{String, Nothing}
+    guild_id::Union{Snowflake, Missing}
+    position::Union{Int, Missing}
+    permission_overwrites::Union{Vector{Overwrite}, Missing}
+    name::Union{String, Missing}
     topic::Union{String, Nothing, Missing}
-    nsfw::Union{Bool, Nothing}
+    nsfw::Union{Bool, Missing}
     last_message_id::Union{Snowflake, Nothing, Missing}
-    bitrage::Union{Int, Nothing}
-    user_limit::Union{Int, Nothing}
-    rate_limit_per_user::Union{Int, Nothing}
-    recipients::Union{Vector{User}, Nothing}
+    bitrate::Union{Int, Missing}
+    user_limit::Union{Int, Missing}
+    rate_limit_per_user::Union{Int, Missing}
+    recipients::Union{Vector{User}, Missing}
     icon::Union{String, Nothing, Missing}
-    owner_id::Union{Snowflake, Nothing}
-    application_id::Union{Snowflake, Nothing}
+    owner_id::Union{Snowflake, Missing}
+    application_id::Union{Snowflake, Missing}
     parent_id::Union{Snowflake, Nothing, Missing}
-    last_pin_timestamp::Union{DateTime, Nothing}
+    last_pin_timestamp::Union{DateTime, Missing}
 end

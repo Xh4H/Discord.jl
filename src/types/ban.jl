@@ -1,4 +1,4 @@
 @from_dict struct Ban
-    reason::Union{String, Missing}
+    reason::Union{String, Nothing}
     user::User
 end

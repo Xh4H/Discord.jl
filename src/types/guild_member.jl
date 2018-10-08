@@ -4,7 +4,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
 """
 @from_dict struct GuildMember
     user::User
-    nick::Union{String, Nothing}
+    nick::Union{String, Missing}
     roles::Vector{Snowflake}
     joined_at::DateTime
     deaf::Bool

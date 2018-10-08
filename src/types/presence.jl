@@ -24,8 +24,18 @@ end
 struct Presence
     user::User
     roles::Vector{Snowflake}
-    game::Union{Activity, Missing}
+    game::Union{Activity, Nothing}
     guild_id::Snowflake
     status::Union{PresenceStatus, String}
+end
+
+function Presence(d::Dict)
+    return Presence(
+        User(d["user"]),
+        snowflake.(d["roles"]),
+        d["game"] === nothing ? nothing : Activity(d["game"]),
+        snowflake(d["guild_id"]),
+        PresenceStatus(d["status"]),
+    )
 end
 
