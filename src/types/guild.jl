@@ -50,7 +50,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
     member_count::Union{Int, Nothing}
     voice_states::Union{Vector{VoiceState}, Nothing}
     members::Union{Vector{GuildMember}, Nothing}
-    channels::Union{Vector{Channel}, Nothing}
+    channels::Union{Vector{DiscordChannel}, Nothing}
     presences::Union{Vector{Presence}, Nothing}
 end
 
