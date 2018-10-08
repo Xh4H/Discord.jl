@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Julicord.Webhook",
     "category": "method",
-    "text": "A Webhook. More details heret.\n\n\n\n\n\n"
+    "text": "A Webhook. More details here.\n\n\n\n\n\n"
 },
 
 {
