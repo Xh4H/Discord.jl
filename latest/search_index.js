@@ -33,15 +33,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Julicord.User-Tuple{Dict}",
-    "page": "Home",
-    "title": "Julicord.User",
-    "category": "method",
-    "text": "A Discord user.  More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "index.html#Julicord.add_handler!-Tuple{Client,Type{#s244} where #s244<:AbstractEvent,Function}",
+    "location": "index.html#Julicord.add_handler!-Tuple{Client,Type{#s322} where #s322<:AbstractEvent,Function}",
     "page": "Home",
     "title": "Julicord.add_handler!",
     "category": "method",
@@ -49,7 +41,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Julicord.clear_handlers!-Tuple{Client,Type{#s244} where #s244<:AbstractEvent}",
+    "location": "index.html#Julicord.clear_handlers!-Tuple{Client,Type{#s322} where #s322<:AbstractEvent}",
     "page": "Home",
     "title": "Julicord.clear_handlers!",
     "category": "method",
@@ -137,10 +129,10 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Julicord.Presence-Tuple{Dict}",
+    "location": "index.html#Julicord.Presence",
     "page": "Home",
     "title": "Julicord.Presence",
-    "category": "method",
+    "category": "type",
     "text": "A user presence. More details here.\n\n\n\n\n\n"
 },
 
@@ -166,6 +158,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Julicord.UnavailableGuild",
     "category": "method",
     "text": "An unavailable guild (server). More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "index.html#Julicord.User-Tuple{Dict}",
+    "page": "Home",
+    "title": "Julicord.User",
+    "category": "method",
+    "text": "A Discord user. More details here.\n\n\n\n\n\n"
 },
 
 {
