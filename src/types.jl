@@ -1,17 +1,17 @@
 # Discord's form of ID.
-const Snowflake = Int64
+const Snowflake = UInt64
 # Discord sends strings, but it's easier to work with integers.
-snowflake(s::AbstractString) = parse(Int64, s)
+snowflake(s::AbstractString) = parse(UInt64, s)
 
 # Discord sends a trailing "Z". Maybe we actually need to think about time zones.
-datetime(s::AbstractString) = DateTime(s[1:end-1], ISODateTimeFormat)
+datetime(s::AbstractString) = DateTime(s[1:23], ISODateTimeFormat)
 
 function field(k::String, t::Symbol)
     return if t === :Snowflake
         :(snowflake(d[$k]))
     elseif t === :DateTime
         :(datetime(d[$k]))
-    elseif t === :Any || isprimitivetype(eval(t))
+    elseif t === :Any
         :(d[$k])
     else
         :($t(d[$k]))
@@ -21,7 +21,7 @@ end
 function field(k::String, t::Expr)
     ex = if t.head === :curly
         if t.args[1] === :Vector && isa(t.args[2], Symbol)
-            :($(t.args[2]).(d[$k]))
+            t.args[2] === :Snowflake ? :(snowflake.(d[$k])) : :($(t.args[2]).(d[$k]))
         elseif t.args[1] === :Union
             if :Nothing in t.args && :Missing in t.args
                 :(haskey(d, $k) ? d[$k] === nothing ? nothing : $(field(k, t.args[2])) : missing)

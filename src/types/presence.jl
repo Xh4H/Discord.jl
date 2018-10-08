@@ -1,16 +1,16 @@
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE
 
 function PresenceStatus(ps::AbstractString)
-    return if s == "idle"
+    return if ps == "idle"
         PS_IDLE
-    elseif s == "dnd"
+    elseif ps == "dnd"
         PS_DND
-    elseif s == "online"
+    elseif ps == "online"
         PS_ONLINE
-    elseif s == "offline"
+    elseif ps == "offline"
         PS_OFFLINE
     else
-        s
+        ps
     end
 end
 
@@ -23,18 +23,18 @@ end
 
 struct Presence
     user::User
-    roles::Vector{Snowflake}
+    roles::Union{Vector{Snowflake}, Missing}
     game::Union{Activity, Nothing}
-    guild_id::Snowflake
+    guild_id::Union{Snowflake, Missing}
     status::Union{PresenceStatus, String}
 end
 
 function Presence(d::Dict)
     return Presence(
         User(d["user"]),
-        snowflake.(d["roles"]),
+        haskey(d, "roles") ? snowflake.(d["roles"]) : missing,
         d["game"] === nothing ? nothing : Activity(d["game"]),
-        snowflake(d["guild_id"]),
+        haskey(d, "roles") ? snowflake(d["guild_id"]) : missing,
         PresenceStatus(d["status"]),
     )
 end

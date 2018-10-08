@@ -8,7 +8,7 @@ using Julicord:
 using Dates
 using Test
 
-# A test case which covers all possible field types.
+# A test case which covers most possible field types.
 @from_dict struct Foo
     a::String
     b::DateTime
@@ -33,12 +33,15 @@ end
     end
 
     @testset "Snowflake parsing" begin
-        s = snowflake("1234567890")
-        @test isa(s, Int64)
-        @test s == 1234567890
+        s = snowflake(string(typemax(UInt64)))
+        @test isa(s, UInt64)
+        @test s == typemax(UInt64)
     end
 
     @testset "DateTime parsing" begin
+        d = datetime("2018-10-08T05:20:22.782643+00:00")
+        @test d == DateTime(2018, 10, 8, 5, 20, 22, 782)
+
         d = datetime("2018-10-08T05:20:22.782Z")
         @test d == DateTime(2018, 10, 8, 5, 20, 22, 782)
     end
