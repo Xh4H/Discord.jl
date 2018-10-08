@@ -41,8 +41,8 @@ mutable struct Client
     last_ack::DateTime
     state::Dict{String, Any}  # TODO: This should be a struct.
     handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
-    hb_chan::Channel # hearbeat channel 
-    rl_chan::Channel # read_loop channel
+    hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
+    rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
 
     function Client(token::String)
@@ -58,6 +58,7 @@ mutable struct Client
             Dict(),
             Channel(0),
             Channel(0),
+            # conn left undef, it gets assigned in open.
         )
     end
 end
