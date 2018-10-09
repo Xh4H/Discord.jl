@@ -291,6 +291,7 @@ function dispatch(c::Client, data::Dict)
         @error sprint(showerror, e)
         UnknownEvent(data)
     end
+    push!(c.cache.events, evt)
 
     for handler in get(c.handlers, typeof(evt), Function[])
         @async try
