@@ -1,5 +1,8 @@
 export AbstractEvent, UnknownEvent
 
+"""
+An incoming event sent over the gateway.
+"""
 abstract type AbstractEvent end
 
 """

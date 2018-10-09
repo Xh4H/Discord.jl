@@ -43,7 +43,7 @@ mutable struct Client
     last_heartbeat::DateTime
     last_ack::DateTime
     cache::Cache
-    handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
+    handlers::Dict{Type{<:AbstractEvent}, Set{Function}}
     hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
@@ -233,7 +233,7 @@ function update_status(
     )))
 end
 
-# Event handlers.
+# Handler insertion/deletion.
 
 """
     add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
@@ -242,12 +242,19 @@ Add a handler for the given event type.
 The handler should be a function which takes two arguments: A [`Client`](@ref) and an
 [`AbstractEvent`](@ref) (or a subtype).
 The handler is appended the event's current handlers.
+
+!!! note
+    The set of handlers for a given event is stored as a `Set{Function}`. This protects
+    against adding duplicate handlers, **except** when you pass an anonymous function.
+    Therefore, it's recommended to define your handler functions beforehand.
+
+    Also note that there is no guarantee on the order in which handlers run.
 """
 function add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
     if haskey(c.handlers, evt)
         push!(c.handlers[evt], func)
     else
-        c.handlers[evt] = Function[func]
+        c.handlers[evt] = Set([func])
     end
 end
 
@@ -284,7 +291,7 @@ function read_loop(c::Client, ch::Channel)
     end
 end
 
-# Event handlers
+# Event handlers.
 
 function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
@@ -371,11 +378,11 @@ function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
     end
 end
 
-const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Vector{Function}}(
-    Ready => [handle_ready],
-    Resumed => [handle_resumed],
-    GuildCreate => [handle_guild_create],
-    GuildMembersChunk => [handle_guild_members_chunk],
+const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Function}}(
+    Ready => Set([handle_ready]),
+    Resumed => Set([handle_resumed]),
+    GuildCreate => Set([handle_guild_create]),
+    GuildMembersChunk => Set([handle_guild_members_chunk]),
 )
 
 # Error handling.
