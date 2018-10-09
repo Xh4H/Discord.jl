@@ -21,6 +21,9 @@ function create_request(c::Client, method::String, endpoint::String, payload = "
     end
 
     # Treat query if exist (add query to url (url?bla=ble&..))
+    if !isempty(query)
+        url *= "?$(HTTP.escapeuri(query))"
+    end
 
     if isempty(headers["Authorization"])
         headers["Authorization"] = "$(c.token)"
@@ -30,10 +33,15 @@ function create_request(c::Client, method::String, endpoint::String, payload = "
         response = HTTP.request(method, url, headers, payload)
         String(response.body) |> JSON.parse
     catch err
-        if err.response.status == 400
-            Dict("message" => "400: Bad Request")
+        println(err)
+        if err.response != nothing
+            if err.response.status == 400
+                Dict("message" => "400: Bad Request")
+            else
+                err.response.body |> String |> JSON.parse
+            end
         else
-            err.response.body |> String |> JSON.parse
+            err
         end
     end
 end
