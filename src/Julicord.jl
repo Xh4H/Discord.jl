@@ -16,6 +16,5 @@ include("events.jl")
 include("state.jl")
 include("cache.jl")
 include("client.jl")
-include("API/request.jl")
-
+include("rest.jl")
 end
