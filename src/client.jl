@@ -43,6 +43,8 @@ mutable struct Client
     last_heartbeat::DateTime
     last_ack::DateTime
     cache::Cache
+    shards::Int
+    shard::Int
     handlers::Dict{Type{<:AbstractEvent}, Set{Function}}
     hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
@@ -58,6 +60,8 @@ mutable struct Client
             DateTime(0),                      # last_heartbeat
             DateTime(0),                      # last_ack
             Cache(),                          # cache
+            nprocs(),                         # shards
+            myid() - 1,                       # shard
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
             Channel(0),                       # hb_chan
             Channel(0),                       # rl_chan
@@ -106,10 +110,14 @@ function Base.open(c::Client; resume::Bool=false)
             "seq" => c.heartbeat_seq,
         ))
     else
-        Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
+        d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
                 "token" => c.token,
                 "properties" => conn_properties,
         ))
+        if c.shards > 1
+            d["shard"] = [c.shard, c.shards]
+        end
+        d
     end
     writejson(conn, data) || error("writing $(resume ? "RESUME" : "IDENTIFY") failed")
 
@@ -461,7 +469,7 @@ function readjson(conn)
     end
 end
 
-writejson(conn, body) = writeguarded(conn, JSON.json(body))
+writejson(conn, body) = writeguarded(conn, json(body))
 
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)

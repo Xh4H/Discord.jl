@@ -10,32 +10,25 @@
 [![Build Status](https://travis-ci.com/PurgePJ/Julicord.svg?branch=master)](https://travis-ci.com/PurgePJ/Julicord)
 [![CodeCov](https://codecov.io/gh/PurgePJ/Julicord/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Julicord)
 
-### Bot Sample
+### Example
 
 ```julia
 using Julicord
-
 c = Client("token")
 add_handler!(c, MessageDelete, (_, e) -> println("message $(e.id) was deleted"))
 open(c)
 wait(c)
 ```
+### Sharding
 
-### To test custom builds
-
-You can use a Julia file like the following one:
 ```julia
-if isfile("Project.toml") # from the project root
-    import Pkg.activate
-    activate(".")
+using Distributed
+addprocs(2)
+@everywhere begin
+    using Julicord
+    c = Client("token")
+    add_handler!(c, AbstractEvent, (c, e) -> println("[shard $(c.shard)] received $(typeof(e))"))
+    open(c)
+    wait(c)
 end
-
-using Julicord
-
-c = Client("token")
-add_handler!(c, MessageDelete, (_, e) -> println("message $(e.id) was deleted"))
-open(c)
-wait(c)
 ```
-
-If you prefer, you can activate the project from the REPL.

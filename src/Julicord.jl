@@ -1,6 +1,7 @@
 module Julicord
 
 using Dates
+using Distributed
 using HTTP
 using JSON
 using OpenTrick
