@@ -20,3 +20,22 @@ add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))
 open(c)
 wait(c)
 ```
+
+### To test custom builds
+
+You can use a Julia file like the following one:
+```julia
+if isfile("Project.toml") # from the project root
+    import Pkg.activate
+    activate(".")
+end
+
+using Julicord
+
+c = Client("token")
+add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))
+open(c)
+wait(c)
+```
+
+If you prefer, you can activate the project from the REPL.
