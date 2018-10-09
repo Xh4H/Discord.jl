@@ -16,7 +16,7 @@
 using Julicord
 
 c = Client("token")
-add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))
+add_handler!(c, MessageDelete, (_, e) -> println("message $(e.id) was deleted"))
 open(c)
 wait(c)
 ```
@@ -33,7 +33,7 @@ end
 using Julicord
 
 c = Client("token")
-add_handler!(c, MessageDelete, e -> println("message $(e.id) was deleted"))
+add_handler!(c, MessageDelete, (_, e) -> println("message $(e.id) was deleted"))
 open(c)
 wait(c)
 ```
