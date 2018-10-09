@@ -1,25 +1,15 @@
+const PRESENCE_STATUSES = ["idle", "dnd", "online", "offline"]
+
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE
 
 function PresenceStatus(ps::AbstractString)
-    return if ps == "idle"
-        PS_IDLE
-    elseif ps == "dnd"
-        PS_DND
-    elseif ps == "online"
-        PS_ONLINE
-    elseif ps == "offline"
-        PS_OFFLINE
-    else
-        ps
-    end
+    i = findfirst(s -> s == ps, PRESENCE_STATUSES)
+    return i === nothing ? ps : PresenceStatus(i - 1)
 end
 
-function Base.:(==)(ps::PresenceStatus, s::AbstractString)
-    return ps === PS_IDLE && s == "idle" ||
-        ps === PS_DND && s == "dnd" ||
-        ps === PS_ONLINE && s == "online" ||
-        ps === PS_OFFLINE && s == "offline"
-end
+Base.string(ps::PresenceStatus) = PRESENCE_STATUSES[Int(ps) + 1]
+
+JSON.lower(ps::PresenceStatus) = string(ps)
 
 struct Presence
     user::User

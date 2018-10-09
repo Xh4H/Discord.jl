@@ -2,7 +2,10 @@ export Client,
     state,
     me,
     add_handler!,
-    clear_handlers!
+    clear_handlers!,
+    request_guild_members,
+    update_voice_status,
+    update_status
 
 # Properties for gateway connections.
 const conn_properties = Dict(
@@ -143,6 +146,90 @@ Get the client's bot user.
 """
 me(c::Client) = c.cache.state === nothing ? nothing : c.cache.state.user
 
+# Gateway commands.
+
+"""
+    request_guild_members(
+        c::Client,
+        guild_id::Union{Snowflake, Vector{Snowflake};
+        query::AbstractString="",
+        limit::Int=0,
+    ) -> Bool
+
+Request offline guild members of one or more guilds.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#request-guild-members).
+"""
+function request_guild_members(c::Client, guild_id::Snowflake; query::AbstractString="", limit::Int=0)
+    return request_guild_members(c, [guild_id]; query=query, limit=limit)
+end
+
+function request_guild_members(
+    c::Client,
+    guild_id::Vector{Snowflake};
+    query::AbstractString="",
+    limit::Int=0,
+)
+    return writejson(c.conn, Dict(
+        "guild_id" => guild_id,
+        "query" => query,
+        "limit" => limit,
+    ))
+end
+
+"""
+    update_voice_state(
+        c::Client,
+        guild_id::Snowflake,
+        channel_id::Union{Snowflake, Nothing},
+        self_mute::Bool,
+        self_deaf::Bool,
+    ) -> Bool
+
+Join, move, or disconnect from a voice channel.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#update-voice-state).
+"""
+function update_voice_state(
+    c::Client,
+    guild_id::Snowflake,
+    channel_id::Union{Snowflake, Nothing},
+    self_mute::Bool,
+    self_deaf::Bool,
+)
+    return writejson(c.conn, Dict(
+        "guild_id" => guild_id,
+        "channel_id" => channel_id,
+        "self_mute" => self_mute,
+        "self_deaf" => self_deaf,
+    ))
+end
+
+"""
+    update_status(
+        c::Client,
+        since::Union{Int, Nothing},
+        activity::Union{Activity, Nothing},
+        status::PresenceStatus,
+        afk::Bool,
+    ) -> Bool
+
+Indicate a presence or status update.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#update-status).
+"""
+function update_status(
+    c::Client,
+    since::Union{Int, Nothing},
+    activity::Union{Activity, Nothing},
+    status::PresenceStatus,
+    afk::Bool,
+)
+    return writejson(c.conn, Dict(
+        "since" => since,
+        "activity" => activity,
+        "status" => status,
+        "afk" => afk,
+    ))
+end
+
 # Event handlers.
 
 """
@@ -216,11 +303,9 @@ end
 
 function heartbeat(c::Client, ::Dict=Dict())
     ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
-
     if ok
         c.last_heartbeat = now()
     end
-
     return ok
 end
 
@@ -282,7 +367,7 @@ const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Vector{Function}}(
     GuildMembersChunk => [handle_guild_members_chunk],
 )
 
-# Error handling
+# Error handling.
 
 const CLOSE_CODES = Dict(
     4000 => :UNKNOWN_ERROR,
@@ -337,7 +422,7 @@ function handle_close(c::Client, e::WebSocketClosedError)
     end
 end
 
-# Helpers
+# Helpers.
 
 function readjson(conn)
     return try
