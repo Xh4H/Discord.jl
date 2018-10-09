@@ -39,7 +39,7 @@ mutable struct Client
     heartbeat_seq::Union{Int, Nothing}
     last_heartbeat::DateTime
     last_ack::DateTime
-    state::Cache
+    cache::Cache
     handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
     hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
@@ -49,15 +49,15 @@ mutable struct Client
         token = startswith(token, "Bot ") ? token : "Bot $token"
 
         return new(
-            token,             # token
-            0,                 # heartbeat_interval
-            nothing,           # heartbeat_seq
-            unix2datetime(0),  # last_heartbeat
-            unix2datetime(0),  # last_ack
-            Cache(),           # state
-            Dict(),            # handlers
-            Channel(0),        # hb_chan
-            Channel(0),        # rl_chan
+            token,                            # token
+            0,                                # heartbeat_interval
+            nothing,                          # heartbeat_seq
+            DateTime(0),                      # last_heartbeat
+            DateTime(0),                      # last_ack
+            Cache(),                          # cache
+            copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
+            Channel(0),                       # hb_chan
+            Channel(0),                       # rl_chan
             # conn left undef, it gets assigned in open.
         )
     end
@@ -66,15 +66,15 @@ end
 """
     open(c::Client)
 
-Log in to the Discord gateway and begin reading events.
+Log in to the Discord gateway and begin responding to events.
 """
 function Base.open(c::Client; resume::Bool=false)
     isopen(c) && error("Client is already open")
 
     # Get the gateway URL and connect to it.
     resp = HTTP.get("$DISCORD_API/gateway")
-    d = JSON.parse(String(resp.body))
-    url = "$(d["url"])?v=$API_VERSION&encoding=json"
+    data = JSON.parse(String(resp.body))
+    url = "$(data["url"])?v=$API_VERSION&encoding=json"
     conn = opentrick(WebSockets.open, url)
     c.conn = conn
 
@@ -95,39 +95,17 @@ function Base.open(c::Client; resume::Bool=false)
     op === :HEARTBEAT_ACK || error("expected opcode HEARTBEAT_ACK, received $op")
     heartbeat_ack(c, data)
 
-    if resume
-        # Write the RESUME.
-        writejson(conn, Dict(
-            "op" => 6,
-            "d" => Dict(
-                "token" => c.token,
-                "session_id" => get(c.state.state, "session_id", ""),
-                "seq" => c.heartbeat_seq,
-            ),
-        )) || error("writing RESUME failed")
+    # Write the RESUME or IDENTIFY, depending on if we're resuming or not.
+    data = if resume
+        Dict("op" => 6, "d" => Dict(
+            "token" => c.token,
+            "session_id" => c.cache.state.session_id,
+            "seq" => c.heartbeat_seq,
+        ))
     else
-        # Write the IDENTIFY.
-        writejson(conn, Dict(
-            "op" => 2,
-            "d" => Dict(
-                "token" => c.token,
-                "properties" => conn_properties,
-            ),
-        )) || error("writing IDENTIFY failed")
-
-        # Read the READY message, and assign initial state.
-        data, e = readjson(conn)
-        e === nothing || throw(e)
-        op = get(OPCODES, data["op"], data["op"])
-        op === :DISPATCH || error("expected opcode DISPATCH, received $op")
-        data["t"] == "READY" || error("expected event type READY, received $(data["t"])")
-        merge!(c.state.state, data["d"])
-
-        for g in get(data["d"], "guilds", [])
-            guild = AbstractGuild(g)
-            c.state.guilds[guild.id] = guild
-        end
+        Dict("op" => 2, "d" => Dict("token" => c.token, "properties" => conn_properties))
     end
+    writejson(conn, data) || error("writing $(resume ? "RESUME" : "IDENTIFY") failed")
 
     c.hb_chan = Channel(ch -> maintain_heartbeat(c, ch))
     c.rl_chan = Channel(ch -> read_loop(c, ch))
@@ -152,18 +130,18 @@ Wait for an open client to close.
 Base.wait(c::Client) = isopen(c) && wait(c.conn.cond)
 
 """
-    state(c::Client) -> Dict{String, Any}
+    state(c::Client) -> State
 
 Get the client state.
 """
-state(c::Client) = c.state
+state(c::Client) = c.cache.state
 
 """
-    me(c::Client) -> Dict{String, Any}
+    me(c::Client) -> User
 
 Get the client's bot user.
 """
-me(c::Client) = get(c.state.state, "user", Dict{String, Any}())
+me(c::Client) = c.cache.state === nothing ? nothing : c.cache.state.user
 
 # Event handlers.
 
@@ -171,7 +149,7 @@ me(c::Client) = get(c.state.state, "user", Dict{String, Any}())
     add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
 
 Add a handler for the given event type.
-The handler should be a function which takes two arguments: A [`Client`](@ref) and an 
+The handler should be a function which takes two arguments: A [`Client`](@ref) and an
 [`AbstractEvent`](@ref) (or a subtype).
 The handler is appended the event's current handlers.
 """
@@ -269,7 +247,43 @@ const HANDLERS = Dict(
     11  => heartbeat_ack,
 )
 
+# Default dispatch event handlers.
+# Note: These are only for opcode 0 (DISPATCH).
+
+function handle_ready(c::Client, e::Ready)
+    c.cache.state = State(e)
+    for g in e.guilds
+        c.cache.guilds[g.id] = g
+    end
+end
+
+# TODO: Should we be replacing or merging _trace?
+function handle_resumed(c::Client, e::Resumed)
+    if c.cache.state !== nothing
+        c.cache.state._trace = e._trace
+    end
+end
+
+handle_guild_create(c::Client, e::GuildCreate) = c.cache.guilds[e.guild.id] = e.guild
+
+function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
+    members = Dict(m.id => m for m in e.members)
+    if haskey(c.cache.members, e.guild_id)
+        merge!(c.cache.members[e.guild_id], members)
+    else
+        c.cache.members[e.guild_id] = members
+    end
+end
+
+const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Vector{Function}}(
+    Ready => [handle_ready],
+    Resumed => [handle_resumed],
+    GuildCreate => [handle_guild_create],
+    GuildMembersChunk => [handle_guild_members_chunk],
+)
+
 # Error handling
+
 const CLOSE_CODES = Dict(
     4000 => :UNKNOWN_ERROR,
     4001 => :UNKNOWN_OPCODE,

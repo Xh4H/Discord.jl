@@ -1,9 +1,9 @@
-struct Cache
-    guilds::Dict{Snowflake, AbstractGuild}
-    channels::Dict{Snowflake, DiscordChannel}
-    users::Dict{Snowflake, User}
-    members::Dict{Snowflake, Member}
-    state::Dict{String, Any}
+mutable struct Cache
+    guilds::Dict{Snowflake, AbstractGuild}             # Guild ID -> guild.
+    channels::Dict{Snowflake, DiscordChannel}          # Channel ID -> channel.
+    users::Dict{Snowflake, User}                       # User ID -> user.
+    members::Dict{Snowflake, Dict{Snowflake, Member}}  # Guild ID -> member ID -> member.
+    state::Union{State, Nothing}
 end
 
-Cache() = Cache(Dict(), Dict(), Dict(), Dict(), Dict())
+Cache() = Cache(Dict(), Dict(), Dict(), Dict(), nothing)

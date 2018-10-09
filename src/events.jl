@@ -13,6 +13,8 @@ end
 
 UnknownEvent(data::Dict) = UnknownEvent(data["t"], data["d"], data["s"])
 
+include(joinpath("events", "ready.jl"))
+include(joinpath("events", "resumed.jl"))
 include(joinpath("events", "channels.jl"))
 include(joinpath("events", "guilds.jl"))
 include(joinpath("events", "messages.jl"))
@@ -21,6 +23,8 @@ include(joinpath("events", "voice.jl"))
 include(joinpath("events", "webhooks.jl"))
 
 const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
+    "READY"                       => Ready,
+    "RESUMED"                     => Resumed,
     "CHANNEL_CREATE"              => ChannelCreate,
     "CHANNEL_UPDATE"              => ChannelUpdate,
     "CHANNEL_DELETE"              => ChannelDelete,

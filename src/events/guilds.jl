@@ -14,19 +14,19 @@ export GuildCreate,
     GuildRoleDelete
 
 struct GuildCreate <: AbstractEvent
-    guild::AbstractGuild
+    guild::Guild
 end
 
 GuildCreate(d::Dict) = GuildCreate(AbstractGuild(d))
 
 struct GuildUpdate <: AbstractEvent
-    guild::AbstractGuild
+    guild::Guild
 end
 
 GuildUpdate(d::Dict) = GuildUpdate(AbstractGuild(d))
 
 struct GuildDelete <: AbstractEvent
-    guild::AbstractGuild
+    guild::UnavailableGuild
 end
 
 GuildDelete(d::Dict) = GuildDelete(AbstractGuild(d))

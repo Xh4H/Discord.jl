@@ -13,6 +13,7 @@ More details [here](https://discordapp.com/developers/docs/resources/user#user-o
     mfa_enabled::Union{Bool, Missing}
     locale::Union{String, Missing}
     verified::Union{Bool, Missing}
-    email::Union{String, Missing}
+    # According to the docs this shouldn't be nullable, but it is.
+    email::Union{String, Nothing, Missing}
     member::Union{Dict, Missing}  # It's a Member, but we haven't defined that yet.
 end
