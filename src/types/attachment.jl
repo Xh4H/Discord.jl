@@ -8,6 +8,6 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#att
     size::Int
     url::String
     proxy_url::String
-    height::Union{Int, Nothing}
-    width::Union{Int, Nothing}
+    height::Union{Int, Missing}
+    width::Union{Int, Missing}
 end
