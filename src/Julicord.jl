@@ -14,7 +14,6 @@ const DISCORD_API = "https://discordapp.com/api/v$API_VERSION"
 include("types.jl")
 include("events.jl")
 include("state.jl")
-include("cache.jl")
 include("client.jl")
 
 end

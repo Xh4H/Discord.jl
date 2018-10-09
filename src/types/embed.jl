@@ -20,7 +20,7 @@ end
 
 @from_dict struct EmbedProvider
     name::Union{String, Missing}
-    url::Union{String, Missing}
+    url::Union{String, Nothing, Missing}  # Not supposed to be nullable.
 end
 
 @from_dict struct EmbedAuthor
@@ -39,7 +39,7 @@ end
 @from_dict struct EmbedField
     name::String
     value::String
-    inline::Union{Bool, Nothing}
+    inline::Union{Bool, Missing}
 end
 
 """

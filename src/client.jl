@@ -42,7 +42,7 @@ mutable struct Client
     heartbeat_seq::Union{Int, Nothing}
     last_heartbeat::DateTime
     last_ack::DateTime
-    cache::Cache
+    state::State
     shards::Int
     shard::Int
     handlers::Dict{Type{<:AbstractEvent}, Set{Function}}
@@ -59,7 +59,7 @@ mutable struct Client
             nothing,                          # heartbeat_seq
             DateTime(0),                      # last_heartbeat
             DateTime(0),                      # last_ack
-            Cache(),                          # cache
+            State(),                          # state
             nprocs(),                         # shards
             myid() - 1,                       # shard
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
@@ -106,7 +106,7 @@ function Base.open(c::Client; resume::Bool=false)
     data = if resume
         Dict("op" => 6, "d" => Dict(
             "token" => c.token,
-            "session_id" => c.cache.state.session_id,
+            "session_id" => c.state.session_id,
             "seq" => c.heartbeat_seq,
         ))
     else
@@ -148,14 +148,14 @@ Base.wait(c::Client) = isopen(c) && wait(c.conn.cond)
 
 Get the client state.
 """
-state(c::Client) = c.cache.state
+state(c::Client) = c.state
 
 """
-    me(c::Client) -> User
+    me(c::Client) -> Union{User, Nothing}
 
 Get the client's bot user.
 """
-me(c::Client) = c.cache.state === nothing ? nothing : c.cache.state.user
+me(c::Client) = c.state.user
 
 # Gateway commands.
 
@@ -309,7 +309,7 @@ function dispatch(c::Client, data::Dict)
         @error sprint(showerror, e)
         UnknownEvent(data)
     end
-    push!(c.cache.events, evt)
+    push!(c.state.events, evt)
 
     # Run catch-all handlers.
     for handler in get(c.handlers, AbstractEvent, [])
@@ -326,6 +326,7 @@ function dispatch(c::Client, data::Dict)
             handler(c, evt)
         catch e
             @error sprint(showerror, e)
+            catch_backtrace()
         end
     end
 end
@@ -364,36 +365,34 @@ const HANDLERS = Dict(
 # Default dispatch event handlers.
 # Note: These are only for opcode 0 (DISPATCH).
 
-function handle_ready(c::Client, e::Ready)
-    c.cache.state = State(e)
-    for g in e.guilds
-        c.cache.guilds[g.id] = g
-    end
-end
+handle_ready(c::Client, e::Ready) = ready(c.state, e)
 
 # TODO: Should we be replacing or merging _trace?
-function handle_resumed(c::Client, e::Resumed)
-    if c.cache.state !== nothing
-        c.cache.state._trace = e._trace
-    end
-end
+handle_resumed(c::Client, e::Resumed) = c.state._trace = e._trace
 
-handle_guild_create(c::Client, e::GuildCreate) = c.cache.guilds[e.guild.id] = e.guild
+handle_guild_create(c::Client, e::GuildCreate) = c.state.guilds[e.guild.id] = e.guild
 
 function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
-    if !haskey(c.cache.members, e.guild_id)
-        c.cache.members[e.guild_id] = Dict()
+    if !haskey(c.state.members, e.guild_id)
+        c.state.members[e.guild_id] = Dict()
     end
     for m in e.members
         if ismissing(m.user)
-            if !in(missing, keys(c.cache.membres[e.guild_id]))
-                c.cache.members[e.guild_id][missing] = []
+            if !haskey(missing, c.state.members[e.guild_id])
+                c.state.members[e.guild_id][missing] = []
             end
-            push!(c.cache.members[e.guild_id][missing], m)
+            push!(c.state.members[e.guild_id][missing], m)
         else
-            c.cache.members[e.guild_id][m.user.id] = m
+            c.state.members[e.guild_id][m.user.id] = m
         end
     end
+end
+
+function handle_presence_update(c::Client, e::PresenceUpdate)
+    if !haskey(c.state.presences, e.presence.guild_id)
+        c.state.presences[e.presence.guild_id] = Dict()
+    end
+    c.state.presences[e.presence.guild_id][e.presence.user.id] = e.presence
 end
 
 const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Function}}(
@@ -401,6 +400,7 @@ const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Function}}(
     Resumed => Set([handle_resumed]),
     GuildCreate => Set([handle_guild_create]),
     GuildMembersChunk => Set([handle_guild_members_chunk]),
+    PresenceUpdate => Set([handle_presence_update]),
 )
 
 # Error handling.

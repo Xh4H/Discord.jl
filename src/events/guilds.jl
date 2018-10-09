@@ -66,7 +66,7 @@ end
     guild_id::Snowflake
     roles::Vector{Snowflake}
     user::User
-    nick::String
+    nick::Union{String, Nothing}  # Not supposed to be nullable.
 end
 
 @from_dict struct GuildMembersChunk <: AbstractEvent
