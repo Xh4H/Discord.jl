@@ -1,7 +1,8 @@
 export AbstractEvent, UnknownEvent
 
 """
-An incoming event sent over the gateway.
+An incoming event sent over the gateway. Also a catch-all event: Handlers
+defined on this type will execute on all events.
 """
 abstract type AbstractEvent end
 

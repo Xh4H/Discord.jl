@@ -303,7 +303,17 @@ function dispatch(c::Client, data::Dict)
     end
     push!(c.cache.events, evt)
 
-    for handler in get(c.handlers, typeof(evt), Function[])
+    # Run catch-all handlers.
+    for handler in get(c.handlers, AbstractEvent, [])
+        @async try
+            handler(c, evt)
+        catch e
+            @error sprint(showerror, e)
+        end
+    end
+
+    # Run specific handlers.
+    for handler in get(c.handlers, typeof(evt), [])
         @async try
             handler(c, evt)
         catch e
