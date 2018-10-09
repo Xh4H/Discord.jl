@@ -5,7 +5,9 @@
 
 abstract type AbstractGuild end
 
-AbstractGuild(d::Dict) = d["unavailable"] === true ? UnavailableGuild(d) : Guild(d)
+function AbstractGuild(d::Dict{String, Any})
+    return d["unavailable"] === true ? UnavailableGuild(d) : Guild(d)
+end
 
 """
 An unavailable guild (server).

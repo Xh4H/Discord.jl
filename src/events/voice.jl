@@ -4,7 +4,7 @@ struct VoiceStateUpdate <: AbstractEvent
     state::VoiceState
 end
 
-VoiceStateUpdate(d::Dict) = VoiceStateUpdate(VoiceState(d))
+VoiceStateUpdate(d::Dict{String, Any}) = VoiceStateUpdate(VoiceState(d))
 
 @from_dict struct VoiceServerUpdate <: AbstractEvent
     token::String

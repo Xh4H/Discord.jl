@@ -4,19 +4,19 @@ struct ChannelCreate <: AbstractEvent
     channel::DiscordChannel
 end
 
-ChannelCreate(d::Dict) = ChannelCreate(DiscordChannel(d))
+ChannelCreate(d::Dict{String, Any}) = ChannelCreate(DiscordChannel(d))
 
 struct ChannelUpdate <: AbstractEvent
     channel::DiscordChannel
 end
 
-ChannelUpdate(d::Dict) = ChannelCreate(DiscordChannel(d))
+ChannelUpdate(d::Dict{String, Any}) = ChannelCreate(DiscordChannel(d))
 
 struct ChannelDelete <: AbstractEvent
     channel::DiscordChannel
 end
 
-ChannelDelete(d::Dict) = ChannelCreate(DiscordChannel(d))
+ChannelDelete(d::Dict{String, Any}) = ChannelCreate(DiscordChannel(d))
 
 @from_dict struct ChannelPinsUpdate <: AbstractEvent
     channel_id::Snowflake

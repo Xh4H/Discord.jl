@@ -10,13 +10,13 @@ struct MessageCreate <: AbstractEvent
     message::Message
 end
 
-MessageCreate(d::Dict) = MessageCreate(Message(d))
+MessageCreate(d::Dict{String, Any}) = MessageCreate(Message(d))
 
 struct MessageUpdate <: AbstractEvent
     message::Message
 end
 
-MessageUpdate(d::Dict) = MessageUpdate(Message(d))
+MessageUpdate(d::Dict{String, Any}) = MessageUpdate(Message(d))
 
 @from_dict struct MessageDelete <: AbstractEvent
     id::Snowflake

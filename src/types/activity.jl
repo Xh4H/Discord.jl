@@ -20,12 +20,14 @@ end
 struct ActivityTimestamps
     start::Union{DateTime, Missing}
     stop::Union{DateTime, Missing}
+    extra_fields::Dict{String, Any}
 end
 
-function ActivityTimestamps(d::Dict)
+function ActivityTimestamps(d::Dict{String, Any})
     return ActivityTimestamps(
         haskey(d, "start") ? unix2datetime(d["start"] / 1000) : missing,
         haskey(d, "end") ? unix2datetime(d["end"] / 1000) : missing,
+        extra_fields(ActivityTimestamps, d)
     )
 end
 

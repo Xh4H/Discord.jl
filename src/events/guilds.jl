@@ -17,19 +17,19 @@ struct GuildCreate <: AbstractEvent
     guild::Guild
 end
 
-GuildCreate(d::Dict) = GuildCreate(Guild(d))
+GuildCreate(d::Dict{String, Any}) = GuildCreate(Guild(d))
 
 struct GuildUpdate <: AbstractEvent
     guild::Guild
 end
 
-GuildUpdate(d::Dict) = GuildUpdate(Guild(d))
+GuildUpdate(d::Dict{String, Any}) = GuildUpdate(Guild(d))
 
 struct GuildDelete <: AbstractEvent
     guild::UnavailableGuild
 end
 
-GuildDelete(d::Dict) = GuildDelete(UnavailableGuild(d))
+GuildDelete(d::Dict{String, Any}) = GuildDelete(UnavailableGuild(d))
 
 @from_dict struct GuildBanAdd <: AbstractEvent
     guild_id::Snowflake
@@ -55,9 +55,9 @@ struct GuildMemberAdd <: AbstractEvent
     member::Member
 end
 
-GuildMemberAdd(d::Dict) = GuildMemberAdd(snowflake(d["guild_id"]), Member(d))
+GuildMemberAdd(d::Dict{String, Any}) = GuildMemberAdd(snowflake(d["guild_id"]), Member(d))
 
-struct GuildMemberRemove <: AbstractEvent
+@from_dict struct GuildMemberRemove <: AbstractEvent
     guild_id::Snowflake
     user::User
 end

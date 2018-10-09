@@ -45,6 +45,11 @@ function field(k::String, t::Expr)
     ex === nothing && error("uncaught case: k=$k, t=$t") || return ex
 end
 
+function extra_fields(t::Type, d::Dict{String, Any})
+    fields = string.(fieldnames(t))
+    return filter(p -> !in(p.first, fields), d)
+end
+
 macro from_dict(ex)
     @assert ex.head === :struct
     name = isa(ex.args[2], Symbol) ? ex.args[2] : ex.args[2].args[1]
@@ -52,11 +57,13 @@ macro from_dict(ex)
         e -> field(string(e.args[1]), e.args[2]),
         filter(e -> isa(e, Expr), ex.args[3].args),
     )
+    push!(ex.args[3].args, :(extra_fields::Dict{String, Any}))
 
     quote
         $(esc(ex))
-        Base.@__doc__ function $(esc(name))(d::Dict)
-            return $(esc(name))($(args...))
+        Base.@__doc__ function $(esc(name))(d::Dict{String, Any})
+            extras = extra_fields($(esc(name)), d)
+            return $(esc(name))($(args...), extras)
         end
     end
 end
