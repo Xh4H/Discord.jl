@@ -32,9 +32,6 @@ const OPCODES = Dict(
     Client(token::String) -> Client
 
 A Discord bot.
-
-# Arguments
-* `token::String`: The bot's token.
 """
 mutable struct Client
     token::String
@@ -381,7 +378,7 @@ end
 
 function handle_guild_delete(c::Client, e::GuildDelete)
     delete!(c.state.guilds, e.id)
-    delete!(c.state.mebers, e.id)
+    delete!(c.state.members, e.id)
     delete!(c.state.presences, e.id)
 end
 
@@ -392,23 +389,35 @@ function handle_guild_emojis_update(c::Client, e::GuildEmojisUpdate)
     end
 end
 
-function handle_guild_member_add_update(
-    c::Client,
-    e::Union{GuildMemberAdd, GuildMemberUpdate},
-)
+function handle_guild_member_add(c::Client, e::GuildMemberAdd)
     if !haskey(c.state.members, e.guild_id)
         c.state.members[e.guild_id] = Dict()
     end
-
-    if ismissing(e.member.user)
-        if !haskey(s.members[e.guild_id], missing)
-            s.members[e.guild_id][missing] = []
+    if ismissing(e.user)
+        if !haskey(c.state.members[e.guild_id], missing)
+            c.state.members[e.guild_id][missing] = []
         end
         push!(c.state.members[e.guild_id][missing], e.member)
     else
         c.state.members[e.guild_id][e.member.user.id] = e.member
         # Update the user cache as well,
         c.state.users[e.member.user.id] = e.member.user
+    end
+end
+
+function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
+    if !haskey(c.state.members, e.guild_id) && haskey(c.state.members[e.guild_id], e.user.id)
+        m = c.state.members[e.guild_id][e.user.id] = Member(
+            e.user,
+            e.nick,
+            e.roles,
+            c.state.members[e.guild_id][e.user.id].joined_at,
+            c.state.members[e.guild_id][e.user.id].deaf,
+            c.state.members[e.guild_id][e.user.id].mute,
+        )
+        c.state.members[e.guild_id][e.user.id] = m
+        # Update the user cache as well.
+        c.state.users[e.user.id] = e.user
     end
 end
 
@@ -457,6 +466,18 @@ function handle_guild_role_delete(c::Client, e::GuildRoleDelete)
     end
 end
 
+function handle_message_create_update(c::Client, e::Union{MessageCreate, MessageUpdate})
+    c.state.messages[e.message.id] = e.message
+end
+
+handle_message_delete(c::Client, e::MessageDelete) = delete!(c.state.messages, e.id)
+
+function handle_message_delete_bulk(c::Client, e::MessageDeleteBulk)
+    for id in e.ids
+        delete!(c.state.messages, id)
+    end
+end
+
 function handle_presence_update(c::Client, e::PresenceUpdate)
     if !haskey(c.state.presences, e.presence.guild_id)
         c.state.presences[e.presence.guild_id] = Dict()
@@ -465,23 +486,27 @@ function handle_presence_update(c::Client, e::PresenceUpdate)
 end
 
 const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Function}}(
-    Ready => Set([handle_ready]),
-    Resumed => Set([handle_resumed]),
-    ChannelCreate => Set([handle_channel_create_update]),
-    ChannelUpdate => Set([handle_channel_create_update]),
-    ChannelDelete => Set([handle_channel_delete]),
-    GuildCreate => Set([handle_guild_create_update]),
-    GuildUpdate => Set([handle_guild_create_update]),
-    GuildDelete => Set([handle_guild_delete]),
+    Ready             => Set([handle_ready]),
+    Resumed           => Set([handle_resumed]),
+    ChannelCreate     => Set([handle_channel_create_update]),
+    ChannelUpdate     => Set([handle_channel_create_update]),
+    ChannelDelete     => Set([handle_channel_delete]),
+    GuildCreate       => Set([handle_guild_create_update]),
+    GuildUpdate       => Set([handle_guild_create_update]),
+    GuildDelete       => Set([handle_guild_delete]),
     GuildEmojisUpdate => Set([handle_guild_emojis_update]),
-    GuildMemberAdd => Set([handle_guild_member_add_update]),
-    GuildMemberUpdate => Set([handle_guild_member_add_update]),
+    GuildMemberAdd    => Set([handle_guild_member_add]),
+    GuildMemberUpdate => Set([handle_guild_member_update]),
     GuildMemberRemove => Set([handle_guild_member_remove]),
     GuildMembersChunk => Set([handle_guild_members_chunk]),
-    GuildRoleCreate => Set([handle_guild_role_create]),
-    GuildRoleUpdate => Set([handle_guild_role_update]),
-    GuildRoleDelete => Set([handle_guild_role_delete]),
-    PresenceUpdate => Set([handle_presence_update]),
+    GuildRoleCreate   => Set([handle_guild_role_create]),
+    GuildRoleUpdate   => Set([handle_guild_role_update]),
+    GuildRoleDelete   => Set([handle_guild_role_delete]),
+    MessageCreate     => Set([handle_message_create_update]),
+    MessageUpdate     => Set([handle_message_create_update]),
+    MessageDelete     => Set([handle_message_delete]),
+    MessageDeleteBulk => Set([handle_message_delete_bulk]),
+    PresenceUpdate    => Set([handle_presence_update]),
 )
 
 # Error handling.

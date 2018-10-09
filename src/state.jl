@@ -4,9 +4,10 @@ mutable struct State
     _trace::Vector{String}              # Guilds the user is in.
     user::Union{User, Nothing}          # Bot user.
     events::Vector{AbstractEvent}       # Events received by the client.
-    guilds::Dict{Snowflake, AbstractGuild}                 # Guild ID -> guild.
-    channels::Dict{Snowflake, DiscordChannel}              # Channel ID -> channel.
-    users::Dict{Snowflake, User}                           # User ID -> user.
+    guilds::Dict{Snowflake, AbstractGuild}     # Guild ID -> guild.
+    channels::Dict{Snowflake, DiscordChannel}  # Channel ID -> channel.
+    users::Dict{Snowflake, User}               # User ID -> user.
+    messages::Dict{Snowflake, Message}         # Message ID -> message.
     # Guild ID -> user ID -> presence.
     # If a presence appears with a guild ID attached, then it's stored in that guild.
     # If the guild ID field is missing, the presence is appended to the missing key's value.
@@ -17,7 +18,7 @@ mutable struct State
     members::Dict{Snowflake, Dict{Union{Snowflake, Missing}, Union{Member, Vector{Member}}}}
 end
 
-State() = State(0, "", [], nothing, [], Dict(), Dict(), Dict(), Dict(), Dict())
+State() = State(0, "", [], nothing, [], Dict(), Dict(), Dict(), Dict(), Dict(), Dict())
 
 function ready(s::State, e::Ready)
     s.v = e.v
