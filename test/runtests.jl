@@ -75,6 +75,7 @@ end
         @test f.e == 1
         @test f.f == 2
         @test f.g == ["a", "b", "c"]
+        @test isempty(f.extra_fields)
 
         d["e"] = nothing
         delete!(d, "f")
@@ -90,7 +91,8 @@ end
         f = Foo(d)
         @test f.g === nothing
 
-        b = Bar(Dict("a" => 1))
+        b = Bar(Dict("a" => 1, "b" => "foo"))
         @test b.a == 1
+        @test b.extra_fields == Dict("b" => "foo")
     end
 end
