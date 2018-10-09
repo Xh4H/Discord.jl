@@ -106,7 +106,10 @@ function Base.open(c::Client; resume::Bool=false)
             "seq" => c.heartbeat_seq,
         ))
     else
-        Dict("op" => 2, "d" => Dict("token" => c.token, "properties" => conn_properties))
+        Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
+                "token" => c.token,
+                "properties" => conn_properties,
+        ))
     end
     writejson(conn, data) || error("writing $(resume ? "RESUME" : "IDENTIFY") failed")
 
@@ -169,11 +172,11 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c.conn, Dict(
+    return writejson(c.conn, Dict("op" => 8, "s" => c.heartbeat_seq, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
-    ))
+    )))
 end
 
 """
@@ -195,12 +198,12 @@ function update_voice_state(
     self_mute::Bool,
     self_deaf::Bool,
 )
-    return writejson(c.conn, Dict(
+    return writejson(c.conn, Dict("op" => 4, "s" => c.heartbeat_seq, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
         "self_deaf" => self_deaf,
-    ))
+    )))
 end
 
 """
@@ -222,12 +225,12 @@ function update_status(
     status::PresenceStatus,
     afk::Bool,
 )
-    return writejson(c.conn, Dict(
+    return writejson(c.conn, Dict("op" => 3, "s" => c.heartbeat_seq, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
         "afk" => afk,
-    ))
+    )))
 end
 
 # Event handlers.
@@ -353,11 +356,18 @@ end
 handle_guild_create(c::Client, e::GuildCreate) = c.cache.guilds[e.guild.id] = e.guild
 
 function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
-    members = Dict(m.id => m for m in e.members)
-    if haskey(c.cache.members, e.guild_id)
-        merge!(c.cache.members[e.guild_id], members)
-    else
-        c.cache.members[e.guild_id] = members
+    if !haskey(c.cache.members, e.guild_id)
+        c.cache.members[e.guild_id] = Dict()
+    end
+    for m in e.members
+        if ismissing(m.user)
+            if !in(missing, keys(c.cache.membres[e.guild_id]))
+                c.cache.members[e.guild_id][missing] = []
+            end
+            push!(c.cache.members[e.guild_id][missing], m)
+        else
+            c.cache.members[e.guild_id][m.user.id] = m
+        end
     end
 end
 
