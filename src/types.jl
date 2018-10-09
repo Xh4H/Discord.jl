@@ -1,9 +1,19 @@
+# First millisecond of 2015.
+const DISCORD_EPOCH = 1420070400000
 # Discord's form of ID.
 const Snowflake = UInt64
 # Discord sends strings, but it's easier to work with integers.
 snowflake(s::AbstractString) = parse(UInt64, s)
+# Extract the DateTime from a Snowflake.
+snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
+# Extract the worker ID from a Snowflake.
+worker_id(s::Snowflake) = (s & 0x3E0000) >> 17
+# Extract the process ID from a Snowflake.
+process_id(s::Snowflake) = (s & 0x1F000) >> 12
+# Extract the increment from a Snowflake.
+increment(s::Snowflake) = s & 0xFFF
 
-# Discord sends a trailing "Z". Maybe we actually need to think about time zones.
+# Discord sends some trailing timezone stuff. Maybe we need to think about time zones.
 datetime(s::AbstractString) = DateTime(s[1:23], ISODateTimeFormat)
 
 function field(k::String, t::Symbol)

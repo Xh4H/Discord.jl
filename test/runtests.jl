@@ -2,6 +2,10 @@ using Julicord:
     Client,
     Snowflake,
     snowflake,
+    snowflake2datetime,
+    worker_id,
+    process_id,
+    increment,
     datetime,
     @from_dict
 
@@ -32,10 +36,16 @@ end
         @test c.token == "Bot token"
     end
 
-    @testset "Snowflake parsing" begin
+    @testset "Snowflake" begin
         s = snowflake(string(typemax(UInt64)))
         @test isa(s, UInt64)
         @test s == typemax(UInt64)
+
+        s = Snowflake(0x06ecefa78e42000c)
+        @test snowflake2datetime(s) == DateTime(2018, 10, 9, 1, 55, 31, 1)
+        @test worker_id(s) == 0x01
+        @test process_id(s) == 0x00
+        @test increment(s) == 0x0c
     end
 
     @testset "DateTime parsing" begin
