@@ -9,6 +9,4 @@ export Ready
     _trace::Vector{String}
     # This isn't documented, but the name suggests that the entries will of type Presence.
     presences::Union{Vector{Presence}, Nothing, Missing}
-    # This isn't documented and I can't tell what type the entries should be.
-    relationships::Vector
 end

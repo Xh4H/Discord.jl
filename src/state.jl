@@ -7,7 +7,6 @@ mutable struct State
     session_id::String
     _trace::Vector{String}
     presences::Union{Vector{Presence}, Nothing, Missing}
-    relationships::Vector
 end
 
 function State(e::Ready)
@@ -19,6 +18,5 @@ function State(e::Ready)
         e.session_id,
         e._trace,
         e.presences,
-        e.relationships,
     )
 end
