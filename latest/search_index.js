@@ -65,11 +65,51 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.delete-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.delete",
+    "category": "method",
+    "text": "delete(c::Client, m::Message) -> Dict\n\nDelete the given Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_reactions-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.delete_reactions",
+    "category": "method",
+    "text": "delete_reactions(c::Client, m::Message) -> Dict\n\nDelete all the reactions from the given Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.edit-Tuple{Client,Julicord.Message,Union{String, Dict}}",
+    "page": "Reference",
+    "title": "Julicord.edit",
+    "category": "method",
+    "text": "edit(c::Client, m::Message, content) -> Message\n\nEdit the given Message with the given content.\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.me-Tuple{Client}",
     "page": "Reference",
     "title": "Julicord.me",
     "category": "method",
     "text": "me(c::Client) -> User\n\nGet the client\'s bot user.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.pin-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.pin",
+    "category": "method",
+    "text": "pin(c::Client, m::Message) -> Dict\n\nPin the given Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.reply-Tuple{Client,Julicord.Message,Union{String, Dict}}",
+    "page": "Reference",
+    "title": "Julicord.reply",
+    "category": "method",
+    "text": "reply(c::Client, m::Message, content::Union{String, Dict}) -> Message\n\nReply to the given Message with the given content.\n\n\n\n\n\n"
 },
 
 {
@@ -86,6 +126,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Julicord.state",
     "category": "method",
     "text": "state(c::Client) -> State\n\nGet the client state.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.unpin-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.unpin",
+    "category": "method",
+    "text": "unpin(c::Client, m::Message) -> Dict\n\nUnpin the given Message.\n\n\n\n\n\n"
 },
 
 {
