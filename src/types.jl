@@ -14,7 +14,7 @@ process_id(s::Snowflake) = (s & 0x1F000) >> 12
 increment(s::Snowflake) = s & 0xFFF
 
 # Discord sends some trailing timezone stuff. Maybe we need to think about time zones.
-datetime(s::AbstractString) = DateTime(s[1:23], ISODateTimeFormat)
+datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
 
 function field(k::String, t::Symbol)
     return if t === :Snowflake

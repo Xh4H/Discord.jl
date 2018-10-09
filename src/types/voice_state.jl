@@ -6,7 +6,7 @@ More details [here](https://discordapp.com/developers/docs/resources/voice#voice
     guild_id::Union{Snowflake, Missing}
     channel_id::Union{Snowflake, Nothing}
     user_id::Snowflake
-    member::Union{Member, Nothing}
+    member::Union{Member, Missing}
     session_id::String
     deaf::Bool
     mute::Bool

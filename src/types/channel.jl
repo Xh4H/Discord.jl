@@ -25,5 +25,5 @@ Note: The name `Channel` is already used, hence the prefix.
     owner_id::Union{Snowflake, Missing}
     application_id::Union{Snowflake, Missing}
     parent_id::Union{Snowflake, Nothing, Missing}
-    last_pin_timestamp::Union{DateTime, Missing}
+    last_pin_timestamp::Union{DateTime, Nothing, Missing}  # Not supposed to be nullable.
 end

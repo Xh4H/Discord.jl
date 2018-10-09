@@ -28,27 +28,25 @@ A message.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object).
 """
 @from_dict struct Message
-    # TODO: Most of these should probably be optional.
-    # https://discordapp.com/developers/docs/topics/gateway#message-update
     id::Snowflake
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
-    author::User  # TODO: Deal with the note about non-standard user structure.
+    author::Union{User, Missing}  # TODO: Deal with note about non-standard user structure.
     member::Union{Member, Missing}
-    content::String
-    timestamp::DateTime
-    edited_timestamp::Union{DateTime, Nothing}
-    tts::Bool
-    mention_everyone::Bool
-    mentions::Vector{User}
-    mention_roles::Vector{Snowflake}
-    attachments::Vector{Attachment}
-    embeds::Vector{Embed}
+    content::Union{String, Missing}
+    timestamp::Union{DateTime, Missing}
+    edited_timestamp::Union{DateTime, Nothing, Missing}
+    tts::Union{Bool, Missing}
+    mention_everyone::Union{Bool, Missing}
+    mentions::Union{Vector{User}, Missing}
+    mention_roles::Union{Vector{Snowflake}, Missing}
+    attachments::Union{Vector{Attachment}, Missing}
+    embeds::Union{Vector{Embed}, Missing}
     reactions::Union{Vector{Reaction}, Missing}
     nonce::Union{Snowflake, Nothing, Missing}
-    pinned::Bool
+    pinned::Union{Bool, Missing}
     webhook_id::Union{Snowflake, Missing}
-    type::MessageType
+    type::Union{MessageType, Missing}
     activity::Union{MessageActivity, Missing}
     application::Union{MessageApplication, Missing}
 end

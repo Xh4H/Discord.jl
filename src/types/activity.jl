@@ -5,7 +5,7 @@ export ActivityType,
     ActivitySecrets,
     Activity
 
-@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING
+@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_UNKNOWN  # Supposed to only go to 2.
 JSON.lower(at::ActivityType) = Int(at)
 
 @enum ActivityFlags begin
@@ -16,7 +16,6 @@ JSON.lower(at::ActivityType) = Int(at)
     AF_SYNC=1<<4
     AF_PLAY=1<<5
 end
-JSON.lower(af::ActivityFlags) = Int(af)
 
 struct ActivityTimestamps
     start::Union{DateTime, Missing}
@@ -117,7 +116,7 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#activi
     assets::Union{ActivityAssets, Missing}
     secrets::Union{ActivitySecrets, Missing}
     instance::Union{Bool, Missing}
-    flags::Union{ActivityFlags, Missing}
+    flags::Union{Int, Missing}
 end
 
 function JSON.lower(a::Activity)
