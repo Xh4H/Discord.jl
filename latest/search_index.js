@@ -37,7 +37,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "Julicord.Client",
     "category": "type",
-    "text": "Client(token::String) -> Client\n\nA Discord bot.\n\n\n\n\n\n"
+    "text": "Client(token::String; ttl::Period=Hour(1)) -> Client\n\nA Discord bot. ttl is the amount of time that cache entries are kept.\n\n\n\n\n\n"
 },
 
 {
