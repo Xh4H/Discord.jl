@@ -5,6 +5,7 @@ using Distributed
 using HTTP
 using JSON
 using OpenTrick
+using TTLCache
 using WebSockets
 
 # Discord API version and base URL.

@@ -29,9 +29,9 @@ const OPCODES = Dict(
 )
 
 """
-    Client(token::String) -> Client
+    Client(token::String; ttl::Period=Hour(1)) -> Client
 
-A Discord bot.
+A Discord bot. `ttl` is the amount of time that cache entries are kept.
 """
 mutable struct Client
     token::String
@@ -39,6 +39,7 @@ mutable struct Client
     heartbeat_seq::Union{Int, Nothing}
     last_heartbeat::DateTime
     last_ack::DateTime
+    ttl::Period
     state::State
     shards::Int
     shard::Int
@@ -47,7 +48,7 @@ mutable struct Client
     rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
 
-    function Client(token::String)
+    function Client(token::String; ttl::Period=Hour(1))
         token = startswith(token, "Bot ") ? token : "Bot $token"
 
         return new(
@@ -56,7 +57,8 @@ mutable struct Client
             nothing,                          # heartbeat_seq
             DateTime(0),                      # last_heartbeat
             DateTime(0),                      # last_ack
-            State(),                          # state
+            ttl,                              # ttl
+            State(ttl),                       # state
             nprocs(),                         # shards
             myid() - 1,                       # shard
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
@@ -392,13 +394,14 @@ end
 
 function handle_guild_member_add(c::Client, e::GuildMemberAdd)
     if !haskey(c.state.members, e.guild_id)
-        c.state.members[e.guild_id] = Dict()
+        c.state.members[e.guild_id] = TTL(c.ttl)
     end
     ms = c.state.members[e.guild_id]
     if ismissing(e.user)
         if !haskey(ms, missing)
             ms[missing] = []
         end
+        touch(ms, missing)
         push!(ms[missing], e.member)
     else
         ms[e.member.user.id] = e.member
@@ -432,7 +435,7 @@ end
 
 function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
     if !haskey(c.state.members, e.guild_id)
-        c.state.members[e.guild_id] = Dict()
+        c.state.members[e.guild_id] = TTL(c.ttl)
     end
     ms = c.state.members[e.guild_id]
     for m in e.members
@@ -440,6 +443,7 @@ function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
             if !haskey(ms, missing)
                 ms[missing] = []
             end
+            touch(ms, missing)
             push!(ms[missing], m)
         else
             ms[m.user.id] = m
@@ -487,7 +491,7 @@ end
 
 function handle_presence_update(c::Client, e::PresenceUpdate)
     if !haskey(c.state.presences, e.presence.guild_id)
-        c.state.presences[e.presence.guild_id] = Dict()
+        c.state.presences[e.presence.guild_id] = TTL(c.ttl)
     end
     c.state.presences[e.presence.guild_id][e.presence.user.id] = e.presence
 end
@@ -495,6 +499,7 @@ end
 function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
     haskey(c.state.messages, e.message_id) || return
     # TODO: This has race conditions.
+    touch(c.state.messages, e.message_id)
     m = c.state.messages[e.message_id]
     if ismissing(m.reactions)
         m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict())]
@@ -513,6 +518,7 @@ function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
+    touch(c.state.messages, e.message_id)
     rs = c.state.messages[e.message_id].reactions
     idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
     if idx !== nothing
@@ -524,6 +530,7 @@ end
 function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveAll)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
+    touch(c.state.messages, e.message_id)
     empty!(c.state.messages[e.message_id].reactions)
 end
 

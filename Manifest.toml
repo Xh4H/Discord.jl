@@ -94,6 +94,14 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 [[Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
+[[TTLCache]]
+deps = ["Dates", "Test"]
+git-tree-sha1 = "77d5bcc7e5993b6cb36664bb75db2180d0ffabdc"
+repo-rev = "master"
+repo-url = "https://github.com/christopher-dG/TTLCache.jl"
+uuid = "b0868c6e-cc3f-11e8-088f-97c6026971d7"
+version = "0.1.0"
+
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
