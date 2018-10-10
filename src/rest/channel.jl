@@ -6,7 +6,8 @@ export send_message,
 """
     send_message(c::Client, ch::DiscordChannel, content::Union{String, Dict}) -> Message
 
-Send a [`Message`](@ref) to the given [`DiscordChannel`](@ref) with the given content.
+Send a [`Message`](@ref) to the given [`DiscordChannel`](@ref) with the given content
+upon success or a Dict containing error information.
 """
 function send_message(c::Client, ch::DiscordChannel, content::Union{String, Dict})
     payload = Dict()
@@ -18,29 +19,40 @@ function send_message(c::Client, ch::DiscordChannel, content::Union{String, Dict
         # TODO Handle file uploading here
     end
 
-    return request(c, "POST", "/channels/$(ch.id)/messages"; payload=payload) |> Message
+    err, data = request(c, "POST", "/channels/$(ch.id)/messages"; payload=payload)
+    return if err
+        data
+    else
+        Message(data)
+    end
 end
 
 """
     get_message(c::Client, ch::DiscordChannel, id::Snowflake) -> Message
 
-Get a [`Message`](@ref) from the given [`DiscordChannel`](@ref).
+Get a [`Message`](@ref) from the given [`DiscordChannel`](@ref)
+upon success or a Dict containing error information.
 """
 function get_message(c::Client, ch::DiscordChannel, id::Snowflake)
-    if !haskey(c.state.messages, id)
-        return c.state.messages[id]
+    return if !haskey(c.state.messages, id)
+        c.state.messages[id]
     else
-        msg = request(c, "GET", "/channels/$(ch.id)/messages/$id") |> Message
-        c.state.messages[id] = msg
+        err, data = request(c, "GET", "/channels/$(ch.id)/messages/$id")
 
-        return msg
+        return if err
+            data
+        else
+            msg = Message(data)
+            c.state.messages[id] = msg
+        end
     end
 end
 
 """
-    get_history(c::Client, ch::DiscordChannel, query::Dict)
+    get_history(c::Client, ch::DiscordChannel, query::Dict) -> Array
 
-Return a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref) with the given query.
+Return a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref) with the given query
+upon success or a Dict containing error information.
 
 #### Query
   Must be a keyword list with the fields listed below.
@@ -54,35 +66,62 @@ Refer to [this](https://discordapp.com/developers/docs/resources/channel#get-cha
 """
 function get_history(c::Client, ch::DiscordChannel, query::Dict)
     messages = []
-    history = request(c, "GET", "/channels/$(ch.id)/messages"; query=query)
+    err, data = request(c, "GET", "/channels/$(ch.id)/messages"; query=query)
 
-    for msg in history
-        push!(messages, Message(msg))
+    return if err
+        data
+    else
+        for msg in data
+            push!(messages, Message(msg))
+        end
+        messages
     end
-
-    return messages
 end
 
 """
-    get_pinned_messages(c::Client, ch::DiscordChannel)
+    get_pinned_messages(c::Client, ch::DiscordChannel) -> Array
 
-Return a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref).
+Return a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref)
+upon success or a Dict containing error information.
 """
 function get_pinned_messages(c::Client, ch::DiscordChannel)
     messages = []
-    pins = request(c, "GET", "/channels/$(ch.id)/pins")
+    err, data = request(c, "GET", "/channels/$(ch.id)/pins")
 
-    for msg in pins
-        push!(messages, Message(msg))
+    return if err
+        data
+    else
+        for msg in data
+            push!(messages, Message(msg))
+        end
+        messages
     end
-
-    return messages
 end
 
+"""
+    bulk_delete_messages(c::Client, ch::DiscordChannel, messages::Array) -> Bool
+
+Return whether the request was successful; An exception is raised when failed.
+"""
 function bulk_delete_messages(c::Client, ch::DiscordChannel, messages::Array)
-    @show request(c, "POST", "/channels/$(ch.id)/messages/bulk-delete")
-
-    for msg in messages
-        delete!(c.state.messages, msg)
+    err, data = request(c, "POST", "/channels/$(ch.id)/messages/bulk-delete"; payload=Dict("messages" => messages))
+    return if err
+        # @throw(data)
+        false
+    else
+        if !isempty(data) # was erroring with iterate(::Nothing)
+            for msg in data
+                delete!(c.state.messages, msg)
+            end
+        end
+        true
     end
+
 end
+
+"""
+    trigger_typing(c::Client, ch::DiscordChannel) -> Bool
+
+Return whether the request was successful.
+"""
+trigger_typing(c::Client, ch::DiscordChannel) = request(c, "POST", "/channels/$(ch.id)/typing")

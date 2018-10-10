@@ -31,14 +31,14 @@ function request(
         else
             HTTP.request(method, url, headers)
         end
-        JSON.parse(String(resp.body))
+        false, JSON.parse(String(resp.body))
     catch e
         # TODO: Check the type of the exception properly.
         if isdefined(e, :response) && e.response != nothing
             if e.response.status == 400
-                Dict("message" => "400: Bad Request")
+                true, Dict("message" => "400: Bad Request")
             else
-                JSON.parse(String(e.response.body))
+                true, JSON.parse(String(e.response.body))
             end
         end
     end

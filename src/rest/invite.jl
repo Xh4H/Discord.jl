@@ -11,19 +11,31 @@ end
 """
     get_invite(c::Client, code::String; with_counts::Bool=false) -> Invite
 
-Retrieve an [`Invite`](@ref) with the given code. Optionally return with usage information.
+Retrieve an [`Invite`](@ref) with the given code. Optionally return with usage information
+upon success or a Dict containing error information.
 """
 function get_invite(c::Client, code::String; with_counts::Bool=false)
-    inv = request(c, "GET", "/invites/$code"; query=Dict("with_counts" => with_counts))
-    return beautify(c, inv) |> Invite
+    err, data = request(c, "GET", "/invites/$code"; query=Dict("with_counts" => with_counts))
+
+    return if err
+        data
+    else
+        beautify(c, data) |> Invite
+    end
 end
 
 """
     delete_invite(c::Client, code::String) -> Invite
 
-Delete an [`Invite`](@ref) with the given code.
+Delete an [`Invite`](@ref) with the given code
+upon success or a Dict containing error information.
 """
 function delete_invite(c::Client, code::String)
-    inv = request(c, "DELETE", "/invites/$code")
-    return beautify(c, inv) |> Invite
+    err, data = request(c, "DELETE", "/invites/$code")
+
+    return if err
+        data
+    else
+        beautify(c, data) |> Invite
+    end
 end
