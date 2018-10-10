@@ -45,3 +45,4 @@ function request(
 end
 
 include(joinpath("rest", "message.jl"))
+include(joinpath("rest", "invite.jl"))
