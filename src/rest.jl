@@ -11,10 +11,10 @@ const should_send = Dict(
 
 function request(
     c::Client,
-    method::AbstractString,
-    endpoint::AbstractString;
-    payload::Dict{String, Any}=Dict(),
-    query::Dict{String, Any}=Dict(),
+    method::String,
+    endpoint::String;
+    payload=Dict(),
+    query=Dict(),
 )
     url = DISCORD_API * endpoint
 

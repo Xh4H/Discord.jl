@@ -24,7 +24,7 @@ function reply(c::Client, m::Message, content::Union{String, Dict})
         # TODO Handle file uploading here
     end
 
-    return request(c, "POST", "/channels/$(m.channel_id)/messages", payload) |> Message
+    return request(c, "POST", "/channels/$(m.channel_id)/messages"; payload=payload) |> Message
 end
 
 """
@@ -41,7 +41,7 @@ function edit(c::Client, m::Message, content::Union{String, Dict})
         payload = content
     end
 
-    return request(c, "PATCH", "/channels/$(m.channel_id)/messages/$(m.id)", payload) |> Message
+    return request(c, "PATCH", "/channels/$(m.channel_id)/messages/$(m.id)"; payload=payload) |> Message
 end
 
 """
@@ -78,11 +78,8 @@ react(c::Client, m::Message, emoji::String) = request(c, "PUT", "/channels/$(m.c
 Retrieve the users who reacted to the given [`Message`](@ref) with the given emoji.
 """
 function get_reactions(c::Client, m::Message, emoji::String)
-    # Needs test and it is unfinished, need to loop though users
-    emoji = contains(emoji, ":") ? escapeuri(emoji) : emoji
-    println(emoji)
-    reactions = request(c, "GET", "/channels/$(m.channel_id)/messages/$(m.id)/reactions/$emoji")
-    println(reactions)
+    # it is unfinished, need to loop though users
+    reactions = request(c, "GET", "/channels/$(m.channel_id)/messages/$(m.id)/reactions/$(escapeuri(emoji))")
 end
 
 """
