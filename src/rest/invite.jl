@@ -13,7 +13,6 @@ end
 
 Retrieve an [`Invite`](@ref) with the given code. Optionally return with usage information.
 """
-
 function get_invite(c::Client, code::String; with_counts::Bool=false)
     inv = request(c, "GET", "/invites/$code"; query=Dict("with_counts" => with_counts))
     return beautify(c, inv) |> Invite
@@ -24,7 +23,6 @@ end
 
 Delete an [`Invite`](@ref) with the given code.
 """
-
 function delete_invite(c::Client, code::String)
     inv = request(c, "DELETE", "/invites/$code")
     return beautify(c, inv) |> Invite

@@ -44,5 +44,6 @@ function request(
     end
 end
 
-include(joinpath("rest", "message.jl"))
+include(joinpath("rest", "channel.jl"))
 include(joinpath("rest", "invite.jl"))
+include(joinpath("rest", "message.jl"))
