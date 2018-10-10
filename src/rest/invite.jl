@@ -2,11 +2,9 @@ export get_invite,
         delete_invite
 
 function beautify(c::Client, inv::Dict{String, Any})
-    cached_guild = c.state.guilds[snowflake(inv["guild"]["id"])]
-    inv["guild"] = cached_guild
+    inv["guild"] = c.state.guilds[snowflake(inv["guild"]["id"])]
     inv["channel"] = c.state.channels[snowflake(inv["channel"]["id"])]
 
-    @show inv
     return inv
 end
 
