@@ -377,6 +377,10 @@ handle_channel_delete(c::Client, e::ChannelDelete) = delete!(c.state.channels, e
 
 function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate})
     c.state.guilds[e.guild.id] = e.guild
+
+    for ch in e.guild.channels
+        c.state.channels[ch.id] = ch
+    end
 end
 
 function handle_guild_delete(c::Client, e::GuildDelete)
