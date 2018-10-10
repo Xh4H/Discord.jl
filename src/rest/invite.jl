@@ -1,7 +1,8 @@
-export get_invite,
+export _beautify,
+        get_invite,
         delete_invite
 
-function beautify(c::Client, inv::Dict{String, Any})
+function _beautify(c::Client, inv::Dict{String, Any})
     inv["guild"] = c.state.guilds[snowflake(inv["guild"]["id"])]
     inv["channel"] = c.state.channels[snowflake(inv["channel"]["id"])]
 
@@ -20,7 +21,7 @@ function get_invite(c::Client, code::String; with_counts::Bool=false)
     return if err
         data
     else
-        beautify(c, data) |> Invite
+        _beautify(c, data) |> Invite
     end
 end
 
@@ -36,6 +37,6 @@ function delete_invite(c::Client, code::String)
     return if err
         data
     else
-        beautify(c, data) |> Invite
+        _beautify(c, data) |> Invite
     end
 end
