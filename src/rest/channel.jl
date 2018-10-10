@@ -179,7 +179,7 @@ set_topic(c::Client, ch::DiscordChannel, topic::String) = modify(c, ch, Dict("to
 Modify the nsfw status of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
 upon success or a Dict containing error information.
 """
-set_nsfw(c::Client, ch::DiscordChannel, nsfw::Boolean) = modify(c, ch, Dict("nsfw" => nsfw))
+set_nsfw(c::Client, ch::DiscordChannel, nsfw::Bool) = modify(c, ch, Dict("nsfw" => nsfw))
 
 """
     set_slowmode(c::Client, ch::DiscordChannel, rate_limit_per_user::Int) -> Channel
