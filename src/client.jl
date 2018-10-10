@@ -346,6 +346,7 @@ function invalid_session(c::Client, data::Dict)
 end
 
 hello(c::Client, data::Dict) = c.heartbeat_interval = data["d"]["heartbeat_interval"]
+
 heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
@@ -383,62 +384,65 @@ function handle_guild_delete(c::Client, e::GuildDelete)
 end
 
 function handle_guild_emojis_update(c::Client, e::GuildEmojisUpdate)
-    if haskey(c.state.guilds, e.guild_id)
-        empty!(c.state.guilds[e.guild_id])
-        append!(c.state.guilds[e.guild_id], e.emojis)
-    end
+    haskey(c.state.guilds, e.guild_id) || return
+    es = c.state.guilds[e.guild_id].emojis
+    empty!(es)
+    append!(es, e.emojis)
 end
 
 function handle_guild_member_add(c::Client, e::GuildMemberAdd)
     if !haskey(c.state.members, e.guild_id)
         c.state.members[e.guild_id] = Dict()
     end
+    ms = c.state.members[e.guild_id]
     if ismissing(e.user)
-        if !haskey(c.state.members[e.guild_id], missing)
-            c.state.members[e.guild_id][missing] = []
+        if !haskey(ms, missing)
+            ms[missing] = []
         end
-        push!(c.state.members[e.guild_id][missing], e.member)
+        push!(ms[missing], e.member)
     else
-        c.state.members[e.guild_id][e.member.user.id] = e.member
+        ms[e.member.user.id] = e.member
         # Update the user cache as well,
         c.state.users[e.member.user.id] = e.member.user
     end
 end
 
 function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
-    if !haskey(c.state.members, e.guild_id) && haskey(c.state.members[e.guild_id], e.user.id)
-        m = c.state.members[e.guild_id][e.user.id] = Member(
-            e.user,
-            e.nick,
-            e.roles,
-            c.state.members[e.guild_id][e.user.id].joined_at,
-            c.state.members[e.guild_id][e.user.id].deaf,
-            c.state.members[e.guild_id][e.user.id].mute,
-        )
-        c.state.members[e.guild_id][e.user.id] = m
-        # Update the user cache as well.
-        c.state.users[e.user.id] = e.user
-    end
+    haskey(c.state.members, e.guild_id) || return
+    haskey(c.state.members[e.guild_id], e.user.id) || return
+
+    ms = c.state.members[e.guild_id]
+    m = ms[e.user.id]
+    ms[e.user.id] = Member(
+        e.user,
+        e.nick,
+        e.roles,
+        m.joined_at,
+        m.deaf,
+        m.mute,
+    )
+    # Update the user cache as well.
+    c.state.users[e.user.id] = e.user
 end
 
 function handle_guild_member_remove(c::Client, e::GuildMemberRemove)
-    if haskey(c.state.members, e.guild_id)
-        delete!(c.state.members[e.guild_id], e.user.id)
-    end
+    haskey(c.state.members, e.guild_id) || return
+    delete!(c.state.members[e.guild_id], e.user.id)
 end
 
 function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
     if !haskey(c.state.members, e.guild_id)
         c.state.members[e.guild_id] = Dict()
     end
+    ms = c.state.members[e.guild_id]
     for m in e.members
         if ismissing(m.user)
-            if !haskey(missing, c.state.members[e.guild_id])
-                c.state.members[e.guild_id][missing] = []
+            if !haskey(ms, missing)
+                ms[missing] = []
             end
-            push!(c.state.members[e.guild_id][missing], m)
+            push!(ms[missing], m)
         else
-            c.state.members[e.guild_id][m.user.id] = m
+            ms[m.user.id] = m
             # Update the user cache as well,
             c.state.users[m.user.id] = m.user
         end
@@ -446,24 +450,27 @@ function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
 end
 
 function handle_guild_role_create(c::Client, e::GuildRoleCreate)
-    if haskey(c.state.guilds, e.guild_id) && isa(c.state.guilds[e.guild_id], Guild)
-        push!(c.state.guilds[e.guild_id].roles, e.role)
-    end
+    haskey(c.state.guilds, e.guild_id) || return
+    isa(c.state.guilds[e.guild_id], Guild) || return
+    push!(c.state.guilds[e.guild_id].roles, e.role)
 end
 
 function handle_guild_role_update(c::Client, e::GuildRoleUpdate)
-    if haskey(c.state.guilds, e.guild_id) && isa(c.state.guilds[e.guild_id], Guild)
-        idx = findfirst(r -> r.id == e.role.id, c.state.guilds[e.guild_id].roles)
-        idx === nothing || deleteat!(c.state.guilds[e.guild_id].roles, idx)
-        push!(c.state.guilds[e.guild_id].roles, e.role)
-    end
+    haskey(c.state.guilds, e.guild_id) || return
+    isa(c.state.guilds[e.guild_id], Guild) || return
+
+    rs = c.state.guilds[e.guild_id].roles
+    idx = findfirst(r -> r.id == e.role.id, rs)
+    idx === nothing || deleteat!(rs, idx)
+    push!(rs, e.role)
 end
 
 function handle_guild_role_delete(c::Client, e::GuildRoleDelete)
-    if haskey(c.state.guilds, e.guild_id) && isa(c.state.guilds[e.guild_id], Guild)
-        idx = findfirst(r -> r.id == e.role_id, c.state.guilds[e.guild_id].roles)
-        idx === nothing || deleteat!(c.state.guilds[e.guild_id].roles, idx)
-    end
+    haskey(c.state.guilds, e.guild_id) || return
+    isa(c.state.guilds[e.guild_id], Guild) || return
+    rs = c.state.guilds[e.guild_id].roles
+    idx = findfirst(r -> r.id == e.role_id, rs)
+    idx === nothing || deleteat!(rs, idx)
 end
 
 function handle_message_create_update(c::Client, e::Union{MessageCreate, MessageUpdate})
@@ -485,28 +492,66 @@ function handle_presence_update(c::Client, e::PresenceUpdate)
     c.state.presences[e.presence.guild_id][e.presence.user.id] = e.presence
 end
 
+function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
+    haskey(c.state.messages, e.message_id) || return
+    # TODO: This has race conditions.
+    m = c.state.messages[e.message_id]
+    if ismissing(m.reactions)
+        m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict())]
+    else
+        idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
+        if idx === nothing
+            push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict()))
+        else
+            m.reactions[idx].count += 1
+            m.reactions[idx].me |= e.user_id == c.state.user.id
+        end
+    end
+end
+
+function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
+    haskey(c.state.messages, e.message_id) || return
+    ismissing(c.state.messages[e.message_id].reactions) && return
+
+    rs = c.state.messages[e.message_id].reactions
+    idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
+    if idx !== nothing
+        rs[idx].count -= 1
+        rs[idx].me &= e.user_id != c.state.user.id
+    end
+end
+
+function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveAll)
+    haskey(c.state.messages, e.message_id) || return
+    ismissing(c.state.messages[e.message_id].reactions) && return
+    empty!(c.state.messages[e.message_id].reactions)
+end
+
 const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Function}}(
-    Ready             => Set([handle_ready]),
-    Resumed           => Set([handle_resumed]),
-    ChannelCreate     => Set([handle_channel_create_update]),
-    ChannelUpdate     => Set([handle_channel_create_update]),
-    ChannelDelete     => Set([handle_channel_delete]),
-    GuildCreate       => Set([handle_guild_create_update]),
-    GuildUpdate       => Set([handle_guild_create_update]),
-    GuildDelete       => Set([handle_guild_delete]),
-    GuildEmojisUpdate => Set([handle_guild_emojis_update]),
-    GuildMemberAdd    => Set([handle_guild_member_add]),
-    GuildMemberUpdate => Set([handle_guild_member_update]),
-    GuildMemberRemove => Set([handle_guild_member_remove]),
-    GuildMembersChunk => Set([handle_guild_members_chunk]),
-    GuildRoleCreate   => Set([handle_guild_role_create]),
-    GuildRoleUpdate   => Set([handle_guild_role_update]),
-    GuildRoleDelete   => Set([handle_guild_role_delete]),
-    MessageCreate     => Set([handle_message_create_update]),
-    MessageUpdate     => Set([handle_message_create_update]),
-    MessageDelete     => Set([handle_message_delete]),
-    MessageDeleteBulk => Set([handle_message_delete_bulk]),
-    PresenceUpdate    => Set([handle_presence_update]),
+    Ready                    => Set([handle_ready]),
+    Resumed                  => Set([handle_resumed]),
+    ChannelCreate            => Set([handle_channel_create_update]),
+    ChannelUpdate            => Set([handle_channel_create_update]),
+    ChannelDelete            => Set([handle_channel_delete]),
+    GuildCreate              => Set([handle_guild_create_update]),
+    GuildUpdate              => Set([handle_guild_create_update]),
+    GuildDelete              => Set([handle_guild_delete]),
+    GuildEmojisUpdate        => Set([handle_guild_emojis_update]),
+    GuildMemberAdd           => Set([handle_guild_member_add]),
+    GuildMemberUpdate        => Set([handle_guild_member_update]),
+    GuildMemberRemove        => Set([handle_guild_member_remove]),
+    GuildMembersChunk        => Set([handle_guild_members_chunk]),
+    GuildRoleCreate          => Set([handle_guild_role_create]),
+    GuildRoleUpdate          => Set([handle_guild_role_update]),
+    GuildRoleDelete          => Set([handle_guild_role_delete]),
+    MessageCreate            => Set([handle_message_create_update]),
+    MessageUpdate            => Set([handle_message_create_update]),
+    MessageDelete            => Set([handle_message_delete]),
+    MessageDeleteBulk        => Set([handle_message_delete_bulk]),
+    MessageReactionAdd       => Set([handle_message_reaction_add]),
+    MessageReactionRemove    => Set([handle_message_reaction_remove]),
+    MessageReactionRemoveAll => Set([handle_message_reaction_remove_all]),
+    PresenceUpdate           => Set([handle_presence_update]),
 )
 
 # Error handling.

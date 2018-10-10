@@ -27,7 +27,7 @@ end
 A message.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object).
 """
-@from_dict struct Message
+@from_dict mutable struct Message  # Mutable to add reactions.
     id::Snowflake
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
