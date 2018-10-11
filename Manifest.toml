@@ -96,7 +96,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[TTLCache]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "77d5bcc7e5993b6cb36664bb75db2180d0ffabdc"
+git-tree-sha1 = "182ecd6d4cc06d520c184e0f753f0e8d4ec91556"
 repo-rev = "master"
 repo-url = "https://github.com/christopher-dG/TTLCache.jl"
 uuid = "b0868c6e-cc3f-11e8-088f-97c6026971d7"
