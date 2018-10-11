@@ -24,7 +24,7 @@ Edit the given [`Message`](@ref).
 """
 function edit(c::Client, m::Message, content::AbstractString)
     body = Dict("content" => content)
-    return Response{Message}(c, :PATCH, "/channels/$(m.channel_id)/messages"; body=body)
+    return Response{Message}(c, :PATCH, "/channels/$(m.channel_id)/messages/$(m.id)"; body=body)
 end
 
 function edit(c::Client, m::Message, content::Dict)
@@ -46,22 +46,22 @@ function delete(c::Client, m::Message)
 end
 
 """
-    pin(c::Client, m::Message) -> Response{Message}
+    pin(c::Client, m::Message) -> Response
 
 Pin the given [`Message`](@ref).
 """
 function pin(c::Client, m::Message)
-    return Response{Message}(c, :PUT, "/channels/$(m.channel_id)/pins/$(m.id)")
+    return Response(c, :PUT, "/channels/$(m.channel_id)/pins/$(m.id)")
 end
 
 """
-    unpin(c::Client, m::Message) -> Response{Message}
+    unpin(c::Client, m::Message) -> Response
 
 Unpin the given [`Message`](@ref)
 upon success or a Dict containing error information.
 """
 function unpin(c::Client, m::Message)
-    return Response{Message}(c, :DELETE, "/channels/$(m.channel_id)/pins/$(m.id)")
+    return Response(c, :DELETE, "/channels/$(m.channel_id)/pins/$(m.id)")
 end
 
 """

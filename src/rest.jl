@@ -22,6 +22,10 @@ A wrapper around responses from the REST API.
 - `http_response`: The underlying HTTP response. If `success` is true, then this is a
   `HTTP.Messages.Response`. Otherwise, it is a `HTTP.ExceptionRequest.StatusError`.
   If `cache_hit` is `true`, it is `nothing`.
+
+!!! note
+    Because the underlying HTTP reponse body has already been parsed, `http_response.body`
+    will always be empty.
 """
 struct Response{T}
     val::Union{T, Nothing}
@@ -42,6 +46,7 @@ end
 
 # Successful HTTP request.
 function Response{T}(r::HTTP.Messages.Response) where T
+    r.status == 204 && return Response(nothing, true, false, r)
     body = JSON.parse(String(r.body))
     val, TT = body isa Vector ? (T.(body), Vector{T}) : (T(body), T)
     Response{TT}(val, true, false, r)
@@ -54,7 +59,7 @@ end
 
 # HTTP request with no expected response body.
 function Response(c::Client, method::Symbol, endpoint::AbstractString; body::Dict=Dict(), params...)
-    return Response{Nothing}(c, mthod, endpoint; body=body, params...)
+    return Response{Nothing}(c, method, endpoint; body=body, params...)
 end
 
 # HTTP request.
