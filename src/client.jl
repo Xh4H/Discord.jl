@@ -1,4 +1,6 @@
-export Client,
+export LIMIT_IGNORE,
+    LIMIT_WAIT,
+    Client,
     state,
     me,
     add_handler!,
@@ -15,23 +17,35 @@ const conn_properties = Dict(
 )
 
 const OPCODES = Dict(
-    0 =>    :DISPATCH,
-    1 =>    :HEARTBEAT,
-    2 =>    :IDENTIFY,
-    3 =>    :STATUS_UPDATE,
-    4 =>    :VOICE_STATUS_UPDATE,
-    6 =>    :RESUME,
-    7 =>    :RECONNECT,
-    8 =>    :REQUEST_GUILD_MEMBERS,
-    9 =>    :INVALID_SESSION,
-    10 =>   :HELLO,
-    11 =>   :HEARTBEAT_ACK,
+    0 =>  :DISPATCH,
+    1 =>  :HEARTBEAT,
+    2 =>  :IDENTIFY,
+    3 =>  :STATUS_UPDATE,
+    4 =>  :VOICE_STATUS_UPDATE,
+    6 =>  :RESUME,
+    7 =>  :RECONNECT,
+    8 =>  :REQUEST_GUILD_MEMBERS,
+    9 =>  :INVALID_SESSION,
+    10 => :HELLO,
+    11 => :HEARTBEAT_ACK,
 )
 
 """
-    Client(token::String; ttl::Period=Hour(1)) -> Client
+Determines the behaviour of a [`Client`](@ref) when it hits a rate limit. If set to
+`LIMIT_IGNORE`, a [`Response`](@ref) is returned immediately with `rate_limited` set to
+`true`. If set to `LIMIT_WAIT`, the client blocks until the rate limit resets, then retries
+the request.
+"""
+@enum OnLimit LIMIT_IGNORE LIMIT_WAIT
 
-A Discord bot. `ttl` is the amount of time that cache entries are kept.
+"""
+    Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1) -> Client
+
+A Discord bot.
+
+# Keywords
+- `on_limit::OnLimit=LIMIT_IGNORE`: Client's behaviour when it hits a rate limit.
+- `ttl::Period=Hour(1)` Amount of time that cache entries are kept.
 """
 mutable struct Client
     token::String
@@ -43,14 +57,15 @@ mutable struct Client
     state::State
     shards::Int
     shard::Int
+    limiter::Limiter
+    on_limit::OnLimit
     handlers::Dict{Type{<:AbstractEvent}, Set{Function}}
     hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
 
-    function Client(token::String; ttl::Period=Hour(1))
+    function Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1))
         token = startswith(token, "Bot ") ? token : "Bot $token"
-
         return new(
             token,                            # token
             0,                                # heartbeat_interval
@@ -61,6 +76,8 @@ mutable struct Client
             State(ttl),                       # state
             nprocs(),                         # shards
             myid() - 1,                       # shard
+            Limiter(),                        # limiter
+            on_limit,                         # on_limit
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
             Channel(0),                       # hb_chan
             Channel(0),                       # rl_chan

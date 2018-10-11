@@ -5,6 +5,7 @@ using Distributed
 using HTTP
 using JSON
 using OpenTrick
+using TimeZones
 using TTLCache
 using WebSockets
 
@@ -15,6 +16,7 @@ const DISCORD_API = "https://discordapp.com/api/v$API_VERSION"
 include("types.jl")
 include("events.jl")
 include("state.jl")
+include("limiter.jl")
 include("client.jl")
 include("rest.jl")
 

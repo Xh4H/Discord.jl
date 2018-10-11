@@ -19,41 +19,39 @@ A wrapper around a response from the REST API.
 - `success::Bool`: The success state of the request. If this is `true`, then it is safe to
   access `val`.
 - `cache_hit::Bool`: Whether `val` came from the cache.
+- `rate_limited::Bool`: Whether the request was rate limited.
 - `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response.
   If `success` is true, it is `nothing`.
-
-!!! note
-    Because the underlying HTTP reponse body has already been parsed, `http_response.body`
-    will always be empty when `success` is true.
 """
 struct Response{T}
     val::Union{T, Nothing}
     success::Bool
     cache_hit::Bool
+    rate_limited::Bool
     http_response::Union{HTTP.Messages.Response, Nothing}
 end
 
 # HTTP status error.
-function Response{T}(e::HTTP.ExceptionRequest.StatusError) where T
-    return Response{T}(nothing, false, false, e.response)
+function Response{T}(e::HTTP.ExceptionRequest.StatusError, limited::Bool) where T
+    return Response{T}(nothing, false, false, limited || e.status == 429, e.response)
 end
 
 # Successful HTTP request with no body.
-function Response{Nothing}(r::HTTP.Messages.Response)
-    return Response{Nothing}(nothing, true, false, r)
+function Response{Nothing}(r::HTTP.Messages.Response, limited::Bool)
+    return Response{Nothing}(nothing, true, false, limited, r)
 end
 
 # Successful HTTP request.
-function Response{T}(r::HTTP.Messages.Response) where T
+function Response{T}(r::HTTP.Messages.Response, limited::Bool) where T
     r.status == 204 && return Response(nothing, true, false, r)
-    body = JSON.parse(String(r.body))
+    body = JSON.parse(String(copy(r.body)))
     val, TT = body isa Vector ? (T.(body), Vector{T}) : (T(body), T)
-    Response{TT}(val, true, false, r)
+    Response{TT}(val, true, false, limited, r)
 end
 
 # Cache hit.
 function Response{T}(val::T) where T
-    return Response{T}(val, true, true, nothing)
+    return Response{T}(val, true, true, false, nothing)
 end
 
 # HTTP request with no expected response body.
@@ -75,6 +73,16 @@ function Response{T}(
     body=Dict(),
     params...,
 ) where T
+    limited = islimited(c.limiter, method, endpoint)
+
+    if limited
+        if c.on_limit === LIMIT_IGNORE
+            return Response{T}(nothing, false, false, true, nothing)
+        elseif c.on_limit === LIMIT_WAIT
+            wait(c.limiter, method, endpoint)
+        end
+    end
+
     url = DISCORD_API * endpoint
     if !isempty(params)
         url *= "?" * HTTP.escapeuri(params)
@@ -86,10 +94,13 @@ function Response{T}(
     args = [method, url, headers]
     get(should_send, method, false) && push!(args, json(body))
     return try
-        Response{T}(HTTP.request(args...))
+        r = HTTP.request(args...)
+        update(c.limiter, method, endpoint, r)
+        Response{T}(r, limited)
     catch e
         e isa HTTP.ExceptionRequest.StatusError || rethrow(e)
-        Response{T}(e)
+        update(c.limiter, method, endpoint, e)
+        Response{T}(e, limited)
     end
 end
 
