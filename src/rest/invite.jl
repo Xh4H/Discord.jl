@@ -1,42 +1,22 @@
-export _beautify,
-        get_invite,
-        delete_invite
+export get_invite,
+    delete_invite
 
-function _beautify(c::Client, inv::Dict{String, Any})
-    inv["guild"] = c.state.guilds[snowflake(inv["guild"]["id"])]
-    inv["channel"] = c.state.channels[snowflake(inv["channel"]["id"])]
+"""
+    get_invite(c::Client, code::AbstractString; with_counts::Bool=false) -> Response{Invite}
 
-    return inv
+Get an [`Invite`](@ref) with the given code. If `with_counts` is set, the [`Invite`](@ref)
+will contain approximate member counts.
+"""
+function get_invite(c::Client, code::AbstractString; with_counts::Bool=false)
+    return Response{Invite}(c, :GET, "/invites/$code"; with_counts=with_counts)
+    # TODO: Same as create_invite.
 end
 
 """
-    get_invite(c::Client, code::String; with_counts::Bool=false) -> Invite
+    delete_invite(c::Client, code::AbstractString) -> Response{Invite}
 
-Retrieve an [`Invite`](@ref) with the given code. Optionally return with usage information
-upon success or a Dict containing error information.
+Delete an [`Invite`](@ref) with the given code.
 """
-function get_invite(c::Client, code::String; with_counts::Bool=false)
-    err, data = request(c, "GET", "/invites/$code"; query=Dict("with_counts" => with_counts))
-
-    return if err
-        data
-    else
-        _beautify(c, data) |> Invite
-    end
-end
-
-"""
-    delete_invite(c::Client, code::String) -> Invite
-
-Delete an [`Invite`](@ref) with the given code
-upon success or a Dict containing error information.
-"""
-function delete_invite(c::Client, code::String)
-    err, data = request(c, "DELETE", "/invites/$code")
-
-    return if err
-        data
-    else
-        _beautify(c, data) |> Invite
-    end
+function delete_invite(c::Client, code::AbstractString)
+    return Response{Invite}(c, :DELETE, "/invites/$code")
 end

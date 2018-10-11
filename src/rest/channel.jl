@@ -1,275 +1,164 @@
 export send_message,
-        get_message,
-        get_history,
-        get_pinned_messages,
-        bulk_delete,
-        trigger_typing
-"""
-    send_message(c::Client, ch::DiscordChannel, content::Union{String, Dict}) -> Message
+    get_message,
+    get_messages,
+    get_pinned_messages,
+    bulk_delete,
+    trigger_typing
 
-Send a [`Message`](@ref) to the given [`DiscordChannel`](@ref) with the given content
-upon success or a Dict containing error information.
 """
-function send_message(c::Client, ch::DiscordChannel, content::Union{String, Dict})
-    payload = Dict()
+    send_message(c::Client, channel::Snowflake, content::AbstractString) -> Response
 
-    if isa(content, String)
-        payload = Dict("content" => content)
-    elseif isa(content, Dict)
-        payload = content
-        # TODO Handle file uploading here
+Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
+"""
+function send_message(c::Client, channel::Snowflake, content::AbstractString)
+    body = Dict("content" => content)
+    resp = Response{Message}(c, :POST, "/channels/$channel/messages"; body=body)
+    if resp.success
+        c.state.messages[resp.val.id] = resp.val
     end
+    return resp
+end
 
-    err, data = request(c, "POST", "/channels/$(ch.id)/messages"; payload=payload)
-    return if err
-        data
+# TODO: send_file(::Client, ::DiscordChannel, ::Dict)
+
+"""
+    get_message(c::Client, channel::Snowflake, id::Snowflake) -> Response{Message}
+
+Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
+"""
+function get_message(c::Client, channel::Snowflake, id::Snowflake)
+    return if haskey(c.state.messages, id)
+        Response{Message}(c.state.messages[id])
     else
-        Message(data)
+        resp = Response{Message}(c, :GET, "/channels/$channel/messages/$id")
+        if resp.success
+            c.state.messages[id] = resp.val
+        end
+        resp
     end
 end
 
 """
-    get_message(c::Client, ch::DiscordChannel, id::Snowflake) -> Message
+    get_messages(c::Client, channel::Snowflake; params...) -> Response{Vector{Message}}
 
-Get a [`Message`](@ref) from the given [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
+Get a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
+
+# Keywords
+- `around`: Get messages around this message ID.
+- `before`: Get messages before this message ID.
+- `after`: Get messages after this message ID.
+- `limit`: Maximum number of messages.
+
+More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
 """
-function get_message(c::Client, ch::DiscordChannel, id::Snowflake)
-    return if !haskey(c.state.messages, id)
-        c.state.messages[id]
-    else
-        err, data = request(c, "GET", "/channels/$(ch.id)/messages/$id")
-
-        return if err
-            data
-        else
-            msg = Message(data)
-            c.state.messages[id] = msg
+function get_messages(c::Client, channel::Snowflake; params...)
+    resp = Response{Message}(c, :GET, "/channels/$channel/messages"; params...)
+    if resp.success
+        for m in resp.val
+            c.state.messages[m.id] = m
         end
     end
+    return resp
 end
 
 """
-    get_history(c::Client, ch::DiscordChannel, query::Dict) -> Array
+    get_pinned_messages(c::Client, channel::Snowflake) -> Response{Vector{Message}}
 
-Return a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref) with the given query
-upon success or a Dict containing error information.
-
-#### Query
-  Must be a keyword list with the fields listed below.
-  - `around` - get messages around this message ID
-  - `before` - get messages before this message ID
-  - `after` - get messages after this message ID
-  - `limit` - max number of messages to return
-
-Refer to [this](https://discordapp.com/developers/docs/resources/channel#get-channel-messages)
-    for a broader explanation on the fields and their defaults.
+Get a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref).
 """
-function get_history(c::Client, ch::DiscordChannel, query::Dict)
-    messages = []
-    err, data = request(c, "GET", "/channels/$(ch.id)/messages"; query=query)
-
-    return if err
-        data
-    else
-        for msg in data
-            push!(messages, Message(msg))
+function get_pinned_messages(c::Client, channel::Snowflake)
+    resp = Response{Message}(c, :GET, "/channels/$channel/pins")
+    if resp.success
+        for m in resp.val
+            c.state.messages[m.id] = m
         end
-        messages
     end
+    return resp
 end
 
 """
-    get_pinned_messages(c::Client, ch::DiscordChannel) -> Array
+    bulk_delete(c::Client, channel::Snowflake, ids::Vector{Snowflake}) -> Response
 
-Return a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
+Delete multiple [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 """
-function get_pinned_messages(c::Client, ch::DiscordChannel)
-    messages = []
-    err, data = request(c, "GET", "/channels/$(ch.id)/pins")
-
-    return if err
-        data
-    else
-        for msg in data
-            push!(messages, Message(msg))
+function bulk_delete(c::Client, channel::Snowflake, ids::Vector{Snowflake})
+    body = Dict("messages" => messages)
+    resp = Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
+    if resp.success
+        for id in ids
+            delete!(c.state.messages, id)
         end
-        messages
     end
+    return resp
 end
 
 """
-    bulk_delete(c::Client, ch::DiscordChannel, messages::Array) -> Bool
+    trigger_typing(c::Client, channel::Snowflake) -> Response
 
-Return whether the request was successful; An exception is raised when failed.
+Trigger the typing indicator in the given [`DiscordChannel`](@ref).
 """
-function bulk_delete(c::Client, ch::DiscordChannel, messages::Array)
-    err, data = request(c, "POST", "/channels/$(ch.id)/messages/bulk-delete"; payload=Dict("messages" => messages))
-    return if err
-        # @throw(data)
-        false
-    else
-        if !isempty(data) # was erroring with iterate(::Nothing)
-            for msg in data
-                delete!(c.state.messages, msg)
-            end
-        end
-        true
-    end
-
+function trigger_typing(c::Client, ch::DiscordChannel)
+    return Response(c, :POST, "/channels/$(ch.id)/typing")
 end
 
 """
-    trigger_typing(c::Client, ch::DiscordChannel) -> Bool
+    modify_channel(c::Client, channel::Snowflake; params...) -> Response{Channel}
 
-Return whether the request was successful.
+Modify the given [`DiscordChannel`](@ref).
+
+# Keywords
+- `name`: Channel name (2-100 characters).
+- `topic`: Channel topic (up to 1024 characters).
+- `nsfw`: Whether the channel is NSFW.
+- `rate_limit_per_user`: Seconds a user must wait before sending another message.
+- `position` The position in the left-hand listing.
+- `bitrate` The bitrate in bits of the voice channel.
+- `user_limit`: The user limit of the voice channel.
+- `permission_overwrites`: Channel or category-specific permissions.
+- `parent_id`: ID of the new parent category.
+
+More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).
 """
-trigger_typing(c::Client, ch::DiscordChannel) = request(c, "POST", "/channels/$(ch.id)/typing")
+function modify_channel(c::Client, channel::Snowflake; params...)
+    (bitrate in params || :user_limit in params) && haskey(c.state.channels, channel) &&
+        c.state.channels[channel].type === CT_GUILD_VOICE &&
+        throw(ArgumentError("Bitrate and user_limit can only be modified for voice channels"))
 
-"""
-    modify(c::Client, ch::DiscordChannel, messages::Array) -> Channel
-
-Modify a given [`DiscordChannel`](@ref) with the given parameters. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-
-#### Params
- Must be an enumerable with the fields listed below.
- - `name`                       - channel name (2-100 characters)
- - `topic`                      - channel topic (up to 1024 characters)
- - `nsfw`                       - whether the channel is NSFW
- - `rate_limit_per_user`        - amount of seconds a user has to wait before sending another message
- - `position`                   - the position in the left-hand listing
- - `bitrate`                    - the bitrate in bits of the voice channel
- - `user_limit`                 - the user limit of the voice channel
- - `permission_overwrites`      - channel or category-specific permissions
- - `parent_id`                  - id of the new parent category
-
- Refer to [this](https://discordapp.com/developers/docs/resources/channel#modify-channel)
- for a broader explanation on the fields and their defaults.
-"""
-function modify(c::Client, ch::DiscordChannel, params::Dict)
-    err, data = request(c, "PATCH", "/channels/$(ch.id)"; payload=params)
-    return if err
-        data
-    else
-        DiscordChannel(data)
+    resp = Response{Channel}(c, :PATCH, "/channels/$channel"; body=params)
+    if resp.success
+        c.state.channels[resp.val.id] = resp.val
     end
+    return resp
 end
-
-"""
-    set_name(c::Client, ch::DiscordChannel, name::String) -> Channel
-
-Modify the name of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-set_name(c::Client, ch::DiscordChannel, name::String) = modify(c, ch, Dict("name" => name))
-
-"""
-    set_topic(c::Client, ch::DiscordChannel, topic::String) -> Channel
-
-Modify the topic of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-set_topic(c::Client, ch::DiscordChannel, topic::String) = modify(c, ch, Dict("topic" => topic))
-
-"""
-    set_nsfw(c::Client, ch::DiscordChannel, name::String) -> Channel
-
-Modify the nsfw status of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-set_nsfw(c::Client, ch::DiscordChannel, nsfw::Bool) = modify(c, ch, Dict("nsfw" => nsfw))
-
-"""
-    set_slowmode(c::Client, ch::DiscordChannel, rate_limit_per_user::Int) -> Channel
-
-Modify the rate limit per user of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-set_slowmode(c::Client, ch::DiscordChannel, rate_limit_per_user::Int) = modify(c, ch, Dict("rate_limit_per_user" => rate_limit_per_user))
-
-"""
-    set_position(c::Client, ch::DiscordChannel, position::Int) -> Channel
-
-Modify the position of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-set_position(c::Client, ch::DiscordChannel, position::Int) = modify(c, ch, Dict("position" => position))
-
-"""
-    set_bitrate(c::Client, ch::DiscordChannel, bitrate::Int) -> Channel
-
-Modify the bitrate of the given Voice [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-function set_bitrate(c::Client, ch::DiscordChannel, bitrate::Int)
-    return if ch.type != CT_GUILD_VOICE
-        # @throw "Not a voice channel ........"
-    else
-        modify(c, ch, Dict("bitrate" => bitrate))
-    end
-end
-
-"""
-    set_user_limit(c::Client, ch::DiscordChannel, user_limit::Int) -> Channel
-
-Modify the user limit of the given Voice [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-set_user_limit(c::Client, ch::DiscordChannel, user_limit::Int) = modify(c, ch, Dict("user_limit" => user_limit))
-
 
 # TODO Should we have set_permissions function?
 
 """
-    set_parent(c::Client, ch::DiscordChannel, parent_id::Int) -> Channel
+    delete_channel(c::Client, channel::Snowflake) -> Response{Channel}
 
-Modify the parent of the given [`DiscordChannel`](@ref) with the given name. Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
+Delete the given [`DiscordChannel`](@ref).
 """
-set_parent(c::Client, ch::DiscordChannel, parent_id::Int) = modify(c, ch, Dict("parent_id" => parent_id))
-
-"""
-    delete_channel(c::Client, ch::DiscordChannel) -> Channel
-
-Delete the given [`DiscordChannel`](@ref). Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
-"""
-function delete_channel(c::Client, ch::DiscordChannel)
-    err, data = request(c, "DELETE", "/channels/$(ch.id)")
-
-    return if err
-        data
-    else
-        delete!(c.state.channels, ch.id)
-        DiscordChannel(data)
-    end
+function delete_channel(c::Client, channel::Snowflake)
+    resp = Response{Channel}(c, :DELETE, "/channels/$channel")
+    resp.success && delete!(c.state.channels, ch.id)
+    return resp
 end
 
-# https://github.com/satom99/coxir/blob/master/lib/coxir/struct/channel.ex#L316
-
 """
-    create_invite(c::Client, ch::DiscordChannel, params::Dict=Dict()) -> Invite
+    create_invite(c::Client, channel::Snowflake; params...) -> Response{Invite}
 
-Create an [`Invite`](@ref). Return a [`DiscordChannel`](@ref)
-upon success or a Dict containing error information.
+Create an [`Invite`](@ref) to the given [`DiscordChannel`](@ref).
 
-#### Params
- Must be an enumerable with the fields listed below.
- - `max_uses` - max number of uses (0 if unlimited)
- - `max_age` - duration in seconds before expiry (0 if never)
- - `temporary` - whether this invite only grants temporary membership
- - `unique` - whether not to try to reuse a similar invite
- Refer to [this](https://discordapp.com/developers/docs/resources/channel#create-channel-invite)
- for a broader explanation on the fields and their defaults.
+# Keywords
+- `max_uses`: Max number of uses (0 if unlimited).
+- `max_age`: Duration in seconds before expiry (0 if never).
+- `temporary`: Whether this invite only grants temporary membership.
+- `unique`: Whether not to try to reuse a similar invite.
+
+More details [here](https://discordapp.com/developers/docs/resources/channel#create-channel-invite).
 """
-function create_invite(c::Client, ch::DiscordChannel, params::Dict=Dict())
-    err, data = request(c, "POST", "/channels/$(ch.id)/invites", payload=params)
-
-    return if err
-        data
-    else
-        _beautify(c, data) |> Invite
-    end
+function create_invite(c::Client, channel::Snowflake, params::Dict=Dict())
+    return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=params)
+    # TODO: add the guild and channel from the cache.
+    # This would require Response to be mutable, or to create a brand new Invite.
 end
