@@ -120,7 +120,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mod
 function modify_channel(c::Client, channel::Snowflake; params...)
     # TODO: overwrites is a list of Dicts, we should probably allow passing
     # actual Overwrites. Maybe we need to implement JSON.lower for all the types.
-    (bitrate in params || :user_limit in params) && haskey(c.state.channels, channel) &&
+    (:bitrate in params || :user_limit in params) && haskey(c.state.channels, channel) &&
         c.state.channels[channel].type === CT_GUILD_VOICE &&
         throw(ArgumentError("Bitrate and user_limit can only be modified for voice channels"))
 
