@@ -405,7 +405,7 @@ function handle_guild_member_add(c::Client, e::GuildMemberAdd)
         if !haskey(ms, missing)
             ms[missing] = []
         end
-        touch(ms, missing)
+        # touch(ms, missing)
         push!(ms[missing], e.member)
     else
         ms[e.member.user.id] = e.member
@@ -447,7 +447,7 @@ function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
             if !haskey(ms, missing)
                 ms[missing] = []
             end
-            touch(ms, missing)
+            # touch(ms, missing)
             push!(ms[missing], m)
         else
             ms[m.user.id] = m
@@ -503,7 +503,7 @@ end
 function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
     haskey(c.state.messages, e.message_id) || return
     # TODO: This has race conditions.
-    touch(c.state.messages, e.message_id)
+    # touch(c.state.messages, e.message_id)
     m = c.state.messages[e.message_id]
     if ismissing(m.reactions)
         m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict())]
@@ -522,7 +522,7 @@ function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
-    touch(c.state.messages, e.message_id)
+    # touch(c.state.messages, e.message_id)
     rs = c.state.messages[e.message_id].reactions
     idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
     if idx !== nothing
@@ -534,7 +534,7 @@ end
 function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveAll)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
-    touch(c.state.messages, e.message_id)
+    # touch(c.state.messages, e.message_id)
     empty!(c.state.messages[e.message_id].reactions)
 end
 
