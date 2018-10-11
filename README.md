@@ -1,6 +1,6 @@
 <div align="center">
         <p> <img src="https://i.imgur.com/xRvoaDG.png"/> </p>
-        <p><i><b>A simple solution to create Discord bots using Julia</b></i></p>
+        <p><i><b>The solution to create Discord bots using Julia</b></i></p>
 </div>
 
 ## Julicord
