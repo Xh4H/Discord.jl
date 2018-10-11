@@ -4,7 +4,7 @@ export modify_role,
 # TODO: Similar to in overwrite.jl, this might be more intuitive as f(c, guild, role).
 
 """
-    modify_role(c::Client, role::Snowflake, guild::Snowflake; params...) -> Response{Role}
+    modify_role(c::Client, role::Integer, guild::Integer; params...) -> Response{Role}
 
 Modify a given [`Role`](@ref) in the given [`DiscordChannel`](@ref).
 
@@ -17,15 +17,15 @@ Modify a given [`Role`](@ref) in the given [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-role).
 """
-function modify_role(c::Client, role::Snowflake, guild::Snowflake; params...)
+function modify_role(c::Client, role::Integer, guild::Integer; params...)
     return Response{Role}(c, :PATCH, "/guilds/$guild/roles/$role"; body=params)
 end
 
 """
-    delete_role(c::Client, role::Snowflake, guild::Snowflake) -> Response{Nothing}
+    delete_role(c::Client, role::Integer, guild::Integer) -> Response{Nothing}
 
 Modify a given [`Role`](@ref) in the given [`DiscordChannel`](@ref).
 """
-function delete_role(c::Client, role::Snowflake, guild::Snowflake)
+function delete_role(c::Client, role::Integer, guild::Integer)
     return Response{Nothing}(c, :DELETE, "/guilds/$guild/roles/$role")
 end

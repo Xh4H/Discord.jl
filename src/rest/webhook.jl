@@ -6,24 +6,24 @@ export get_webhook,
     execute_github
 
 """
-    get_webhook(c::Client, webhook::Snowflake) -> Response{Webhook}
-    get_webhook(c::Client, webhook::Snowflake, token::AbstractString) -> Response{Webhook}
+    get_webhook(c::Client, webhook::Integer) -> Response{Webhook}
+    get_webhook(c::Client, webhook::Integer, token::AbstractString) -> Response{Webhook}
 
 Get a [`Webhook`](@ref).
 """
-function get_webhook(c::Client, webhook::Snowflake)
-    return Response{Webhook}(c, :GET, "/webhook/$webhook")
+function get_webhook(c::Client, webhook::Integer)
+    return Response{Webhook}(c, :GET, "/webhooks/$webhook")
 end
 
-function get_webhook(c::Client, webhook::Snowflake, token::AbstractString)
-    return Response{Webhook}(c, :GET, "/webhook/$webhook/$token")
+function get_webhook(c::Client, webhook::Integer, token::AbstractString)
+    return Response{Webhook}(c, :GET, "/webhooks/$webhook/$token")
 end
 
 """
-    modify_webhook(c::Client, webhook::Snowflake; params...) -> Response{Webhook}
+    modify_webhook(c::Client, webhook::Integer; params...) -> Response{Webhook}
     modify_webhook(
         c::Client,
-        webhook::Snowflake,
+        webhook::Integer,
         token::AbstractString;
         params...
     ) -> Response{Webhook}
@@ -33,18 +33,18 @@ Modify the given [`Webhook`](@ref).
 # Keywords
 - `name::AbstractString`: Name of the webhook.
 - `avatar::AbstractString`: [Avatar data](https://discordapp.com/developers/docs/resources/user#avatar-data) string.
-- `channel_id::Snowflake`: The channel this webhook should be moved to.
+- `channel_id::Integer`: The channel this webhook should be moved to.
 
 If using a `token`, `channel_id` cannot be used and the returned [`Webhook`](@ref) will not
 contain a [`User`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
 """
-function modify_webhook(c::Client, webhook::Snowflake; params...)
+function modify_webhook(c::Client, webhook::Integer; params...)
     return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=params)
 end
 
-function modify_webhook(c::Client, webhook::Snowflake, token::AbstractString; params...)
+function modify_webhook(c::Client, webhook::Integer, token::AbstractString; params...)
     :channel_id in params &&
         throw(ArgumentError("channel_id can not be modified using a token"))
 
@@ -52,23 +52,23 @@ function modify_webhook(c::Client, webhook::Snowflake, token::AbstractString; pa
 end
 
 """
-    delete_webhook(c::Client, webhook::Snowflake) -> Response{Nothing}
-    delete_webhook(c::Client, webhook::Snowflake, token::AbstractString) -> Response{Nothing}
+    delete_webhook(c::Client, webhook::Integer) -> Response{Nothing}
+    delete_webhook(c::Client, webhook::Integer, token::AbstractString) -> Response{Nothing}
 
 Delete the given [`Webhook`](@ref).
 """
-function delete_webhook(c::Client, webhook::Snowflake)
+function delete_webhook(c::Client, webhook::Integer)
     return Response{Nothing}(c, :DELETE, "/webhooks/$webhook")
 end
 
-function delete_webhook(c::Client, webhook::Snowflake, token::AbstractString)
+function delete_webhook(c::Client, webhook::Integer, token::AbstractString)
     return Response{Nothing}(c, :DELETE, "/webhooks/$webhook/$token")
 end
 
 """
     execute_webhook(
         c::Client,
-        webhook::Snowflake,
+        webhook::Integer,
         token::AbstractString;
         wait::Bool=false,
         params...,
@@ -88,7 +88,7 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_webhook(
     c::Client,
-    webhook::Snowflake,
+    webhook::Integer,
     token::AbstractString;
     wait::Bool=false,
     params...,
@@ -103,7 +103,7 @@ end
 """
     execute_slack(
         c::Client,
-        webhook::Snowflake,
+        webhook::Integer,
         token::AbstractString;
         wait::Bool=true,
         params...,
@@ -113,7 +113,7 @@ Execute the given *Slack* [`Webhook`](@ref).
 """
 function execute_slack(
     c::Client,
-    webhook::Snowflake,
+    webhook::Integer,
     token::AbstractString;
     wait::Bool=true,
     params...,
@@ -128,7 +128,7 @@ end
 """
     execute_github(
         c::Client,
-        webhook::Snowflake,
+        webhook::Integer,
         token::AbstractString;
         wait::Bool=true,
         params...,
@@ -138,7 +138,7 @@ Execute the given *Github* [`Webhook`](@ref).
 """
 function execute_github(
     c::Client,
-    webhook::Snowflake,
+    webhook::Integer,
     token::AbstractString;
     wait::Bool=true,
     params...,

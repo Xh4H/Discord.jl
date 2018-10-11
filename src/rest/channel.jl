@@ -12,26 +12,26 @@ export send_message,
     get_webhooks
 
 """
-    send_message(c::Client, channel::Snowflake, content::AbstractString) -> Response{Message}
-    send_message(c::Client, channel::Snowflake, content::Dict) -> Response{Message}
+    send_message(c::Client, channel::Integer, content::AbstractString) -> Response{Message}
+    send_message(c::Client, channel::Integer, content::Dict) -> Response{Message}
 
 Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
 """
-function send_message(c::Client, channel::Snowflake, content::AbstractString)
+function send_message(c::Client, channel::Integer, content::AbstractString)
     body = Dict("content" => content)
     return Response{Message}(c, :POST, "/channels/$channel/messages"; body=body)
 end
 
-function send_message(c::Client, channel::Snowflake, content::Dict)
+function send_message(c::Client, channel::Integer, content::Dict)
     return Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
 end
 
 """
-    get_message(c::Client, channel::Snowflake, id::Snowflake) -> Response{Message}
+    get_message(c::Client, channel::Integer, id::Integer) -> Response{Message}
 
 Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
 """
-function get_message(c::Client, channel::Snowflake, id::Snowflake)
+function get_message(c::Client, channel::Integer, id::Integer)
     return if haskey(c.state.messages, id)
         Response{Message}(c.state.messages[id])
     else
@@ -44,19 +44,19 @@ function get_message(c::Client, channel::Snowflake, id::Snowflake)
 end
 
 """
-    get_messages(c::Client, channel::Snowflake; params...) -> Response{Vector{Message}}
+    get_messages(c::Client, channel::Integer; params...) -> Response{Vector{Message}}
 
 Get a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 
 # Keywords
-- `around::Snowflake`: Get messages around this message ID.
-- `before::Snowflake`: Get messages before this message ID.
-- `after::Snowflake`: Get messages after this message ID.
+- `around::Integer`: Get messages around this message ID.
+- `before::Integer`: Get messages before this message ID.
+- `after::Integer`: Get messages after this message ID.
 - `limit::Int`: Maximum number of messages.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
 """
-function get_messages(c::Client, channel::Snowflake; params...)
+function get_messages(c::Client, channel::Integer; params...)
     resp = Response{Message}(c, :GET, "/channels/$channel/messages"; params...)
     if resp.success
         for m in resp.val
@@ -67,11 +67,11 @@ function get_messages(c::Client, channel::Snowflake; params...)
 end
 
 """
-    get_pinned_messages(c::Client, channel::Snowflake) -> Response{Vector{Message}}
+    get_pinned_messages(c::Client, channel::Integer) -> Response{Vector{Message}}
 
 Get a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref).
 """
-function get_pinned_messages(c::Client, channel::Snowflake)
+function get_pinned_messages(c::Client, channel::Integer)
     # TODO: Use the cache.
     resp = Response{Message}(c, :GET, "/channels/$channel/pins")
     if resp.success
@@ -83,24 +83,24 @@ function get_pinned_messages(c::Client, channel::Snowflake)
 end
 
 """
-    bulk_delete(c::Client, channel::Snowflake, ids::Vector{Snowflake}) -> Response
+    bulk_delete(c::Client, channel::Integer, ids::Vector{Snowflake}) -> Response
 
 Delete multiple [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 """
-function bulk_delete(c::Client, channel::Snowflake, ids::Vector{Snowflake})
+function bulk_delete(c::Client, channel::Integer, ids::Vector{Snowflake})
     body = Dict("messages" => messages)
     return Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
 end
 
 """
-    trigger_typing(c::Client, channel::Snowflake) -> Response
+    trigger_typing(c::Client, channel::Integer) -> Response
 
 Trigger the typing indicator in the given [`DiscordChannel`](@ref).
 """
 trigger_typing(c::Client, ch::DiscordChannel) = Response(c, :POST, "/channels/$(ch.id)/typing")
 
 """
-    modify_channel(c::Client, channel::Snowflake; params...) -> Response{Channel}
+    modify_channel(c::Client, channel::Integer; params...) -> Response{Channel}
 
 Modify the given [`DiscordChannel`](@ref).
 
@@ -113,11 +113,11 @@ Modify the given [`DiscordChannel`](@ref).
 - `bitrate::Int` The bitrate in bits of the voice channel.
 - `user_limit::Int`: The user limit of the voice channel.
 - `permission_overwrites::Vector{Dict}`: Channel or category-specific permissions.
-- `parent_id::Snowflake`: ID of the new parent category.
+- `parent_id::Integer`: ID of the new parent category.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).
 """
-function modify_channel(c::Client, channel::Snowflake; params...)
+function modify_channel(c::Client, channel::Integer; params...)
     # TODO: overwrites is a list of Dicts, we should probably allow passing
     # actual Overwrites. Maybe we need to implement JSON.lower for all the types.
     (:bitrate in params || :user_limit in params) && haskey(c.state.channels, channel) &&
@@ -134,16 +134,16 @@ end
 # TODO Should we have set_permissions function?
 
 """
-    delete_channel(c::Client, channel::Snowflake) -> Response{Channel}
+    delete_channel(c::Client, channel::Integer) -> Response{Channel}
 
 Delete the given [`DiscordChannel`](@ref).
 """
-function delete_channel(c::Client, channel::Snowflake)
+function delete_channel(c::Client, channel::Integer)
     return Response{Channel}(c, :DELETE, "/channels/$channel")
 end
 
 """
-    create_invite(c::Client, channel::Snowflake; params...) -> Response{Invite}
+    create_invite(c::Client, channel::Integer; params...) -> Response{Invite}
 
 Create an [`Invite`](@ref) to the given [`DiscordChannel`](@ref).
 
@@ -155,24 +155,24 @@ Create an [`Invite`](@ref) to the given [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#create-channel-invite).
 """
-function create_invite(c::Client, channel::Snowflake, params::Dict=Dict())
+function create_invite(c::Client, channel::Integer, params::Dict=Dict())
     return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=params)
     # TODO: add the guild and channel from the cache.
     # This would require Response to be mutable, or to create a brand new Invite.
 end
 
 """
-    get_invites(c::Client, channel::Snowflake) -> Response{Invite}
+    get_invites(c::Client, channel::Integer) -> Response{Invite}
 
 Get an Array of [`Invite`](@ref)s from the given [`DiscordChannel`](@ref).
 """
-function get_invites(c::Client, channel::Snowflake)
+function get_invites(c::Client, channel::Integer)
     return Response{Invite}(c, :GET, "/channels/$channel/invites")
     # Create invite comments
 end
 
 """
-    create_webhook(c::Client, channel::Snowflake, params::Dict=Dict())
+    create_webhook(c::Client, channel::Integer, params::Dict=Dict())
 
 Create a [`Webhook`](@ref) in the given [`DiscordChannel`](@ref).
 
@@ -182,16 +182,16 @@ Create a [`Webhook`](@ref) in the given [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#create-webhook).
 """
-function create_webhook(c::Client, channel::Snowflake, params::Dict=Dict())
+function create_webhook(c::Client, channel::Integer, params::Dict=Dict())
     return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=params)
 end
 
 """
-    get_webhooks(c::Client, channel::Snowflake) -> Response{Webhook}
+    get_webhooks(c::Client, channel::Integer) -> Response{Webhook}
 
 Get an Array of [`Webhook`](@ref)s from the given [`DiscordChannel`](@ref).
 """
-function get_webhooks(c::Client, channel::Snowflake)
+function get_webhooks(c::Client, channel::Integer)
     return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
     # Create invite comments
 end
