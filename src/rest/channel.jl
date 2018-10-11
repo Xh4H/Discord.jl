@@ -6,7 +6,10 @@ export send_message,
     trigger_typing,
     modify_channel,
     delete_channel,
-    create_invite
+    create_invite,
+    get_invites,
+    create_webhook,
+    get_webhooks
 
 """
     send_message(c::Client, channel::Snowflake, content::AbstractString) -> Response{Message}
@@ -94,9 +97,7 @@ end
 
 Trigger the typing indicator in the given [`DiscordChannel`](@ref).
 """
-function trigger_typing(c::Client, ch::DiscordChannel)
-    return Response(c, :POST, "/channels/$(ch.id)/typing")
-end
+trigger_typing(c::Client, ch::DiscordChannel) = Response(c, :POST, "/channels/$(ch.id)/typing")
 
 """
     modify_channel(c::Client, channel::Snowflake; params...) -> Response{Channel}
@@ -158,4 +159,39 @@ function create_invite(c::Client, channel::Snowflake, params::Dict=Dict())
     return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=params)
     # TODO: add the guild and channel from the cache.
     # This would require Response to be mutable, or to create a brand new Invite.
+end
+
+"""
+    get_invites(c::Client, channel::Snowflake) -> Response{Invite}
+
+Get an Array of [`Invite`](@ref)s from the given [`DiscordChannel`](@ref).
+"""
+function get_invites(c::Client, channel::Snowflake)
+    return Response{Invite}(c, :GET, "/channels/$channel/invites")
+    # Create invite comments
+end
+
+"""
+    create_webhook(c::Client, channel::Snowflake, params::Dict=Dict())
+
+Create a [`Webhook`](@ref) in the given [`DiscordChannel`](@ref).
+
+# Keywords
+- `name::AbstractString` - name of the webhook (2-23 characters)
+- `avatar::AbstractString` - image for the default webhook avatar
+
+More details [here](https://discordapp.com/developers/docs/resources/webhook#create-webhook).
+"""
+function create_webhook(c::Client, channel::Snowflake, params::Dict=Dict())
+    return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=params)
+end
+
+"""
+    get_webhooks(c::Client, channel::Snowflake) -> Response{Webhook}
+
+Get an Array of [`Webhook`](@ref)s from the given [`DiscordChannel`](@ref).
+"""
+function get_webhooks(c::Client, channel::Snowflake)
+    return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
+    # Create invite comments
 end
