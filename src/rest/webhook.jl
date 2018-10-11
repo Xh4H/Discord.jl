@@ -74,7 +74,7 @@ function delete_webhook_with_token(c::Client, webhook::Snowflake, token::Abstrac
 end
 
 """
-    execute_webhook(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, wait::Bool=false) -> Response{Union{Message, Nothing}}
+    execute_webhook(c::Client, webhook::Snowflake, token::AbstractString; params...) -> Response{Union{Message, Nothing}}
 
 Execute the given [`Webhook`](@ref) with the given parameters. Return the created message body
 (defaults to false; when false a message that is not saved does not return an error).
@@ -89,24 +89,24 @@ Execute the given [`Webhook`](@ref) with the given parameters. Return the create
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#execute-webhook).
 """
-function execute_webhook(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, wait::Bool=false)
-    return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token"; body=params, wait)
+function execute_webhook(c::Client, webhook::Snowflake, token::AbstractString; params...)
+    return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token"; params...)
 end
 
 """
-    execute_slack(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, wait::Bool=false) -> Response{Union{Message, Nothing}}
+    execute_slack(c::Client, webhook::Snowflake, token::AbstractString; params...) -> Response{Union{Message, Nothing}}
 
 Execute the given *Slack* Webhook with the given parameters.
 """
-function execute_slack(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, wait::Bool=false)
-    return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token/slack"; body=params, wait)
+function execute_slack(c::Client, webhook::Snowflake, token::AbstractString; params...)
+    return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token/slack"; params...)
 end
 
 """
-    execute_github(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, wait::Bool=false) -> Response{Union{Message, Nothing}}
+    execute_github(c::Client, webhook::Snowflake, token::AbstractString; params...) -> Response{Union{Message, Nothing}}
 
 Execute the given *Github* Webhook with the given parameters.
 """
-function execute_github(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, wait::Bool=false)
-    return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token/github"; body=params, wait)
+function execute_github(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, params...)
+    return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token/github"; params...)
 end
