@@ -155,7 +155,7 @@ Create an [`Invite`](@ref) to the given [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#create-channel-invite).
 """
-function create_invite(c::Client, channel::Integer, params::Dict=Dict())
+function create_invite(c::Client, channel::Integer, params...)
     return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=params)
     # TODO: add the guild and channel from the cache.
     # This would require Response to be mutable, or to create a brand new Invite.
@@ -172,7 +172,7 @@ function get_invites(c::Client, channel::Integer)
 end
 
 """
-    create_webhook(c::Client, channel::Integer, params::Dict=Dict())
+    create_webhook(c::Client, channel::Integer, params...)
 
 Create a [`Webhook`](@ref) in the given [`DiscordChannel`](@ref).
 
@@ -182,7 +182,7 @@ Create a [`Webhook`](@ref) in the given [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#create-webhook).
 """
-function create_webhook(c::Client, channel::Integer, params::Dict=Dict())
+function create_webhook(c::Client, channel::Integer, params...)
     return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=params)
 end
 

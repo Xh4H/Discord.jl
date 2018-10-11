@@ -94,6 +94,7 @@ function Response{T}(
     end
 end
 
+include(joinpath("rest", "integration.jl"))
 include(joinpath("rest", "invite.jl"))
 include(joinpath("rest", "channel.jl"))
 include(joinpath("rest", "message.jl"))
