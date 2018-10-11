@@ -10,7 +10,7 @@ Modify a given [`Role`](@ref) in the given [`DiscordChannel`](@ref).
 
 # Keywords
 - `name::AbstractString`: Name of the role.
-- `permissions::Int`: Bitwise of the enabled/disabled permissions.
+- `permissions::Int`: Bitwise OR of the enabled/disabled permissions.
 - `color::Int`: RGB color value.
 - `hoist::Bool`: Whether the role should be displayed separately in the sidebar.
 - `mentionable::Bool`: Whether the role should be mentionable.
