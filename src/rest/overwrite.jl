@@ -1,10 +1,18 @@
 export modify_overwrite,
-        delete_overwrite
+    delete_overwrite
+
+# TODO: These functions might make more sense as f(c, channel, overwrite; params...).
+# Most functions on messages for example use that convention.
 
 """
-    modify_overwrite(c::Client, channel::Snowflake, overwrite::Snowflake; params...) -> Response{Overwrite}
+    modify_overwrite(
+        c::Client,
+        channel::Snowflake,
+        overwrite::Snowflake;
+        params...,
+    ) -> Response{Overwrite}
 
-Modify a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref) with the given parameters.
+Modify a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref).
 
 # Keywords
 - `allow::Int`: the bitwise value of all allowed permissions.
@@ -14,11 +22,20 @@ Modify a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref) with th
 More details [here](https://discordapp.com/developers/docs/resources/channel#edit-channel-permissions).
 """
 function modify_overwrite(c::Client, overwrite::Snowflake, channel::Snowflake; params...)
-    return Response{Overwrite}(c, :PUT, "/channels/$channel/permissions/$overwrite"; params...)
+    return Response{Overwrite}(
+        c,
+        :PUT,
+        "/channels/$channel/permissions/$overwrite";
+        params...,
+    )
 end
 
 """
-    delete_overwrite(c::Client, overwrite::Snowflake, channel::Snowflake)) -> Response{Overwrite}
+    delete_overwrite(
+        c::Client,
+        overwrite::Snowflake,
+        channel::Snowflake
+    ) -> Response{Overwrite}
 
 Delete a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref).
 """

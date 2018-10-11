@@ -41,14 +41,14 @@ contain a [`User`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
 """
 function modify_webhook(c::Client, webhook::Snowflake; params...)
-    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; params...)
+    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=params)
 end
 
 function modify_webhook(c::Client, webhook::Snowflake, token::AbstractString; params...)
     :channel_id in params &&
         throw(ArgumentError("channel_id can not be modified using a token"))
 
-    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook/$token"; params...)
+    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook/$token"; body=params)
 end
 
 """
