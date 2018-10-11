@@ -10,7 +10,7 @@ const should_send = Dict(
 )
 
 """
-A wrapper around responses from the REST API.
+A wrapper around a response from the REST API.
 
 # Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, a call
@@ -19,24 +19,23 @@ A wrapper around responses from the REST API.
 - `success::Bool`: The success state of the request. If this is `true`, then it is safe to
   access `val`.
 - `cache_hit::Bool`: Whether `val` came from the cache.
-- `http_response`: The underlying HTTP response. If `success` is true, then this is a
-  `HTTP.Messages.Response`. Otherwise, it is a `HTTP.ExceptionRequest.StatusError`.
-  If `cache_hit` is `true`, it is `nothing`.
+- `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response.
+  If `success` is true, it is `nothing`.
 
 !!! note
     Because the underlying HTTP reponse body has already been parsed, `http_response.body`
-    will always be empty.
+    will always be empty when `success` is true.
 """
 struct Response{T}
     val::Union{T, Nothing}
     success::Bool
     cache_hit::Bool
-    http_response::Union{HTTP.Messages.Response, HTTP.ExceptionRequest.StatusError, Nothing}
+    http_response::Union{HTTP.Messages.Response, Nothing}
 end
 
 # HTTP status error.
 function Response{T}(e::HTTP.ExceptionRequest.StatusError) where T
-    return Response{T}(nothing, false, false, e)
+    return Response{T}(nothing, false, false, e.response)
 end
 
 # Successful HTTP request with no body.
