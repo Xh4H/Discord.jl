@@ -16,19 +16,11 @@ Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
 """
 function send_message(c::Client, channel::Snowflake, content::AbstractString)
     body = Dict("content" => content)
-    resp = Response{Message}(c, :POST, "/channels/$channel/messages"; body=body)
-    if resp.success
-        c.state.messages[resp.val.id] = resp.val
-    end
-    return resp
+    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=body)
 end
 
 function send_message(c::Client, channel::Snowflake, content::Dict)
-    resp = Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
-    if resp.success
-        c.state.messages[resp.val.id] = resp.val
-    end
-    return resp
+    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
 end
 
 """
@@ -54,10 +46,10 @@ end
 Get a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 
 # Keywords
-- `around`: Get messages around this message ID.
-- `before`: Get messages before this message ID.
-- `after`: Get messages after this message ID.
-- `limit`: Maximum number of messages.
+- `around::Snowflake`: Get messages around this message ID.
+- `before::Snowflake`: Get messages before this message ID.
+- `after::Snowflake`: Get messages after this message ID.
+- `limit::Int`: Maximum number of messages.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
 """
@@ -77,6 +69,7 @@ end
 Get a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref).
 """
 function get_pinned_messages(c::Client, channel::Snowflake)
+    # TODO: Use the cache.
     resp = Response{Message}(c, :GET, "/channels/$channel/pins")
     if resp.success
         for m in resp.val
@@ -93,13 +86,7 @@ Delete multiple [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 """
 function bulk_delete(c::Client, channel::Snowflake, ids::Vector{Snowflake})
     body = Dict("messages" => messages)
-    resp = Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
-    if resp.success
-        for id in ids
-            delete!(c.state.messages, id)
-        end
-    end
-    return resp
+    return Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
 end
 
 """
@@ -117,19 +104,21 @@ end
 Modify the given [`DiscordChannel`](@ref).
 
 # Keywords
-- `name`: Channel name (2-100 characters).
-- `topic`: Channel topic (up to 1024 characters).
-- `nsfw`: Whether the channel is NSFW.
-- `rate_limit_per_user`: Seconds a user must wait before sending another message.
-- `position` The position in the left-hand listing.
-- `bitrate` The bitrate in bits of the voice channel.
-- `user_limit`: The user limit of the voice channel.
-- `permission_overwrites`: Channel or category-specific permissions.
-- `parent_id`: ID of the new parent category.
+- `name::AbstractString`: Channel name (2-100 characters).
+- `topic::AbstractString`: Channel topic (up to 1024 characters).
+- `nsfw::Bool`: Whether the channel is NSFW.
+- `rate_limit_per_user::Int`: Seconds a user must wait before sending another message.
+- `position::Int` The position in the left-hand listing.
+- `bitrate::Int` The bitrate in bits of the voice channel.
+- `user_limit::Int`: The user limit of the voice channel.
+- `permission_overwrites::Vector{Dict}`: Channel or category-specific permissions.
+- `parent_id::Snowflake`: ID of the new parent category.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).
 """
 function modify_channel(c::Client, channel::Snowflake; params...)
+    # TODO: overwrites is a list of Dicts, we should probably allow passing
+    # actual Overwrites. Maybe we need to implement JSON.lower for all the types.
     (bitrate in params || :user_limit in params) && haskey(c.state.channels, channel) &&
         c.state.channels[channel].type === CT_GUILD_VOICE &&
         throw(ArgumentError("Bitrate and user_limit can only be modified for voice channels"))
@@ -149,9 +138,7 @@ end
 Delete the given [`DiscordChannel`](@ref).
 """
 function delete_channel(c::Client, channel::Snowflake)
-    resp = Response{Channel}(c, :DELETE, "/channels/$channel")
-    resp.success && delete!(c.state.channels, ch.id)
-    return resp
+    return Response{Channel}(c, :DELETE, "/channels/$channel")
 end
 
 """
@@ -160,10 +147,10 @@ end
 Create an [`Invite`](@ref) to the given [`DiscordChannel`](@ref).
 
 # Keywords
-- `max_uses`: Max number of uses (0 if unlimited).
-- `max_age`: Duration in seconds before expiry (0 if never).
-- `temporary`: Whether this invite only grants temporary membership.
-- `unique`: Whether not to try to reuse a similar invite.
+- `max_uses::Int`: Max number of uses (0 if unlimited).
+- `max_age::Int`: Duration in seconds before expiry (0 if never).
+- `temporary::Bool`: Whether this invite only grants temporary membership.
+- `unique::Bool`: Whether not to try to reuse a similar invite.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#create-channel-invite).
 """
