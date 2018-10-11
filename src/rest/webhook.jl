@@ -107,6 +107,6 @@ end
 
 Execute the given *Github* Webhook with the given parameters.
 """
-function execute_github(c::Client, webhook::Snowflake, token::AbstractString; params::Dict, params...)
+function execute_github(c::Client, webhook::Snowflake, token::AbstractString; params...)
     return Response{Union{Message, Nothing}}(c, :POST, "/webhooks/$webhook/$token/github"; params...)
 end
