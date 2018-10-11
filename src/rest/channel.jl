@@ -3,10 +3,14 @@ export send_message,
     get_messages,
     get_pinned_messages,
     bulk_delete,
-    trigger_typing
+    trigger_typing,
+    modify_channel,
+    delete_channel,
+    create_invite
 
 """
-    send_message(c::Client, channel::Snowflake, content::AbstractString) -> Response
+    send_message(c::Client, channel::Snowflake, content::AbstractString) -> Response{Message}
+    send_message(c::Client, channel::Snowflake, content::Dict) -> Response{Message}
 
 Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
 """
@@ -19,7 +23,13 @@ function send_message(c::Client, channel::Snowflake, content::AbstractString)
     return resp
 end
 
-# TODO: send_file(::Client, ::DiscordChannel, ::Dict)
+function send_message(c::Client, channel::Snowflake, content::Dict)
+    resp = Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
+    if resp.success
+        c.state.messages[resp.val.id] = resp.val
+    end
+    return resp
+end
 
 """
     get_message(c::Client, channel::Snowflake, id::Snowflake) -> Response{Message}
