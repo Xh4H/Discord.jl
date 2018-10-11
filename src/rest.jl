@@ -58,7 +58,13 @@ function Response{T}(val::T) where T
 end
 
 # HTTP request with no expected response body.
-function Response(c::Client, method::Symbol, endpoint::AbstractString; body::Dict=Dict(), params...)
+function Response(
+    c::Client,
+    method::Symbol,
+    endpoint::AbstractString;
+    body::AbstractDict=Dict(),
+    params...,
+)
     return Response{Nothing}(c, method, endpoint; body=body, params...)
 end
 
