@@ -91,3 +91,5 @@ end
 include(joinpath("rest", "invite.jl"))
 include(joinpath("rest", "channel.jl"))
 include(joinpath("rest", "message.jl"))
+include(joinpath("rest", "overwrite.jl"))
+include(joinpath("rest", "role.jl"))
