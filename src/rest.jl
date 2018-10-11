@@ -9,6 +9,20 @@ const should_send = Dict(
     :PUT => true,
 )
 
+"""
+A wrapper around responses from the REST API.
+
+# Fields
+- `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, a call
+  to [`get_message`](@ref) will return a `Response{Message}` for which this value is a
+  [`Message`](@ref). If `success` is `false`, it is `nothing`.
+- `success::Bool`: The success state of the request. If this is `true`, then it is safe to
+  access `val`.
+- `cache_hit::Bool`: Whether `val` came from the cache.
+- `http_response`: The underlying HTTP response. If `success` is true, then this is a
+  `HTTP.Messages.Response`. Otherwise, it is a `HTTP.ExceptionRequest.StatusError`.
+  If `cache_hit` is `true`, it is `nothing`.
+"""
 struct Response{T}
     val::Union{T, Nothing}
     success::Bool
@@ -16,32 +30,34 @@ struct Response{T}
     http_response::Union{HTTP.Messages.Response, HTTP.ExceptionRequest.StatusError, Nothing}
 end
 
-function Response{Nothing}(e::HTTP.ExceptionRequest.StatusError)
-    return Response{Nothing}(nothing, false, false, e)
-end
-
+# HTTP status error.
 function Response{T}(e::HTTP.ExceptionRequest.StatusError) where T
     return Response{T}(nothing, false, false, e)
 end
 
+# Successful HTTP request with no body.
 function Response{Nothing}(r::HTTP.Messages.Response)
     return Response{Nothing}(nothing, true, false, r)
 end
 
+# Successful HTTP request.
 function Response{T}(r::HTTP.Messages.Response) where T
     body = JSON.parse(String(r.body))
     val, TT = body isa Vector ? (T.(body), Vector{T}) : (T(body), T)
     Response{TT}(val, true, false, r)
 end
 
+# Cache hit.
 function Response{T}(val::T) where T
     return Response{T}(val, true, true, nothing)
 end
 
+# HTTP request with no expected response body.
 function Response(c::Client, method::Symbol, endpoint::AbstractString; body::Dict=Dict(), params...)
     return Response{Nothing}(c, mthod, endpoint; body=body, params...)
 end
 
+# HTTP request.
 function Response{T}(
     c::Client,
     method::Symbol,
