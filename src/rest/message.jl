@@ -13,7 +13,7 @@ export reply,
 Reply to the given [`Message`](@ref) (send a message to the same channel).
 """
 function reply(c::Client, m::Message, content::Union{AbstractString, Dict})
-    return send_message(c, m.channel.id, content)
+    return send_message(c, m.channel_id, content)
 end
 
 """
@@ -87,7 +87,7 @@ function get_reactions(c::Client, m::Message, emoji::AbstractString)
     return Response{User}(
         c,
         :GET,
-        "/channels/$(m.channel_id)/messages/$(m.id)/reactions/$(escapeuri(emoji))",
+        "/channels/$(m.channel_id)/messages/$(m.id)/reactions/$(HTTP.escapeuri(emoji))",
     )
 end
 
