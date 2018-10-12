@@ -12,8 +12,7 @@ export send_message,
     get_webhooks
 
 """
-    send_message(c::Client, channel::Integer, content::AbstractString) -> Response{Message}
-    send_message(c::Client, channel::Integer, content::Dict) -> Response{Message}
+    send_message(c::Client, channel::Union{DiscordChannel, Integer}, content::Union{AbstractString, Dict}) -> Response{Message}
 
 Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
 """
@@ -26,7 +25,10 @@ function send_message(c::Client, channel::Integer, content::Dict)
     return Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
 end
 
+send_message(c::Client, channel::DiscordChannel, content::Union{AbstractString, Dict}) = send_message(c, channel.id, content)
+
 """
+    get_message(c::Client, msg::Message) -> Response{Message}
     get_message(c::Client, channel::Integer, id::Integer) -> Response{Message}
 
 Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
@@ -43,8 +45,11 @@ function get_message(c::Client, channel::Integer, id::Integer)
     end
 end
 
+get_message(c::Client, msg::Message) = get_message(c, msg.channel_id, msg.id)
+
+
 """
-    get_messages(c::Client, channel::Integer; params...) -> Response{Vector{Message}}
+    get_messages(c::Client, channel::Union{DiscordChannel, Integer}; params...) -> Response{Vector{Message}}
 
 Get a list of [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 
@@ -66,8 +71,11 @@ function get_messages(c::Client, channel::Integer; params...)
     return resp
 end
 
+get_messages(c::Client, channel::DiscordChannel; params...) = get_messages(c, channel.id; params)
+
+
 """
-    get_pinned_messages(c::Client, channel::Integer) -> Response{Vector{Message}}
+    get_pinned_messages(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{Vector{Message}}
 
 Get a list of [`Message`](@ref)s pinned in the given [`DiscordChannel`](@ref).
 """
@@ -82,25 +90,32 @@ function get_pinned_messages(c::Client, channel::Integer)
     return resp
 end
 
+get_pinned_messages(c::Client, channel::DiscordChannel) = get_pinned_messages(c, channel.id)
+
+
 """
-    bulk_delete(c::Client, channel::Integer, ids::Vector{Snowflake}) -> Response
+    bulk_delete(c::Client, channel::Union{DiscordChannel, Integer}, ids::Vector{Snowflake}) -> Response{Nothing}
 
 Delete multiple [`Message`](@ref)s from the given [`DiscordChannel`](@ref).
 """
 function bulk_delete(c::Client, channel::Integer, ids::Vector{Snowflake})
-    body = Dict("messages" => messages)
-    return Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
+    body = Dict("messages" => ids)
+    return Response{Nothing}(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
 end
 
+bulk_delete(c::Client, channel::DiscordChannel, ids::Vector{Snowflake}) = get_pinned_messages(c, channel.id, ids)
+
+
 """
-    trigger_typing(c::Client, channel::Integer) -> Response
+    trigger_typing(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{Nothing}
 
 Trigger the typing indicator in the given [`DiscordChannel`](@ref).
 """
-trigger_typing(c::Client, ch::DiscordChannel) = Response(c, :POST, "/channels/$(ch.id)/typing")
+trigger_typing(c::Client, ch::Integer) = Response{Nothing}(c, :POST, "/channels/$(ch)/typing")
+trigger_typing(c::Client, ch::DiscordChannel) = trigger_typing(c, ch.id)
 
 """
-    modify_channel(c::Client, channel::Integer; params...) -> Response{Channel}
+    modify_channel(c::Client, channel::Union{DiscordChannel, Integer}; params...) -> Response{Channel}
 
 Modify the given [`DiscordChannel`](@ref).
 
@@ -131,10 +146,12 @@ function modify_channel(c::Client, channel::Integer; params...)
     return resp
 end
 
+modify_channel(c::Client, ch::DiscordChannel; params...) = modify_channel(c, ch.id; params)
+
 # TODO Should we have set_permissions function?
 
 """
-    delete_channel(c::Client, channel::Integer) -> Response{Channel}
+    delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{Channel}
 
 Delete the given [`DiscordChannel`](@ref).
 """
@@ -142,8 +159,10 @@ function delete_channel(c::Client, channel::Integer)
     return Response{Channel}(c, :DELETE, "/channels/$channel")
 end
 
+delete_channel(c::Client, ch::DiscordChannel) = delete_channel(c, ch.id)
+
 """
-    create_invite(c::Client, channel::Integer; params...) -> Response{Invite}
+    create_invite(c::Client, channel::Union{DiscordChannel, Integer}; params...) -> Response{Invite}
 
 Create an [`Invite`](@ref) to the given [`DiscordChannel`](@ref).
 
@@ -161,8 +180,10 @@ function create_invite(c::Client, channel::Integer, params...)
     # This would require Response to be mutable, or to create a brand new Invite.
 end
 
+create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id; params)
+
 """
-    get_invites(c::Client, channel::Integer) -> Response{Invite}
+    get_invites(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{Invite}
 
 Get an Array of [`Invite`](@ref)s from the given [`DiscordChannel`](@ref).
 """
@@ -171,8 +192,10 @@ function get_invites(c::Client, channel::Integer)
     # Create invite comments
 end
 
+get_invites(c::Client, ch::DiscordChannel) = get_invites(c, ch.id)
+
 """
-    create_webhook(c::Client, channel::Integer, params...)
+    create_webhook(c::Client, channel::Union{DiscordChannel, Integer}, params...)
 
 Create a [`Webhook`](@ref) in the given [`DiscordChannel`](@ref).
 
@@ -186,8 +209,10 @@ function create_webhook(c::Client, channel::Integer, params...)
     return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=params)
 end
 
+create_webhook(c::Client, ch::DiscordChannel; params...) = create_webhook(c, ch.id; params)
+
 """
-    get_webhooks(c::Client, channel::Integer) -> Response{Webhook}
+    get_webhooks(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{Webhook}
 
 Get an Array of [`Webhook`](@ref)s from the given [`DiscordChannel`](@ref).
 """
@@ -195,3 +220,5 @@ function get_webhooks(c::Client, channel::Integer)
     return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
     # Create invite comments
 end
+
+get_webhooks(c::Client, ch::DiscordChannel) = get_webhooks(c, ch.id)
