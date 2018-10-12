@@ -1,26 +1,42 @@
-export get_member
+export get_member,
+    modify_member,
+    ban_member,
+    kick_member,
+    add_role,
+    remove_role
 
 """
-    get_member(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}) -> Response{Member}
+    get_member(
+        c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
+    ) -> Response{Member}
 
-Get a [`Member`](@ref) in the given guild.
+Get a [`Member`](@ref) in an [`AbstractGuild`](@ref).
 """
 function get_member(c::Client, guild::Integer, user::Integer)
     return Response{Member}(c, :GET, "/guilds/$guild/members/$user")
 end
 
-get_member(c::Client, guild::Guild, user::User) = get_member(c, guild.id, user.id)
-get_member(c::Client, guild::Integer, user::User) = get_member(c, guild, user.id)
-get_member(c::Client, guild::Guild, user::Integer) = get_member(c, guild.id, user)
+get_member(c::Client, g::AbstractGuild, u::User) = get_member(c, g.id, u.id)
+
+get_member(c::Client, guild::Integer, u::User) = get_member(c, guild, u.id)
+
+get_member(c::Client, g::AbstractGuild, user::Integer) = get_member(c, g.id, user)
 
 """
-    modify_member(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}; params...) -> Response{Member}
+    modify_member(
+        c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer};
+        params...,
+    ) -> Response{Member}
 
-Modify a [`Member`](@ref) in the given guild.
+Modify a [`Member`](@ref) in an [`AbstractGuild`](@ref).
 
 # Keywords
 - `nick::AbstractString`: Value to set the member's nickname to.
-- `roles::Array`: List of role ids the member is assigned.
+- `roles::Vector`: List of role ids the member is assigned.
 - `mute::Bool`: Whether the member should be muted.
 - `deaf::Bool`: Whether the member should be deafened.
 - `channel_id::Integer`: ID of a voice channel to move the member to.
@@ -31,70 +47,147 @@ function modify_member(c::Client, guild::Integer, user::Integer; params...)
     return Response{Webhook}(c, :PATCH, "/guilds/$guild/members/$user"; body=params)
 end
 
-modify_member(c::Client, guild::Guild, user::User; params...) = modify_member(c, guild.id, user.id; params...)
-modify_member(c::Client, guild::Integer, user::User; params...) = modify_member(c, guild, user.id; params...)
-modify_member(c::Client, guild::Guild, user::Integer; params...) = modify_member(c, guild.id, user; params...)
+function modify_member(c::Client, g::AbstractGuild, u::User; params...)
+    return modify_member(c, g.id, u.id; params...)
+end
+
+function modify_member(c::Client, guild::Integer, u::User; params...)
+    return modify_member(c, guild, user.id; params...)
+end
+
+function modify_member(c::Client, g::AbstractGuild, user::Integer; params...)
+    return modify_member(c, guild.id, user; params...)
+end
 
 """
-    ban_member(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}; params...) -> Response{Nothing}
+    ban_member(
+        c::Client,
+        guild::Union{Guild, Integer},
+        user::Union{User, Integer};
+        params...,
+    ) -> Response
 
-Ban a [`Member`](@ref) from the given guild.
+Ban a [`Member`](@ref) from an [`AbstractGuild`](@ref).
 
 # Query
 - `delete-message-days::Integer`: Number of days to delete the messages for (0-7).
 - `reason::AbstractString`: Reason for the ban.
 """
 function ban_member(c::Client, guild::Integer, user::Integer; params...)
-    return Response{Nothing}(c, :PUT, "/guilds/$guild/bans/$user"; params...)
+    return Response(c, :PUT, "/guilds/$guild/bans/$user"; params...)
 end
 
-ban_member(c::Client, guild::Guild, user::User; params...) = ban_member(c, guild.id, user.id; params...)
-ban_member(c::Client, guild::Integer, user::User; params...) = ban_member(c, guild, user.id; params...)
-ban_member(c::Client, guild::Guild, user::Integer; params...) = ban_member(c, guild.id, user; params...)
+function ban_member(c::Client, g::AbstractGuild, u::User; params...)
+    return ban_member(c, g.id, u.id; params...)
+end
+
+function ban_member(c::Client, guild::Integer, u::User; params...)
+    return ban_member(c, guild, u.id; params...)
+end
+
+function ban_member(c::Client, g::AbstractGuild, user::Integer; params...)
+    return ban_member(c, g.id, user; params...)
+end
 
 """
-    kick_member(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}) -> Response{Nothing}
+    kick_member(
+        c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
+    ) -> Response
 
-Kick a [`Member`](@ref) from the given guild.
+Kick a [`Member`](@ref) from an [`AbstractGuild`](@ref).
 """
 function kick_member(c::Client, guild::Integer, user::Integer)
-    return Response{Nothing}(c, :DELETE, "/guilds/$guild/members/$user")
+    return Response(c, :DELETE, "/guilds/$guild/members/$user")
 end
 
-kick_member(c::Client, guild::Guild, user::User) = kick_member(c, guild.id, user.id)
-kick_member(c::Client, guild::Integer, user::User) = kick_member(c, guild, user.id)
-kick_member(c::Client, guild::Guild, user::Integer) = kick_member(c, guild.id, user)
+kick_member(c::Client, g::AbstractGuild, u::User) = kick_member(c, g.id, u.id)
+
+kick_member(c::Client, guild::Integer, u::User) = kick_member(c, guild, u.id)
+
+kick_member(c::Client, g::AbstractGuild, user::Integer) = kick_member(c, g.id, user)
 
 """
-    add_role(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}, role::Union{Role, Integer}) -> Response{Nothing}
+    add_role(
+        c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
+        role::Union{Role, Integer},
+    ) -> Response
 
-Add a [`Role`](@ref) to the given [`Member`](@ref).
+Add a [`Role`](@ref) to a [`Member`](@ref) in an [`AbstractGuild`](@ref)..
 """
 function add_role(c::Client, guild::Integer, user::Integer, role::Integer)
-    return Response{Nothing}(c, :PUT, "/guilds/$guild/members/$user/roles/$role")
+    return Response(c, :PUT, "/guilds/$guild/members/$user/roles/$role")
 end
 
-add_role(c::Client, guild::Guild, user::User, role::Role) = add_role(c, guild.id, user.id, role.permissions)
-add_role(c::Client, guild::Guild, user::User, role::Integer) = add_role(c, guild.id, user.id, role)
-add_role(c::Client, guild::Guild, user::Integer, role::Role) = add_role(c, guild.id, user, role.permissions)
-add_role(c::Client, guild::Guild, user::Integer, role::Integer) = add_role(c, guild.id, user, role)
-add_role(c::Client, guild::Integer, user::User, role::Role) = add_role(c, guild, user.id, role.permissions)
-add_role(c::Client, guild::Integer, user::User, role::Integer) = add_role(c, guild, user.id, role)
-add_role(c::Client, guild::Integer, user::Integer, role::Role) = add_role(c, guild, user, role.permissions)
+function add_role(c::Client, g::AbstractGuild, u::User, r::Role)
+    return add_role(c, g.id, u.id, r.id)
+end
+
+function add_role(c::Client, g::AbstractGuild, u::User, role::Integer)
+    return add_role(c, g.id, u.id, role)
+end
+
+function add_role(c::Client, g::AbstractGuild, user::Integer, r::Role)
+    return add_role(c, g.id, user, r.id)
+end
+
+function add_role(c::Client, g::AbstractGuild, user::Integer, role::Integer)
+    return add_role(c, g.id, user, role)
+end
+
+function add_role(c::Client, guild::Integer, u::User, r::Role)
+    return add_role(c, guild, u.id, r.id)
+end
+
+function add_role(c::Client, guild::Integer, u::User, role::Integer)
+    return add_role(c, guild, u.id, role)
+end
+
+function add_role(c::Client, guild::Integer, user::Integer, role::Role)
+    return add_role(c, guild, user, r.id)
+end
 
 """
-    remove_role(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}, role::Union{Role, Integer}) -> Response{Nothing}
+    remove_role(
+        c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
+        role::Union{Role, Integer},
+    ) -> Response
 
-Remove a [`Role`](@ref) from the given [`Member`](@ref).
+Remove a [`Role`](@ref) from a [`Member`](@ref) in an [`AbstractGuild`](@ref).
 """
 function remove_role(c::Client, guild::Integer, user::Integer, role::Integer)
-    return Response{Nothing}(c, :DELETE, "/guilds/$guild/members/$user/roles/$role")
+    return Response(c, :DELETE, "/guilds/$guild/members/$user/roles/$role")
 end
 
-remove_role(c::Client, guild::Guild, user::User, role::Role) = remove_role(c, guild.id, user.id, role.permissions)
-remove_role(c::Client, guild::Guild, user::User, role::Integer) = remove_role(c, guild.id, user.id, role)
-remove_role(c::Client, guild::Guild, user::Integer, role::Role) = remove_role(c, guild.id, user, role.permissions)
-remove_role(c::Client, guild::Guild, user::Integer, role::Integer) = remove_role(c, guild.id, user, role)
-remove_role(c::Client, guild::Integer, user::User, role::Role) = remove_role(c, guild, user.id, role.permissions)
-remove_role(c::Client, guild::Integer, user::User, role::Integer) = remove_role(c, guild, user.id, role)
-remove_role(c::Client, guild::Integer, user::Integer, role::Role) = remove_role(c, guild, user, role.permissions)
+function remove_role(c::Client, g::AbstractGuild, u::User, r::Role)
+    return remove_role(c, g.id, u.id, r.id)
+end
+
+function remove_role(c::Client, g::AbstractGuild, u::User, role::Integer)
+    return remove_role(c, g.id, user.id, role)
+end
+
+function remove_role(c::Client, g::AbstractGuild, user::Integer, r::Role)
+    return remove_role(c, g.id, user, r.id)
+end
+
+function remove_role(c::Client, g::AbstractGuild, user::Integer, role::Integer)
+    return remove_role(c, g.id, user, role)
+end
+
+function remove_role(c::Client, guild::Integer, u::User, r::Role)
+    return remove_role(c, guild, u.id, r.id)
+end
+
+function remove_role(c::Client, guild::Integer, u::User, role::Integer)
+    return remove_role(c, guild, u.id, role)
+end
+
+function remove_role(c::Client, guild::Integer, user::Integer, r::Role)
+    return remove_role(c, guild, user, r.id)
+end

@@ -8,7 +8,7 @@ export reply,
     delete_reactions
 
 """
-    reply(c::Client, m::Message, content::AbstractString) -> Response{Message}
+    reply(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
 
 Reply to the given [`Message`](@ref) (send a message to the same channel).
 """
