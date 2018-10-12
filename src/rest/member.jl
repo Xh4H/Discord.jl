@@ -81,7 +81,6 @@ add_role(c::Client, guild::Guild, user::Integer, role::Integer) = add_role(c, gu
 add_role(c::Client, guild::Integer, user::User, role::Role) = add_role(c, guild, user.id, role.permissions)
 add_role(c::Client, guild::Integer, user::User, role::Integer) = add_role(c, guild, user.id, role)
 add_role(c::Client, guild::Integer, user::Integer, role::Role) = add_role(c, guild, user, role.permissions)
-add_role(c::Client, guild::Integer, user::Integer, role::Integer) = add_role(c, guild, user, role)
 
 """
     remove_role(c::Client, guild::Union{Guild, Integer}, user::Union{User, Integer}, role::Union{Role, Integer}) -> Response{Nothing}
@@ -99,4 +98,3 @@ remove_role(c::Client, guild::Guild, user::Integer, role::Integer) = remove_role
 remove_role(c::Client, guild::Integer, user::User, role::Role) = remove_role(c, guild, user.id, role.permissions)
 remove_role(c::Client, guild::Integer, user::User, role::Integer) = remove_role(c, guild, user.id, role)
 remove_role(c::Client, guild::Integer, user::Integer, role::Role) = remove_role(c, guild, user, role.permissions)
-remove_role(c::Client, guild::Integer, user::Integer, role::Integer) = remove_role(c, guild, user, role)
