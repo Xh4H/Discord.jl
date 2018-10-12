@@ -8,7 +8,7 @@ export modify_overwrite,
     modify_overwrite(
         c::Client,
         overwrite::Union{Overwrite, Integer},
-        channel::Union{Channel, Integer};
+        channel::Union{DiscordChannel, Integer};
         params...,
     ) -> Response{Overwrite}
 
@@ -31,14 +31,14 @@ function modify_overwrite(c::Client, overwrite::Integer, channel::Integer; param
 end
 
 modify_overwrite(c::Client, overwrite::Overwrite, channel::Integer; params...) = modify_overwrite(c, overwrite.id, channel; params...)
-modify_overwrite(c::Client, overwrite::Integer, channel::Channel; params...) = modify_overwrite(c, overwrite, channel.id; params...)
-modify_overwrite(c::Client, overwrite::Overwrite, channel::Channel; params...) = modify_overwrite(c, overwrite.id, channel.id; params...)
+modify_overwrite(c::Client, overwrite::Integer, channel::DiscordChannel; params...) = modify_overwrite(c, overwrite, channel.id; params...)
+modify_overwrite(c::Client, overwrite::Overwrite, channel::DiscordChannel; params...) = modify_overwrite(c, overwrite.id, channel.id; params...)
 
 """
     delete_overwrite(
         c::Client,
-        overwrite::Integer,
-        channel::Integer
+        overwrite::Union{Overwrite, Integer},
+        channel::Union{DiscordChannel, Integer}
     ) -> Response{Overwrite}
 
 Delete a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref).
