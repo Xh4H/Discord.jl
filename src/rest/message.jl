@@ -17,8 +17,7 @@ function reply(c::Client, m::Message, content::Union{AbstractString, Dict})
 end
 
 """
-    edit(c::Client, m::Message, content::AbstractString) -> Response{Message}
-    edit(c::Client, m::Message, content::Dict) -> Response{Message}
+    edit(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
 
 Edit the given [`Message`](@ref).
 """
