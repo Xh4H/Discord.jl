@@ -7,8 +7,8 @@ export modify_overwrite,
 """
     modify_overwrite(
         c::Client,
-        channel::Integer,
-        overwrite::Integer;
+        overwrite::Union{Overwrite, Integer},
+        channel::Union{Channel, Integer};
         params...,
     ) -> Response{Overwrite}
 
@@ -30,6 +30,10 @@ function modify_overwrite(c::Client, overwrite::Integer, channel::Integer; param
     )
 end
 
+modify_overwrite(c::Client, overwrite::Overwrite, channel::Integer; params...) = modify_overwrite(c, overwrite.id, channel; params...)
+modify_overwrite(c::Client, overwrite::Integer, channel::Channel; params...) = modify_overwrite(c, overwrite, channel.id; params...)
+modify_overwrite(c::Client, overwrite::Overwrite, channel::Channel; params...) = modify_overwrite(c, overwrite.id, channel.id; params...)
+
 """
     delete_overwrite(
         c::Client,
@@ -42,3 +46,7 @@ Delete a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref).
 function delete_overwrite(c::Client, overwrite::Integer, channel::Integer)
     return Response{Overwrite}(c, :DELETE, "/channels/$channel/permissions/$overwrite")
 end
+
+delete_overwrite(c::Client, overwrite::Overwrite, channel::Integer) = delete_overwrite(c, overwrite.id, channel)
+delete_overwrite(c::Client, overwrite::Integer, channel::Channel) = delete_overwrite(c, overwrite, channel.id)
+delete_overwrite(c::Client, overwrite::Overwrite, channel::Channel) = delete_overwrite(c, overwrite.id, channel.id)
