@@ -2,8 +2,8 @@ export get_webhook,
     modify_webhook,
     delete_webhook,
     execute_webhook,
-    execute_slack,
-    execute_github
+    execute_github,
+    execute_slack
 
 """
     get_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response{Webhook}
