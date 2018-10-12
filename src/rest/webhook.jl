@@ -112,7 +112,7 @@ function execute_webhook(
     end
 end
 
-execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_webhook(c, webhook.id, token; wait=wait, params)
+execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_webhook(c, webhook.id, token; wait=wait, params...)
 
 """
     execute_github(
@@ -139,7 +139,7 @@ function execute_github(
     end
 end
 
-execute_github(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_github(c, webhook.id, token; wait=wait, params)
+execute_github(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_github(c, webhook.id, token; wait=wait, params...)
 
 """
     execute_slack(
@@ -166,4 +166,4 @@ function execute_slack(
     end
 end
 
-execute_slack(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_slack(c, webhook.id, token; wait=wait, params)
+execute_slack(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_slack(c, webhook.id, token; wait=wait, params...)

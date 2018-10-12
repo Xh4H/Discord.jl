@@ -71,7 +71,7 @@ function get_messages(c::Client, channel::Integer; params...)
     return resp
 end
 
-get_messages(c::Client, channel::DiscordChannel; params...) = get_messages(c, channel.id; params)
+get_messages(c::Client, channel::DiscordChannel; params...) = get_messages(c, channel.id; params...)
 
 
 """
@@ -146,7 +146,7 @@ function modify_channel(c::Client, channel::Integer; params...)
     return resp
 end
 
-modify_channel(c::Client, ch::DiscordChannel; params...) = modify_channel(c, ch.id; params)
+modify_channel(c::Client, ch::DiscordChannel; params...) = modify_channel(c, ch.id; params...)
 
 # TODO Should we have set_permissions function?
 
@@ -180,7 +180,7 @@ function create_invite(c::Client, channel::Integer, params...)
     # This would require Response to be mutable, or to create a brand new Invite.
 end
 
-create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id; params)
+create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id; params...)
 
 """
     get_invites(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{Invite}
@@ -209,7 +209,7 @@ function create_webhook(c::Client, channel::Integer, params...)
     return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=params)
 end
 
-create_webhook(c::Client, ch::DiscordChannel; params...) = create_webhook(c, ch.id; params)
+create_webhook(c::Client, ch::DiscordChannel; params...) = create_webhook(c, ch.id; params...)
 
 """
     get_webhooks(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{Webhook}

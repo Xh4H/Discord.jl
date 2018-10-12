@@ -12,17 +12,17 @@ Modify an [`Integration`](@ref) in the given guild.
 - `expire_grace_period::Integer`: Period (in seconds) where the integration will ignore lapsed subscriptions.
 - `enable_emoticons::Bool`: Whether emoticons should be synced for this integration (twitch only currently).
 """
-function modify_integration(c::Client, integration::Integer, guild::Integer, params...)
+function modify_integration(c::Client, integration::Integer, guild::Integer; params...)
     return Response{Integration}(c, :PATCH, "/guilds/$guild/integrations/$integration"; body=params)
 end
 
-modify_integration(c::Client, integration::Integration, guild::Guild, params...) = modify_integration(c, integration.id, guild.id, params)
-modify_integration(c::Client, integration::Integration, guild::Integer, params...) = modify_integration(c, integration.id, guild, params)
-modify_integration(c::Client, integration::Integer, guild::Guild, params...) = modify_integration(c, integration, guild.id, params)
+modify_integration(c::Client, integration::Integration, guild::Guild; params...) = modify_integration(c, integration.id, guild.id; params...)
+modify_integration(c::Client, integration::Integration, guild::Integer; params...) = modify_integration(c, integration.id, guild; params...)
+modify_integration(c::Client, integration::Integer, guild::Guild; params...) = modify_integration(c, integration, guild.id; params...)
 
 """
     sync_integration(c::Client, integration::Union{Integration, Integer}, guild::Union{Guild, Integer}) -> Response{Nothing}
-    
+
 Sync an [`Integration`](@ref) in the given guild.
 """
 function sync_integration(c::Client, integration::Integer, guild::Integer)
