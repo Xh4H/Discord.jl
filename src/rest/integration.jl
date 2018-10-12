@@ -3,10 +3,7 @@ export modify_integration,
         delete_integration
 
 """
-    modify_integration(c::Client, integration::Integer, guild::Integer, params...) -> Response{Integration}
-    modify_integration(c::Client, integration::Integration, guild::Guild, params...) -> Response{Integration}
-    modify_integration(c::Client, integration::Integration, guild::Integer, params...) -> Response{Integration}
-    modify_integration(c::Client, integration::Integer, guild::Guild, params...) -> Response{Integration}
+    modify_integration(c::Client, integration::Union{Integration, Integer}, guild::Union{Guild, Integer}, params...) -> Response{Integration}
 
 Modify an [`Integration`](@ref) in the given guild.
 
@@ -24,11 +21,8 @@ modify_integration(c::Client, integration::Integration, guild::Integer, params..
 modify_integration(c::Client, integration::Integer, guild::Guild, params...) = modify_integration(c, integration, guild.id, params)
 
 """
-    sync_integration(c::Client, integration::Integer, guild::Integer) -> Response{Nothing}
-    sync_integration(c::Client, integration::Integration, guild::Guild) -> Response{Nothing}
-    sync_integration(c::Client, integration::Integration, guild::Integer) -> Response{Nothing}
-    sync_integration(c::Client, integration::Integer, guild::Guild) -> Response{Nothing}
-
+    sync_integration(c::Client, integration::Union{Integration, Integer}, guild::Union{Guild, Integer}) -> Response{Nothing}
+    
 Sync an [`Integration`](@ref) in the given guild.
 """
 function sync_integration(c::Client, integration::Integer, guild::Integer)
@@ -40,10 +34,7 @@ sync_integration(c::Client, integration::Integration, guild::Integer) = sync_int
 sync_integration(c::Client, integration::Integer, guild::Guild) = sync_integration(c, integration, guild.id)
 
 """
-    delete_integration(c::Client, integration::Integer, guild::Integer) -> Response{Nothing}
-    delete_integration(c::Client, integration::Integration, guild::Guild) -> Response{Nothing}
-    delete_integration(c::Client, integration::Integration, guild::Integer) -> Response{Nothing}
-    delete_integration(c::Client, integration::Integer, guild::Guild) -> Response{Nothing}
+    delete_integration(c::Client, integration::Union{Integration, Integer}, guild::Union{Guild, Integer}) -> Response{Nothing}
 
 Delete an [`Integration`](@ref) in the given guild.
 """
