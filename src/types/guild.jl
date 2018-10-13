@@ -3,12 +3,12 @@
 @enum ExplicitContentFilterLevel ECFL_DISABLED ECFL_MEMBERS_WITHOUT_ROLES ECFL_ALL_MEMBERS
 @enum MFALevel ML_NONE ML_ELEVATED
 
-abstract type AbstractGuild end
-
 """
-An AbstractGuild guild (server).
+A guild (server).
 Can either be an [`UnavailableGuild`](@ref) or a [`Guild`](@ref).
 """
+abstract type AbstractGuild end
+
 function AbstractGuild(d::Dict{String, Any})
     return d["unavailable"] === true ? UnavailableGuild(d) : Guild(d)
 end

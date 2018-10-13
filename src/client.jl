@@ -4,6 +4,7 @@ export LIMIT_IGNORE,
     state,
     me,
     add_handler!,
+    delete_handler!,
     clear_handlers!,
     request_guild_members,
     update_voice_status,
@@ -38,6 +39,18 @@ the request.
 """
 @enum OnLimit LIMIT_IGNORE LIMIT_WAIT
 
+mutable struct Handler
+    f::Function
+    tag::Symbol
+    expiry::Union{Int, DateTime}  # -1 for no expiry.
+end
+
+Handler(f::Function) = Handler(f, gensym(), -1)
+
+Handler(f::Function, tag::Symbol, expiry::Period) = Handler(f, tag, now(UTC) + expiry)
+
+isexpired(h::Handler) = h.expiry isa Int ? h.expiry == 0 : now(UTC) > h.expiry
+
 """
     Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1) -> Client
 
@@ -62,7 +75,7 @@ mutable struct Client
     shard::Int
     limiter::Limiter
     on_limit::OnLimit
-    handlers::Dict{Type{<:AbstractEvent}, Set{Function}}
+    handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}
     hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
@@ -207,7 +220,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c.conn, Dict("op" => 8, "s" => c.heartbeat_seq, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
@@ -233,7 +246,7 @@ function update_voice_state(
     self_mute::Bool,
     self_deaf::Bool,
 )
-    return writejson(c.conn, Dict("op" => 4, "s" => c.heartbeat_seq, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
@@ -260,7 +273,7 @@ function update_status(
     status::PresenceStatus,
     afk::Bool,
 )
-    return writejson(c.conn, Dict("op" => 3, "s" => c.heartbeat_seq, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
@@ -271,32 +284,62 @@ end
 # Handler insertion/deletion.
 
 """
-    add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
+    add_handler!(
+        c::Client,
+        evt::Type{<:AbstractEvent},
+        func::Function;
+        tag::Symbol=gensym(),
+        expiry::Union{Int, Period}=-1,
+    )
 
 Add a handler for the given event type.
 The handler should be a function which takes two arguments: A [`Client`](@ref) and an
 [`AbstractEvent`](@ref) (or a subtype).
 The handler is appended the event's current handlers.
 
-!!! note
-    The set of handlers for a given event is stored as a `Set{Function}`. This protects
-    against adding duplicate handlers, **except** when you pass an anonymous function.
-    Therefore, it's recommended to define your handler functions beforehand.
+# Keywords
+- `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
+  [`delete_handler!`](@ref).
+- `expiry::Union{Int, Period}=-1`: The handler's expiry. If an `Int` is given, the handler
+  will run a set number of times before expiring. If a `Period` is given, the handler will
+  expire after that amount of time has elapsed. The default of `-1` indicates no expiry.
 
-    Also note that there is no guarantee on the order in which handlers run.
+!!! note
+    There is no guarantee on the order in which handlers run, except that catch-all
+    handlers run before specific ones.
 """
-function add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)
+function add_handler!(
+    c::Client,
+    evt::Type{<:AbstractEvent},
+    func::Function;
+    tag::Symbol=gensym(),
+    expiry::Union{Int, Period}=-1,
+)
+    expiry == 0 && throw(ArgumentError("Can't add a handler that will never run"))
+
+    h = Handler(func, tag, expiry)
     if haskey(c.handlers, evt)
-        push!(c.handlers[evt], func)
+        push!(c.handlers[evt], h)
     else
-        c.handlers[evt] = Set([func])
+        c.handlers[evt] = Set([h])
     end
+end
+
+"""
+    delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
+
+Delete a single handler by event type and tag.
+"""
+function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
+    filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
 end
 
 """
     clear_handlers!(c::Client, evt::Type{<:AbstractEvent})
 
-Removes all handlers for the given event type.
+Remove all handlers for the given event type. Using this is generally not recommended
+because it also clears default handlers which maintain the client state. Instead, try to
+add handlers with specific tags and delete them with [`delete_handler!`](@ref).
 """
 clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, event)
 
@@ -328,7 +371,7 @@ end
 
 # Event handlers.
 
-function dispatch(c::Client, data::Dict)
+function dispatch(c::Client, data::AbstractDict)
     c.heartbeat_seq = data["s"]
     evt = try
         AbstractEvent(data)
@@ -338,26 +381,25 @@ function dispatch(c::Client, data::Dict)
     end
     push!(c.state.events, evt)
 
-    # Run catch-all handlers.
-    for handler in get(c.handlers, AbstractEvent, [])
+    catchalls = collect(get(c.handlers, AbstractEvent, []))
+    specifics = collect(get(c.handlers, typeof(evt), []))
+    for handler in [catchalls; specifics]
         @async try
-            handler(c, evt)
+            handler.f(c, evt)
         catch e
             @error sprint(showerror, e)
+        finally
+            if handler.remaining != -1
+                handler.remaining -= 1
+            end
         end
     end
 
-    # Run specific handlers.
-    for handler in get(c.handlers, typeof(evt), [])
-        @async try
-            handler(c, evt)
-        catch e
-            @error sprint(showerror, e)
-        end
-    end
+    filter!(isexpired, get(c.handlers, AbstractEvent, []))
+    filter!(isexpired, get(c.handlers, typeof(evt), []))
 end
 
-function heartbeat(c::Client, ::Dict=Dict())
+function heartbeat(c::Client, ::AbstractDict=Dict())
     ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
     if ok
         c.last_heartbeat = now()
@@ -365,19 +407,26 @@ function heartbeat(c::Client, ::Dict=Dict())
     return ok
 end
 
-function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true, statusnumber::Int=1000)
+function reconnect(
+    c::Client,
+    ::AbstractDict=Dict();
+    resume::Bool=true,
+    statusnumber::Int=1000,
+)
     close(c; statusnumber=statusnumber)
     open(c; resume=resume)
 end
 
-function invalid_session(c::Client, data::Dict)
+function invalid_session(c::Client, data::AbstractDict)
     sleep(rand(1:5))
     reconnect(c; resume=data["d"])
 end
 
-hello(c::Client, data::Dict) = c.heartbeat_interval = data["d"]["heartbeat_interval"]
+function hello(c::Client, data::AbstractDict)
+    c.heartbeat_interval = data["d"]["heartbeat_interval"]
+end
 
-heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
+heartbeat_ack(c::Client, ::AbstractDict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
 const HANDLERS = Dict(
@@ -575,31 +624,31 @@ function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveA
     empty!(c.state.messages[e.message_id].reactions)
 end
 
-const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Function}}(
-    Ready                    => Set([handle_ready]),
-    Resumed                  => Set([handle_resumed]),
-    ChannelCreate            => Set([handle_channel_create_update]),
-    ChannelUpdate            => Set([handle_channel_create_update]),
-    ChannelDelete            => Set([handle_channel_delete]),
-    GuildCreate              => Set([handle_guild_create_update]),
-    GuildUpdate              => Set([handle_guild_create_update]),
-    GuildDelete              => Set([handle_guild_delete]),
-    GuildEmojisUpdate        => Set([handle_guild_emojis_update]),
-    GuildMemberAdd           => Set([handle_guild_member_add]),
-    GuildMemberUpdate        => Set([handle_guild_member_update]),
-    GuildMemberRemove        => Set([handle_guild_member_remove]),
-    GuildMembersChunk        => Set([handle_guild_members_chunk]),
-    GuildRoleCreate          => Set([handle_guild_role_create]),
-    GuildRoleUpdate          => Set([handle_guild_role_update]),
-    GuildRoleDelete          => Set([handle_guild_role_delete]),
-    MessageCreate            => Set([handle_message_create_update]),
-    MessageUpdate            => Set([handle_message_create_update]),
-    MessageDelete            => Set([handle_message_delete]),
-    MessageDeleteBulk        => Set([handle_message_delete_bulk]),
-    MessageReactionAdd       => Set([handle_message_reaction_add]),
-    MessageReactionRemove    => Set([handle_message_reaction_remove]),
-    MessageReactionRemoveAll => Set([handle_message_reaction_remove_all]),
-    PresenceUpdate           => Set([handle_presence_update]),
+const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Handler}}(
+    Ready                    => Set([Handler(handle_ready)]),
+    Resumed                  => Set([Handler(handle_resumed)]),
+    ChannelCreate            => Set([Handler(handle_channel_create_update)]),
+    ChannelUpdate            => Set([Handler(handle_channel_create_update)]),
+    ChannelDelete            => Set([Handler(handle_channel_delete)]),
+    GuildCreate              => Set([Handler(handle_guild_create_update)]),
+    GuildUpdate              => Set([Handler(handle_guild_create_update)]),
+    GuildDelete              => Set([Handler(handle_guild_delete)]),
+    GuildEmojisUpdate        => Set([Handler(handle_guild_emojis_update)]),
+    GuildMemberAdd           => Set([Handler(handle_guild_member_add)]),
+    GuildMemberUpdate        => Set([Handler(handle_guild_member_update)]),
+    GuildMemberRemove        => Set([Handler(handle_guild_member_remove)]),
+    GuildMembersChunk        => Set([Handler(handle_guild_members_chunk)]),
+    GuildRoleCreate          => Set([Handler(handle_guild_role_create)]),
+    GuildRoleUpdate          => Set([Handler(handle_guild_role_update)]),
+    GuildRoleDelete          => Set([Handler(handle_guild_role_delete)]),
+    MessageCreate            => Set([Handler(handle_message_create_update)]),
+    MessageUpdate            => Set([Handler(handle_message_create_update)]),
+    MessageDelete            => Set([Handler(handle_message_delete)]),
+    MessageDeleteBulk        => Set([Handler(handle_message_delete_bulk)]),
+    MessageReactionAdd       => Set([Handler(handle_message_reaction_add)]),
+    MessageReactionRemove    => Set([Handler(handle_message_reaction_remove)]),
+    MessageReactionRemoveAll => Set([Handler(handle_message_reaction_remove_all)]),
+    PresenceUpdate           => Set([Handler(handle_presence_update)]),
 )
 
 # Error handling.
