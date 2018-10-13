@@ -220,7 +220,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c.conn, Dict("op" => 8, "s" => c.heartbeat_seq, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
@@ -246,7 +246,7 @@ function update_voice_state(
     self_mute::Bool,
     self_deaf::Bool,
 )
-    return writejson(c.conn, Dict("op" => 4, "s" => c.heartbeat_seq, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
@@ -273,7 +273,7 @@ function update_status(
     status::PresenceStatus,
     afk::Bool,
 )
-    return writejson(c.conn, Dict("op" => 3, "s" => c.heartbeat_seq, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
@@ -371,7 +371,7 @@ end
 
 # Event handlers.
 
-function dispatch(c::Client, data::Dict)
+function dispatch(c::Client, data::AbstractDict)
     c.heartbeat_seq = data["s"]
     evt = try
         AbstractEvent(data)
@@ -407,7 +407,7 @@ function dispatch(c::Client, data::Dict)
     filter!(isexpired, get(c.handlers, typeof(evt), []))
 end
 
-function heartbeat(c::Client, ::Dict=Dict())
+function heartbeat(c::Client, ::AbstractDict=Dict())
     ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
     if ok
         c.last_heartbeat = now()
@@ -415,19 +415,26 @@ function heartbeat(c::Client, ::Dict=Dict())
     return ok
 end
 
-function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true, statusnumber::Int=1000)
+function reconnect(
+    c::Client,
+    ::AbstractDict=Dict();
+    resume::Bool=true,
+    statusnumber::Int=1000,
+)
     close(c; statusnumber=statusnumber)
     open(c; resume=resume)
 end
 
-function invalid_session(c::Client, data::Dict)
+function invalid_session(c::Client, data::AbstractDict)
     sleep(rand(1:5))
     reconnect(c; resume=data["d"])
 end
 
-hello(c::Client, data::Dict) = c.heartbeat_interval = data["d"]["heartbeat_interval"]
+function hello(c::Client, data::AbstractDict)
+    c.heartbeat_interval = data["d"]["heartbeat_interval"]
+end
 
-heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
+heartbeat_ack(c::Client, ::AbstractDict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
 const HANDLERS = Dict(
