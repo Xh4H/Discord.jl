@@ -37,7 +37,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "Julicord.Client",
     "category": "type",
-    "text": "Client(token::String; ttl::Period=Hour(1)) -> Client\n\nA Discord bot. ttl is the amount of time that cache entries are kept.\n\n\n\n\n\n"
+    "text": "Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1) -> Client\n\nA Discord bot.\n\nKeywords\n\non_limit::OnLimit=LIMIT_IGNORE: Client\'s behaviour when it hits a rate limit.\nttl::Period=Hour(1) Amount of time that cache entries are kept.\nversion::Int=6: Version of Discord API to use. Using anything but  6 is not supported.\n\n\n\n\n\n"
 },
 
 {
@@ -57,11 +57,227 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.add_role-Tuple{Client,Integer,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.add_role",
+    "category": "method",
+    "text": "add_role(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    user::Union{User, Integer},\n    role::Union{Role, Integer},\n) -> Response\n\nAdd a Role to a Member in an AbstractGuild..\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.ban_member-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.ban_member",
+    "category": "method",
+    "text": "ban_member(\n    c::Client,\n    guild::Union{Guild, Integer},\n    user::Union{User, Integer};\n    params...,\n) -> Response\n\nBan a Member from an AbstractGuild.\n\nKeywords\n\ndelete_message_days::Integer: Number of days to delete the messages for (0-7).\nreason::AbstractString: Reason for the ban.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.bulk_delete-Tuple{Client,Integer,Array{#s358,1} where #s358<:Integer}",
+    "page": "Reference",
+    "title": "Julicord.bulk_delete",
+    "category": "method",
+    "text": "bulk_delete(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n    messages::Union{Vector{Message}, Vector{<:Integer}},\n) -> Response\n\nDelete multiple Messages from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.clear_handlers!-Tuple{Client,Type{#s358} where #s358<:AbstractEvent}",
     "page": "Reference",
     "title": "Julicord.clear_handlers!",
     "category": "method",
     "text": "clear_handlers!(c::Client, evt::Type{<:AbstractEvent})\n\nRemoves all handlers for the given event type.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.create_invite-Tuple{Client,Integer,Vararg{Any,N} where N}",
+    "page": "Reference",
+    "title": "Julicord.create_invite",
+    "category": "method",
+    "text": "create_invite(\n    c::Client,\n    channel::Union{DiscordChannel, Integer};\n    params...,\n) -> Response{Invite}\n\nCreate an Invite to a DiscordChannel.\n\nKeywords\n\nmax_uses::Int: Max number of uses (0 if unlimited).\nmax_age::Int: Duration in seconds before expiry (0 if never).\ntemporary::Bool: Whether this invite only grants temporary membership.\nunique::Bool: Whether not to try to reuse a similar invite.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.create_webhook-Tuple{Client,Integer,Vararg{Any,N} where N}",
+    "page": "Reference",
+    "title": "Julicord.create_webhook",
+    "category": "method",
+    "text": "create_webhook(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n    params...,\n) -> Response\n\nCreate a Webhook in a DiscordChannel.\n\nKeywords\n\nname::AbstractString - name of the webhook (2-23 characters)\navatar::AbstractString - image for the default webhook avatar\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.delete",
+    "category": "method",
+    "text": "delete(c::Client, m::Message) -> Response\n\nDelete a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_channel-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.delete_channel",
+    "category": "method",
+    "text": "delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{Channel}\n\nDelete a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_integration-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.delete_integration",
+    "category": "method",
+    "text": "delete_integration(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    integration::Union{Integration, Integer},\n) -> Response\n\nDelete an Integration in an AbstractGuild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_invite-Tuple{Client,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.delete_invite",
+    "category": "method",
+    "text": "delete_invite(c::Client, invite::Union{Invite, AbstractString}) -> Response{Invite}\n\nDelete an Invite.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_overwrite-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.delete_overwrite",
+    "category": "method",
+    "text": "delete_overwrite(\n    c::Client,\n    overwrite::Union{Overwrite, Integer},\n    channel::Union{DiscordChannel, Integer}\n) -> Response{Overwrite}\n\nDelete an Overwrite in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_reactions-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.delete_reactions",
+    "category": "method",
+    "text": "delete_reactions(c::Client, m::Message) -> Response\n\nDelete all the reactions from a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_role-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.delete_role",
+    "category": "method",
+    "text": "delete_role(\n    c::Client,\n    role::Union{Role, Integer},\n    guild::Union{AbstractGuild, Integer},\n) -> Response\n\nModify a Role in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_webhook-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.delete_webhook",
+    "category": "method",
+    "text": "delete_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response\ndelete_webhook(\n    c::Client,\n    webhook::Union{Webhook, Integer},\n    token::AbstractString,\n) -> Response\n\nDelete a Webhook.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.edit-Tuple{Client,Julicord.Message,AbstractDict}",
+    "page": "Reference",
+    "title": "Julicord.edit",
+    "category": "method",
+    "text": "edit(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}\n\nEdit a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.execute_github-Tuple{Client,Integer,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.execute_github",
+    "category": "method",
+    "text": "execute_github(\n    c::Client,\n    webhook::Union{Webhook, Integer},\n    token::AbstractString;\n    wait::Bool=true,\n    params...,\n) -> Union{Response{Message}, Response{Nothing}}\n\nExecute a Github Webhook.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.execute_slack-Tuple{Client,Integer,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.execute_slack",
+    "category": "method",
+    "text": "execute_slack(\n    c::Client,\n    webhook::Union{Webhook, Integer},\n    token::AbstractString;\n    wait::Bool=true,\n    params...,\n) -> Union{Response{Message}, Response}\n\nExecute a Slack Webhook.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.execute_webhook-Tuple{Client,Integer,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.execute_webhook",
+    "category": "method",
+    "text": "execute_webhook(\n    c::Client,\n    webhook::Union{Webhook, Integer},\n    token::AbstractString;\n    wait::Bool=false,\n    params...,\n) -> Union{Response{Message}, Response{Nothing}}\n\nExecute a Webhook. If wait is set, the created Message is returned.\n\nKeywords\n\ncontent::AbstractString: The message contents (up to 2000 characters).\nusername::AbstractString: Override the default username of the webhook.\navatar_url::AbstractString: Override the default avatar of the webhook.\ntts::Bool: Whether this is a TTS message.\nfile::AbstractDict: The contents of the file being sent.\nembeds::AbstractDict: Embedded rich content.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_invite-Tuple{Client,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.get_invite",
+    "category": "method",
+    "text": "get_invite(\n    c::Client,\n    invite::Union{Invite, AbstractString};\n    with_counts::Bool=false,\n) -> Response{Invite}\n\nGet an Invite. If with_counts is set, the Invite will contain approximate member counts.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_invites-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_invites",
+    "category": "method",
+    "text": "get_invites(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n) -> Response{Vector{Invite}}\n\nGet a list of Invites from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_member-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_member",
+    "category": "method",
+    "text": "get_member(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    user::Union{User, Integer},\n) -> Response{Member}\n\nGet a Member in an AbstractGuild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_message-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_message",
+    "category": "method",
+    "text": "get_message(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n    message::Integer,\n) -> Response{Message}\nget_message(c::Client, m::Message) -> Response{Message}\n\nGet a Message from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_messages-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_messages",
+    "category": "method",
+    "text": "get_messages(\n    c::Client,\n    channel::Union{DiscordChannel, Integer};\n    params...,\n) -> Response{Vector{Message}}\n\nGet a list of Messages from a DiscordChannel.\n\nKeywords\n\naround::Integer: Get messages around this message ID.\nbefore::Integer: Get messages before this message ID.\nafter::Integer: Get messages after this message ID.\nlimit::Int: Maximum number of messages.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_pinned_messages-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_pinned_messages",
+    "category": "method",
+    "text": "get_pinned_messages(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n) -> Response{Vector{Message}}\n\nGet a list of Messages pinned in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_reactions-Tuple{Client,Julicord.Message,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.get_reactions",
+    "category": "method",
+    "text": "get_reactions(\n    c::Client,\n    m::Message,\n    emoji::Union{Emoji, AbstractString},\n) -> Response{Vector{User}}\n\nGet the users who reacted to a Message with an Emoji.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_webhook-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_webhook",
+    "category": "method",
+    "text": "get_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response{Webhook}\nget_webhook(\n    c::Client,\n    webhook::Union{Webhook, Integer},\n    token::AbstractString,\n) -> Response{Webhook}\n\nGet a Webhook.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.get_webhooks-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.get_webhooks",
+    "category": "method",
+    "text": "get_webhooks(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n) -> Response{Vector{Webhook}}\n\nGet a list of Webhooks from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.kick_member-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.kick_member",
+    "category": "method",
+    "text": "kick_member(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    user::Union{User, Integer},\n) -> Response\n\nKick a Member from an AbstractGuild.\n\n\n\n\n\n"
 },
 
 {
@@ -73,6 +289,86 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.modify_channel-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.modify_channel",
+    "category": "method",
+    "text": "modify_channel(\n    c::Client,\n    channel::Union{DiscordChannel, Integer};\n    params...,\n) -> Response{Channel}\n\nModify a DiscordChannel.\n\nKeywords\n\nname::AbstractString: Channel name (2-100 characters).\ntopic::AbstractString: Channel topic (up to 1024 characters).\nnsfw::Bool: Whether the channel is NSFW.\nrate_limit_per_user::Int: Seconds a user must wait before sending another message.\nposition::Int The position in the left-hand listing.\nbitrate::Int The bitrate in bits of the voice channel.\nuser_limit::Int: The user limit of the voice channel.\npermission_overwrites::Vector{<:AbstractDict}: Channel or category-specific permissions.\nparent_id::Integer: ID of the new parent category.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.modify_integration-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.modify_integration",
+    "category": "method",
+    "text": "modify_integration(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    integration::Union{Integration, Integer};\n    params...,\n) -> Response{Integration}\n\nModify an Integration in an AbstractGuild.\n\nKeywords\n\nexpire_behavior::Integer: The behavior when an integration subscription lapses.\nexpire_grace_period::Integer: Period (in seconds) where the integration will ignore lapsed subscriptions.\nenable_emoticons::Bool: Whether emoticons should be synced for this integration (Twitch  only currently).\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.modify_member-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.modify_member",
+    "category": "method",
+    "text": "modify_member(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    user::Union{User, Integer};\n    params...,\n) -> Response{Member}\n\nModify a Member in an AbstractGuild.\n\nKeywords\n\nnick::AbstractString: Value to set the member\'s nickname to.\nroles::Vector: List of role ids the member is assigned.\nmute::Bool: Whether the member should be muted.\ndeaf::Bool: Whether the member should be deafened.\nchannel_id::Integer: ID of a voice channel to move the member to.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.modify_overwrite-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.modify_overwrite",
+    "category": "method",
+    "text": "modify_overwrite(\n    c::Client,\n    overwrite::Union{Overwrite, Integer},\n    channel::Union{DiscordChannel, Integer};\n    params...,\n) -> Response{Overwrite}\n\nModify an Overwrite in a DiscordChannel.\n\nKeywords\n\nallow::Int: the bitwise OR of the allowed permissions.\ndeny::Int: the bitwise OR of the denied permissions.\ntype::AbstractString: \"member\" for a user or \"role\" for a role.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.modify_role-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.modify_role",
+    "category": "method",
+    "text": "modify_role(\n    c::Client,\n    role::Union{Role, Integer},\n    guild::Union{AbstractGuild, Integer};\n    params...,\n) -> Response{Role}\n\nModify a Role in a DiscordChannel.\n\nKeywords\n\nname::AbstractString: Name of the role.\npermissions::Int: Bitwise OR of the enabled/disabled permissions.\ncolor::Int: RGB color value.\nhoist::Bool: Whether the role should be displayed separately in the sidebar.\nmentionable::Bool: Whether the role should be mentionable.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.modify_webhook-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.modify_webhook",
+    "category": "method",
+    "text": "modify_webhook(c::Client, webhook::Union{Webhook, Integer}; params...) -> Response{Webhook}\nmodify_webhook(\n    c::Client,\n    webhook::Union{Webhook, Integer},\n    token::AbstractString;\n    params...,\n) -> Response{Webhook}\n\nModify a Webhook.\n\nKeywords\n\nname::AbstractString: Name of the webhook.\navatar::AbstractString: Avatar data string.\nchannel_id::Integer: The channel this webhook should be moved to.\n\nIf using a token, channel_id cannot be used and the returned Webhook will not contain a User.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.pin-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.pin",
+    "category": "method",
+    "text": "pin(c::Client, m::Message) -> Response\n\nPin a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.react-Tuple{Client,Julicord.Message,AbstractString}",
+    "page": "Reference",
+    "title": "Julicord.react",
+    "category": "method",
+    "text": "react(c::Client, m::Message, emoji::AbstractString) -> Response\n\nReact to a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.remove_role-Tuple{Client,Integer,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.remove_role",
+    "category": "method",
+    "text": "remove_role(\n    c::Client,\n    guild::Union{AbstractGuild, Integer},\n    user::Union{User, Integer},\n    role::Union{Role, Integer},\n) -> Response\n\nRemove a Role from a Member in an AbstractGuild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.reply-Tuple{Client,Julicord.Message,Union{AbstractString, Dict}}",
+    "page": "Reference",
+    "title": "Julicord.reply",
+    "category": "method",
+    "text": "reply(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}\n\nReply to a Message (send a message to the same channel).\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.request_guild_members-Tuple{Client,UInt64}",
     "page": "Reference",
     "title": "Julicord.request_guild_members",
@@ -81,11 +377,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.send_message-Tuple{Client,Integer,AbstractDict}",
+    "page": "Reference",
+    "title": "Julicord.send_message",
+    "category": "method",
+    "text": "send_message(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n    content::Union{AbstractString, AbstractDict},\n) -> Response{Message}\n\nSend a Message to a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.state-Tuple{Client}",
     "page": "Reference",
     "title": "Julicord.state",
     "category": "method",
     "text": "state(c::Client) -> State\n\nGet the client state.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.sync_integration-Tuple{Client,Integer,Integer}",
+    "page": "Reference",
+    "title": "Julicord.sync_integration",
+    "category": "method",
+    "text": "sync_integration(\n    c::Client,\n    guild::Union{Guild, Integer},\n    integration::Union{Integration, Integer},\n) -> Response\n\nSync an Integration in an AbstractGuild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.trigger_typing-Tuple{Client,Integer}",
+    "page": "Reference",
+    "title": "Julicord.trigger_typing",
+    "category": "method",
+    "text": "trigger_typing(c::Client, channel::Union{DiscordChannel, Integer}) -> Response\n\nTrigger the typing indicator in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.unpin-Tuple{Client,Julicord.Message}",
+    "page": "Reference",
+    "title": "Julicord.unpin",
+    "category": "method",
+    "text": "unpin(c::Client, m::Message) -> Response\n\nUnpin a Message.\n\n\n\n\n\n"
 },
 
 {
@@ -185,6 +513,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.OnLimit",
+    "page": "Reference",
+    "title": "Julicord.OnLimit",
+    "category": "type",
+    "text": "Determines the behaviour of a Client when it hits a rate limit. If set to LIMIT_IGNORE, a Response is returned immediately with rate_limited set to true. If set to LIMIT_WAIT, the client blocks until the rate limit resets, then retries the request.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.Overwrite-Tuple{Dict{String,Any}}",
+    "page": "Reference",
+    "title": "Julicord.Overwrite",
+    "category": "method",
+    "text": "An Overwrite. More details here.\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.Presence-Tuple{Dict{String,Any}}",
     "page": "Reference",
     "title": "Julicord.Presence",
@@ -198,6 +542,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Julicord.Reaction",
     "category": "method",
     "text": "A reaction. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.Response",
+    "page": "Reference",
+    "title": "Julicord.Response",
+    "category": "type",
+    "text": "A wrapper around a response from the REST API.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, a call to get_message will return a Response{Message} for which this value is a Message. If success is false, it is nothing.\nsuccess::Bool: The success state of the request. If this is true, then it is safe to access val.\ncache_hit::Bool: Whether val came from the cache.\nrate_limited::Bool: Whether the request was rate limited.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response. If success is true, it is nothing.\n\n\n\n\n\n"
 },
 
 {
