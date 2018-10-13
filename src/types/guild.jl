@@ -5,6 +5,10 @@
 
 abstract type AbstractGuild end
 
+"""
+An AbstractGuild guild (server).
+Can either be an [`UnavailableGuild`](@ref) or a [`Guild`](@ref).
+"""
 function AbstractGuild(d::Dict{String, Any})
     return d["unavailable"] === true ? UnavailableGuild(d) : Guild(d)
 end
