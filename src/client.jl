@@ -46,7 +46,7 @@ A Discord bot.
 # Keywords
 - `on_limit::OnLimit=LIMIT_IGNORE`: Client's behaviour when it hits a rate limit.
 - `ttl::Period=Hour(1)` Amount of time that cache entries are kept.
-- `version::Int=$API_VERSION`: Version of Discord API to use. Using anything but 
+- `version::Int=$API_VERSION`: Version of Discord API to use. Using anything but
   $API_VERSION is not supported.
 """
 mutable struct Client
@@ -139,11 +139,13 @@ function Base.open(c::Client; resume::Bool=false)
                 "token" => c.token,
                 "properties" => conn_properties,
         ))
+
         if c.shards > 1
             d["shard"] = [c.shard, c.shards]
         end
         d
     end
+    
     writejson(conn, data) || error("writing $(resume ? "RESUME" : "IDENTIFY") failed")
 
     c.hb_chan = Channel(ch -> maintain_heartbeat(c, ch))
@@ -467,12 +469,15 @@ function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
     if !haskey(c.state.members, e.guild_id)
         c.state.members[e.guild_id] = TTL(c.ttl)
     end
+
     ms = c.state.members[e.guild_id]
+
     for m in e.members
         if ismissing(m.user)
             if !haskey(ms, missing)
                 ms[missing] = []
             end
+
             touch(ms, missing)
             push!(ms[missing], m)
         else
@@ -523,6 +528,7 @@ function handle_presence_update(c::Client, e::PresenceUpdate)
     if !haskey(c.state.presences, e.presence.guild_id)
         c.state.presences[e.presence.guild_id] = TTL(c.ttl)
     end
+
     c.state.presences[e.presence.guild_id][e.presence.user.id] = e.presence
 end
 
@@ -530,11 +536,14 @@ function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
     haskey(c.state.messages, e.message_id) || return
     # TODO: This has race conditions.
     touch(c.state.messages, e.message_id)
+
     m = c.state.messages[e.message_id]
+
     if ismissing(m.reactions)
         m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict())]
     else
         idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
+
         if idx === nothing
             push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict()))
         else
@@ -549,8 +558,10 @@ function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
     ismissing(c.state.messages[e.message_id].reactions) && return
 
     touch(c.state.messages, e.message_id)
+
     rs = c.state.messages[e.message_id].reactions
     idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
+
     if idx !== nothing
         rs[idx].count -= 1
         rs[idx].me &= e.user_id != c.state.user.id
