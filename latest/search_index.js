@@ -37,7 +37,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "Julicord.Client",
     "category": "type",
-    "text": "Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1) -> Client\n\nA Discord bot.\n\nKeywords\n\non_limit::OnLimit=LIMIT_IGNORE: Client\'s behaviour when it hits a rate limit.\nttl::Period=Hour(1) Amount of time that cache entries are kept.\nversion::Int=6: Version of Discord API to use. Using anything but  6 is not supported.\n\n\n\n\n\n"
+    "text": "Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1) -> Client\n\nA Discord bot.\n\nKeywords\n\non_limit::OnLimit=LIMIT_IGNORE: Client\'s behaviour when it hits a rate limit.\nttl::Period=Hour(1) Amount of time that cache entries are kept.\nversion::Int=6: Version of Discord API to use. Using anything but 6 is not supported.\n\n\n\n\n\n"
 },
 
 {
