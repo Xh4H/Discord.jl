@@ -25,7 +25,7 @@ function send_message(c::Client, channel::Integer, content::AbstractDict)
 end
 
 function send_message(c::Client, channel::Integer, content::AbstractString)
-    return send_message(c, channel, (content=content,))
+    return send_message(c, channel, Dict("content" => content))
 end
 
 function send_message(
@@ -116,7 +116,7 @@ function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integer})
         c,
         :POST,
         "/channels/$channel/messages/bulk-delete";
-        body=(messages=messages,),
+        body=Dict("messages" => messages),
     )
 end
 

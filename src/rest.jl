@@ -56,7 +56,7 @@ function Response(
     c::Client,
     method::Symbol,
     endpoint::AbstractString;
-    body=Dict(),
+    body="",
     params...,
 )
     return Response{Nothing}(c, method, endpoint; body=body, params...)
@@ -67,7 +67,7 @@ function Response{T}(
     c::Client,
     method::Symbol,
     endpoint::AbstractString;
-    body=Dict(),
+    body="",
     params...,
 ) where T
     limited = islimited(c.limiter, method, endpoint)

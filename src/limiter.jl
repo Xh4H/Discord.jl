@@ -4,7 +4,6 @@ const ENDS_ID_REGEX = r"/\d+$"
 const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
 struct Bucket
-    limit::Int
     remaining::Int
     reset::DateTime  # UTC.
 end
@@ -49,15 +48,13 @@ function update(
 
     # TODO: Are we supposed to handle missing headers differently?
     headers = Dict(r.headers)
-    haskey(headers, "X-RateLimit-Limit") || return
     haskey(headers, "X-RateLimit-Remaining") || return
     haskey(headers, "X-RateLimit-Reset") || return
 
-    limit = parse(Int, headers["X-RateLimit-Limit"])
     remaining = parse(Int, headers["X-RateLimit-Remaining"])
     reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
 
-    l.buckets[parse_endpoint(endpoint, method)] = Bucket(limit, remaining, reset)
+    l.buckets[parse_endpoint(endpoint, method)] = Bucket(remaining, reset)
 end
 
 function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
@@ -71,7 +68,7 @@ function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
     end
 
     endpoint = parse_endpoint(endpoint, method)
-    b = get(l.buckets[endpoint], nothing)
+    b = get(l.buckets, endpoint, nothing)
     b === nothing && return false
 
     if n > b.reset
