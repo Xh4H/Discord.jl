@@ -381,8 +381,9 @@ function dispatch(c::Client, data::AbstractDict)
     end
     push!(c.state.events, evt)
 
-    # Run catch-all handlers.
-    for handler in get(c.handlers, AbstractEvent, [])
+    catchalls = collect(get(c.handlers, AbstractEvent, []))
+    specifics = collect(get(c.handlers, typeof(evt), []))
+    for handler in [catchalls; specifics]
         @async try
             handler.f(c, evt)
         catch e
@@ -391,15 +392,6 @@ function dispatch(c::Client, data::AbstractDict)
             if handler.remaining != -1
                 handler.remaining -= 1
             end
-        end
-    end
-
-    # Run specific handlers.
-    for handler in get(c.handlers, typeof(evt), [])
-        @async try
-            handler.f(c, evt)
-        catch e
-            @error sprint(showerror, e)
         end
     end
 
