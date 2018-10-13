@@ -1,7 +1,7 @@
 struct Bucket
     limit::Int
     remaining::Int
-    reset::ZonedDateTime
+    reset::DateTime  # UTC.
 end
 
 mutable struct Limiter
@@ -21,7 +21,7 @@ function bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
 end
 
 function Base.wait(l::Limiter, method::Symbol, endpoint::AbstractString)
-    n = now(tz"UTC")
+    n = now(UTC)
     if l.reset !== nothing && l.reset > n
         sleep(l.reset - n)
     end
@@ -46,7 +46,7 @@ function update(
     haskey(headers, "X-RateLimit-Reset") || return
     limit = parse(Int, headers["X-RateLimit-Limit"])
     remaining = parse(Int, headers["X-RateLimit-Remaining"])
-    reset = ZonedDateTime(unix2datetime(parse(Int, headers["X-RateLimit-Reset"])), tz"UTC")
+    reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
 
     b = Bucket(limit, remaining, reset)
     if isspecific(method, endpoint)
@@ -65,7 +65,7 @@ function update(
     e.status == 429 || return update(l, method, endpoint, e.response)
     d = JSON.parse(String(copy(e.response.body)))
     if get(d, "global", false)
-        l.reset = now(tz"UTC") + Millisecond(get(d, "retry_after", 0))
+        l.reset = now(UTC) + Millisecond(get(d, "retry_after", 0))
     else
         update(l, method, endpoint, e.response)
     end
@@ -73,7 +73,7 @@ end
 
 # TODO: Inaccuracies in system clock break this, so we can't use this model.
 function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
-    n = now(tz"UTC")
+    n = now(UTC)
     if l.reset !== nothing
         if n < l.reset
             return true
