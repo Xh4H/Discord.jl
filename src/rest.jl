@@ -31,19 +31,16 @@ struct Response{T}
     http_response::Union{HTTP.Messages.Response, Nothing}
 end
 
-# HTTP status error.
-function Response{T}(e::HTTP.ExceptionRequest.StatusError, limited::Bool) where T
-    return Response{T}(nothing, false, false, limited || e.status == 429, e.response)
-end
-
-# Successful HTTP request with no body.
+# HTTP response with no body.
 function Response{Nothing}(r::HTTP.Messages.Response, limited::Bool)
-    return Response{Nothing}(nothing, true, false, limited, r)
+    return Response{Nothing}(nothing, r.status < 300, false, limited, r)
 end
 
-# Successful HTTP request.
+# HTTP response with body (maybe).
 function Response{T}(r::HTTP.Messages.Response, limited::Bool) where T
-    r.status == 204 && return Response(nothing, true, false, r)
+    r.status == 204 && return Response{T}(nothing, true, false, r)
+    r.status >= 300 && return Response{T}(nothing, false, false, r.status == 429, r)
+
     body = JSON.parse(String(copy(r.body)))
     val, TT = body isa Vector ? (T.(body), Vector{T}) : (T(body), T)
     Response{TT}(val, true, false, limited, r)
@@ -74,7 +71,6 @@ function Response{T}(
     params...,
 ) where T
     limited = islimited(c.limiter, method, endpoint)
-
     if limited
         if c.on_limit === LIMIT_IGNORE
             return Response{T}(nothing, false, false, true, nothing)
@@ -93,15 +89,10 @@ function Response{T}(
 
     args = [method, url, headers]
     get(should_send, method, false) && push!(args, json(body))
-    return try
-        r = HTTP.request(args...)
-        update(c.limiter, method, endpoint, r)
-        Response{T}(r, limited)
-    catch e
-        e isa HTTP.ExceptionRequest.StatusError || rethrow(e)
-        update(c.limiter, method, endpoint, e)
-        Response{T}(e, limited)
-    end
+    r = HTTP.request(args...; status_exception=false)
+    update(c.limiter, method, endpoint, r)
+
+    return Response{T}(r, limited)
 end
 
 include(joinpath("rest", "integration.jl"))
