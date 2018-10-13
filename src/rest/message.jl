@@ -10,7 +10,7 @@ export reply,
 """
     reply(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
 
-Reply to the given [`Message`](@ref) (send a message to the same channel).
+Reply to a [`Message`](@ref) (send a message to the same channel).
 """
 function reply(c::Client, m::Message, content::Union{AbstractString, Dict})
     return send_message(c, m.channel_id, content)
@@ -19,14 +19,9 @@ end
 """
     edit(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
 
-Edit the given [`Message`](@ref).
+Edit a [`Message`](@ref).
 """
-function edit(c::Client, m::Message, content::AbstractString)
-    body = Dict("content" => content)
-    return Response{Message}(c, :PATCH, "/channels/$(m.channel_id)/messages/$(m.id)"; body=body)
-end
-
-function edit(c::Client, m::Message, content::Dict)
+function edit(c::Client, m::Message, content::AbstractDict)
     return Response{Message}(
         c,
         :PATCH,
@@ -35,10 +30,12 @@ function edit(c::Client, m::Message, content::Dict)
     )
 end
 
+edit(c::Client, m::Message, content::Dict) = edit(c, m, (content=content,))
+
 """
     delete(c::Client, m::Message) -> Response
 
-Delete the given [`Message`](@ref).
+Delete a [`Message`](@ref).
 """
 function delete(c::Client, m::Message)
     return Response(c, :DELETE, "/channels/$(m.channel_id)/messages/$(m.id)")
@@ -47,7 +44,7 @@ end
 """
     pin(c::Client, m::Message) -> Response
 
-Pin the given [`Message`](@ref).
+Pin a [`Message`](@ref).
 """
 function pin(c::Client, m::Message)
     return Response(c, :PUT, "/channels/$(m.channel_id)/pins/$(m.id)")
@@ -56,8 +53,7 @@ end
 """
     unpin(c::Client, m::Message) -> Response
 
-Unpin the given [`Message`](@ref)
-upon success or a Dict containing error information.
+Unpin a [`Message`](@ref).
 """
 function unpin(c::Client, m::Message)
     return Response(c, :DELETE, "/channels/$(m.channel_id)/pins/$(m.id)")
@@ -66,7 +62,7 @@ end
 """
     react(c::Client, m::Message, emoji::AbstractString) -> Response
 
-React to the given [`Message`](@ref).
+React to a [`Message`](@ref).
 """
 function react(c::Client, m::Message, emoji::AbstractString)
     return Response(
@@ -77,9 +73,13 @@ function react(c::Client, m::Message, emoji::AbstractString)
 end
 
 """
-    get_reactions(c::Client, m::Message, emoji::AbstractString) -> Response{Vector{User}}
+    get_reactions(
+        c::Client,
+        m::Message,
+        emoji::Union{Emoji, AbstractString},
+    ) -> Response{Vector{User}}
 
-Get the users who reacted to the given [`Message`](@ref) with the given emoji.
+Get the users who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
 """
 function get_reactions(c::Client, m::Message, emoji::AbstractString)
     # TODO: Use the cache.
@@ -90,10 +90,12 @@ function get_reactions(c::Client, m::Message, emoji::AbstractString)
     )
 end
 
-"""
-    delete_reactions(c::Client, m::Message) -> Dict
+get_reactions(c::Client, m::Message, e::Emoji) = get_reactions(c, m, e.name)
 
-Delete all the reactions from the given [`Message`](@ref).
+"""
+    delete_reactions(c::Client, m::Message) -> Response
+
+Delete all the reactions from a [`Message`](@ref).
 """
 function delete_reactions(c::Client, m::Message)
     return Response(c, :DELETE, "/channels/$(m.channel_id)/messages/$(m.id)/reactions")

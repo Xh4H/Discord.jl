@@ -8,7 +8,7 @@ export get_invite,
         with_counts::Bool=false,
     ) -> Response{Invite}
 
-Get an [`Invite`](@ref). If `with_counts` is set, the [`Invite`](@ref) will contain 
+Get an [`Invite`](@ref). If `with_counts` is set, the [`Invite`](@ref) will contain
 approximate member counts.
 """
 function get_invite(c::Client, invite::AbstractString; with_counts::Bool=false)

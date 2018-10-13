@@ -15,47 +15,52 @@ export send_message,
     send_message(
         c::Client,
         channel::Union{DiscordChannel, Integer},
-        content::Union{AbstractString, Dict},
+        content::Union{AbstractString, AbstractDict},
     ) -> Response{Message}
 
 Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
 """
-function send_message(c::Client, channel::Integer, content::AbstractString)
-    body = Dict("content" => content)
-    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=body)
+function send_message(c::Client, channel::Integer, content::AbstractDict)
+    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
 end
 
-function send_message(c::Client, channel::Integer, content::Dict)
-    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
+function send_message(c::Client, channel::Integer, content::AbstractString)
+    return send_message(c, channel, (content=content,))
 end
 
 function send_message(
     c::Client,
-    channel::DiscordChannel,
-    content::Union{AbstractString, Dict},
+    ch::DiscordChannel,
+    content::Union{AbstractString, AbstractDict},
 )
-    return send_message(c, channel.id, content)
+    return send_message(c, ch.id, content)
 end
 
 """
-    get_message(c::Client, message::Message) -> Response{Message}
-    get_message(c::Client, channel::Integer, id::Integer) -> Response{Message}
+    get_message(
+        c::Client,
+        channel::Union{DiscordChannel, Integer},
+        message::Integer,
+    ) -> Response{Message}
+    get_message(c::Client, m::Message) -> Response{Message}
 
 Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
 """
-function get_message(c::Client, channel::Integer, id::Integer)
-    return if isopen(c) && haskey(c.state.messages, id)
-        Response{Message}(c.state.messages[id])
+function get_message(c::Client, channel::Integer, message::Integer)
+    return if isopen(c) && haskey(c.state.messages, message)
+        Response{Message}(c.state.messages[message])
     else
-        resp = Response{Message}(c, :GET, "/channels/$channel/messages/$id")
-        if resp.success
-            c.state.messages[id] = resp.val
-        end
-        resp
+        Response{Message}(c, :GET, "/channels/$channel/messages/$message")
     end
 end
 
-get_message(c::Client, m::Message) = get_message(c, m.channel_id, m.id)
+function get_message(c::Client, m::Message)
+    return get_message(c, m.channel_id, m.id)
+end
+
+function get_message(c::Client, ch::DiscordChannel, message::Integer)
+    return get_message(c, ch.id, message)
+end
 
 """
     get_messages(
@@ -101,18 +106,26 @@ get_pinned_messages(c::Client, channel::DiscordChannel) = get_pinned_messages(c,
     bulk_delete(
         c::Client,
         channel::Union{DiscordChannel, Integer},
-        ids::Vector{<:Integer},
+        messages::Union{Vector{Message}, Vector{<:Integer}},
     ) -> Response
 
 Delete multiple [`Message`](@ref)s from a [`DiscordChannel`](@ref).
 """
-function bulk_delete(c::Client, channel::Integer, ids::Vector{<:Integer})
-    body = Dict("messages" => ids)
-    return Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=body)
+function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integer})
+    return Response(
+        c,
+        :POST,
+        "/channels/$channel/messages/bulk-delete";
+        body=(messages=messages,),
+    )
 end
 
-function bulk_delete(c::Client, channel::DiscordChannel, ids::Vector{<:Integer})
-    return get_pinned_messages(c, channel.id, ids)
+function bulk_delete(c::Client, ch::DiscordChannel, messages::Vector{<:Integer})
+    return get_pinned_messages(c, channel.id, messages)
+end
+
+function bulk_delete(c::Client, ch::DiscordChannel, ms::Vector{Message})
+    return bulk_delete(c, ch.id, map(m -> m.id, ms))
 end
 
 """
@@ -143,7 +156,7 @@ Modify a [`DiscordChannel`](@ref).
 - `position::Int` The position in the left-hand listing.
 - `bitrate::Int` The bitrate in bits of the voice channel.
 - `user_limit::Int`: The user limit of the voice channel.
-- `permission_overwrites::Vector{Dict}`: Channel or category-specific permissions.
+- `permission_overwrites::Vector{<:AbstractDict}`: Channel or category-specific permissions.
 - `parent_id::Integer`: ID of the new parent category.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).

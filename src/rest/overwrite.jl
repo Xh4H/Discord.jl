@@ -1,9 +1,6 @@
 export modify_overwrite,
     delete_overwrite
 
-# TODO: These functions might make more sense as f(c, channel, overwrite; params...).
-# Most functions on messages for example use that convention.
-
 """
     modify_overwrite(
         c::Client,
@@ -12,11 +9,11 @@ export modify_overwrite,
         params...,
     ) -> Response{Overwrite}
 
-Modify a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref).
+Modify an [`Overwrite`](@ref) in a [`DiscordChannel`](@ref).
 
 # Keywords
-- `allow::Int`: the bitwise value of all allowed permissions.
-- `deny::Int`: the bitwise value of all denied permissions.
+- `allow::Int`: the bitwise OR of the allowed permissions.
+- `deny::Int`: the bitwise OR of the denied permissions.
 - `type::AbstractString`: "member" for a user or "role" for a role.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#edit-channel-permissions).
@@ -30,9 +27,17 @@ function modify_overwrite(c::Client, overwrite::Integer, channel::Integer; param
     )
 end
 
-modify_overwrite(c::Client, overwrite::Overwrite, channel::Integer; params...) = modify_overwrite(c, overwrite.id, channel; params...)
-modify_overwrite(c::Client, overwrite::Integer, channel::DiscordChannel; params...) = modify_overwrite(c, overwrite, channel.id; params...)
-modify_overwrite(c::Client, overwrite::Overwrite, channel::DiscordChannel; params...) = modify_overwrite(c, overwrite.id, channel.id; params...)
+function modify_overwrite(c::Client, o::Overwrite, channel::Integer; params...)
+    return modify_overwrite(c, o.id, channel; params...)
+end
+
+function modify_overwrite(c::Client, overwrite::Integer, ch::DiscordChannel; params...)
+    return modify_overwrite(c, overwrite, ch.id; params...)
+end
+
+function modify_overwrite(c::Client, o::Overwrite, ch::DiscordChannel; params...)
+    return modify_overwrite(c, o.id, ch.id; params...)
+end
 
 """
     delete_overwrite(
@@ -41,12 +46,20 @@ modify_overwrite(c::Client, overwrite::Overwrite, channel::DiscordChannel; param
         channel::Union{DiscordChannel, Integer}
     ) -> Response{Overwrite}
 
-Delete a given [`Overwrite`](@ref) in the given [`DiscordChannel`](@ref).
+Delete an [`Overwrite`](@ref) in a [`DiscordChannel`](@ref).
 """
 function delete_overwrite(c::Client, overwrite::Integer, channel::Integer)
     return Response{Overwrite}(c, :DELETE, "/channels/$channel/permissions/$overwrite")
 end
 
-delete_overwrite(c::Client, overwrite::Overwrite, channel::Integer) = delete_overwrite(c, overwrite.id, channel)
-delete_overwrite(c::Client, overwrite::Integer, channel::Channel) = delete_overwrite(c, overwrite, channel.id)
-delete_overwrite(c::Client, overwrite::Overwrite, channel::Channel) = delete_overwrite(c, overwrite.id, channel.id)
+function delete_overwrite(c::Client, o::Overwrite, ch::DiscordChannel)
+    return delete_overwrite(c, o.id, ch.id)
+end
+
+function delete_overwrite(c::Client, o::Overwrite, channel::Integer)
+    return delete_overwrite(c, o.id, channel)
+end
+
+function delete_overwrite(c::Client, overwrite::Integer, ch::DiscordChannel)
+    return delete_overwrite(c, overwrite, ch.id)
+end

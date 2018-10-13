@@ -69,11 +69,12 @@ end
 
 Ban a [`Member`](@ref) from an [`AbstractGuild`](@ref).
 
-# Query
-- `delete-message-days::Integer`: Number of days to delete the messages for (0-7).
+# Keywords
+- `delete_message_days::Integer`: Number of days to delete the messages for (0-7).
 - `reason::AbstractString`: Reason for the ban.
 """
 function ban_member(c::Client, guild::Integer, user::Integer; params...)
+    # TODO: How to pass delete_message_days as delete-message-days?
     return Response(c, :PUT, "/guilds/$guild/bans/$user"; params...)
 end
 

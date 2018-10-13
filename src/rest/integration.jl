@@ -14,7 +14,7 @@ Modify an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 
 # Keywords
 - `expire_behavior::Integer`: The behavior when an integration subscription lapses.
-- `expire_grace_period::Integer`: Period (in seconds) where the integration will ignore 
+- `expire_grace_period::Integer`: Period (in seconds) where the integration will ignore
   lapsed subscriptions.
 - `enable_emoticons::Bool`: Whether emoticons should be synced for this integration (Twitch
    only currently).
