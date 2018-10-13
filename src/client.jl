@@ -301,8 +301,8 @@ The handler is appended the event's current handlers.
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
   [`delete_handler!`](@ref).
 - `expiry::Union{Int, Period}=-1`: The handler's expiry. If an `Int` is given, the handler
-will run a set number of times before expiring. If a `Period` is given, the handler will
-expire after that amount of time has elapsed. The default of `-1` indicates no expiry.
+  will run a set number of times before expiring. If a `Period` is given, the handler will
+  expire after that amount of time has elapsed. The default of `-1` indicates no expiry.
 
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
