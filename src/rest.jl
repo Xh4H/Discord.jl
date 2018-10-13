@@ -62,7 +62,7 @@ function Response(
     c::Client,
     method::Symbol,
     endpoint::AbstractString;
-    body::AbstractDict=Dict(),
+    body=Dict(),
     params...,
 )
     return Response{Nothing}(c, method, endpoint; body=body, params...)
@@ -73,7 +73,7 @@ function Response{T}(
     c::Client,
     method::Symbol,
     endpoint::AbstractString;
-    body::Dict=Dict(),
+    body=Dict(),
     params...,
 ) where T
     url = DISCORD_API * endpoint
