@@ -47,11 +47,7 @@ end
 Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
 """
 function get_message(c::Client, channel::Integer, message::Integer)
-    return if isopen(c) && haskey(c.state.messages, message)
-        Response{Message}(c.state.messages[message])
-    else
-        Response{Message}(c, :GET, "/channels/$channel/messages/$message")
-    end
+    return Response{Message}(c, :GET, "/channels/$channel/messages/$message")
 end
 
 function get_message(c::Client, m::Message)
@@ -96,7 +92,6 @@ end
 Get a list of [`Message`](@ref)s pinned in a [`DiscordChannel`](@ref).
 """
 function get_pinned_messages(c::Client, channel::Integer)
-    # TODO: Use the cache.
     return Response{Message}(c, :GET, "/channels/$channel/pins")
 end
 

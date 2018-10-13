@@ -82,7 +82,6 @@ end
 Get the users who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
 """
 function get_reactions(c::Client, m::Message, emoji::AbstractString)
-    # TODO: Use the cache.
     return Response{User}(
         c,
         :GET,
