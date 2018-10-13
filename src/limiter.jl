@@ -53,7 +53,6 @@ function update(
 
     remaining = parse(Int, headers["X-RateLimit-Remaining"])
     reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
-
     l.buckets[parse_endpoint(endpoint, method)] = Bucket(remaining, reset)
 end
 
