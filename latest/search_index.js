@@ -425,6 +425,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.AbstractGuild-Tuple{Dict{String,Any}}",
+    "page": "Reference",
+    "title": "Julicord.AbstractGuild",
+    "category": "method",
+    "text": "An AbstractGuild guild (server). Can either be an UnavailableGuild or a Guild.\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.Attachment-Tuple{Dict{String,Any}}",
     "page": "Reference",
     "title": "Julicord.Attachment",
