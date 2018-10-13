@@ -33,7 +33,7 @@ function modify_role(c::Client, r::Role, guild::Integer; params...)
 end
 
 function modify_role(c::Client, role::Integer, g::AbstractGuild; params...)
-    return modify_role(c, r.id, g.id; params...)
+    return modify_role(c, r, g.id; params...)
 end
 
 """
