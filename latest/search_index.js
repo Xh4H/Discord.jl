@@ -49,11 +49,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference.html#Julicord.add_handler!-Tuple{Client,Type{#s358} where #s358<:AbstractEvent,Function}",
+    "location": "reference.html#Julicord.add_handler!-Tuple{Client,Type{#s355} where #s355<:AbstractEvent,Function}",
     "page": "Reference",
     "title": "Julicord.add_handler!",
     "category": "method",
-    "text": "add_handler!(c::Client, evt::Type{<:AbstractEvent}, func::Function)\n\nAdd a handler for the given event type. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended the event\'s current handlers.\n\nnote: Note\nThe set of handlers for a given event is stored as a Set{Function}. This protects against adding duplicate handlers, except when you pass an anonymous function. Therefore, it\'s recommended to define your handler functions beforehand.Also note that there is no guarantee on the order in which handlers run.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd a handler for the given event type. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended the event\'s current handlers.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler\n\nwill run a set number of times before expiring. If a Period is given, the handler will expire after that amount of time has elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all handlers run before specific ones.\n\n\n\n\n\n"
 },
 
 {
@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "Julicord.clear_handlers!",
     "category": "method",
-    "text": "clear_handlers!(c::Client, evt::Type{<:AbstractEvent})\n\nRemoves all handlers for the given event type.\n\n\n\n\n\n"
+    "text": "clear_handlers!(c::Client, evt::Type{<:AbstractEvent})\n\nRemove all handlers for the given event type. Using this is generally not recommended because it also clears default handlers which maintain the client state. Instead, try to add handlers with specific tags and delete them with delete_handler!.\n\n\n\n\n\n"
 },
 
 {
@@ -118,6 +118,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Julicord.delete_channel",
     "category": "method",
     "text": "delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{Channel}\n\nDelete a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "reference.html#Julicord.delete_handler!-Tuple{Client,Type{#s358} where #s358<:AbstractEvent,Symbol}",
+    "page": "Reference",
+    "title": "Julicord.delete_handler!",
+    "category": "method",
+    "text": "delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete a single handler by event type and tag.\n\n\n\n\n\n"
 },
 
 {
@@ -425,11 +433,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference.html#Julicord.AbstractGuild-Tuple{Dict{String,Any}}",
+    "location": "reference.html#Julicord.AbstractGuild",
     "page": "Reference",
     "title": "Julicord.AbstractGuild",
-    "category": "method",
-    "text": "An AbstractGuild guild (server). Can either be an UnavailableGuild or a Guild.\n\n\n\n\n\n"
+    "category": "type",
+    "text": "A guild (server). Can either be an UnavailableGuild or a Guild.\n\n\n\n\n\n"
 },
 
 {
