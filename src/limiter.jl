@@ -1,4 +1,7 @@
 const MESSAGES_REGEX = r"^/channels/\d+/messages/\d+$"
+const ENDS_MAJOR_ID_REGEX = r"(?:channels|guilds|webhooks)/\d+$"
+const ENDS_ID_REGEX = r"/\d+$"
+const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
 struct Bucket
     limit::Int
@@ -79,9 +82,14 @@ function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
     return b.remaining == 0
 end
 
-function parse_endpoint(endpoint::AbstractString; method::Symbol)
-    method === :DELETE && match(MESSAGES_REGEX, endpoint) !== nothing &&
-        return "$endpoint $method"
-
-    return endpoint  # TODO
+function parse_endpoint(endpoint::AbstractString, method::Symbol)
+    return if method === :DELETE && match(MESSAGES_REGEX, endpoint) !== nothing
+        "$(first(match(EXCEPT_TRAILING_ID_REGEX, endpoint).captures)) $method"
+    elseif match(ENDS_MAJOR_ID_REGEX, endpoint) !== nothing
+        endpoint
+    elseif match(ENDS_ID_REGEX, endpoint) !== nothing
+        first(match(EXCEPT_TRAILING_ID_REGEX, endpoint).captures)
+    else
+        endpoint
+    end
 end

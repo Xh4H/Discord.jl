@@ -7,7 +7,8 @@ using Julicord:
     process_id,
     increment,
     datetime,
-    @from_dict
+    @from_dict,
+    parse_endpoint
 
 using Dates
 using Test
@@ -94,5 +95,24 @@ end
         b = Bar(Dict("a" => 1, "b" => "foo"))
         @test b.a == 1
         @test b.extra_fields == Dict("b" => "foo")
+    end
+
+    @testset "parse_endpoint" begin
+        # The variable paramter doesn't matter.
+        @test parse_endpoint("/users/1", :GET) == "/users"
+        # Unless it's one of these three.
+        @test parse_endpoint("/channels/1", :GET) == "/channels/1"
+        @test parse_endpoint("/guilds/1", :GET) == "/guilds/1"
+        @test parse_endpoint("/webhooks/1", :GET) == "/webhooks/1"
+
+        # Without a numeric parameter at the end, we get the whole endpoint.
+        @test parse_endpoint("/users/@me/channels", :GET) == "/users/@me/channels"
+
+        # Special case: Deleting messages.
+        @test ==(
+            parse_endpoint("/channels/1/messages/1", :DELETE),
+            "/channels/1/messages DELETE",
+        )
+        @test parse_endpoint("/channels/1/messages/1", :GET) == "/channels/1/messages"
     end
 end
