@@ -139,7 +139,7 @@ execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=f
         params...,
     ) -> Union{Response{Message}, Response{Nothing}}
 
-Execute s *Github* [`Webhook`](@ref).
+Execute a *Github* [`Webhook`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#execute-githubcompatible-webhook).
 """

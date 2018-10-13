@@ -79,7 +79,7 @@ function Response{T}(
         end
     end
 
-    url = DISCORD_API * endpoint
+    url = "$DISCORD_API/v$(c.version)$endpoint"
     if !isempty(params)
         url *= "?" * HTTP.escapeuri(params)
     end

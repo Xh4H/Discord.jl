@@ -10,7 +10,7 @@ using WebSockets
 
 # Discord API version and base URL.
 const API_VERSION = 6
-const DISCORD_API = "https://discordapp.com/api/v$API_VERSION"
+const DISCORD_API = "https://discordapp.com/api"
 
 include("types.jl")
 include("events.jl")

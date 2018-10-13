@@ -46,6 +46,8 @@ A Discord bot.
 # Keywords
 - `on_limit::OnLimit=LIMIT_IGNORE`: Client's behaviour when it hits a rate limit.
 - `ttl::Period=Hour(1)` Amount of time that cache entries are kept.
+- `version::Int=$API_VERSION`: Version of Discord API to use. Using anything but 
+  $API_VERSION is not supported.
 """
 mutable struct Client
     token::String
@@ -54,6 +56,7 @@ mutable struct Client
     last_heartbeat::DateTime
     last_ack::DateTime
     ttl::Period
+    version::Int
     state::State
     shards::Int
     shard::Int
@@ -64,7 +67,12 @@ mutable struct Client
     rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
 
-    function Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1))
+    function Client(
+        token::String;
+        on_limit::OnLimit=LIMIT_IGNORE,
+        ttl::Period=Hour(1),
+        version::Int=API_VERSION,
+    )
         token = startswith(token, "Bot ") ? token : "Bot $token"
         return new(
             token,                            # token
@@ -73,6 +81,7 @@ mutable struct Client
             DateTime(0),                      # last_heartbeat
             DateTime(0),                      # last_ack
             ttl,                              # ttl
+            version,                          # version
             State(ttl),                       # state
             nprocs(),                         # shards
             myid() - 1,                       # shard
@@ -95,9 +104,9 @@ function Base.open(c::Client; resume::Bool=false)
     isopen(c) && error("Client is already open")
 
     # Get the gateway URL and connect to it.
-    resp = HTTP.get("$DISCORD_API/gateway")
+    resp = HTTP.get("$DISCORD_API/v$(c.version)/gateway")
     data = JSON.parse(String(resp.body))
-    url = "$(data["url"])?v=$API_VERSION&encoding=json"
+    url = "$(data["url"])?v=$(c.version)&encoding=json"
     conn = opentrick(WebSockets.open, url)
     c.conn = conn
 
