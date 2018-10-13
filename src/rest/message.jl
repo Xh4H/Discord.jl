@@ -30,7 +30,9 @@ function edit(c::Client, m::Message, content::AbstractDict)
     )
 end
 
-edit(c::Client, m::Message, content::Dict) = edit(c, m, Dict("content" => content))
+function edit(c::Client, m::Message, content::AbstractString)
+    return edit(c, m, Dict("content" => content))
+end
 
 """
     delete(c::Client, m::Message) -> Response
