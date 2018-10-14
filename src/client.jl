@@ -404,7 +404,7 @@ function dispatch(c::Client, data::AbstractDict)
     evt = try
         AbstractEvent(data)
     catch e
-        @error sprint(showerror, e)
+        @error sprint(showerror, e) type=data["t"]
         UnknownEvent(data)
     end
     push!(c.state.events, evt)
@@ -415,7 +415,7 @@ function dispatch(c::Client, data::AbstractDict)
         @async try
             handler.f(c, evt)
         catch e
-            @error sprint(showerror, e)
+            @error sprint(showerror, e) event=typeof(evt) handler=handler.tag
         finally
             if handler.remaining != -1
                 handler.remaining -= 1
@@ -728,9 +728,9 @@ function handle_close(c::Client, e::WebSocketClosedError)
     elseif err === :SESSION_TIMEOUT
         reconnect(c)
     elseif err === :INVALID_SHARD
-        error("WebSocket connection was closed: $code $err (sharding is not implemented)")
+        error("WebSocket connection was closed: $code $err")
     elseif err === :SHARDING_REQUIRED
-        error("WebSocket connection was closed: $code $err (sharding is not implemented)")
+        error("WebSocket connection was closed: $code $err")
     end
 end
 
