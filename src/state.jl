@@ -27,7 +27,7 @@ function State(ttl::Period)
         [],        # _trace
         nothing,   # user
         [],        # events
-        TTL(ttl),  # guiilds
+        TTL(ttl),  # guilds
         TTL(ttl),  # channels
         TTL(ttl),  # users
         TTL(ttl),  # messages
