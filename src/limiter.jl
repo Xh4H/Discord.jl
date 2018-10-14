@@ -39,7 +39,7 @@ function update(
     r::HTTP.Messages.Response,
 )
     if r.status == 429
-        d = JSON.parse(String(copy(e.response.body)))
+        d = JSON.parse(String(copy(r.body)))
         if get(d, "global", false)
             l.reset = now(UTC) + Millisecond(get(d, "retry_after", 0))
             return

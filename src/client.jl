@@ -6,6 +6,7 @@ export LIMIT_IGNORE,
     add_handler!,
     delete_handler!,
     clear_handlers!,
+    add_command!,
     request_guild_members,
     update_voice_status,
     update_status
@@ -158,7 +159,7 @@ function Base.open(c::Client; resume::Bool=false)
         end
         d
     end
-    
+
     writejson(conn, data) || error("writing $(resume ? "RESUME" : "IDENTIFY") failed")
 
     c.hb_chan = Channel(ch -> maintain_heartbeat(c, ch))
@@ -343,6 +344,33 @@ add handlers with specific tags and delete them with [`delete_handler!`](@ref).
 """
 clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, event)
 
+"""
+    add_command!(
+        c::Client,
+        prefix::AbstractString,
+        func::Function;
+        tag::Symbol=gensym(),
+        expiry::Union{Int, Period}=-1,
+    )
+
+Add a text command handler. The handler function should take two arguments: A
+[`Client`](@ref) and a [`Message`](@ref). The keyword arguments are identical to
+[`add_handler!`](@ref).
+"""
+function add_command!(
+    c::Client,
+    prefix::AbstractString,
+    func::Function;
+    tag::Symbol=gensym(),
+    expiry::Union{Int, Period}=-1,
+)
+    handler = (c, e) -> e.message.author.id != c.state.user.id &&
+        startswith(e.message.content, prefix) &&
+        func(c, e.message)
+
+    add_handler!(c, MessageCreate, handler; tag=tag, expiry=expiry)
+end
+
 # Client maintenance.
 
 function maintain_heartbeat(c::Client, ch::Channel)
@@ -395,8 +423,8 @@ function dispatch(c::Client, data::AbstractDict)
         end
     end
 
-    filter!(isexpired, get(c.handlers, AbstractEvent, []))
-    filter!(isexpired, get(c.handlers, typeof(evt), []))
+    filter!(!isexpired, get(c.handlers, AbstractEvent, []))
+    filter!(!isexpired, get(c.handlers, typeof(evt), []))
 end
 
 function heartbeat(c::Client, ::AbstractDict=Dict())
