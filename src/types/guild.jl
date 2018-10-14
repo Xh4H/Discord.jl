@@ -1,7 +1,18 @@
 @enum VerificationLevel VL_NONE VL_LOW VL_MEDIUM VL_HIGH VL_VERY_HIGH
+
+JSON.lower(vf::VerificationLevel) = Int(vf)
+
 @enum MessageNotificationLevel MNL_ALL_MESSAGES MNL_ONLY_MENTIONS
+
+JSON.lower(mnl::MessageNotificationLevel) = Int(mnl)
+
 @enum ExplicitContentFilterLevel ECFL_DISABLED ECFL_MEMBERS_WITHOUT_ROLES ECFL_ALL_MEMBERS
+
+JSON.lower(ecfl::ExplicitContentFilterLevel) = Int(ecfl)
+
 @enum MFALevel ML_NONE ML_ELEVATED
+
+JSON.lower(ml::MFALevel) = Int(ml)
 
 """
 A guild (server).

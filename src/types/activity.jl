@@ -6,6 +6,7 @@ export ActivityType,
     Activity
 
 @enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_UNKNOWN  # Supposed to only go to 2.
+
 JSON.lower(at::ActivityType) = Int(at)
 
 @enum ActivityFlags begin
@@ -16,6 +17,8 @@ JSON.lower(at::ActivityType) = Int(at)
     AF_SYNC=1<<4
     AF_PLAY=1<<5
 end
+
+JSON.lower(af::ActivityFlags) = Int(af)
 
 struct ActivityTimestamps
     start::Union{DateTime, Missing}
@@ -47,17 +50,6 @@ end
     size::Union{Vector{Int}, Missing}
 end
 
-function JSON.lower(ap::ActivityParty)
-    d = Dict{String, Any}()
-    if !ismissing(ap.id)
-        d["id"] = ap.id
-    end
-    if !ismissing(ap.size)
-        d["size"] = ap.size
-    end
-    return d
-end
-
 @from_dict struct ActivityAssets
     large_image::Union{String, Missing}
     large_text::Union{String, Missing}
@@ -65,41 +57,10 @@ end
     small_text::Union{String, Missing}
 end
 
-function JSON.lower(aa::ActivityAssets)
-    d = Dict{String, Any}()
-    if !ismissing(ap.large_image)
-        d["large_image"] = ap.large_image
-    end
-    if !ismissing(ap.large_text)
-        d["large_text"] = ap.large_text
-    end
-    if !ismissing(ap.small_image)
-        d["small_image"] = ap.small_image
-    end
-    if !ismissing(ap.small_text)
-        d["small_text"] = ap.small_text
-    end
-    return d
-end
-
 @from_dict struct ActivitySecrets
     join::Union{String, Missing}
     spectate::Union{String, Missing}
     match::Union{String, Missing}
-end
-
-function JSON.lower(as::ActivitySecrets)
-    d = Dict{String, Any}()
-    if !ismissing(as.join)
-        d["join"] = as.join
-    end
-    if !ismissing(as.spectate)
-        d["spectate"] = as.spectate
-    end
-    if !ismissing(as.match)
-        d["match"] = as.match
-    end
-    return d
 end
 
 """
@@ -119,15 +80,4 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#activi
     secrets::Union{ActivitySecrets, Missing}
     instance::Union{Bool, Missing}
     flags::Union{Int, Missing}
-end
-
-function JSON.lower(a::Activity)
-    d = Dict{String, Any}()
-    for f in fieldnames(Activity)
-        v = getfield(a, f)
-        if !ismissing(v)
-            d[string(f)] = v === nothing ? nothing : JSON.lower(v)
-        end
-    end
-    return d
 end

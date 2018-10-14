@@ -50,6 +50,20 @@ function extra_fields(t::Type, d::Dict{String, Any})
     return filter(p -> !in(p.first, fields), d)
 end
 
+function lowered(x)
+    return if x === nothing
+        nothing
+    elseif x isa Integer || x isa Bool
+        x
+    elseif x isa DateTime
+        round(Int, datetime2unix(x))
+    elseif x isa Vector
+        lowered.(x)
+    else
+        JSON.lower(x)
+    end
+end
+
 macro from_dict(ex)
     @assert ex.head === :struct
     name = isa(ex.args[2], Symbol) ? ex.args[2] : ex.args[2].args[1]
@@ -61,9 +75,22 @@ macro from_dict(ex)
 
     quote
         $(esc(ex))
+
         Base.@__doc__ function $(esc(name))(d::Dict{String, Any})
             extras = extra_fields($(esc(name)), d)
             return $(esc(name))($(args...), extras)
+        end
+
+        function JSON.lower(val::$(esc(name)))
+            d = Dict()
+            for f in fieldnames($(esc(name)))
+                f === :extra_fields && continue
+                v = getfield(val, f)
+                if !ismissing(v)
+                    d[string(f)] = lowered(v)
+                end
+            end
+            return d
         end
     end
 end

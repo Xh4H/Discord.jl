@@ -1,6 +1,6 @@
 @enum ChannelType CT_GUILD_TEXT CT_DM CT_GUILD_VOICE CT_GROUP_DM CT_GUILD_CATEGORY
 
-# TODO: Parametric DiscordChannel based on ChannelType.
+JSON.lower(ct::ChannelType) = Int(ct)
 
 """
 A Discord channel.

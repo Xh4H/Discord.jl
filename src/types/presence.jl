@@ -34,3 +34,15 @@ function Presence(d::Dict{String, Any})
         extra_fields(Presence, d),
     )
 end
+
+function JSON.lower(p::Presence)
+    d = Dict{Any, Any}("user" => JSON.lower(p.user), "status" => JSON.lower(p.status))
+    if !ismissing(p.roles)
+        d["roles"] = JSON.lower.(d.roles)
+    end
+    d["game"] = p.game === nothing ? nothing : JSON.lower(p.game)
+    if !ismissing(p.guild_id)
+        d["guild_id"] = p.guild_id
+    end
+    return d
+end

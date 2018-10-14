@@ -151,14 +151,13 @@ Modify a [`DiscordChannel`](@ref).
 - `position::Int` The position in the left-hand listing.
 - `bitrate::Int` The bitrate in bits of the voice channel.
 - `user_limit::Int`: The user limit of the voice channel.
-- `permission_overwrites::Vector{<:AbstractDict}`: Channel or category-specific permissions.
+- `permission_overwrites::Vector{Union{<:AbstractDict, Overwrite}}`: Channel or
+  category-specific permissions.
 - `parent_id::Integer`: ID of the new parent category.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).
 """
 function modify_channel(c::Client, channel::Integer; params...)
-    # TODO: overwrites is a list of Dicts, we should probably allow passing
-    # actual Overwrites. Maybe we need to implement JSON.lower for all the types.
     (haskey(params, :bitrate) || haskey(params, :user_limit)) &&
         haskey(c.state.channels, channel) &&
         c.state.channels[channel].type === CT_GUILD_VOICE &&

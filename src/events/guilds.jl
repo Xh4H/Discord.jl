@@ -19,9 +19,13 @@ end
 
 GuildCreate(d::Dict{String, Any}) = GuildCreate(Guild(d))
 
+JSON.lower(gc::GuildCreate) = JSON.lower(gc.guild)
+
 struct GuildUpdate <: AbstractEvent
     guild::Guild
 end
+
+JSON.lower(gu::GuildUpdate) = JSON.lower(gu.guild)
 
 GuildUpdate(d::Dict{String, Any}) = GuildUpdate(Guild(d))
 
@@ -30,6 +34,8 @@ struct GuildDelete <: AbstractEvent
 end
 
 GuildDelete(d::Dict{String, Any}) = GuildDelete(UnavailableGuild(d))
+
+JSON.lower(gd::GuildDelete) = JSON.lower(gd.guild)
 
 @from_dict struct GuildBanAdd <: AbstractEvent
     guild_id::Snowflake
@@ -56,6 +62,12 @@ struct GuildMemberAdd <: AbstractEvent
 end
 
 GuildMemberAdd(d::Dict{String, Any}) = GuildMemberAdd(snowflake(d["guild_id"]), Member(d))
+
+function JSON.lower(gma::GuildMemberAdd)
+    d = JSON.lower(gma.member)
+    d["guild_id"] = gma.guild_id
+    return d
+end
 
 @from_dict struct GuildMemberRemove <: AbstractEvent
     guild_id::Snowflake

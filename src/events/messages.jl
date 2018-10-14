@@ -12,11 +12,15 @@ end
 
 MessageCreate(d::Dict{String, Any}) = MessageCreate(Message(d))
 
+JSON.lower(mc::MessageCreate) = JSON.lower(mc.message)
+
 struct MessageUpdate <: AbstractEvent
     message::Message
 end
 
 MessageUpdate(d::Dict{String, Any}) = MessageUpdate(Message(d))
+
+JSON.lower(mu::MessageUpdate) = JSON.lower(mu.message)
 
 @from_dict struct MessageDelete <: AbstractEvent
     id::Snowflake

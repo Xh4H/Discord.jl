@@ -8,7 +8,12 @@
     MT_CHANNEL_PINNED_MESSAGE
     MT_GUILD_MEMBER_JOIN
 end
+
+JSON.lower(mt::MessageType) = Int(mt)
+
 @enum MessageActivityType MAT_JOIN MAT_SPECTATE MAT_LISTEN MAT_JOIN_REQUEST
+
+JSON.lower(mat::MessageActivityType) = Int(mat)
 
 @from_dict struct MessageActivity
     type::MessageActivityType
