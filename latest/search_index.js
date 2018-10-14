@@ -49,6 +49,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "reference.html#Julicord.add_command!-Tuple{Client,AbstractString,Function}",
+    "page": "Reference",
+    "title": "Julicord.add_command!",
+    "category": "method",
+    "text": "add_command!(\n    c::Client,\n    prefix::AbstractString,\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd a text command handler. The handler function should take two arguments: A Client and a Message. The keyword arguments are identical to add_handler!.\n\n\n\n\n\n"
+},
+
+{
     "location": "reference.html#Julicord.add_handler!-Tuple{Client,Type{#s355} where #s355<:AbstractEvent,Function}",
     "page": "Reference",
     "title": "Julicord.add_handler!",
