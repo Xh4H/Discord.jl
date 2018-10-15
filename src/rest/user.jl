@@ -6,15 +6,14 @@ export get_user,
         create_dm,
         create_group
 
-# Returns User because we may return a cached User, and not a Response{User}
 """
-    get_user(c::Client, user::Union{User, Integer}) -> User
+    get_user(c::Client, user::Union{User, Integer}) -> Response{User}
 
 Get a [`User`](@ref).
 """
 function get_user(c::Client, user::Integer)
     return if haskey(c.state.users, user)
-        c.state.users[user]
+        Response{User}(c.state.users[user])
     else
         res = Response{User}(c, :GET, "/users/$user")
         if res.success
