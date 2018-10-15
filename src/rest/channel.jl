@@ -67,7 +67,7 @@ end
 
 Get a list of [`Message`](@ref)s from a [`DiscordChannel`](@ref).
 
-# Keywords
+# Query Params
 - `around::Integer`: Get messages around this message ID.
 - `before::Integer`: Get messages before this message ID.
 - `after::Integer`: Get messages after this message ID.
@@ -139,7 +139,7 @@ trigger_typing(c::Client, ch::DiscordChannel) = trigger_typing(c, ch.id)
         c::Client,
         channel::Union{DiscordChannel, Integer};
         params...,
-    ) -> Response{Channel}
+    ) -> Response{DiscordChannel}
 
 Modify a [`DiscordChannel`](@ref).
 
@@ -166,7 +166,7 @@ function modify_channel(c::Client, channel::Integer; params...)
             "Bitrate and user limit can only be modified for voice channels",
         ))
 
-    return Response{Channel}(c, :PATCH, "/channels/$channel"; body=params)
+    return Response{DiscordChannel}(c, :PATCH, "/channels/$channel"; body=params)
 end
 
 function modify_channel(c::Client, ch::DiscordChannel; params...)
@@ -174,12 +174,12 @@ function modify_channel(c::Client, ch::DiscordChannel; params...)
 end
 
 """
-    delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{Channel}
+    delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{DiscordChannel}
 
 Delete a [`DiscordChannel`](@ref).
 """
 function delete_channel(c::Client, channel::Integer)
-    return Response{Channel}(c, :DELETE, "/channels/$channel")
+    return Response{DiscordChannel}(c, :DELETE, "/channels/$channel")
 end
 
 delete_channel(c::Client, ch::DiscordChannel) = delete_channel(c, ch.id)
