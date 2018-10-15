@@ -1,6 +1,10 @@
 export get_user,
         modify_client,
-        get_connections
+        get_connections,
+        get_user_guilds,
+        leave_guild,
+        create_dm,
+        create_group
 
 # Returns User because we may return a cached User, and not a Response{User}
 """
