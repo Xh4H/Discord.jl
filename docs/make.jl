@@ -10,7 +10,9 @@ makedocs(;
     repo="https://github.com/PurgePJ/Discord.jl/blob/{commit}{path}#L{line}",
     sitename="Discord.jl",
     authors="PurgePJ <sindur.esl@gmail.com>, christopher-dG <chrisadegraaf@gmail.com>",
-    assets=[],
+    assets=[
+        "assets/logo.png",
+    ],
 )
 
 deploydocs(;
