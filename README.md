@@ -1,4 +1,4 @@
-## Discord.jl
+## Discord.jl <img align="right" src="https://raw.githubusercontent.com/PurgePJ/Discord.jl/master/docs/src/assets/logo.png">
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable)
 [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Discord.jl/latest)
