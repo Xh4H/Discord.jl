@@ -15,12 +15,7 @@ function get_user(c::Client, user::Integer)
     return if haskey(c.state.users, user)
         Response{User}(c.state.users[user])
     else
-        res = Response{User}(c, :GET, "/users/$user")
-        if res.success
-            res.val
-        else
-            error(res.http_response)
-        end
+        Response{User}(c, :GET, "/users/$user")
     end
 end
 
