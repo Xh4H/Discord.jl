@@ -2,5 +2,5 @@
 ```
 
 ```@autodocs
-Modules = [Julicord]
+Modules = [Discord]
 ```

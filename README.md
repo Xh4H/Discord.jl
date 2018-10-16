@@ -1,19 +1,14 @@
-<div align="center">
-        <p> <img src="https://i.imgur.com/xRvoaDG.png"/> </p>
-        <p><i><b>The solution to create Discord bots using Julia</b></i></p>
-</div>
+## Discord.jl
 
-## Julicord
-
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Julicord/stable)
-[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Julicord/latest)
-[![Build Status](https://travis-ci.com/PurgePJ/Julicord.svg?branch=master)](https://travis-ci.com/PurgePJ/Julicord)
-[![CodeCov](https://codecov.io/gh/PurgePJ/Julicord/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Julicord)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable)
+[![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Discord.jl/latest)
+[![Build Status](https://travis-ci.com/PurgePJ/Discord.jl.svg?branch=master)](https://travis-ci.com/PurgePJ/Discord.jl)
+[![CodeCov](https://codecov.io/gh/PurgePJ/Discord.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Discord.jl)
 
 ### Example
 
 ```julia
-using Julicord
+using Discord
 c = Client("token")
 add_handler!(c, MessageDelete, (_, e) -> println("message $(e.id) was deleted"))
 open(c)
@@ -25,7 +20,7 @@ wait(c)
 using Distributed
 addprocs(2)
 @everywhere begin
-    using Julicord
+    using Discord
     c = Client("token")
     add_handler!(c, AbstractEvent, (c, e) -> println("[shard $(c.shard)] received $(typeof(e))"))
     open(c)

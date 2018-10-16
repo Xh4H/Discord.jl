@@ -14,8 +14,8 @@ export LIMIT_IGNORE,
 # Properties for gateway connections.
 const conn_properties = Dict(
     "\$os"      => String(Sys.KERNEL),
-    "\$browser" => "Julicord",
-    "\$device"  => "Julicord",
+    "\$browser" => "Discord.jl",
+    "\$device"  => "Discord.jl",
 )
 
 const OPCODES = Dict(

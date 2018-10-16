@@ -1,5 +1,5 @@
 const request_headers = Dict(
-    "User-Agent" => "Julicord 0.1",
+    "User-Agent" => "Discord.jl",
     "Content-Type" => "application/json",
 )
 

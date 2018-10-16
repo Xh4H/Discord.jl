@@ -1,4 +1,4 @@
-module Julicord
+module Discord
 
 using Dates
 using Distributed
