@@ -57,7 +57,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference.html#Julicord.add_handler!-Tuple{Client,Type{#s355} where #s355<:AbstractEvent,Function}",
+    "location": "reference.html#Julicord.add_handler!-Tuple{Client,Type{#s492} where #s492<:AbstractEvent,Function}",
     "page": "Reference",
     "title": "Julicord.add_handler!",
     "category": "method",
@@ -81,7 +81,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference.html#Julicord.bulk_delete-Tuple{Client,Integer,Array{#s358,1} where #s358<:Integer}",
+    "location": "reference.html#Julicord.bulk_delete-Tuple{Client,Integer,Array{#s495,1} where #s495<:Integer}",
     "page": "Reference",
     "title": "Julicord.bulk_delete",
     "category": "method",
@@ -89,7 +89,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference.html#Julicord.clear_handlers!-Tuple{Client,Type{#s358} where #s358<:AbstractEvent}",
+    "location": "reference.html#Julicord.clear_handlers!-Tuple{Client,Type{#s495} where #s495<:AbstractEvent}",
     "page": "Reference",
     "title": "Julicord.clear_handlers!",
     "category": "method",
@@ -129,7 +129,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "reference.html#Julicord.delete_handler!-Tuple{Client,Type{#s358} where #s358<:AbstractEvent,Symbol}",
+    "location": "reference.html#Julicord.delete_handler!-Tuple{Client,Type{#s495} where #s495<:AbstractEvent,Symbol}",
     "page": "Reference",
     "title": "Julicord.delete_handler!",
     "category": "method",
@@ -309,7 +309,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Reference",
     "title": "Julicord.modify_channel",
     "category": "method",
-    "text": "modify_channel(\n    c::Client,\n    channel::Union{DiscordChannel, Integer};\n    params...,\n) -> Response{Channel}\n\nModify a DiscordChannel.\n\nKeywords\n\nname::AbstractString: Channel name (2-100 characters).\ntopic::AbstractString: Channel topic (up to 1024 characters).\nnsfw::Bool: Whether the channel is NSFW.\nrate_limit_per_user::Int: Seconds a user must wait before sending another message.\nposition::Int The position in the left-hand listing.\nbitrate::Int The bitrate in bits of the voice channel.\nuser_limit::Int: The user limit of the voice channel.\npermission_overwrites::Vector{<:AbstractDict}: Channel or category-specific permissions.\nparent_id::Integer: ID of the new parent category.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "modify_channel(\n    c::Client,\n    channel::Union{DiscordChannel, Integer};\n    params...,\n) -> Response{Channel}\n\nModify a DiscordChannel.\n\nKeywords\n\nname::AbstractString: Channel name (2-100 characters).\ntopic::AbstractString: Channel topic (up to 1024 characters).\nnsfw::Bool: Whether the channel is NSFW.\nrate_limit_per_user::Int: Seconds a user must wait before sending another message.\nposition::Int The position in the left-hand listing.\nbitrate::Int The bitrate in bits of the voice channel.\nuser_limit::Int: The user limit of the voice channel.\npermission_overwrites::Vector{Union{<:AbstractDict, Overwrite}}: Channel or category-specific permissions.\nparent_id::Integer: ID of the new parent category.\n\nMore details here.\n\n\n\n\n\n"
 },
 
 {
