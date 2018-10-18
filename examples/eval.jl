@@ -3,14 +3,19 @@
 
 module Eval
 
-using Julicord
+using Discord
 
 const CODE_BLOCK = r"```(?:julia)?\n(.*)\n```"s
 
 module Sandbox end
-codeblock(s, jl::Bool=true) = "```$(jl ? "julia" : "")\n$(repr(s))\n```"
 
-function eval_codeblock(c::Client, msg::Julicord.Message)
+function codeblock(val; jl::Bool)
+    io = IOBuffer()
+    print(io, val === nothing ? "nothing" : val)
+    return "```$(jl ? "julia" : "")\n$(String(take!(io)))\n```"
+end
+
+function eval_codeblock(c::Client, msg::Discord.Message)
     m = match(CODE_BLOCK, msg.content)
     m === nothing && return reply(c, msg, "That's not a code block.")
     code = replace(first(m.captures), '\n' => ';')
@@ -18,17 +23,28 @@ function eval_codeblock(c::Client, msg::Julicord.Message)
     ex = try
         Meta.parse(code)
     catch e
-        return reply(c, msg, codeblock(sprint(showerror, e)))
+        return reply(c, msg, codeblock(sprint(showerror, e); jl=true))
     end
 
-    # TODO: Capture output.
-
-    try
-        result = @eval Sandbox $ex
-        reply(c, msg, codeblock(result))
+    # TODO: This doesn't work. Why?
+    old_stdout = stdout
+    r, w = redirect_stdout()
+    result = try
+        @eval Sandbox $ex
     catch e
-        return reply(c, msg, codeblock(sprint(showerror, e)))
+        sprint(showerror, e)
     end
+
+    output = bytesavailable(r) > 0 ? readavailable(r) : "No output"
+    redirect_stdout(old_stdout)
+
+    content = """
+    Output:
+    $(codeblock(output; jl=false))
+    Result:
+    $(codeblock(result; jl=true))
+    """
+    reply(c, msg, content)
 end
 
 function main()

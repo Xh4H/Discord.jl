@@ -1,6 +1,6 @@
 module PingPong
 
-using Julicord
+using Discord
 
 function pong(c::Client, e::MessageCreate)
     e.message.content == "ping" && reply(c, e.message, "pong")
