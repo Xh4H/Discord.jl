@@ -74,9 +74,9 @@ macro from_dict(ex)
     push!(ex.args[3].args, :(extra_fields::Dict{String, Any}))
 
     quote
-        $(esc(ex))
+        Base.@__doc__ $(esc(ex))
 
-        Base.@__doc__ function $(esc(name))(d::Dict{String, Any})
+        function $(esc(name))(d::Dict{String, Any})
             extras = extra_fields($(esc(name)), d)
             return $(esc(name))($(args...), extras)
         end
