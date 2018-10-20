@@ -185,7 +185,7 @@ function Base.open(c::Client; resume::Bool=false)
         ))
 
         if c.shards > 1
-            d["shard"] = [c.shard, c.shards]
+            d["d"]["shard"] = [c.shard, c.shards]
         end
         d
     end
