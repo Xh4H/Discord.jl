@@ -1,5 +1,9 @@
 export Ready
 
+"""
+Sent when the [`Client`](@ref) has successfully authenticated, and contains the initial
+state.
+"""
 @from_dict struct Ready <: AbstractEvent
     v::Int
     user::User

@@ -1,11 +1,15 @@
-using Documenter, Discord
+using Documenter
+using Discord
 
 makedocs(;
     modules=[Discord],
     format=:html,
     pages=[
         "Home" => "index.md",
-        "Reference" => "reference.md",
+        "Client" => "client.md",
+        "Events" => "events.md",
+        "REST API" => "rest.md",
+        "Types" => "types.md",
     ],
     repo="https://github.com/PurgePJ/Discord.jl/blob/{commit}{path}#L{line}",
     sitename="Discord.jl",

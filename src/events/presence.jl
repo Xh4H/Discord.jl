@@ -1,5 +1,10 @@
-export  PresenceUpdate, TypingStart
+export  PresenceUpdate,
+    TypingStart,
+    UserUpdate
 
+"""
+Sent when a [`User`](@ref)'s [`Presence`](@ref) is updated.
+"""
 struct PresenceUpdate <: AbstractEvent
     presence::Presence
 end
@@ -8,6 +13,9 @@ PresenceUpdate(d::Dict{String, Any}) = PresenceUpdate(Presence(d))
 
 JSON.lower(pu::PresenceUpdate) = JSON.lower(pu.presence)
 
+"""
+Sent when a [`User`](@ref) begins typing.
+"""
 struct TypingStart <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
@@ -38,6 +46,9 @@ function JSON.lower(ts::TypingStart)
     return d
 end
 
+"""
+Sent when a [`User`](@ref)'s details are updated.
+"""
 struct UserUpdate <: AbstractEvent
     user::User
 end

@@ -10,7 +10,8 @@ const should_send = Dict(
 )
 
 """
-A wrapper around a response from the REST API.
+A wrapper around a response from the REST API. Every function which wraps a Discord REST
+API endpoint returns this type.
 
 # Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, a call

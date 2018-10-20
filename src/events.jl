@@ -1,13 +1,15 @@
 export AbstractEvent, UnknownEvent
 
 """
-An incoming event sent over the gateway. Also a catch-all event: Handlers
-defined on this type will execute on all events.
+An incoming event sent over the gateway. Also a catch-all event: Handlers defined on this
+type will execute on all events, before the specific handlers run.
 """
 abstract type AbstractEvent end
 
 """
-An unknown event.
+An unknown event. When an event can't be parsed, due to an unknown type or any other error,
+it will appear as an `UnknownEvent`. The fields follow the schema defined
+[here](https://discordapp.com/developers/docs/topics/gateway#payloads).
 """
 struct UnknownEvent <: AbstractEvent
     t::String

@@ -33,10 +33,10 @@ const OPCODES = Dict(
 )
 
 """
-Determines the behaviour of a [`Client`](@ref) when it hits a rate limit. If set to
-`LIMIT_IGNORE`, a [`Response`](@ref) is returned immediately with `rate_limited` set to
-`true`. If set to `LIMIT_WAIT`, the client blocks until the rate limit resets, then retries
-the request.
+Passed as a keyword argument to [`Client`](@ref) to determine the client's behaviour when
+it hits a rate limit. If set to `LIMIT_IGNORE`, a [`Response`](@ref) is returned
+immediately with `rate_limited` set to `true`. If set to `LIMIT_WAIT`, the client blocks
+until the rate limit resets, then retries the request.
 """
 @enum OnLimit LIMIT_IGNORE LIMIT_WAIT
 
@@ -53,15 +53,45 @@ Handler(f::Function, tag::Symbol, expiry::Period) = Handler(f, tag, now(UTC) + e
 isexpired(h::Handler) = h.expiry isa Int ? h.expiry == 0 : now(UTC) > h.expiry
 
 """
-    Client(token::String; on_limit::OnLimit=LIMIT_IGNORE, ttl::Period=Hour(1) -> Client
+    Client(
+        token::String;
+        on_limit::OnLimit=LIMIT_IGNORE,
+        ttl::Period=Hour(1),
+        version::Int=$API_VERSION,
+     ) -> Client
 
-A Discord bot.
+A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
+calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
+
+To get a bot token, head [here](https://discordapp.com/developers/applications) to create a
+new application. Once you've created a bot user, you will have access to its token.
 
 # Keywords
-- `on_limit::OnLimit=LIMIT_IGNORE`: Client's behaviour when it hits a rate limit.
-- `ttl::Period=Hour(1)` Amount of time that cache entries are kept.
-- `version::Int=$API_VERSION`: Version of Discord API to use. Using anything but
-  $API_VERSION is not supported.
+- `on_limit::OnLimit=LIMIT_IGNORE`: Client's behaviour when it hits a rate limit (see "Rate
+  Limiting" below for more details).
+- `ttl::Period=Hour(1)` Amount of time that cache entries are kept (see "Caching" below for
+  more details).
+- `version::Int=$API_VERSION`: Version of the Discord API to use. Using anything but
+  $API_VERSION is not officially supported by the Discord.jl developers.
+
+# Caching
+By default, most data that comes from Discord is cached for later use. However, to avoid
+memory leakage, it's deleted after some time (determined by the `ttl` keyword). Although
+it's not recommended, you can also disable caching of certain data by clearing default
+handlers for relevant event types with [`clear_handlers!`](@ref). For example, if you
+wanted to avoid caching any messages, you would clear handlers for [`MessageCreate`](@ref)
+and [`MessageUpdate`](@ref) events.
+
+# Rate Limiting
+Discord enforces rate limits on usage of its REST API. This  means you can  only send so
+many messages in a given period, and so on. To customize the client's behaviour when
+encountering rate limits, use the `on_limit` keyword and see [`OnLimit`](@ref).
+
+# Sharding
+Sharding is handled automatically: The number of available processes is the number of
+shards that are created. See the
+[sharding example](https://github.com/PurgePJ/Discord.jl/blob/master/examples/sharding.jl)
+for more details.
 """
 mutable struct Client
     token::String
@@ -112,7 +142,7 @@ end
 """
     open(c::Client)
 
-Log in to the Discord gateway and begin responding to events.
+Connect to the Discord gateway and begin responding to events.
 """
 function Base.open(c::Client; resume::Bool=false)
     isopen(c) && error("Client is already open")
@@ -170,6 +200,11 @@ end
 
 Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
 
+"""
+    Base.close(c::Client)
+
+Disconnect from the Discord gateway.
+"""
 function Base.close(c::Client; statusnumber::Int=1000)
     isdefined(c, :conn) || return
     close(c.hb_chan)
@@ -293,7 +328,7 @@ end
         expiry::Union{Int, Period}=-1,
     )
 
-Add a handler for the given event type.
+Add a handler for an event type.
 The handler should be a function which takes two arguments: A [`Client`](@ref) and an
 [`AbstractEvent`](@ref) (or a subtype).
 The handler is appended the event's current handlers.
@@ -338,7 +373,7 @@ end
 """
     clear_handlers!(c::Client, evt::Type{<:AbstractEvent})
 
-Remove all handlers for the given event type. Using this is generally not recommended
+Remove all handlers for an event type. Using this is generally not recommended
 because it also clears default handlers which maintain the client state. Instead, try to
 add handlers with specific tags and delete them with [`delete_handler!`](@ref).
 """
