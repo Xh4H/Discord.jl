@@ -106,7 +106,7 @@ mutable struct Client
     limiter::Limiter
     on_limit::OnLimit
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}
-    hb_chan::Channel  # Channel to stop the maintain_heartbeat coroutine upon disconnnect.
+    hb_chan::Channel  # Channel to stop the heartbeat_loop coroutine upon disconnnect.
     rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
 
@@ -151,28 +151,20 @@ function Base.open(c::Client; resume::Bool=false)
     c.shard > 0 && sleep(5)
 
     # Get the gateway URL and connect to it.
+    logmsg(c, DEBUG, "Requesting gateway URL")
     resp = HTTP.get("$DISCORD_API/v$(c.version)/gateway")
     data = JSON.parse(String(resp.body))
     url = "$(data["url"])?v=$(c.version)&encoding=json"
-    conn = opentrick(WebSockets.open, url)
-    c.conn = conn
+    logmsg(c, DEBUG, "Connecting to gateway"; url=url)
+    c.conn = opentrick(WebSockets.open, url)
 
     # Receive HELLO.
-    data, e = readjson(conn)
+    logmsg(c, DEBUG, "receiving HELLO")
+    data, e = readjson(c)
     e === nothing || throw(e)
     op = get(OPCODES, data["op"], data["op"])
-    op === :HELLO || error("expected opcode HELLO, received $op")
+    op === :HELLO || error("Expected opcode HELLO, received $op")
     hello(c, data)
-
-    # Write the first heartbeat.
-    heartbeat(c) || error("writing HEARTBEAT failed")
-
-    # Read the heartbeat ack.
-    data, e = readjson(conn)
-    e === nothing || throw(e)
-    op = get(OPCODES, data["op"], data["op"])
-    op === :HEARTBEAT_ACK || error("expected opcode HEARTBEAT_ACK, received $op")
-    heartbeat_ack(c, data)
 
     # Write the RESUME or IDENTIFY, depending on if we're resuming or not.
     data = if resume
@@ -193,12 +185,14 @@ function Base.open(c::Client; resume::Bool=false)
         d
     end
 
-    writejson(conn, data) || error("writing $(resume ? "RESUME" : "IDENTIFY") failed")
+    op = resume ? :RESUME : :IDENTIFY
+    logmsg(c, DEBUG, "Writing $op")
+    writejson(c, data) || error("Writing $op failed")
 
-    c.hb_chan = Channel(ch -> maintain_heartbeat(c, ch))
+    c.hb_chan = Channel(ch -> heartbeat_loop(c, ch))
     c.rl_chan = Channel(ch -> read_loop(c, ch))
 
-    return nothing
+    logmsg(c, INFO, "Logged in")
 end
 
 Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
@@ -257,7 +251,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c.conn, Dict("op" => 8, "d" => Dict(
+    return writejson(c, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
@@ -283,7 +277,7 @@ function update_voice_state(
     self_mute::Bool,
     self_deaf::Bool,
 )
-    return writejson(c.conn, Dict("op" => 4, "d" => Dict(
+    return writejson(c, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
@@ -310,7 +304,7 @@ function update_status(
     status::PresenceStatus,
     afk::Bool,
 )
-    return writejson(c.conn, Dict("op" => 3, "d" => Dict(
+    return writejson(c, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
@@ -352,7 +346,7 @@ function add_handler!(
     tag::Symbol=gensym(),
     expiry::Union{Int, Period}=-1,
 )
-    expiry == 0 && throw(ArgumentError("Can't add a handler that will never run"))
+    expiry == 0 && error("Can't add a handler that will never run")
 
     h = Handler(func, tag, expiry)
     if haskey(c.handlers, evt)
@@ -409,12 +403,12 @@ end
 
 # Client maintenance.
 
-function maintain_heartbeat(c::Client, ch::Channel)
+function heartbeat_loop(c::Client, ch::Channel)
     while isopen(ch) && isopen(c.conn)
         if c.last_heartbeat > c.last_ack
             reconnect(c; statusnumber=1001)
         elseif !heartbeat(c) && isopen(ch)
-            @error "writing HEARTBEAT failed"
+            logmsg(c, ERROR, "Writing HEARTBEAT failed")
         elseif isopen(ch)
             sleep(c.heartbeat_interval / 1000)
         end
@@ -423,12 +417,14 @@ end
 
 function read_loop(c::Client, ch::Channel)
     while isopen(ch) && isopen(c.conn)
-        data, e = readjson(c.conn)
+        data, e = readjson(c)
         if e !== nothing
             isopen(ch) || break
             handle_error(c, e)
+        elseif haskey(HANDLERS, data["op"])
+            HANDLERS[data["op"]](c, data)
         else
-            haskey(HANDLERS, data["op"]) && HANDLERS[data["op"]](c, data)
+            logmsg(c, WARN, "Unkown opcode"; op=data["op"])
         end
     end
 end
@@ -440,7 +436,7 @@ function dispatch(c::Client, data::AbstractDict)
     evt = try
         AbstractEvent(data)
     catch e
-        @error sprint(showerror, e) type=data["t"]
+        logmsg(c, ERROR, sprint(showerror, e), type=data["t"])
         UnknownEvent(data)
     end
     push!(c.state.events, evt)
@@ -451,7 +447,7 @@ function dispatch(c::Client, data::AbstractDict)
         @async try
             handler.f(c, evt)
         catch e
-            @error sprint(showerror, e) event=typeof(evt) handler=handler.tag
+            logmsg(c, ERROR, sprint(showerror, e); event=typeof(evt), handler=handler.tag)
         finally
             if handler.remaining != -1
                 handler.remaining -= 1
@@ -464,7 +460,7 @@ function dispatch(c::Client, data::AbstractDict)
 end
 
 function heartbeat(c::Client, ::AbstractDict=Dict())
-    ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
+    ok = writejson(c, Dict("op" => 1, "d" => c.heartbeat_seq))
     if ok
         c.last_heartbeat = now()
     end
@@ -477,6 +473,7 @@ function reconnect(
     resume::Bool=true,
     statusnumber::Int=1000,
 )
+    logmsg(c, INFO, "Reconnecting"; status=statusnumber, resume=resume)
     close(c; statusnumber=statusnumber)
     open(c; resume=resume)
 end
@@ -735,7 +732,7 @@ function handle_error(c::Client, e::Exception)
     if isa(e, WebSocketClosedError)
         handle_close(c, e)
     else
-        @error sprint(showerror, e)
+        logmsg(c, ERROR, sprint(showerror, e))
     end
 end
 
@@ -743,6 +740,7 @@ function handle_close(c::Client, e::WebSocketClosedError)
     code = closecode(e)
     code === nothing && throw(e)
     err = get(CLOSE_CODES, code, :UNKNOWN_ERROR)
+    logmsg(c, WARN, "WebSocket connnection was closed"; code=code, reason=err)
 
     if err === :UNKNOWN_ERROR
         reconnect(c)
@@ -759,7 +757,6 @@ function handle_close(c::Client, e::WebSocketClosedError)
     elseif err === :INVALID_SEQ  # Probably a library bug.
         reconnect(c)
     elseif err === :RATE_LIMITED  # Probably a library bug.
-        @warn "WebSocket connection was closed: $code $err (reconnecting)"
         reconnect(c)
     elseif err === :SESSION_TIMEOUT
         reconnect(c)
@@ -772,19 +769,37 @@ end
 
 # Helpers.
 
-function readjson(conn)
+function readjson(c::Client)
     return try
-        json = read(conn)
+        json = read(c.conn)
         JSON.parse(String(json)), nothing
     catch e
         nothing, e
     end
 end
 
-writejson(conn, body) = writeguarded(conn, json(body))
+writejson(c::Client, body) = writeguarded(c.conn, json(body))
 
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
-
     return match === nothing ? nothing : parse(Int, String(first(m.captures)))
+end
+
+@enum LogLevel DEBUG INFO WARN ERROR
+
+function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
+    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
+    msg = "$(now(UTC)) $msg"
+
+    if level === DEBUG
+        @debug msg kwargs...
+    elseif level === INFO
+        @info msg kwargs...
+    elseif level === WARN
+        @warn msg kwargs...
+    elseif level == ERROR
+        @error msg kwargs...
+    else
+        error("Unknown log level $level")
+    end
 end
