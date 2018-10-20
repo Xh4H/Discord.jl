@@ -9,6 +9,7 @@ Client
 Base.open
 Base.close
 Base.wait
+me
 ```
 
 ## Event Handlers
@@ -26,11 +27,4 @@ clear_handlers!
 request_guild_members
 update_voice_state
 update_status
-```
-
-## State
-
-```@docs
-me
-state
 ```

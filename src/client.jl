@@ -1,7 +1,6 @@
 export LIMIT_IGNORE,
     LIMIT_WAIT,
     Client,
-    state,
     me,
     add_handler!,
     delete_handler!,
@@ -222,13 +221,6 @@ end
 Wait for an open client to close.
 """
 Base.wait(c::Client) = isopen(c) && wait(c.conn.cond)
-
-"""
-    state(c::Client) -> State
-
-Get the client state.
-"""
-state(c::Client) = c.state
 
 """
     me(c::Client) -> Union{User, Nothing}
