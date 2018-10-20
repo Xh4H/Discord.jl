@@ -147,6 +147,10 @@ Connect to the Discord gateway and begin responding to events.
 function Base.open(c::Client; resume::Bool=false)
     isopen(c) && error("Client is already open")
 
+    # For some reason I'm getting invalid sessions (opcode 9) when non-zero shards connect
+    # before shard 0 or at the same time. This seems to fix it.
+    c.shard > 0 && sleep(5)
+
     # Get the gateway URL and connect to it.
     resp = HTTP.get("$DISCORD_API/v$(c.version)/gateway")
     data = JSON.parse(String(resp.body))
@@ -246,7 +250,12 @@ me(c::Client) = c.state.user
 Request offline guild members of one or more guilds.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#request-guild-members).
 """
-function request_guild_members(c::Client, guild_id::Snowflake; query::AbstractString="", limit::Int=0)
+function request_guild_members(
+    c::Client,
+    guild_id::Snowflake;
+    query::AbstractString="",
+    limit::Int=0,
+)
     return request_guild_members(c, [guild_id]; query=query, limit=limit)
 end
 

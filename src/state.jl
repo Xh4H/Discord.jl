@@ -52,7 +52,7 @@ function ready(s::State, e::Ready)
             s.guilds[g.id] = g
         end
     end
-    for p in s.presences
+    for p in e.presences
         # Overwrite here because the data is more recent.
         if !haskey(s.presences, p.guild_id)
             s.presences[p.guild_id] = Dict()

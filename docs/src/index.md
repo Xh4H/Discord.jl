@@ -12,7 +12,7 @@ TODO
 ## Example
 
 For usage examples, see the
-[`examples/` directory](https://github.com/PurgePJ/tree/master/examples).
+[`examples/` directory](https://github.com/PurgePJ/Discord.jl/tree/master/examples).
 
 ## Index
 
