@@ -1,10 +1,3 @@
-export ActivityType,
-    ActivityTimestamps,
-    ActivityParty,
-    ActivityAssets,
-    ActivitySecrets,
-    Activity
-
 """
 The type of an [`Activity`](@ref).
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).

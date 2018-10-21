@@ -15,6 +15,7 @@ UnknownEvent
 ChannelCreate
 ChannelUpdate
 ChannelDelete
+ChannelPinsUpdate
 ```
 
 ## Guilds
