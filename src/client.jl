@@ -106,8 +106,6 @@ mutable struct Client
     limiter::Limiter
     on_limit::OnLimit
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}
-    hb_chan::Channel  # Channel to stop the heartbeat_loop coroutine upon disconnnect.
-    rl_chan::Channel  # Same thing for read_loop.
     conn::OpenTrick.IOWrapper
 
     function Client(
@@ -131,8 +129,6 @@ mutable struct Client
             Limiter(),                        # limiter
             on_limit,                         # on_limit
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
-            Channel(0),                       # hb_chan
-            Channel(0),                       # rl_chan
             # conn left undef, it gets assigned in open.
         )
     end
@@ -158,7 +154,7 @@ function Base.open(c::Client; resume::Bool=false)
     c.conn = opentrick(WebSockets.open, url)
 
     logmsg(c, DEBUG, "receiving HELLO")
-    data, e = readjson(c)
+    data, e = readjson(c.conn)
     e === nothing || throw(e)
     op = get(OPCODES, data["op"], data["op"])
     op === :HELLO || error("Expected opcode HELLO, received $op")
@@ -184,10 +180,11 @@ function Base.open(c::Client; resume::Bool=false)
 
     op = resume ? :RESUME : :IDENTIFY
     logmsg(c, DEBUG, "Writing $op")
-    writejson(c, data) || error("Writing $op failed")
+    writejson(c.conn, data) || error("Writing $op failed")
 
-    c.hb_chan = Channel(ch -> heartbeat_loop(c, ch))
-    c.rl_chan = Channel(ch -> read_loop(c, ch))
+    logmsg(c, DEBUG, "Starting background maintenance tasks")
+    @async heartbeat_loop(c, c.conn)
+    @async read_loop(c, c.conn)
 
     logmsg(c, INFO, "Logged in")
 end
@@ -200,10 +197,7 @@ Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
 Disconnect from the Discord gateway.
 """
 function Base.close(c::Client; statusnumber::Int=1000)
-    isdefined(c, :conn) || return
-    close(c.hb_chan)
-    close(c.rl_chan)
-    close(c.conn; statusnumber=statusnumber)
+    isdefined(c, :conn) && close(c.conn; statusnumber=statusnumber)
 end
 
 """
@@ -250,7 +244,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c, Dict("op" => 8, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
@@ -278,7 +272,7 @@ function update_voice_state(
     self_mute::Bool,
     self_deaf::Bool,
 )
-    return writejson(c, Dict("op" => 4, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
@@ -307,7 +301,7 @@ function update_status(
     status::PresenceStatus,
     afk::Bool,
 )
-    return writejson(c, Dict("op" => 3, "d" => Dict(
+    return writejson(c.conn, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
@@ -406,25 +400,28 @@ function add_command!(
     add_handler!(c, MessageCreate, handler; tag=tag, expiry=expiry)
 end
 
-# Client maintenance.
+# Client maintenance. These functions take a conn parameter even though the client already
+# has one so that they can exit when c.conn gets reassigned to an open connection despite
+# the one this loop was supposed to operate on being closed.
 
-function heartbeat_loop(c::Client, ch::Channel)
-    while isopen(ch) && isopen(c.conn)
+function heartbeat_loop(c::Client, conn)
+    while isopen(conn)
         if c.last_heartbeat > c.last_ack
+            logmsg(c, DEBUG, "Encountered zombie connection")
             reconnect(c; statusnumber=1001)
-        elseif !heartbeat(c) && isopen(ch)
+        elseif !heartbeat(c) && isopen(conn)
             logmsg(c, ERROR, "Writing HEARTBEAT failed")
-        elseif isopen(ch)
+        elseif isopen(conn)
             sleep(c.heartbeat_interval / 1000)
         end
     end
+    logmsg(c, DEBUG, "Heartbeat loop exited")
 end
 
-function read_loop(c::Client, ch::Channel)
-    while isopen(ch) && isopen(c.conn)
-        data, e = readjson(c)
+function read_loop(c::Client, conn)
+    while isopen(conn)
+        data, e = readjson(conn)
         if e !== nothing
-            isopen(ch) || break
             handle_error(c, e)
         elseif haskey(HANDLERS, data["op"])
             HANDLERS[data["op"]](c, data)
@@ -432,6 +429,7 @@ function read_loop(c::Client, ch::Channel)
             logmsg(c, WARN, "Unkown opcode"; op=data["op"])
         end
     end
+    logmsg(c, DEBUG, "Read loop exited")
 end
 
 # Event handlers.
@@ -467,7 +465,7 @@ function dispatch(c::Client, data::AbstractDict)
 end
 
 function heartbeat(c::Client, ::AbstractDict=Dict())
-    ok = writejson(c, Dict("op" => 1, "d" => c.heartbeat_seq))
+    ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
     if ok
         c.last_heartbeat = now()
     end
@@ -738,6 +736,7 @@ const CLOSE_CODES = Dict(
 )
 
 function handle_error(c::Client, e::Exception)
+    logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e)
     if isa(e, WebSocketClosedError)
         handle_close(c, e)
     else
@@ -778,16 +777,16 @@ end
 
 # Helpers.
 
-function readjson(c::Client)
+function readjson(conn)
     return try
-        json = read(c.conn)
+        json = read(conn)
         JSON.parse(String(json)), nothing
     catch e
         nothing, e
     end
 end
 
-writejson(c::Client, body) = writeguarded(c.conn, json(body))
+writejson(conn, body) = writeguarded(conn, json(body))
 
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
