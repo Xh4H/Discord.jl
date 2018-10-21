@@ -150,7 +150,6 @@ function Base.open(c::Client; resume::Bool=false)
     # before shard 0 or at the same time. This seems to fix it.
     c.shard > 0 && sleep(5)
 
-    # Get the gateway URL and connect to it.
     logmsg(c, DEBUG, "Requesting gateway URL")
     resp = HTTP.get("$DISCORD_API/v$(c.version)/gateway")
     data = JSON.parse(String(resp.body))
@@ -158,7 +157,6 @@ function Base.open(c::Client; resume::Bool=false)
     logmsg(c, DEBUG, "Connecting to gateway"; url=url)
     c.conn = opentrick(WebSockets.open, url)
 
-    # Receive HELLO.
     logmsg(c, DEBUG, "receiving HELLO")
     data, e = readjson(c)
     e === nothing || throw(e)
@@ -166,7 +164,6 @@ function Base.open(c::Client; resume::Bool=false)
     op === :HELLO || error("Expected opcode HELLO, received $op")
     hello(c, data)
 
-    # Write the RESUME or IDENTIFY, depending on if we're resuming or not.
     data = if resume
         Dict("op" => 6, "d" => Dict(
             "token" => c.token,
@@ -233,7 +230,9 @@ me(c::Client) = c.state.user
         limit::Int=0,
     ) -> Bool
 
-Request offline guild members of one or more guilds.
+Request offline guild members of one or more guilds. [`GuildMemberChunk`](@ref) events are
+sent by the gateway in response.
+
 More details [here](https://discordapp.com/developers/docs/topics/gateway#request-guild-members).
 """
 function request_guild_members(
@@ -267,7 +266,9 @@ end
         self_deaf::Bool,
     ) -> Bool
 
-Join, move, or disconnect from a voice channel.
+Join, move, or disconnect from a voice channel. A [`VoiceStateUpdate`](@ref) event is sent
+by the gateway in response.
+
 More details [here](https://discordapp.com/developers/docs/topics/gateway#update-voice-state).
 """
 function update_voice_state(
@@ -294,7 +295,9 @@ end
         afk::Bool,
     ) -> Bool
 
-Indicate a presence or status update.
+Indicate a presence or status update. A [`PresenceUpdate`](@ref) event is sent by the
+gateway in response.
+
 More details [here](https://discordapp.com/developers/docs/topics/gateway#update-status).
 """
 function update_status(
@@ -337,7 +340,7 @@ The handler is appended the event's current handlers.
 
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
-    handlers run before specific ones.
+    ([`AbstractEvent`](@ref)) handlers run before specific ones.
 """
 function add_handler!(
     c::Client,
@@ -369,8 +372,8 @@ end
     clear_handlers!(c::Client, evt::Type{<:AbstractEvent})
 
 Remove all handlers for an event type. Using this is generally not recommended
-because it also clears default handlers which maintain the client state. Instead, try to
-add handlers with specific tags and delete them with [`delete_handler!`](@ref).
+because it also clears default handlers which maintain the client state. Instead, it's
+preferred add handlers with specific tags and delete them with [`delete_handler!`](@ref).
 """
 clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, event)
 
@@ -394,9 +397,11 @@ function add_command!(
     tag::Symbol=gensym(),
     expiry::Union{Int, Period}=-1,
 )
-    handler = (c, e) -> e.message.author.id != c.state.user.id &&
-        startswith(e.message.content, prefix) &&
+    function handler(c::Client, e::MessageCreate)
+        e.message.author.id == me(c).id && return
+        startswith(e.message.content, prefix) || return
         func(c, e.message)
+    end
 
     add_handler!(c, MessageCreate, handler; tag=tag, expiry=expiry)
 end
@@ -619,6 +624,7 @@ end
 function handle_guild_role_delete(c::Client, e::GuildRoleDelete)
     haskey(c.state.guilds, e.guild_id) || return
     isa(c.state.guilds[e.guild_id], Guild) || return
+
     rs = c.state.guilds[e.guild_id].roles
     idx = findfirst(r -> r.id == e.role_id, rs)
     idx === nothing || deleteat!(rs, idx)
@@ -683,6 +689,7 @@ end
 function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveAll)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
+
     touch(c.state.messages, e.message_id)
     empty!(c.state.messages[e.message_id].reactions)
 end
@@ -791,7 +798,7 @@ end
 
 function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
     msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
-    msg = "$(now(UTC)) $msg"
+    msg = "$(now()) $msg"
 
     if level === DEBUG
         @debug msg kwargs...
