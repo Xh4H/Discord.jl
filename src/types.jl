@@ -4,6 +4,8 @@ const DISCORD_EPOCH = 1420070400000
 const Snowflake = UInt64
 # Discord sends strings, but it's easier to work with integers.
 snowflake(s::AbstractString) = parse(UInt64, s)
+# Actually, we sometimes get them as integers.
+snowflake(s::Integer) = Snowflake(s)
 # Extract the DateTime from a Snowflake.
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
 # Extract the worker ID from a Snowflake.

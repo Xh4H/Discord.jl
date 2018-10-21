@@ -546,7 +546,7 @@ function handle_guild_member_add(c::Client, e::GuildMemberAdd)
         c.state.members[e.guild_id] = TTL(c.ttl)
     end
     ms = c.state.members[e.guild_id]
-    if ismissing(e.user)
+    if ismissing(e.member.user)
         if !haskey(ms, missing)
             ms[missing] = []
         end
