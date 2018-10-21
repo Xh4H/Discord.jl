@@ -6,6 +6,7 @@ makedocs(;
     format=:html,
     pages=[
         "Home" => "index.md",
+        "Tutorial" => "tutorial.md",
         "Client" => "client.md",
         "Events" => "events.md",
         "REST API" => "rest.md",
