@@ -1,29 +1,24 @@
-## Discord.jl <img align="right" src="https://raw.githubusercontent.com/PurgePJ/Discord.jl/master/docs/src/assets/logo.png">
+## Discord.jl <img align="right" width="125" src="https://raw.githubusercontent.com/PurgePJ/Discord.jl/master/docs/src/assets/logo.png">
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable)
 [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Discord.jl/latest)
 [![Build Status](https://travis-ci.com/PurgePJ/Discord.jl.svg?branch=master)](https://travis-ci.com/PurgePJ/Discord.jl)
 [![CodeCov](https://codecov.io/gh/PurgePJ/Discord.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Discord.jl)
 
-### Example
+Discord.jl is the solution for creating [Discord](https://discordapp.com) bots with the [Julia programming language](https://julialang.org).
 
 ```julia
+# Import Discord.jl.
 using Discord
+# Create a client.
 c = Client("token")
-add_handler!(c, MessageDelete, (_, e) -> println("message $(e.id) was deleted"))
+# Add a handler for the MessageCreate event.
+add_handler!(c, MessageCreate, (_, e) -> println("received message: $(e.message.content)"))
+# Log in to the Discord gateway.
 open(c)
+# Wait for the client to disconnect.
 wait(c)
 ```
-### Sharding
 
-```julia
-using Distributed
-addprocs(2)
-@everywhere begin
-    using Discord
-    c = Client("token")
-    add_handler!(c, AbstractEvent, (c, e) -> println("[shard $(c.shard)] received $(typeof(e))"))
-    open(c)
-    wait(c)
-end
-```
+For further examples, guides, and reference, please refer to the documentation linked above.
+
