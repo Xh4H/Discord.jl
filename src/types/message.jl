@@ -1,3 +1,7 @@
+"""
+The type of a [`Message`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-types).
+"""
 @enum MessageType begin
     MT_DEFAULT
     MT_RECIPIENT_ADD
@@ -11,15 +15,27 @@ end
 
 JSON.lower(mt::MessageType) = Int(mt)
 
+"""
+The type of a [`Message`](@ref) activity.
+More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-activity-types).
+"""
 @enum MessageActivityType MAT_JOIN MAT_SPECTATE MAT_LISTEN MAT_JOIN_REQUEST
 
 JSON.lower(mat::MessageActivityType) = Int(mat)
 
+"""
+A [`Message`](@ref) activity.
+More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-activity-structure).
+"""
 @from_dict struct MessageActivity
     type::MessageActivityType
     party_id::Union{String, Missing}
 end
 
+"""
+A Rich Presence [`Message`](@ref)'s application information.
+More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-application-structure).
+"""
 @from_dict struct MessageApplication
     id::Snowflake
     cover_image::String

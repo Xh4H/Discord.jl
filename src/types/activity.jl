@@ -5,10 +5,18 @@ export ActivityType,
     ActivitySecrets,
     Activity
 
+"""
+The type of an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).
+"""
 @enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_UNKNOWN  # Supposed to only go to 2.
 
 JSON.lower(at::ActivityType) = Int(at)
 
+"""
+Flags which indicate what an [`Activity`](@ref) payload contains.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-flags).
+"""
 @enum ActivityFlags begin
     AF_INSTANCE=1<<0
     AF_JOIN=1<<1
@@ -20,6 +28,10 @@ end
 
 JSON.lower(af::ActivityFlags) = Int(af)
 
+"""
+Indicates the start and stop of an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-timestamps).
+"""
 struct ActivityTimestamps
     start::Union{DateTime, Missing}
     stop::Union{DateTime, Missing}
@@ -45,11 +57,19 @@ function JSON.lower(at::ActivityTimestamps)
     return d
 end
 
+"""
+The current party of an [`Activity`](@ref)'s player.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-party).
+"""
 @from_dict struct ActivityParty
     id::Union{String, Missing}
     size::Union{Vector{Int}, Missing}
 end
 
+"""
+Images and hover text for an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-assets).
+"""
 @from_dict struct ActivityAssets
     large_image::Union{String, Missing}
     large_text::Union{String, Missing}
@@ -57,6 +77,10 @@ end
     small_text::Union{String, Missing}
 end
 
+"""
+Secrets for Rich Presence joining and spectating of an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-secrets).
+"""
 @from_dict struct ActivitySecrets
     join::Union{String, Missing}
     spectate::Union{String, Missing}
@@ -64,7 +88,7 @@ end
 end
 
 """
-A user activity.
+A [`User`](@ref) activity.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object).
 """
 @from_dict struct Activity

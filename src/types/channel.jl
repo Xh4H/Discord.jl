@@ -1,3 +1,6 @@
+"""
+The type of a [`DiscordChannel`](@ref).
+"""
 @enum ChannelType CT_GUILD_TEXT CT_DM CT_GUILD_VOICE CT_GROUP_DM CT_GUILD_CATEGORY
 
 JSON.lower(ct::ChannelType) = Int(ct)

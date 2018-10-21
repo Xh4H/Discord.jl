@@ -1,5 +1,5 @@
 """
-A reaction.
+A [`Message`](@ref) reaction.
 More details [here](https://discordapp.com/developers/docs/resources/channel#reaction-object).
 """
 @from_dict mutable struct Reaction  # Mutable to update count and me.

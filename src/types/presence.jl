@@ -1,5 +1,9 @@
 const PRESENCE_STATUSES = ["idle", "dnd", "online", "offline"]
 
+"""
+A [`User`](@ref)'s status sent in a [`Presence`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-application-structure).
+"""
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE
 
 function PresenceStatus(ps::AbstractString)
@@ -11,6 +15,10 @@ Base.string(ps::PresenceStatus) = PRESENCE_STATUSES[Int(ps) + 1]
 
 JSON.lower(ps::PresenceStatus) = string(ps)
 
+"""
+A [`User`](@ref)'s presence.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#presence-update).
+"""
 struct Presence
     user::User
     roles::Union{Vector{Snowflake}, Missing}
@@ -20,10 +28,6 @@ struct Presence
     extra_fields::Dict{String, Any}
 end
 
-"""
-A user presence.
-More details [here](https://discordapp.com/developers/docs/topics/gateway#presence-update).
-"""
 function Presence(d::Dict{String, Any})
     return Presence(
         User(d["user"]),

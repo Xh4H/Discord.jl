@@ -1,10 +1,14 @@
+"""
+An [`Integration`](@ref) account.
+More details [here](https://discordapp.com/developers/docs/resources/guild#integration-account-object).
+"""
 @from_dict struct IntegrationAccount
     id::String
     name::String
 end
 
 """
-A server integration.
+A [`Guild`](@ref) integration.
 More details [here](https://discordapp.com/developers/docs/resources/guild#integration-object).
 """
 @from_dict struct Integration
