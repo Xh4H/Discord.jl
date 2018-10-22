@@ -6,7 +6,7 @@
 [![CodeCov](https://codecov.io/gh/PurgePJ/Discord.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Discord.jl)
 
 <div align="center">
-        <p> <img src="https://i.imgur.com/sOOlUnu.png"/> </p>
+    <p> <img src="https://raw.githubusercontent.com/PurgePJ/Discord.jl/master/banner.png"/> </p>
 </div>
 
 Discord.jl is the solution for creating [Discord](https://discordapp.com) bots with the [Julia programming language](https://julialang.org).
@@ -25,4 +25,3 @@ wait(c)
 ```
 
 For further examples, guides, and reference, please refer to the documentation linked above.
-
