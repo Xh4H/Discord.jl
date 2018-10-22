@@ -79,7 +79,7 @@ end
 
 function parse_endpoint(endpoint::AbstractString, method::Symbol)
     return if method === :DELETE && match(MESSAGES_REGEX, endpoint) !== nothing
-        first(match(EXCEPT_TRAILING_ID_REGEX, endpoint).captures) * " " * method
+        first(match(EXCEPT_TRAILING_ID_REGEX, endpoint).captures) * " $method"
     elseif match(ENDS_MAJOR_ID_REGEX, endpoint) !== nothing
         endpoint
     elseif match(ENDS_ID_REGEX, endpoint) !== nothing
