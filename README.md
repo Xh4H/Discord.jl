@@ -23,3 +23,8 @@ wait(c)
 ```
 
 For further examples, guides, and reference, please refer to the documentation linked above.
+
+## Contributing
+
+Pull requests are welcome!
+In most cases, it will be helpful to discuss the change you'd like to make on [Discord](https://discord.gg/pjNUzy9) before diving in too deep.
