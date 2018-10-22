@@ -7,6 +7,7 @@ CurrentModule = Discord
 ```@docs
 Client
 Base.open
+Base.isopen
 Base.close
 Base.wait
 me

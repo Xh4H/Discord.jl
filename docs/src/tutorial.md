@@ -4,9 +4,9 @@ CurrentModule = Discord
 
 # Tutorial
 
-*The completed code can be found in [`wager.jl`](https://github.com/PurgePJ/Discord.jl/blob/master/examples/wager.jl).*
+*The completed and cleaned-up code can be found in [`wager.jl`](https://github.com/PurgePJ/Discord.jl/blob/master/examples/wager.jl).*
 
-In this tutorial, we're going to build a basic currency/wager bot with Discord.jl.
+In this tutorial, we're going to build a very basic currency/wager bot with Discord.jl.
 The bot will give users the following capabilities:
 
 * Receive tokens from the bot on a regular interval
@@ -32,29 +32,30 @@ end
 ```
 
 Next, let's think about how we want to maintain the state of our application.
-According to the requirements and rules outlined above, we need to track users and their token count, which is nonnegative, by guild.
-Therefore, our internal state representation is going to be a mapping from guild IDs to mappings from users to token counts via a `Dict{Discord.Snowflake, Dict{Discord.User, UInt}}`.
+According to the requirements and rules outlined above, we need to track users by username and their token count, which is nonnegative, by guild.
+Therefore, our internal state representation is going to be a mapping from guild IDs to mappings from usernames to token counts via a `Dict{Discord.Snowflake, Dict{String, UInt}}`.
 In this example, we aren't particularly concerned with persistent storage so we'll just keep everything in memory.
 
 ```julia
-const USER_TOKENS = Dict{Discord.Snowflake, Dict{Discord.Snowflake, UInt}}()
+const TOKENS = Dict{Discord.Snowflake, Dict{String, UInt}}()
 ```
 
 Now, since this `Dict` starts off empty, how are we going to populate it with users?
-We can do this by defining a handler on [`GuildCreate`](@ref), whose `guild` field contains its own ID, as well as a list of [`Member`](@ref)s, each of which contains a [`User`](@ref).
+We can do this by defining a handler on [`GuildCreate`](@ref), whose `guild` field contains its own ID, as well as a list of [`Member`](@ref)s, each of which contains a [`User`](@ref), and therefore a username.
 
 ```julia
-# Runs every time the client receives a GuildCreate event to add users.
-function handle_guild_create(c::Client, e::GuildCreate)
+const TOKEN_START = 100
+
+function add_users(c::Client, e::GuildCreate)
     if !haskey(TOKENS, e.guild.id)
-        TOKENS[e.guild_id] = Dict()
+        TOKENS[e.guild.id] = Dict()
     end
 
     guild = TOKENS[e.guild.id]
 
     for m in e.guild.members
-        if !haskey(guild, m.user.id)
-            guild[m.user.id] = 0
+        if !haskey(guild, m.user.username)
+            guild[m.user.username] = TOKEN_START
         end
     end
 end
@@ -65,7 +66,7 @@ Let's add that handler to our [`Client`](@ref), and connect to the gateway with 
 ```julia
 function main()
     # ...
-    add_handler!(c, GuildCreate, handle_guild_create)
+    add_handler!(c, GuildCreate, add_users)
     open(c)
 end
 ```
@@ -83,7 +84,6 @@ const TOKEN_INCREMENT = 100
 Now, we can write a function to give out tokens on this interval, and get it running in the background.
 
 ```julia
-# Gives out tokens to all users on an interval.
 function distribute_tokens(c::Client)
     while isopen(c)
         for g in keys(TOKENS)
@@ -105,20 +105,19 @@ Next, we need to let users see their token count.
 We can do this by adding a few helpers, and a *command* via [`add_command!`](@ref).
 
 ```julia
-## Inserts guilds or users if necessary.
+# Insert a guild and/or user from a message into the token cache if they don't exist.
 function ensure_updated(m::Discord.Message)
     if !haskey(TOKENS, m.guild_id)
         TOKENS[m.guild_id] = Dict()
     end
-    if !haskey(TOKENS[m.guild_id], m.author)
-        TOKENS[m.guild_id][m.author] = 0
+    if !haskey(TOKENS[m.guild_id], m.author.username)
+        TOKENS[m.guild_id][m.author.username] = TOKEN_START
     end
 end
 
-# Gets the token count for a user.
-token_count(m::Discord.Message) = get(get(TOKENS, m.guild_id, Dict()), m.author, 0)
+# Get the token count for the user who sent a message.
+token_count(m::Discord.Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)
 
-# Replies to a message with the author's token count.
 function reply_token_count(c::Client, m::Discord.Message)
     ensure_updated(m)
     reply(c, m, "You have $(token_count(m)) tokens.")
@@ -134,9 +133,8 @@ When a user types "!count", the bot will reply with their token count.
 Next, we can easily implement the guild leaderboard for the "!leaderboard" command.
 
 ```julia
-# Replies to a message with the guild's leaderboard.
 function reply_token_leaderboard(c::Client, m::Discord.Message)
-    ensure_updated(m.guild_id, m.author)
+    ensure_updated(m)
 
     # Get user => token count pairs by token count in descending order.
     sorted = sort(collect(TOKENS[m.guild_id]); by=p -> p.second, rev=true)
@@ -144,7 +142,7 @@ function reply_token_leaderboard(c::Client, m::Discord.Message)
     entries = String[]
     for i in 1:min(10, length(sorted))  # Display at most 10.
         user, tokens = sorted[i]
-        push!(entries, "$(user.username): $tokens")
+        push!(entries, "$user: $tokens")
     end
 
     reply(c, m, join(entries, "\n"))
@@ -164,28 +162,30 @@ We need to do a few new things:
 * Check that both users are in the same guild
 
 ```julia
-# Transfers tokens from one user to another.
 function send_tokens(c::Client, m::Discord.Message)
-    ensure_updated(m.guild_id, m.author)
-    
+    ensure_updated(m)
+
     words = split(m.content)
+    if length(words) < 3
+        return reply(c, m, "Invalid !send command.")
+    end
+
     tokens = try
         parse(UInt, words[2])
     catch
         return reply(c, m, "'$(words[2])' is not a valid number of tokens.")
     end
-    recipient = findfirst(u -> u.username == words[3], keys(TOKENS[m.guild_id]))
-
-    if recipient === nothing
-        return reply(c, m, "Coulnd't find user '$(words[3])' in this guild.")
+    recipient = words[3]
+    if !haskey(TOKENS[m.guild_id], recipient)
+        return reply(c, m, "Couldn't find user '$recipient' in this guild.")
     end
-    if token_count(m.guild_id, m.author) < tokens
+    if token_count(m) < tokens
         return reply(c, m, "You don't have enough tokens to give.")
     end
 
-    TOKENS[m.guild_id][m.author] -= tokens
+    TOKENS[m.guild_id][m.author.username] -= tokens
     TOKENS[m.guild_id][recipient] += tokens
-    reply(c, m, "You sent $tokens tokens to $(recipient.username).")
+    reply(c, m, "You sent $tokens tokens to $recipient.")
 end
 
 function main()
@@ -198,7 +198,6 @@ Easy!
 And last but not least, we'll add the wagering command.
 
 ```julia
-# Wagers some tokens. The user either doubles their bet or loses it.
 function wager_tokens(c::Client, m::Discord.Message)
     ensure_updated(m)
 
@@ -212,16 +211,15 @@ function wager_tokens(c::Client, m::Discord.Message)
     catch
         return reply(c, m, "'$(words[2])' is not a valid number of tokens.")
     end
-
     if token_count(m) < tokens
-        return reply(c, m, "You don't have enough tokens to give.")
+        return reply(c, m, "You don't have enough tokens to wager.")
     end
 
     if rand() > 0.5
-        TOKENS[m.guild_id][m.author] += tokens
+        TOKENS[m.guild_id][m.author.username] += tokens
         reply(c, m, "You win!")
     else
-        TOKENS[m.guild_id][m.author] -= tokens
+        TOKENS[m.guild_id][m.author.username] -= tokens
         reply(c, m, "You lose.")
     end
 end
@@ -234,3 +232,10 @@ end
 ```
 
 The [`wait`](@ref) command at the end of `main` blocks until the client disconnects.
+
+And that's it!
+Run this `main` function with the `$DISCORD_TOKEN` environment variable set and see your bot in action.
+
+!!! note
+    Plenty of corners were cut here, so please don't see this as best practices for bot creation!
+    It's just meant to demonstrate some features and help you get your feet wet.
