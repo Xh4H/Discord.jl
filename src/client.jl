@@ -51,6 +51,11 @@ Handler(f::Function, tag::Symbol, expiry::Period) = Handler(f, tag, now(UTC) + e
 
 isexpired(h::Handler) = h.expiry isa Int ? h.expiry == 0 : now(UTC) > h.expiry
 
+struct Conn
+    io
+    v::Int
+end
+
 """
     Client(
         token::String;
@@ -93,20 +98,21 @@ shards that are created. See the
 for more details.
 """
 mutable struct Client
-    token::String
-    heartbeat_interval::Int
-    heartbeat_seq::Union{Int, Nothing}
-    last_heartbeat::DateTime
-    last_ack::DateTime
-    ttl::Period
-    version::Int
-    state::State
-    shards::Int
-    shard::Int
-    limiter::Limiter
-    on_limit::OnLimit
-    handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}
-    conn::OpenTrick.IOWrapper
+    token::String             # Bot token, always with a leading "Bot ".
+    heartbeat_interval::Int   # Milliseconds between heartbeats.
+    heartbeat_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
+    last_heartbeat::DateTime  # Last heartbeat send.
+    last_ack::DateTime        # Last heartbeat ack.
+    ttl::Period               # Cache lifetime.
+    version::Int              # Discord API version.
+    state::State              # Client state, cached data, etc.
+    shards::Int               # Number of shards in use.
+    shard::Int                # Client's shard index.
+    limiter::Limiter          # Rate limiter.
+    on_limit::OnLimit         # Rate limit behaviour.
+    handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
+    closed::Bool              # Client is closed and will not reconnect.
+    conn::Conn                # WebSocket connection.
 
     function Client(
         token::String;
@@ -129,6 +135,7 @@ mutable struct Client
             Limiter(),                        # limiter
             on_limit,                         # on_limit
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
+            true,                             # closed
             # conn left undef, it gets assigned in open.
         )
     end
@@ -151,10 +158,10 @@ function Base.open(c::Client; resume::Bool=false)
     data = JSON.parse(String(resp.body))
     url = "$(data["url"])?v=$(c.version)&encoding=json"
     logmsg(c, DEBUG, "Connecting to gateway"; url=url)
-    c.conn = opentrick(WebSockets.open, url)
+    c.conn = Conn(opentrick(WebSockets.open, url), isdefined(c, :conn) ? c.conn.v + 1 : 1)
 
     logmsg(c, DEBUG, "receiving HELLO")
-    data, e = readjson(c.conn)
+    data, e = readjson(c.conn.io)
     e === nothing || throw(e)
     op = get(OPCODES, data["op"], data["op"])
     op === :HELLO || error("Expected opcode HELLO, received $op")
@@ -180,24 +187,34 @@ function Base.open(c::Client; resume::Bool=false)
 
     op = resume ? :RESUME : :IDENTIFY
     logmsg(c, DEBUG, "Writing $op")
-    writejson(c.conn, data) || error("Writing $op failed")
+    writejson(c.conn.io, data) || error("Writing $op failed")
 
     logmsg(c, DEBUG, "Starting background maintenance tasks")
-    @async heartbeat_loop(c, c.conn)
-    @async read_loop(c, c.conn)
+    @async heartbeat_loop(c)
+    @async read_loop(c)
 
+    c.closed = false
     logmsg(c, INFO, "Logged in")
 end
 
-Base.isopen(c::Client) = isdefined(c, :conn) && isopen(c.conn)
+"""
+    isopen(c::Client) -> Bool
+
+Determine whether the client is connected to the gateway.
+"""
+Base.isopen(c::Client) = !c.closed && isdefined(c, :conn) && isopen(c.conn.io)
 
 """
     Base.close(c::Client)
 
 Disconnect from the Discord gateway.
 """
-function Base.close(c::Client; statusnumber::Int=1000)
-    isdefined(c, :conn) && close(c.conn; statusnumber=statusnumber)
+function Base.close(c::Client; permanent::Bool=true, statusnumber::Int=1000)
+    if permanent
+        logmsg(c, INFO, "Logging out")
+        c.closed = true
+    end
+    isdefined(c, :conn) && close(c.conn.io; statusnumber=statusnumber)
 end
 
 """
@@ -205,7 +222,7 @@ end
 
 Wait for an open client to close.
 """
-Base.wait(c::Client) = isopen(c) && wait(c.conn.cond)
+Base.wait(c::Client) = isopen(c) && wait(c.conn.io.cond)
 
 """
     me(c::Client) -> Union{User, Nothing}
@@ -244,7 +261,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c.conn, Dict("op" => 8, "d" => Dict(
+    return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
@@ -272,7 +289,7 @@ function update_voice_state(
     self_mute::Bool,
     self_deaf::Bool,
 )
-    return writejson(c.conn, Dict("op" => 4, "d" => Dict(
+    return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
@@ -301,7 +318,7 @@ function update_status(
     status::PresenceStatus,
     afk::Bool,
 )
-    return writejson(c.conn, Dict("op" => 3, "d" => Dict(
+    return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
@@ -400,36 +417,38 @@ function add_command!(
     add_handler!(c, MessageCreate, handler; tag=tag, expiry=expiry)
 end
 
-# Client maintenance. These functions take a conn parameter even though the client already
-# has one so that they can exit when c.conn gets reassigned to an open connection despite
-# the one this loop was supposed to operate on being closed.
+# Client maintenance.
 
-function heartbeat_loop(c::Client, conn)
-    while isopen(conn)
+function heartbeat_loop(c::Client)
+    v = c.conn.v
+    while c.conn.v == v && isopen(c)
         if c.last_heartbeat > c.last_ack
             logmsg(c, DEBUG, "Encountered zombie connection")
-            reconnect(c; statusnumber=1001)
-        elseif !heartbeat(c) && isopen(conn)
+            reconnect(c; resume=true, statusnumber=1001)
+        elseif !heartbeat(c) && c.conn.v == v && isopen(c)
             logmsg(c, ERROR, "Writing HEARTBEAT failed")
-        elseif isopen(conn)
+        elseif c.conn.v == v && isopen(c)
             sleep(c.heartbeat_interval / 1000)
         end
     end
-    logmsg(c, DEBUG, "Heartbeat loop exited")
+    logmsg(c, DEBUG, "Heartbeat loop $v exited")
 end
 
-function read_loop(c::Client, conn)
-    while isopen(conn)
-        data, e = readjson(conn)
-        if e !== nothing
-            handle_error(c, e)
+function read_loop(c::Client)
+    v = c.conn.v
+    while c.conn.v == v && isopen(c)
+        data, e = readjson(c.conn.io)
+        if e !== nothing && c.conn.v == v
+            handle_read_error(c, e)
+        elseif e !== nothing
+            logmsg(c, DEBUG, "Read failed, but the connection is outdated"; e=e)
         elseif haskey(HANDLERS, data["op"])
             HANDLERS[data["op"]](c, data)
         else
             logmsg(c, WARN, "Unkown opcode"; op=data["op"])
         end
     end
-    logmsg(c, DEBUG, "Read loop exited")
+    logmsg(c, DEBUG, "Read loop $v exited")
 end
 
 # Event handlers.
@@ -465,7 +484,7 @@ function dispatch(c::Client, data::AbstractDict)
 end
 
 function heartbeat(c::Client, ::AbstractDict=Dict())
-    ok = writejson(c.conn, Dict("op" => 1, "d" => c.heartbeat_seq))
+    ok = writejson(c.conn.io, Dict("op" => 1, "d" => c.heartbeat_seq))
     if ok
         c.last_heartbeat = now()
     end
@@ -475,15 +494,16 @@ end
 function reconnect(
     c::Client,
     ::AbstractDict=Dict();
-    resume::Bool=true,
+    resume::Bool=false,
     statusnumber::Int=1000,
 )
     logmsg(c, INFO, "Reconnecting"; status=statusnumber, resume=resume)
-    close(c; statusnumber=statusnumber)
+    close(c; permanent=false, statusnumber=statusnumber)
     open(c; resume=resume)
 end
 
 function invalid_session(c::Client, data::AbstractDict)
+    logmsg(c, WARN, "Received INVALID_SESSION"; resumable=data["d"])
     sleep(rand(1:5))
     reconnect(c; resume=data["d"])
 end
@@ -722,6 +742,7 @@ const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Handler}}(
 # Error handling.
 
 const CLOSE_CODES = Dict(
+    1000 => :NORMAL,
     4000 => :UNKNOWN_ERROR,
     4001 => :UNKNOWN_OPCODE,
     4002 => :DECODE_ERROR,
@@ -735,8 +756,9 @@ const CLOSE_CODES = Dict(
     4011 => :SHARDING_REQUIRED,
 )
 
-function handle_error(c::Client, e::Exception)
-    logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e)
+function handle_read_error(c::Client, e::Exception)
+    logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e, conn=c.conn.v)
+    c.closed && return
     if isa(e, WebSocketClosedError)
         handle_close(c, e)
     else
@@ -748,18 +770,22 @@ function handle_close(c::Client, e::WebSocketClosedError)
     code = closecode(e)
     code === nothing && throw(e)
     err = get(CLOSE_CODES, code, :UNKNOWN_ERROR)
-    logmsg(c, WARN, "WebSocket connnection was closed"; code=code, reason=err)
+    if err !== :NORMAL
+        logmsg(c, WARN, "WebSocket connnection was closed"; code=code, reason=err)
+    end
 
-    if err === :UNKNOWN_ERROR
+    if err === :NORMAL
+        close(c)
+    elseif err === :UNKNOWN_ERROR
         reconnect(c)
-    elseif err === :UNKNOWN_OPCODE
+    elseif err === :UNKNOWN_OPCODE  # Probably a library bug.
         reconnect(c)
     elseif err === :DECODE_ERROR  # Probably a library bug.
         reconnect(c)
     elseif err === :NOT_AUTHENTICATED  # Probably a library bug.
         reconnect(c)
     elseif err === :AUTHENTICATION_FAILED
-        error("WebSocket connection was closed: $code $err")
+        close(c)
     elseif err === :ALREADY_AUTHENTICATED  # Probably a library bug.
         reconnect(c)
     elseif err === :INVALID_SEQ  # Probably a library bug.
@@ -769,24 +795,24 @@ function handle_close(c::Client, e::WebSocketClosedError)
     elseif err === :SESSION_TIMEOUT
         reconnect(c)
     elseif err === :INVALID_SHARD
-        error("WebSocket connection was closed: $code $err")
+        close(c)
     elseif err === :SHARDING_REQUIRED
-        error("WebSocket connection was closed: $code $err")
+        close(c)
     end
 end
 
 # Helpers.
 
-function readjson(conn)
+function readjson(io)
     return try
-        json = read(conn)
+        json = read(io)
         JSON.parse(String(json)), nothing
     catch e
         nothing, e
     end
 end
 
-writejson(conn, body) = writeguarded(conn, json(body))
+writejson(io, body) = writeguarded(io, json(body))
 
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
