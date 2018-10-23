@@ -14,6 +14,8 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 using Discord
 # Create a client.
 c = Client("token")
+# Add a handler for the Ready event.
+add_handler!(c, Ready, (_, client) -> println("Logged in as $(client.user.username)."))
 # Add a handler for the MessageCreate event.
 add_handler!(c, MessageCreate, (_, e) -> println("received message: $(e.message.content)"))
 # Log in to the Discord gateway.
