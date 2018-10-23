@@ -3,9 +3,9 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[BinaryProvider]]
 deps = ["Libdl", "Pkg", "SHA", "Test"]
-git-tree-sha1 = "38be61810f280c3c478f5c38aaf387f8f9199275"
+git-tree-sha1 = "9930c1a6cd49d9fcd7218df6be417e6ae4f1468a"
 uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.1"
+version = "0.5.2"
 
 [[Dates]]
 deps = ["Printf"]
@@ -65,9 +65,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[OpenTrick]]
 deps = ["Pkg", "Test"]
-git-tree-sha1 = "736a351668235653b4dc6dedb88566b4beba0ade"
+git-tree-sha1 = "adb3026bf3618db59b697c9fd40d4f12c0368265"
 uuid = "102dff8d-99cb-5cc2-9bf9-d9fe3a2e5e7a"
-version = "0.2.0"
+version = "0.2.1"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
@@ -94,17 +94,15 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 [[Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
-[[TTLCache]]
-deps = ["Dates", "Test"]
-git-tree-sha1 = "182ecd6d4cc06d520c184e0f753f0e8d4ec91556"
-repo-rev = "master"
-repo-url = "https://github.com/christopher-dG/TTLCache.jl"
-uuid = "b0868c6e-cc3f-11e8-088f-97c6026971d7"
-version = "0.1.0"
-
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[[TimeToLive]]
+deps = ["Dates", "Test"]
+git-tree-sha1 = "0e91907bdf0dda9ece43ce5e40303bf52941f78b"
+uuid = "37f0c46e-897f-50ef-b453-b26c3eed3d6c"
+version = "0.1.0"
 
 [[UUIDs]]
 deps = ["Random"]

@@ -1,13 +1,15 @@
-export ActivityType,
-    ActivityTimestamps,
-    ActivityParty,
-    ActivityAssets,
-    ActivitySecrets,
-    Activity
-
+"""
+The type of an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).
+"""
 @enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_UNKNOWN  # Supposed to only go to 2.
+
 JSON.lower(at::ActivityType) = Int(at)
 
+"""
+Flags which indicate what an [`Activity`](@ref) payload contains.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-flags).
+"""
 @enum ActivityFlags begin
     AF_INSTANCE=1<<0
     AF_JOIN=1<<1
@@ -17,6 +19,12 @@ JSON.lower(at::ActivityType) = Int(at)
     AF_PLAY=1<<5
 end
 
+JSON.lower(af::ActivityFlags) = Int(af)
+
+"""
+Indicates the start and stop of an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-timestamps).
+"""
 struct ActivityTimestamps
     start::Union{DateTime, Missing}
     stop::Union{DateTime, Missing}
@@ -42,22 +50,19 @@ function JSON.lower(at::ActivityTimestamps)
     return d
 end
 
+"""
+The current party of an [`Activity`](@ref)'s player.
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-party).
+"""
 @from_dict struct ActivityParty
     id::Union{String, Missing}
     size::Union{Vector{Int}, Missing}
 end
 
-function JSON.lower(ap::ActivityParty)
-    d = Dict{String, Any}()
-    if !ismissing(ap.id)
-        d["id"] = ap.id
-    end
-    if !ismissing(ap.size)
-        d["size"] = ap.size
-    end
-    return d
-end
-
+"""
+Images and hover text for an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-assets).
+"""
 @from_dict struct ActivityAssets
     large_image::Union{String, Missing}
     large_text::Union{String, Missing}
@@ -65,45 +70,18 @@ end
     small_text::Union{String, Missing}
 end
 
-function JSON.lower(aa::ActivityAssets)
-    d = Dict{String, Any}()
-    if !ismissing(ap.large_image)
-        d["large_image"] = ap.large_image
-    end
-    if !ismissing(ap.large_text)
-        d["large_text"] = ap.large_text
-    end
-    if !ismissing(ap.small_image)
-        d["small_image"] = ap.small_image
-    end
-    if !ismissing(ap.small_text)
-        d["small_text"] = ap.small_text
-    end
-    return d
-end
-
+"""
+Secrets for Rich Presence joining and spectating of an [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-secrets).
+"""
 @from_dict struct ActivitySecrets
     join::Union{String, Missing}
     spectate::Union{String, Missing}
     match::Union{String, Missing}
 end
 
-function JSON.lower(as::ActivitySecrets)
-    d = Dict{String, Any}()
-    if !ismissing(as.join)
-        d["join"] = as.join
-    end
-    if !ismissing(as.spectate)
-        d["spectate"] = as.spectate
-    end
-    if !ismissing(as.match)
-        d["match"] = as.match
-    end
-    return d
-end
-
 """
-A user activity.
+A [`User`](@ref) activity.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object).
 """
 @from_dict struct Activity
@@ -119,15 +97,4 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#activi
     secrets::Union{ActivitySecrets, Missing}
     instance::Union{Bool, Missing}
     flags::Union{Int, Missing}
-end
-
-function JSON.lower(a::Activity)
-    d = Dict{String, Any}()
-    for f in fieldnames(Activity)
-        v = getfield(a, f)
-        if !ismissing(v)
-            d[string(f)] = v === nothing ? nothing : JSON.lower(v)
-        end
-    end
-    return d
 end

@@ -1,5 +1,5 @@
 """
-An invite to a guild.
+An invite to a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/invite#invite-object).
 """
 @from_dict struct Invite

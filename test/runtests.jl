@@ -1,4 +1,4 @@
-using Julicord:
+using Discord:
     Client,
     Snowflake,
     snowflake,
@@ -29,7 +29,7 @@ end
     a::Int
 end
 
-@testset "Julicord" begin
+@testset "Discord.jl" begin
     @testset "Client token" begin
         c = Client("token")
         @test c.token == "Bot token"

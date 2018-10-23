@@ -1,5 +1,5 @@
 const request_headers = Dict(
-    "User-Agent" => "Julicord 0.1",
+    "User-Agent" => "Discord.jl",
     "Content-Type" => "application/json",
 )
 
@@ -10,7 +10,8 @@ const should_send = Dict(
 )
 
 """
-A wrapper around a response from the REST API.
+A wrapper around a response from the REST API. Every function which wraps a Discord REST
+API endpoint returns a value of this type.
 
 # Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, a call
@@ -21,7 +22,7 @@ A wrapper around a response from the REST API.
 - `cache_hit::Bool`: Whether `val` came from the cache.
 - `rate_limited::Bool`: Whether the request was rate limited.
 - `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response.
-  If `success` is true, it is `nothing`.
+  If no HTTP request was made (cache hit, rate limit, etc.), it is `nothing`.
 """
 struct Response{T}
     val::Union{T, Nothing}

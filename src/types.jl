@@ -4,6 +4,8 @@ const DISCORD_EPOCH = 1420070400000
 const Snowflake = UInt64
 # Discord sends strings, but it's easier to work with integers.
 snowflake(s::AbstractString) = parse(UInt64, s)
+# Actually, we sometimes get them as integers.
+snowflake(s::Integer) = Snowflake(s)
 # Extract the DateTime from a Snowflake.
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
 # Extract the worker ID from a Snowflake.
@@ -50,6 +52,20 @@ function extra_fields(t::Type, d::Dict{String, Any})
     return filter(p -> !in(p.first, fields), d)
 end
 
+function lowered(x)
+    return if x === nothing
+        nothing
+    elseif x isa Integer || x isa Bool
+        x
+    elseif x isa DateTime
+        round(Int, datetime2unix(x))
+    elseif x isa Vector
+        lowered.(x)
+    else
+        JSON.lower(x)
+    end
+end
+
 macro from_dict(ex)
     @assert ex.head === :struct
     name = isa(ex.args[2], Symbol) ? ex.args[2] : ex.args[2].args[1]
@@ -60,10 +76,23 @@ macro from_dict(ex)
     push!(ex.args[3].args, :(extra_fields::Dict{String, Any}))
 
     quote
-        $(esc(ex))
-        Base.@__doc__ function $(esc(name))(d::Dict{String, Any})
+        Base.@__doc__ $(esc(ex))
+
+        function $(esc(name))(d::Dict{String, Any})
             extras = extra_fields($(esc(name)), d)
             return $(esc(name))($(args...), extras)
+        end
+
+        function JSON.lower(val::$(esc(name)))
+            d = Dict()
+            for f in fieldnames($(esc(name)))
+                f === :extra_fields && continue
+                v = getfield(val, f)
+                if !ismissing(v)
+                    d[string(f)] = lowered(v)
+                end
+            end
+            return d
         end
     end
 end
