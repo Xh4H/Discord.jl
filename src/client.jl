@@ -590,6 +590,7 @@ function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
         m.joined_at,
         m.deaf,
         m.mute,
+        Dict(),
     )
     # Update the user cache as well.
     c.state.users[e.user.id] = e.user
