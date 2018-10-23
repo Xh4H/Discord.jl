@@ -241,7 +241,7 @@ me(c::Client) = c.state.user
         limit::Int=0,
     ) -> Bool
 
-Request offline guild members of one or more guilds. [`GuildMemberChunk`](@ref) events are
+Request offline guild members of one or more guilds. [`GuildMembersChunk`](@ref) events are
 sent by the gateway in response.
 
 More details [here](https://discordapp.com/developers/docs/topics/gateway#request-guild-members).

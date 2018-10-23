@@ -15,6 +15,11 @@ ActivitySecrets
 ActivityType
 ActivityFlags
 Attachment
+AuditLog
+AuditLogEntry
+AuditLogChange
+AuditLogOptions
+ActionType
 Ban
 DiscordChannel
 ChannelType
