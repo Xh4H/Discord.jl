@@ -3,7 +3,7 @@ export get_audit_log
 """
     get_audit_log(
         c::Client,
-        guild::Union{AbstractGuild, AbstractString};
+        guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{AuditLog}
 
