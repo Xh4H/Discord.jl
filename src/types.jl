@@ -97,7 +97,6 @@ macro from_dict(ex)
     end
 end
 
-include(joinpath("types", "audit_log.jl"))
 include(joinpath("types", "overwrite.jl"))
 include(joinpath("types", "role.jl"))
 include(joinpath("types", "guild_embed.jl"))
@@ -120,3 +119,4 @@ include(joinpath("types", "voice_state.jl"))
 include(joinpath("types", "message.jl"))
 include(joinpath("types", "guild.jl"))
 include(joinpath("types", "invite.jl"))
+include(joinpath("types", "audit_log.jl"))

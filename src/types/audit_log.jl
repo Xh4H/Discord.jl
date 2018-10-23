@@ -1,28 +1,4 @@
 """
-The type of an [`AuditLogEntry`](@ref).
-More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object).
-"""
-@from_dict struct AuditLogEntry
-    target_id::Union{String, Null}
-    changes::Union{Dict, Missing} # https://discordapp.com/developers/docs/resources/audit-log#audit-log-change-object-audit-log-change-key
-    user_id::Snowflake
-    id::Snowflake
-    action_type::AuditLogEvents
-    options::Union{String, Missing}
-    reason::Union{String, Missing}
-end
-
-"""
-The type of an [`AuditLog`](@ref).
-More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-object).
-"""
-@from_dict struct AuditLog
-    webhooks::Vector{Webhook}
-    users::Vector{User}
-    audit_log_entries::Vector{AuditLogEntry}
-end
-
-"""
 [`AuditLog`](@ref) events.
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events).
 """
@@ -53,4 +29,28 @@ More details [here](https://discordapp.com/developers/docs/resources/audit-log#a
     EMOJI_UPDATE=61
     EMOJI_DELETE=62
     MESSAGE_DELETE=72
+end
+
+"""
+The type of an [`AuditLogEntry`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object).
+"""
+@from_dict struct AuditLogEntry
+    target_id::Union{String, Nothing}
+    changes::Union{Dict, Missing} # https://discordapp.com/developers/docs/resources/audit-log#audit-log-change-object-audit-log-change-key
+    user_id::Snowflake
+    id::Snowflake
+    action_type::AuditLogEvents
+    options::Union{String, Missing}
+    reason::Union{String, Missing}
+end
+
+"""
+The type of an [`AuditLog`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-object).
+"""
+@from_dict struct AuditLog
+    webhooks::Vector{Webhook}
+    users::Vector{User}
+    audit_log_entries::Vector{AuditLogEntry}
 end
