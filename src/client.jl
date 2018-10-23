@@ -361,6 +361,7 @@ function add_handler!(
     expiry::Union{Int, Period}=-1,
 )
     expiry == 0 && error("Can't add a handler that will never run")
+    delete_handler!(c, evt, tag)
 
     h = Handler(func, tag, expiry)
     if haskey(c.handlers, evt)

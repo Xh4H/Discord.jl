@@ -1,5 +1,9 @@
 using Discord:
     Client,
+    add_handler!,
+    delete_handler!,
+    clear_handlers!,
+    add_command!,
     Snowflake,
     snowflake,
     snowflake2datetime,
@@ -8,7 +12,8 @@ using Discord:
     increment,
     datetime,
     @from_dict,
-    parse_endpoint
+    parse_endpoint,
+    MessageCreate
 
 using Dates
 using Test
@@ -114,5 +119,40 @@ end
             "/channels/1/messages DELETE",
         )
         @test parse_endpoint("/channels/1/messages/1", :GET) == "/channels/1/messages"
+    end
+
+    @testset "Event handler manipulation" begin
+        f(c, e) = nothing
+        g(c, e) = nothing
+        c = Client("token")
+
+        clear_handlers!(c, MessageCreate)
+        @test !haskey(c.handlers, MessageCreate)
+
+        # Adding handlers without a tag means we can have duplicates.
+        add_handler!(c, MessageCreate, f)
+        add_handler!(c, MessageCreate, f)
+        @test length(get(c.handlers, MessageCreate, [])) == 2
+        clear_handlers!(c, MessageCreate)
+
+        # Using tags prevents duplicates.
+        add_handler!(c, MessageCreate, f; tag=:f)
+        add_handler!(c, MessageCreate, f; tag=:f)
+        @test length(get(c.handlers, MessageCreate, [])) == 1
+
+        # With tags, we can delete handlers.
+        add_handler!(c, MessageCreate, g; tag=:g)
+        @test length(get(c.handlers, MessageCreate, [])) == 2
+        delete_handler!(c, MessageCreate, :g)
+        @test length(get(c.handlers, MessageCreate, [])) == 1
+        @test first(collect(c.handlers[MessageCreate])).f == f
+
+        # Adding commands adds to the MessageCreate handlers.
+        clear_handlers!(c, MessageCreate)
+        h(c, m) = nothing
+        add_command!(c, "!test", h)
+        @test length(get(c.handlers, MessageCreate, [])) == 1
+        # But the handler function is modified.
+        @test first(collect(c.handlers[MessageCreate])).f != f
     end
 end
