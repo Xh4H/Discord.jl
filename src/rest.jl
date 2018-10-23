@@ -96,6 +96,7 @@ function Response{T}(
     return Response{T}(r, limited)
 end
 
+include(joinpath("rest", "audit_log.jl"))
 include(joinpath("rest", "integration.jl"))
 include(joinpath("rest", "invite.jl"))
 include(joinpath("rest", "channel.jl"))

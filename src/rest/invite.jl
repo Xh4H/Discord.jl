@@ -23,7 +23,7 @@ end
 """
     delete_invite(c::Client, invite::Union{Invite, AbstractString}) -> Response{Invite}
 
-Delete an [`Invite`](@ref). 
+Delete an [`Invite`](@ref).
 """
 function delete_invite(c::Client, invite::AbstractString)
     return Response{Invite}(c, :DELETE, "/invites/$invite")
