@@ -58,7 +58,7 @@ macro merge(T)
             for f in fieldnames($T)
                 va = getfield(a, f)
                 vb = getfield(b, f)
-                push!(vals, ismissing(va) || (!ismissing(vb) && va != vb) ? vb : va)
+                push!(vals, ismissing(vb) ? va : vb)
             end
             return $T(vals...)
         end

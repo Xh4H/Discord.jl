@@ -1,27 +1,24 @@
+using Dates
+using JSON
+using Test
+
+using Discord
 using Discord:
-    Client,
-    add_handler!,
-    delete_handler!,
-    clear_handlers!,
-    add_command!,
-    Snowflake,
     snowflake,
+    Snowflake,
     snowflake2datetime,
     worker_id,
     process_id,
     increment,
     datetime,
     parse_endpoint,
-    MessageCreate,
     @boilerplate,
     @dict,
     @lower,
     @merge
 
-using Dates
-using Test
-
 # A test case which covers most possible field types.
+Discord.eval(:(
 struct Foo
     a::String
     b::DateTime
@@ -30,8 +27,13 @@ struct Foo
     e::Union{Int, Nothing}
     f::Union{Int, Missing}
     g::Union{Vector{String}, Nothing, Missing}
+    h::Union{Foo, Missing}
 end
-@boilerplate Foo @dict @lower @merge
+))
+Discord.eval(:(
+@boilerplate Foo :dict :lower :merge
+))
+using Discord: Foo
 
 @testset "Discord.jl" begin
     @testset "Client token" begin
@@ -71,6 +73,7 @@ end
             "f" => 2,
             "g" => ["a", "b", "c"],
         )
+        d["h"] = copy(d)
 
         f = Foo(d)
         @test f.a == "foo"
@@ -80,6 +83,7 @@ end
         @test f.e == 1
         @test f.f == 2
         @test f.g == ["a", "b", "c"]
+        @test f.h isa Foo && f.h.a == "foo"
 
         d["e"] = nothing
         delete!(d, "f")
@@ -95,7 +99,22 @@ end
         f = Foo(d)
         @test f.g === nothing
 
-        # TODO: @lower and @merge
+        d["b"] = d["h"]["b"] = round(Int, datetime2unix(f.b))
+        d["c"] = d["h"]["c"] = snowflake(f.c)
+        @test JSON.lower(f) == Dict(
+            "a" => "foo",
+            "b" => d["b"],
+            "c" => d["c"],
+            "d" => ["a", "b", "c"],
+            "e" => nothing,
+            "g" => nothing,
+            "h" => d["h"],
+        )
+
+        f2 = Foo("bar", f.b, f.c, f.d, f.e, f.f, f.g, missing)
+        f3 = merge(f, f2)
+        @test f3.a == f2.a
+        @test f3.h == f.h
     end
 
     @testset "parse_endpoint" begin
