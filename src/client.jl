@@ -472,6 +472,7 @@ function dispatch(c::Client, data::AbstractDict)
         UnknownEvent(data)
     end
     push!(c.state.events, evt)
+    length(c.state.events) > 100 && popfirst!(c.state.events)
 
     catchalls = collect(get(c.handlers, AbstractEvent, []))
     specifics = collect(get(c.handlers, typeof(evt), []))
@@ -542,16 +543,19 @@ handle_ready(c::Client, e::Ready) = ready(c.state, e)
 handle_resumed(c::Client, e::Resumed) = c.state._trace = e._trace
 
 function handle_channel_create_update(c::Client, e::Union{ChannelCreate, ChannelUpdate})
-    c.state.channels[e.channel.id] = e.channel
+    insert_or_update(c.state.channels, e.channel.id, e.channel)
 end
 
 handle_channel_delete(c::Client, e::ChannelDelete) = delete!(c.state.channels, e.channel.id)
 
 function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate})
-    c.state.guilds[e.guild.id] = e.guild
-
+    if get(c.state.guilds, e.guild.id, nothing) isa Guild
+        insert_or_update(c.state.guilds, e.guild.id, e.guild)
+    else
+        c.state.guilds[e.guild.id] = e.guild
+    end
     for ch in e.guild.channels
-        c.state.channels[ch.id] = ch
+        insert_or_update(c.state.channels, ch.id, ch)
     end
 end
 
@@ -583,8 +587,7 @@ function handle_guild_member_add(c::Client, e::GuildMemberAdd)
         push!(ms[missing], e.member)
     else
         ms[e.member.user.id] = e.member
-        # Update the user cache as well,
-        c.state.users[e.member.user.id] = e.member.user
+        insert_or_update(c.state.users, e.member.user.id, e.member.user)
     end
 end
 
@@ -603,8 +606,7 @@ function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
         m.mute,
         Dict(),
     )
-    # Update the user cache as well.
-    c.state.users[e.user.id] = e.user
+    insert_or_update(c.state.users, e.user.id, e.user)
 end
 
 function handle_guild_member_remove(c::Client, e::GuildMemberRemove)
@@ -628,9 +630,8 @@ function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
             touch(ms, missing)
             push!(ms[missing], m)
         else
-            ms[m.user.id] = m
-            # Update the user cache as well,
-            c.state.users[m.user.id] = m.user
+            insert_or_update(ms, m.user.id, m)
+            insert_or_update(c.state.users, m.user.id, m.user)
         end
     end
 end
@@ -647,8 +648,14 @@ function handle_guild_role_update(c::Client, e::GuildRoleUpdate)
 
     rs = c.state.guilds[e.guild_id].roles
     idx = findfirst(r -> r.id == e.role.id, rs)
-    idx === nothing || deleteat!(rs, idx)
-    push!(rs, e.role)
+    role = if idx !== nothing
+        r = merge(rs[idx], e.role)
+        deleteat!(rs, idx)
+        r
+    else
+        e.role
+    end
+    push!(rs, role)
 end
 
 function handle_guild_role_delete(c::Client, e::GuildRoleDelete)
@@ -661,7 +668,7 @@ function handle_guild_role_delete(c::Client, e::GuildRoleDelete)
 end
 
 function handle_message_create_update(c::Client, e::Union{MessageCreate, MessageUpdate})
-    c.state.messages[e.message.id] = e.message
+    insert_or_update(c.state.messages, e.message.id, e.message)
 end
 
 handle_message_delete(c::Client, e::MessageDelete) = delete!(c.state.messages, e.id)
@@ -676,22 +683,19 @@ function handle_presence_update(c::Client, e::PresenceUpdate)
     if !haskey(c.state.presences, e.presence.guild_id)
         c.state.presences[e.presence.guild_id] = TTL(c.ttl)
     end
-
-    c.state.presences[e.presence.guild_id][e.presence.user.id] = e.presence
+    insert_or_update(c.state.presences[e.presence.guild_id], e.presence.user.id, e.presence)
 end
 
 function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
     haskey(c.state.messages, e.message_id) || return
+
     # TODO: This has race conditions.
     touch(c.state.messages, e.message_id)
-
     m = c.state.messages[e.message_id]
-
     if ismissing(m.reactions)
         m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
     else
         idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
-
         if idx === nothing
             push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
         else
@@ -706,13 +710,15 @@ function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
     ismissing(c.state.messages[e.message_id].reactions) && return
 
     touch(c.state.messages, e.message_id)
-
     rs = c.state.messages[e.message_id].reactions
     idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
-
     if idx !== nothing
-        rs[idx].count -= 1
-        rs[idx].me &= e.user_id != c.state.user.id
+        if rs[idx].count == 1
+            deleteat!(rs, idx)
+        else
+            rs[idx].count -= 1
+            rs[idx].me &= e.user_id != c.state.user.id
+        end
     end
 end
 
@@ -830,6 +836,8 @@ function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
     return match === nothing ? nothing : parse(Int, String(first(m.captures)))
 end
+
+insert_or_update(d, k, v) = d[k] = haskey(d, k) ? merge(d[k], v) : v
 
 @enum LogLevel DEBUG INFO WARN ERROR
 

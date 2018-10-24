@@ -43,11 +43,10 @@ function ready(s::State, e::Ready)
     s.user = e.user
 
     for c in e.private_channels
-        # Overwrite here because the data is more recent.
-        s.channels[e.id] = e
+        s.channels[e.id] = haskey(s.channels, e.id) ? merge(s.channels[e.id], e) : e
     end
     for g in e.guilds
-        # Don't overwrite anuthing here because these guilds are unavailable.
+        # Don't merge here because these guilds are unavailable.
         if !haskey(s.guilds, g.id)
             s.guilds[g.id] = g
         end
