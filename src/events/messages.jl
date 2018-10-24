@@ -34,7 +34,7 @@ Sent when a [`Message`](@ref) is deleted.
 @from_dict struct MessageDelete <: AbstractEvent
     id::Snowflake
     channel_id::Snowflake
-    guild_id::Union{Snowflake, Nothing}
+    guild_id::Union{Snowflake, Missing}
 end
 
 """
@@ -43,7 +43,7 @@ Sent when multiple [`Message`](@ref)s are deleted in bulk.
 @from_dict struct MessageDeleteBulk <: AbstractEvent
     ids::Vector{Snowflake}
     channel_id::Snowflake
-    guild_id::Union{Snowflake, Nothing}
+    guild_id::Union{Snowflake, Missing}
 end
 
 """
@@ -53,7 +53,7 @@ Sent when a [`Reaction`](@ref) is added to a [`Message`](@ref).
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
-    guild_id::Union{Snowflake, Nothing}
+    guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
 
@@ -64,7 +64,7 @@ Sent when a [`Reaction`](@ref) is removed from a [`Message`](@ref).
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
-    guild_id::Union{Snowflake, Nothing}
+    guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
 
@@ -75,5 +75,5 @@ Sent when all [`Reaction`](@ref)s are removed from a [`Message`](@ref).
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
-    guild_id::Union{Snowflake, Nothing}
+    guild_id::Union{Snowflake, Missing}
 end
