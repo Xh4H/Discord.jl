@@ -1,56 +1,20 @@
 # First millisecond of 2015.
 const DISCORD_EPOCH = 1420070400000
+
 # Discord's form of ID.
 const Snowflake = UInt64
-# Discord sends strings, but it's easier to work with integers.
-snowflake(s::AbstractString) = parse(UInt64, s)
-# Actually, we sometimes get them as integers.
+
 snowflake(s::Integer) = Snowflake(s)
-# Extract the DateTime from a Snowflake.
+snowflake(s::AbstractString) = parse(UInt64, s)
+
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
-# Extract the worker ID from a Snowflake.
 worker_id(s::Snowflake) = (s & 0x3E0000) >> 17
-# Extract the process ID from a Snowflake.
 process_id(s::Snowflake) = (s & 0x1F000) >> 12
-# Extract the increment from a Snowflake.
 increment(s::Snowflake) = s & 0xFFF
 
-# Discord sends some trailing timezone stuff. Maybe we need to think about time zones.
+# Discord sends both Unix and ISO timestamps.
+datetime(s::Integer) = unix2datetime(s)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
-
-function field(k::String, t::Symbol)
-    return if t === :Snowflake
-        :(snowflake(d[$k]))
-    elseif t === :DateTime
-        :(datetime(d[$k]))
-    elseif t === :Any
-        :(d[$k])
-    else
-        :($t(d[$k]))
-    end
-end
-
-function field(k::String, t::Expr)
-    ex = if t.head === :curly
-        if t.args[1] === :Vector && isa(t.args[2], Symbol)
-            t.args[2] === :Snowflake ? :(snowflake.(d[$k])) : :($(t.args[2]).(d[$k]))
-        elseif t.args[1] === :Union
-            if :Nothing in t.args && :Missing in t.args
-                :(haskey(d, $k) ? d[$k] === nothing ? nothing : $(field(k, t.args[2])) : missing)
-            elseif t.args[3] === :Nothing
-                :(d[$k] === nothing ? nothing : $(field(k, t.args[2])))
-            elseif t.args[3] === :Missing
-                :(haskey(d, $k) ? $(field(k, t.args[2])) : missing)
-            end
-        end
-    end
-    ex === nothing && error("uncaught case: k=$k, t=$t") || return ex
-end
-
-function extra_fields(t::Type, d::Dict{String, Any})
-    fields = string.(fieldnames(t))
-    return filter(p -> !in(p.first, fields), d)
-end
 
 function lowered(x)
     return if x === nothing
@@ -67,17 +31,23 @@ function lowered(x)
 end
 
 macro lower(T)
-    quote
-        function JSON.lower(x::$T)
-            d = Dict()
-            for f in fieldnames($T)
-                f === :extra_fields && continue
-                v = getfield(x, f)
-                if !ismissing(v)
-                    d[string(f)] = lowered(v)
+    if supertype(eval(T)) <: Enum{<:Integer}
+        quote
+            JSON.lower(x::$T) = Int(x)
+        end
+    else
+        quote
+            function JSON.lower(x::$T)
+                d = Dict()
+                for f in fieldnames($T)
+                    f === :extra_fields && continue
+                    v = getfield(x, f)
+                    if !ismissing(v)
+                        d[string(f)] = lowered(v)
+                    end
                 end
+                return d
             end
-            return d
         end
     end
 end
@@ -96,24 +66,35 @@ macro merge(T)
     end
 end
 
-macro from_dict(ex)
-    name = isa(ex.args[2], Symbol) ? ex.args[2] : ex.args[2].args[1]
-    args = map(
-        e -> field(string(e.args[1]), e.args[2]),
-        filter(e -> isa(e, Expr), ex.args[3].args),
-    )
-    push!(ex.args[3].args, :(extra_fields::Dict{String, Any}))
+field(k::String, ::Type{Any}) = :(d[$k])
+field(k::String, ::Type{Snowflake}) = :(snowflake(d[$k]))
+field(k::String, ::Type{DateTime}) = :(datetime(d[$k]))
+field(k::String, ::Type{T}) where T = :($T(d[$k]))
+field(k::String, ::Type{Vector{Snowflake}}) = :(snowflake.(d[$k]))
+field(k::String, ::Type{Vector{DateTime}}) = :(datetime.(d[$k]))
+field(k::String, ::Type{Vector{T}}) where T = :($T.(d[$k]))
+function field(k::String, ::Type{Union{T, Missing}}) where T
+    return :(haskey(d, $k) ? $(field(k, T)) : missing)
+end
+function field(k::String, ::Type{Union{T, Nothing}}) where T
+    return :(d[$k] === nothing ? nothing : $(field(k, T)))
+end
+function field(k::String, ::Type{Union{T, Nothing, Missing}}) where T
+    return :(haskey(d, $k) ? $(field(k, Union{T, Nothing})) : missing)
+end
 
+macro dict(T)
+    args = map(f -> field(string(f), fieldtype(TT, f)), fieldnames(TT))
     quote
-        Base.@__doc__ $(esc(ex))
-
-        function $(esc(name))(d::Dict{String, Any})
-            extras = extra_fields($(esc(name)), d)
-            return $(esc(name))($(args...), extras)
+        function $(esc(T))(d::Dict{String, Any})
+            $(esc(T))($(args...))
         end
+    end
+end
 
-        @lower $(esc(name))
-        @merge $(esc(name))
+macro boilerplate(T, macros...)
+    for m in macros
+        # TODO: Figure out how to apply the macro.
     end
 end
 
