@@ -1,5 +1,5 @@
 <div align="center">
-    <p> <img src="https://raw.githubusercontent.com/PurgePJ/Discord.jl/master/banner.png"/> </p>
+    <p> <img src="https://raw.githubusercontent.com/PurgePJ/Discord.jl/master/banner.png" alt="Discord.jl"/> </p>
 </div>
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable)
