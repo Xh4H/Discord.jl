@@ -360,6 +360,10 @@ function add_handler!(
     tag::Symbol=gensym(),
     expiry::Union{Int, Period}=-1,
 )
+    if !hasmethod(func, (Client, evt))
+        error("Handler function must accept (::Client, ::$evt)")
+    end
+
     expiry == 0 && error("Can't add a handler that will never run")
     delete_handler!(c, evt, tag)
 
@@ -409,6 +413,10 @@ function add_command!(
     tag::Symbol=gensym(),
     expiry::Union{Int, Period}=-1,
 )
+    if !hasmethod(func, (Client, Message))
+        error("Handler function must accept (::Client, ::Message")
+    end
+
     function handler(c::Client, e::MessageCreate)
         e.message.author.id == me(c).id && return
         startswith(e.message.content, prefix) || return
