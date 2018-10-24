@@ -19,11 +19,10 @@ A [`User`](@ref)'s presence.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#presence-update).
 """
 struct Presence
-    # TODO: These were optional but with no note about them so assume it was my mistake.
     user::User
-    roles::Vector{Snowflake}
+    roles::Union{Vector{Snowflake}, Missing}
     game::Union{Activity, Nothing}
-    guild_id::Snowflake
+    guild_id::Union{Snowflake, Missing}
     status::PresenceStatus
     activities::Vector{Activity}
 end

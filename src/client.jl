@@ -563,6 +563,8 @@ end
 
 function handle_guild_emojis_update(c::Client, e::GuildEmojisUpdate)
     haskey(c.state.guilds, e.guild_id) || return
+    c.state.guilds[e.guild_id] isa Guild || return
+
     es = c.state.guilds[e.guild_id].emojis
     empty!(es)
     append!(es, e.emojis)
