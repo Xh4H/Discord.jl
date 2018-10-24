@@ -536,7 +536,6 @@ const HANDLERS = Dict(
 
 # Default dispatch event handlers.
 # Note: These are only for opcode 0 (DISPATCH).
-# TODO: Rework these to use merge when applicable.
 
 handle_ready(c::Client, e::Ready) = ready(c.state, e)
 
@@ -557,6 +556,23 @@ function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate
     for ch in e.guild.channels
         insert_or_update(c.state.channels, ch.id, ch)
     end
+
+    if !haskey(c.state.members, e.guild.id)
+        c.state.members[e.guild.id] = TTL(c.ttl)
+    end
+    ms = c.state.members[e.guild.id]
+    for m in e.guild.members
+        if ismissing(m.user)
+            if !haskey(ms, missing)
+                ms[missing] = []
+            end
+            push!(ms[missing], m)
+        else
+            insert_or_update(ms, m.user.id, m) 
+            insert_or_update(c.state.users, m.user.id, m.user)
+        end
+    end
+
 end
 
 function handle_guild_delete(c::Client, e::GuildDelete)
