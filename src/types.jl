@@ -66,8 +66,37 @@ function lowered(x)
     end
 end
 
+macro lower(T)
+    quote
+        function JSON.lower(x::$T)
+            d = Dict()
+            for f in fieldnames($T)
+                f === :extra_fields && continue
+                v = getfield(x, f)
+                if !ismissing(v)
+                    d[string(f)] = lowered(v)
+                end
+            end
+            return d
+        end
+    end
+end
+
+macro merge(T)
+    quote
+        function Base.merge(a::$T, b::$T)
+            vals = []
+            for f in fieldnames($T)
+                va = getfield(a, f)
+                vb = getfield(b, f)
+                push!(vals, ismissing(va) || va != vb ? vb : va)
+            end
+            return $T(vals...)
+        end
+    end
+end
+
 macro from_dict(ex)
-    @assert ex.head === :struct
     name = isa(ex.args[2], Symbol) ? ex.args[2] : ex.args[2].args[1]
     args = map(
         e -> field(string(e.args[1]), e.args[2]),
@@ -83,17 +112,8 @@ macro from_dict(ex)
             return $(esc(name))($(args...), extras)
         end
 
-        function JSON.lower(val::$(esc(name)))
-            d = Dict()
-            for f in fieldnames($(esc(name)))
-                f === :extra_fields && continue
-                v = getfield(val, f)
-                if !ismissing(v)
-                    d[string(f)] = lowered(v)
-                end
-            end
-            return d
-        end
+        @lower $(esc(name))
+        @merge $(esc(name))
     end
 end
 
