@@ -11,15 +11,18 @@ using Discord:
     process_id,
     increment,
     datetime,
-    @from_dict,
     parse_endpoint,
-    MessageCreate
+    MessageCreate,
+    @boilerplate,
+    @dict,
+    @lower,
+    @merge
 
 using Dates
 using Test
 
 # A test case which covers most possible field types.
-@from_dict struct Foo
+struct Foo
     a::String
     b::DateTime
     c::Snowflake
@@ -28,11 +31,7 @@ using Test
     f::Union{Int, Missing}
     g::Union{Vector{String}, Nothing, Missing}
 end
-
-# A test case which is a subtype.
-@from_dict struct Bar <: Integer
-    a::Int
-end
+@boilerplate Foo @dict @lower @merge
 
 @testset "Discord.jl" begin
     @testset "Client token" begin
@@ -62,7 +61,7 @@ end
         @test d == DateTime(2018, 10, 8, 5, 20, 22, 782)
     end
 
-    @testset "@from_dict" begin
+    @testset "Boilerplate macros" begin
         d = Dict(
             "a" => "foo",
             "b" => "2018-10-08T05:20:22.782Z",
@@ -81,7 +80,6 @@ end
         @test f.e == 1
         @test f.f == 2
         @test f.g == ["a", "b", "c"]
-        @test isempty(f.extra_fields)
 
         d["e"] = nothing
         delete!(d, "f")
@@ -97,9 +95,7 @@ end
         f = Foo(d)
         @test f.g === nothing
 
-        b = Bar(Dict("a" => 1, "b" => "foo"))
-        @test b.a == 1
-        @test b.extra_fields == Dict("b" => "foo")
+        # TODO: @lower and @merge
     end
 
     @testset "parse_endpoint" begin

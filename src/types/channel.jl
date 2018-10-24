@@ -2,15 +2,14 @@
 The type of a [`DiscordChannel`](@ref).
 """
 @enum ChannelType CT_GUILD_TEXT CT_DM CT_GUILD_VOICE CT_GROUP_DM CT_GUILD_CATEGORY
-
-JSON.lower(ct::ChannelType) = Int(ct)
+@boilerplate ChannelType :lower
 
 """
 A Discord channel.
 More details [here](https://discordapp.com/developers/docs/resources/channel#channel-object).
 Note: The name `Channel` is already used, hence the prefix.
 """
-@from_dict struct DiscordChannel
+struct DiscordChannel
     id::Snowflake
     type::ChannelType
     guild_id::Union{Snowflake, Missing}
@@ -30,3 +29,4 @@ Note: The name `Channel` is already used, hence the prefix.
     parent_id::Union{Snowflake, Nothing, Missing}
     last_pin_timestamp::Union{DateTime, Nothing, Missing}  # Not supposed to be nullable.
 end
+@boilerplate DiscordChannel :dict :lower :merge

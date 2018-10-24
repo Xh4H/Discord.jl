@@ -12,68 +12,67 @@ Sent when a [`Message`](@ref) is sent.
 struct MessageCreate <: AbstractEvent
     message::Message
 end
-
 MessageCreate(d::Dict{String, Any}) = MessageCreate(Message(d))
-
-JSON.lower(mc::MessageCreate) = JSON.lower(mc.message)
-
-struct MessageUpdate <: AbstractEvent
-    message::Message
-end
 
 """
 Sent when a [`Message`](@ref) is updated.
 """
+struct MessageUpdate <: AbstractEvent
+    message::Message
+end
 MessageUpdate(d::Dict{String, Any}) = MessageUpdate(Message(d))
-
-JSON.lower(mu::MessageUpdate) = JSON.lower(mu.message)
 
 """
 Sent when a [`Message`](@ref) is deleted.
 """
-@from_dict struct MessageDelete <: AbstractEvent
+struct MessageDelete <: AbstractEvent
     id::Snowflake
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
+@boilerplate MessageDelete :dict
 
 """
 Sent when multiple [`Message`](@ref)s are deleted in bulk.
 """
-@from_dict struct MessageDeleteBulk <: AbstractEvent
+struct MessageDeleteBulk <: AbstractEvent
     ids::Vector{Snowflake}
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
+@boilerplate MessageDeleteBulk :dict
 
 """
 Sent when a [`Reaction`](@ref) is added to a [`Message`](@ref).
 """
-@from_dict struct MessageReactionAdd <: AbstractEvent
+struct MessageReactionAdd <: AbstractEvent
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
+@boilerplate MessageReactionAdd :dict
 
 """
 Sent when a [`Reaction`](@ref) is removed from a [`Message`](@ref).
 """
-@from_dict struct MessageReactionRemove <: AbstractEvent
+struct MessageReactionRemove <: AbstractEvent
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
+@boilerplate MessageReactionRemove :dict
 
 """
 Sent when all [`Reaction`](@ref)s are removed from a [`Message`](@ref).
 """
-@from_dict struct MessageReactionRemoveAll <: AbstractEvent
+struct MessageReactionRemoveAll <: AbstractEvent
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
+@boilerplate MessageReactionRemoveAll :dict

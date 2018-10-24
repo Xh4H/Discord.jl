@@ -3,32 +3,28 @@ A [`Guild`](@ref)'s verification level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-verification-level).
 """
 @enum VerificationLevel VL_NONE VL_LOW VL_MEDIUM VL_HIGH VL_VERY_HIGH
-
-JSON.lower(vf::VerificationLevel) = Int(vf)
+@boilerplate VerificationLevel :lower
 
 """
 A [`Guild`](@ref)'s default message notification level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-default-message-notification-level).
 """
 @enum MessageNotificationLevel MNL_ALL_MESSAGES MNL_ONLY_MENTIONS
-
-JSON.lower(mnl::MessageNotificationLevel) = Int(mnl)
+@boilerplate MessageNotificationLevel :lower
 
 """
 A [`Guild`](@ref)'s explicit content filter level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-explicit-content-filter-level).
 """
 @enum ExplicitContentFilterLevel ECFL_DISABLED ECFL_MEMBERS_WITHOUT_ROLES ECFL_ALL_MEMBERS
-
-JSON.lower(ecfl::ExplicitContentFilterLevel) = Int(ecfl)
+@boilerplate ExplicitContentFilterLevel :lower
 
 """
 A [`Guild`](@ref)'s MFA level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-mfa-level).
 """
 @enum MFALevel ML_NONE ML_ELEVATED
-
-JSON.lower(ml::MFALevel) = Int(ml)
+@boilerplate MFALevel :lower
 
 """
 A guild (server).
@@ -44,16 +40,17 @@ end
 An unavailable guild (server).
 More details [here](https://discordapp.com/developers/docs/resources/guild#unavailable-guild-object).
 """
-@from_dict struct UnavailableGuild <: AbstractGuild
+struct UnavailableGuild <: AbstractGuild
     id::Snowflake
     unavailable::Bool
 end
+@boilerplate UnavailableGuild :dict :lower :merge
 
 """
 A guild (server).
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object).
 """
-@from_dict struct Guild <: AbstractGuild
+struct Guild <: AbstractGuild
     id::Snowflake
     name::String
     icon::Union{String, Nothing}
@@ -86,3 +83,4 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
     channels::Union{Vector{DiscordChannel}, Missing}
     presences::Union{Vector{Presence}, Missing}
 end
+@boilerplate Guild :dict :lower :merge

@@ -2,7 +2,7 @@
 A [`User`](@ref)'s voice connection status.
 More details [here](https://discordapp.com/developers/docs/resources/voice#voice-state-object).
 """
-@from_dict struct VoiceState
+struct VoiceState
     guild_id::Union{Snowflake, Missing}
     channel_id::Union{Snowflake, Nothing}
     user_id::Snowflake
@@ -14,3 +14,4 @@ More details [here](https://discordapp.com/developers/docs/resources/voice#voice
     self_mute::Bool
     suppress::Bool
 end
+@boilerplate VoiceState :dict :lower :merge

@@ -2,16 +2,17 @@
 An [`Integration`](@ref) account.
 More details [here](https://discordapp.com/developers/docs/resources/guild#integration-account-object).
 """
-@from_dict struct IntegrationAccount
+struct IntegrationAccount
     id::String
     name::String
 end
+@boilerplate IntegrationAccount :dict :lower :merge
 
 """
 A [`Guild`](@ref) integration.
 More details [here](https://discordapp.com/developers/docs/resources/guild#integration-object).
 """
-@from_dict struct Integration
+struct Integration
     id::Snowflake
     name::String
     _type::String
@@ -24,3 +25,4 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#integ
     account::IntegrationAccount
     synced_at::DateTime
 end
+@boilerplate Integration :dict :lower :merge

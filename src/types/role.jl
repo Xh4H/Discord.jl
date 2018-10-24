@@ -2,7 +2,7 @@
 A [`User`](@ref) role.
 More details [here](https://discordapp.com/developers/docs/topics/permissions#role-object).
 """
-@from_dict struct Role
+struct Role
     id::Snowflake
     name::String
     color::Int
@@ -12,3 +12,4 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#ro
     managed::Bool
     mentionable::Bool
 end
+@boilerplate Role :dict :lower :merge

@@ -2,7 +2,7 @@
 An emoji.
 More details [here](https://discordapp.com/developers/docs/resources/emoji#emoji-object).
 """
-@from_dict struct Emoji
+struct Emoji
     id::Union{Snowflake, Nothing}
     name::String
     roles::Union{Vector{Snowflake}, Missing}
@@ -11,3 +11,4 @@ More details [here](https://discordapp.com/developers/docs/resources/emoji#emoji
     managed::Union{Bool, Missing}
     animated::Union{Bool, Missing}
 end
+@boilerplate Emoji :dict :lower :merge

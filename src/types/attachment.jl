@@ -2,7 +2,7 @@
 A [`Message`](@ref) attachment.
 More details [here](https://discordapp.com/developers/docs/resources/channel#attachment-object).
 """
-@from_dict struct Attachment
+struct Attachment
     id::Snowflake
     filename::String
     size::Int
@@ -11,3 +11,4 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#att
     height::Union{Int, Missing}
     width::Union{Int, Missing}
 end
+@boilerplate Attachment :dict :lower :merge

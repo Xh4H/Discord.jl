@@ -40,7 +40,6 @@ macro lower(T)
             function JSON.lower(x::$T)
                 d = Dict()
                 for f in fieldnames($T)
-                    f === :extra_fields && continue
                     v = getfield(x, f)
                     if !ismissing(v)
                         d[string(f)] = lowered(v)
@@ -59,7 +58,7 @@ macro merge(T)
             for f in fieldnames($T)
                 va = getfield(a, f)
                 vb = getfield(b, f)
-                push!(vals, ismissing(va) || va != vb ? vb : va)
+                push!(vals, ismissing(va) || (!ismissing(vb) && va != vb) ? vb : va)
             end
             return $T(vals...)
         end
@@ -84,6 +83,7 @@ function field(k::String, ::Type{Union{T, Nothing, Missing}}) where T
 end
 
 macro dict(T)
+    TT = eval(T)
     args = map(f -> field(string(f), fieldtype(TT, f)), fieldnames(TT))
     quote
         function $(esc(T))(d::Dict{String, Any})
@@ -92,9 +92,12 @@ macro dict(T)
     end
 end
 
-macro boilerplate(T, macros...)
-    for m in macros
-        # TODO: Figure out how to apply the macro.
+macro boilerplate(T, exs...)
+    macros = map(e -> e.value, exs)
+    quote
+        :dict in $macros && @dict $T
+        :lower in $macros && @lower $T
+        :merge in $macros && @merge $T
     end
 end
 

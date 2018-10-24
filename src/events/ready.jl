@@ -1,16 +1,14 @@
 export Ready
 
 """
-Sent when the [`Client`](@ref) has successfully authenticated, and contains the initial
-state.
+Sent when the [`Client`](@ref) has authenticated, and contains the initial state.
 """
-@from_dict struct Ready <: AbstractEvent
+struct Ready <: AbstractEvent
     v::Int
     user::User
     private_channels::Vector{DiscordChannel}
     guilds::Vector{UnavailableGuild}
     session_id::String
     _trace::Vector{String}
-    # This isn't documented, but the name suggests that the entries will of type Presence.
-    presences::Union{Vector{Presence}, Nothing, Missing}
 end
+@boilerplate Ready :dict

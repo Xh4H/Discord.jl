@@ -12,43 +12,43 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
     MT_CHANNEL_PINNED_MESSAGE
     MT_GUILD_MEMBER_JOIN
 end
-
-JSON.lower(mt::MessageType) = Int(mt)
+@boilerplate MessageType :lower
 
 """
 The type of a [`Message`](@ref) activity.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-activity-types).
 """
 @enum MessageActivityType MAT_JOIN MAT_SPECTATE MAT_LISTEN MAT_JOIN_REQUEST
-
-JSON.lower(mat::MessageActivityType) = Int(mat)
+@boilerplate MessageActivityType :lower
 
 """
 A [`Message`](@ref) activity.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-activity-structure).
 """
-@from_dict struct MessageActivity
+struct MessageActivity
     type::MessageActivityType
     party_id::Union{String, Missing}
 end
+@boilerplate MessageActivity :dict :lower :merge
 
 """
 A Rich Presence [`Message`](@ref)'s application information.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-application-structure).
 """
-@from_dict struct MessageApplication
+struct MessageApplication
     id::Snowflake
     cover_image::String
     description::String
     icon::String
     name::String
 end
+@boilerplate MessageApplication :dict :lower :merge
 
 """
 A message.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object).
 """
-@from_dict mutable struct Message  # Mutable to add reactions.
+mutable struct Message  # Mutable to add reactions.
     id::Snowflake
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
@@ -71,3 +71,4 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
     activity::Union{MessageActivity, Missing}
     application::Union{MessageApplication, Missing}
 end
+@boilerplate Message :dict :lower :merge

@@ -535,10 +535,10 @@ const HANDLERS = Dict(
 
 # Default dispatch event handlers.
 # Note: These are only for opcode 0 (DISPATCH).
+# TODO: Rework these to use merge when applicable.
 
 handle_ready(c::Client, e::Ready) = ready(c.state, e)
 
-# TODO: Should we be replacing or merging _trace?
 handle_resumed(c::Client, e::Resumed) = c.state._trace = e._trace
 
 function handle_channel_create_update(c::Client, e::Union{ChannelCreate, ChannelUpdate})
@@ -686,12 +686,12 @@ function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
     m = c.state.messages[e.message_id]
 
     if ismissing(m.reactions)
-        m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict())]
+        m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
     else
         idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
 
         if idx === nothing
-            push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji, Dict()))
+            push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
         else
             m.reactions[idx].count += 1
             m.reactions[idx].me |= e.user_id == c.state.user.id
