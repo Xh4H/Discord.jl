@@ -4,12 +4,12 @@ export send_message,
     get_pinned_messages,
     bulk_delete,
     trigger_typing,
-    modify_channel,
+    edit_channel,
     delete_channel,
     create_invite,
-    get_invites,
+    get_channel_invites,
     create_webhook,
-    get_webhooks
+    get_channel_webhooks
 
 """
     send_message(
@@ -149,7 +149,7 @@ end
 trigger_typing(c::Client, ch::DiscordChannel) = trigger_typing(c, ch.id)
 
 """
-    modify_channel(
+    edit_channel(
         c::Client,
         channel::Union{DiscordChannel, Integer};
         params...,
@@ -171,7 +171,7 @@ Modify a [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).
 """
-function modify_channel(c::Client, channel::Integer; params...)
+function edit_channel(c::Client, channel::Integer; params...)
     (haskey(params, :bitrate) || haskey(params, :user_limit)) &&
         haskey(c.state.channels, channel) &&
         c.state.channels[channel].type === CT_GUILD_VOICE &&
@@ -182,8 +182,8 @@ function modify_channel(c::Client, channel::Integer; params...)
     return Response{DiscordChannel}(c, :PATCH, "/channels/$channel"; body=params)
 end
 
-function modify_channel(c::Client, ch::DiscordChannel; params...)
-    return modify_channel(c, ch.id; params...)
+function edit_channel(c::Client, ch::DiscordChannel; params...)
+    return edit_channel(c, ch.id; params...)
 end
 
 """
@@ -223,19 +223,19 @@ end
 create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id; params...)
 
 """
-    get_invites(
+    get_channel_invites(
         c::Client,
         channel::Union{DiscordChannel, Integer},
     ) -> Response{Vector{Invite}}
 
 Get a list of [`Invite`](@ref)s from a [`DiscordChannel`](@ref).
 """
-function get_invites(c::Client, channel::Integer)
+function get_channel_invites(c::Client, channel::Integer)
     return Response{Invite}(c, :GET, "/channels/$channel/invites")
     # See create_invite TODO.
 end
 
-get_invites(c::Client, ch::DiscordChannel) = get_invites(c, ch.id)
+get_channel_invites(c::Client, ch::DiscordChannel) = get_channel_invites(c, ch.id)
 
 """
     create_webhook(
@@ -261,16 +261,16 @@ function create_webhook(c::Client, ch::DiscordChannel; params...)
 end
 
 """
-    get_webhooks(
+    get_channel_webhooks(
         c::Client,
         channel::Union{DiscordChannel, Integer},
     ) -> Response{Vector{Webhook}}
 
 Get a list of [`Webhook`](@ref)s from a [`DiscordChannel`](@ref).
 """
-function get_webhooks(c::Client, channel::Integer)
+function get_channel_webhooks(c::Client, channel::Integer)
     return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
     # See create_invite TODO.
 end
 
-get_webhooks(c::Client, ch::DiscordChannel) = get_webhooks(c, ch.id)
+get_channel_webhooks(c::Client, ch::DiscordChannel) = get_channel_webhooks(c, ch.id)

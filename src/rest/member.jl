@@ -1,31 +1,10 @@
-export get_member,
-    modify_member,
+export edit_member,
     ban_member,
     kick_member,
     add_role,
     remove_role
-
 """
-    get_member(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-        user::Union{User, Integer},
-    ) -> Response{Member}
-
-Get a [`Member`](@ref) in an [`AbstractGuild`](@ref).
-"""
-function get_member(c::Client, guild::Integer, user::Integer)
-    return Response{Member}(c, :GET, "/guilds/$guild/members/$user")
-end
-
-get_member(c::Client, g::AbstractGuild, u::User) = get_member(c, g.id, u.id)
-
-get_member(c::Client, guild::Integer, u::User) = get_member(c, guild, u.id)
-
-get_member(c::Client, g::AbstractGuild, user::Integer) = get_member(c, g.id, user)
-
-"""
-    modify_member(
+    edit_member(
         c::Client,
         guild::Union{AbstractGuild, Integer},
         user::Union{User, Integer};
@@ -43,20 +22,20 @@ Modify a [`Member`](@ref) in an [`AbstractGuild`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-member).
 """
-function modify_member(c::Client, guild::Integer, user::Integer; params...)
+function edit_member(c::Client, guild::Integer, user::Integer; params...)
     return Response{Webhook}(c, :PATCH, "/guilds/$guild/members/$user"; body=params)
 end
 
-function modify_member(c::Client, g::AbstractGuild, u::User; params...)
-    return modify_member(c, g.id, u.id; params...)
+function edit_member(c::Client, g::AbstractGuild, u::User; params...)
+    return edit_member(c, g.id, u.id; params...)
 end
 
-function modify_member(c::Client, guild::Integer, u::User; params...)
-    return modify_member(c, guild, user.id; params...)
+function edit_member(c::Client, guild::Integer, u::User; params...)
+    return edit_member(c, guild, user.id; params...)
 end
 
-function modify_member(c::Client, g::AbstractGuild, user::Integer; params...)
-    return modify_member(c, guild.id, user; params...)
+function edit_member(c::Client, g::AbstractGuild, user::Integer; params...)
+    return edit_member(c, guild.id, user; params...)
 end
 
 """

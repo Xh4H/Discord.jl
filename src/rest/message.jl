@@ -1,6 +1,6 @@
 export reply,
-    edit,
-    delete,
+    edit_message,
+    delete_message,
     pin,
     unpin,
     react,
@@ -17,11 +17,11 @@ function reply(c::Client, m::Message, content::Union{AbstractString, Dict})
 end
 
 """
-    edit(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
+    edit_message(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
 
 Edit a [`Message`](@ref).
 """
-function edit(c::Client, m::Message, content::AbstractDict)
+function edit_message(c::Client, m::Message, content::AbstractDict)
     return Response{Message}(
         c,
         :PATCH,
@@ -30,16 +30,16 @@ function edit(c::Client, m::Message, content::AbstractDict)
     )
 end
 
-function edit(c::Client, m::Message, content::AbstractString)
-    return edit(c, m, Dict("content" => content))
+function edit_message(c::Client, m::Message, content::AbstractString)
+    return edit_message(c, m, Dict("content" => content))
 end
 
 """
-    delete(c::Client, m::Message) -> Response
+    delete_message(c::Client, m::Message) -> Response
 
 Delete a [`Message`](@ref).
 """
-function delete(c::Client, m::Message)
+function delete_message(c::Client, m::Message)
     return Response(c, :DELETE, "/channels/$(m.channel_id)/messages/$(m.id)")
 end
 

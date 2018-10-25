@@ -1,5 +1,5 @@
 export get_user,
-        modify_client,
+        edit_client,
         get_connections,
         get_user_guilds,
         leave_guild,
@@ -22,7 +22,7 @@ end
 get_user(c::Client, user::User) = get_user(c, user.id)
 
 """
-    modify_client(c::Client; params...) -> Response{User}
+    edit_client(c::Client; params...) -> Response{User}
 
 Modify the local Client / Bot.
 
@@ -32,7 +32,7 @@ Modify the local Client / Bot.
 
 More details [here](https://discordapp.com/developers/docs/resources/user#modify-current-user).
 """
-function modify_client(c::Client; params...)
+function edit_client(c::Client; params...)
     return Response{User}(c, :PATCH, "/users/@me"; body=params)
 end
 
@@ -67,21 +67,6 @@ function get_user_guilds(c::Client; params...)
 end
 
 """
-    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Nothing}
-
-Leave a [`Guild`](@ref).
-"""
-function leave_guild(c::Client, guild::Integer)
-    return Response{Nothing}(
-        c,
-        :DELETE,
-        "/users/@me/guilds/$(guild)"
-    )
-end
-
-leave_guild(c::Client, guild::AbstractGuild) = leave_guild(c, guild.id)
-
-"""
     create_dm(c::Client, user::Integer) -> Response{DiscordChannel}
 
 Create a DM [`DiscordChannel`](@ref).
@@ -95,7 +80,7 @@ function create_dm(c::Client, user::Integer)
     )
 end
 
-create_dm(c::Client, user::User) = leave_guild(c, user.id)
+create_dm(c::Client, user::User) = create_dm(c, user.id)
 
 """
     create_group(c::Client; params...) -> Response{DiscordChannel}

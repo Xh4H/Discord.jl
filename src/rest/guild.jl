@@ -1,6 +1,6 @@
 export create_guild,
         get_guild,
-        modify_guild,
+        edit_guild,
         delete_guild,
         leave_guild,
         create_role,
@@ -15,10 +15,10 @@ export create_guild,
         get_bans,
         get_ban,
         unban,
-        get_invites,
+        get_guild_invites,
         create_integration,
         get_integrations,
-        get_webhooks,
+        get_guild_webhooks,
         get_regions,
         get_guild_regions,
         get_vanity_code
@@ -62,7 +62,7 @@ end
 get_guild(c::Client, guild::AbstractGuild) = get_guild(c, guild.id)
 
 """
-    modify_guild(
+    edit_guild(
         c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
@@ -86,12 +86,12 @@ Modify a [`Guild`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild).
 """
-function modify_guild(c::Client, guild::Integer; params...)
+function edit_guild(c::Client, guild::Integer; params...)
     return Response{Guild}(c, :PATCH, "/guilds/$guild"; body=params)
 end
 
-function modify_guild(c::Client, g::AbstractGuild; params...)
-    return modify_guild(c, g.id; params...)
+function edit_guild(c::Client, g::AbstractGuild; params...)
+    return edit_guild(c, g.id; params...)
 end
 
 """
@@ -230,7 +230,11 @@ add_member(c::Client, g::Integer, u::User; params...) = add_member(c, g, u.id; p
 Get a [`Member`](@ref).
 """
 function get_member(c::Client, guild::Integer, user::Integer)
-    return Response{Member}(c, :GET, "/guilds/$guild/members/$user")
+    return if haskey(c.state.members, user)
+        Response{Member}(c.state.members[user])
+    else
+        Response{Member}(c, :GET, "/guilds/$guild/members/$user")
+    end
 end
 
 get_member(c::Client, g::AbstractGuild, u::User) = get_member(c, g.id, u.id)
@@ -339,15 +343,15 @@ unban(c::Client, g::AbstractGuild, u::Integer) = unban(c, g.id, u)
 unban(c::Client, g::Integer, u::Member) = unban(c, g, u.id)
 
 """
-    get_invites(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Invite}}
+    get_guild_invites(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Invite}}
 
 Get the [`Invite`](@ref)s.
 """
-function get_invites(c::Client, guild::Integer)
+function get_guild_invites(c::Client, guild::Integer)
     return Response{Invite}(c, :GET, "/guilds/$guild/invites")
 end
 
-get_invites(c::Client, g::AbstractGuild) = get_invites(c, g.id)
+get_guild_invites(c::Client, g::AbstractGuild) = get_guild_invites(c, g.id)
 
 """
     create_integration(c::Client
@@ -383,17 +387,17 @@ end
 get_integrations(c::Client, guild::AbstractGuild) = get_integrations(c, guild.id)
 
 """
-    get_webhooks(c::Client,
+    get_guild_webhooks(c::Client,
         guild::Union{AbstractGuild, Integer}
     ) -> Response{Vector{Webhook}}
 
 Get a list of [`Webhook`](@ref)s.
 """
-function get_webhooks(c::Client, guild::Integer)
+function get_guild_webhooks(c::Client, guild::Integer)
     return Response{Webhook}(c, :GET, "/guilds/$guild/webhooks")
 end
 
-get_webhooks(c::Client, guild::AbstractGuild) = get_webhooks(c, guild.id)
+get_guild_webhooks(c::Client, guild::AbstractGuild) = get_guild_webhooks(c, guild.id)
 
 """
     get_regions(c::Client) -> Response{Vector{VoiceRegion}}

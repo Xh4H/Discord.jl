@@ -1,8 +1,8 @@
-export modify_overwrite,
+export edit_overwrite,
     delete_overwrite
 
 """
-    modify_overwrite(
+    edit_overwrite(
         c::Client,
         overwrite::Union{Overwrite, Integer},
         channel::Union{DiscordChannel, Integer};
@@ -18,7 +18,7 @@ Modify an [`Overwrite`](@ref) in a [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#edit-channel-permissions).
 """
-function modify_overwrite(c::Client, overwrite::Integer, channel::Integer; params...)
+function edit_overwrite(c::Client, overwrite::Integer, channel::Integer; params...)
     return Response{Overwrite}(
         c,
         :PUT,
@@ -27,16 +27,16 @@ function modify_overwrite(c::Client, overwrite::Integer, channel::Integer; param
     )
 end
 
-function modify_overwrite(c::Client, o::Overwrite, channel::Integer; params...)
-    return modify_overwrite(c, o.id, channel; params...)
+function edit_overwrite(c::Client, o::Overwrite, channel::Integer; params...)
+    return edit_overwrite(c, o.id, channel; params...)
 end
 
-function modify_overwrite(c::Client, overwrite::Integer, ch::DiscordChannel; params...)
-    return modify_overwrite(c, overwrite, ch.id; params...)
+function edit_overwrite(c::Client, overwrite::Integer, ch::DiscordChannel; params...)
+    return edit_overwrite(c, overwrite, ch.id; params...)
 end
 
-function modify_overwrite(c::Client, o::Overwrite, ch::DiscordChannel; params...)
-    return modify_overwrite(c, o.id, ch.id; params...)
+function edit_overwrite(c::Client, o::Overwrite, ch::DiscordChannel; params...)
+    return edit_overwrite(c, o.id, ch.id; params...)
 end
 
 """

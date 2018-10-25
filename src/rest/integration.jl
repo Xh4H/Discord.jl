@@ -1,9 +1,9 @@
-export modify_integration,
+export edit_integration,
     sync_integration,
     delete_integration
 
 """
-    modify_integration(
+    edit_integration(
         c::Client,
         guild::Union{AbstractGuild, Integer},
         integration::Union{Integration, Integer};
@@ -19,7 +19,7 @@ Modify an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 - `enable_emoticons::Bool`: Whether emoticons should be synced for this integration (Twitch
    only currently).
 """
-function modify_integration(c::Client, guild::Integer, integration::Integer; params...)
+function edit_integration(c::Client, guild::Integer, integration::Integer; params...)
     return Response{Integration}(
         c,
         :PATCH,
@@ -28,26 +28,26 @@ function modify_integration(c::Client, guild::Integer, integration::Integer; par
     )
 end
 
-function modify_integration(
+function edit_integration(
     c::Client,
     guild::AbstractGuild,
     integration::Integration;
     params...,
 )
-    return modify_integration(c, guild.id, integration.id; params...)
+    return edit_integration(c, guild.id, integration.id; params...)
 end
 
-function modify_integration(c::Client, guild::Integer, integration::Integration; params...)
-    return modify_integration(c, guild, integration.id; params...)
+function edit_integration(c::Client, guild::Integer, integration::Integration; params...)
+    return edit_integration(c, guild, integration.id; params...)
 end
 
-function modify_integration(
+function edit_integration(
     c::Client,
     guild::AbstractGuild,
     integration::Integer;
     params...,
 )
-    return modify_integration(c, guild.id, integration; params...)
+    return edit_integration(c, guild.id, integration; params...)
 end
 
 """

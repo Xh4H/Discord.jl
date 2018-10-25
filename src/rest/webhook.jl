@@ -1,5 +1,5 @@
 export get_webhook,
-    modify_webhook,
+    edit_webhook,
     delete_webhook,
     execute_webhook,
     execute_github,
@@ -28,8 +28,8 @@ get_webhook(c::Client, w::Webhook) = get_webhook(c, w.id)
 get_webhook(c::Client, w::Webhook, token::AbstractString) = get_webhook(c, w.id, token)
 
 """
-    modify_webhook(c::Client, webhook::Union{Webhook, Integer}; params...) -> Response{Webhook}
-    modify_webhook(
+    edit_webhook(c::Client, webhook::Union{Webhook, Integer}; params...) -> Response{Webhook}
+    edit_webhook(
         c::Client,
         webhook::Union{Webhook, Integer},
         token::AbstractString;
@@ -48,23 +48,23 @@ contain a [`User`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
 """
-function modify_webhook(c::Client, webhook::Integer; params...)
+function edit_webhook(c::Client, webhook::Integer; params...)
     return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=params)
 end
 
-function modify_webhook(c::Client, webhook::Integer, token::AbstractString; params...)
+function edit_webhook(c::Client, webhook::Integer, token::AbstractString; params...)
     haskey(params, :channel_id) &&
         throw(ArgumentError("channel_id can not be modified using a token"))
 
     return Response{Webhook}(c, :PATCH, "/webhooks/$webhook/$token"; body=params)
 end
 
-function modify_webhook(c::Client, w::Webhook; params...)
-    return modify_webhook(c, w.id, params)
+function edit_webhook(c::Client, w::Webhook; params...)
+    return edit_webhook(c, w.id, params)
 end
 
-function modify_webhook(c::Client, w::Webhook, token::AbstractString; params...)
-    return modify_webhook(c, w.id, token; params...)
+function edit_webhook(c::Client, w::Webhook, token::AbstractString; params...)
+    return edit_webhook(c, w.id, token; params...)
 end
 
 """

@@ -1,8 +1,8 @@
-export modify_role,
+export edit_role,
     delete_role
 
 """
-    modify_role(
+    edit_role(
         c::Client,
         role::Union{Role, Integer},
         guild::Union{AbstractGuild, Integer};
@@ -20,20 +20,20 @@ Modify a [`Role`](@ref) in a [`DiscordChannel`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-role).
 """
-function modify_role(c::Client, role::Integer, guild::Integer; params...)
+function edit_role(c::Client, role::Integer, guild::Integer; params...)
     return Response{Role}(c, :PATCH, "/guilds/$guild/roles/$role"; body=params)
 end
 
-function modify_role(c::Client, r::Role, g::AbstractGuild; params...)
-    return modify_role(c, r.id, g.id; params...)
+function edit_role(c::Client, r::Role, g::AbstractGuild; params...)
+    return edit_role(c, r.id, g.id; params...)
 end
 
-function modify_role(c::Client, r::Role, guild::Integer; params...)
-    return modify_role(c, r.id, guild; params...)
+function edit_role(c::Client, r::Role, guild::Integer; params...)
+    return edit_role(c, r.id, guild; params...)
 end
 
-function modify_role(c::Client, role::Integer, g::AbstractGuild; params...)
-    return modify_role(c, r, g.id; params...)
+function edit_role(c::Client, role::Integer, g::AbstractGuild; params...)
+    return edit_role(c, r, g.id; params...)
 end
 
 """
