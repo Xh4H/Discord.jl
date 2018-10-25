@@ -98,6 +98,20 @@ end
 get_pinned_messages(c::Client, channel::DiscordChannel) = get_pinned_messages(c, channel.id)
 
 """
+    get_channel(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{DiscordChannel}
+
+Get a [`DiscordChannel`](@ref).
+"""
+function get_channel(c::Client, channel::Integer)
+    return if haskey(c.state.channels, channel)
+        Response{DiscordChannel}(c.state.channels[channel])
+    else
+        Response{DiscordChannel}(c, :GET, "/channels/$guild")
+    end
+end
+
+get_channel(c::Client, ch::DiscordChannel) = get_channel(c, ch.id)
+"""
     bulk_delete(
         c::Client,
         channel::Union{DiscordChannel, Integer},

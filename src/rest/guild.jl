@@ -4,6 +4,11 @@ export create_guild,
         delete_guild,
         leave_guild,
         create_role,
+        edit_role_positions,
+        get_roles,
+        create_channel,
+        add_member,
+        get_member,
         get_webhooks,
         get_regions,
         get_guild_regions,
@@ -11,7 +16,7 @@ export create_guild,
 
 # functions
 """
-    create_guild(c::Client) -> Response{Guild}
+    create_guild(c::Client; params...) -> Response{Guild}
 
 Create a [`Guild`](@ref).
 
@@ -27,7 +32,7 @@ Create a [`Guild`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild).
 """
-function create_guild(;params...)
+function create_guild(c::Client; params...)
     return Response{Guild}(c, :POST, "/guilds"; body=params)
 end
 
@@ -39,7 +44,11 @@ end
 Get a [`Guild`](@ref).
 """
 function get_guild(c::Client, guild::Integer)
-    return Response{Guild}(c, :GET, "/guilds/$guild")
+    return if haskey(c.state.guilds, guild)
+        Response{Guild}(c.state.guilds[guild])
+    else
+        Response{Guild}(c, :GET, "/guilds/$guild")
+    end
 end
 
 get_guild(c::Client, guild::AbstractGuild) = get_guild(c, guild.id)
@@ -151,6 +160,74 @@ function get_roles(c::Client, guild::Integer)
 end
 
 get_roles(c::Client, g::AbstractGuild) = get_roles(c, g.id)
+
+"""
+    create_channel(c::Client; params...) -> Response{DiscordChannel}
+
+Create a [`DiscordChannel`](@ref).
+
+# Keywords
+- `name::AbstractString`: Channel name (2-100 characters).
+- `type::Integer`: Channel type.
+- `topic::AbstractString`: Channel topic (0-1024 characters).
+- `bitrate::Integer`: The bitrate (in bits) of the voice channel (voice only).
+- `user_limit::Integer`: The user limit of the voice channel (voice only).
+- `rate_limit_per_user::Integer`: Amount of seconds a user has to wait before
+    sending another message (0-120).
+- `permission_overwrites::Vector{Overwrite}`: The channel's permission overwrites.
+- `nsfw::Boolean`: Whether the channel is nsfw.
+
+More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-channel).
+"""
+function create_channel(c::Client, guild::Integer; params...)
+    (haskey(params, :bitrate) || haskey(params, :user_limit)) &&
+        haskey(c.state.channels, channel) &&
+        params["type"] === CT_GUILD_VOICE &&
+        throw(ArgumentError(
+            "Bitrate and user limit can only be modified for voice channels",
+        ))
+    return Response{Guild}(c, :POST, "/guilds/$guild/channels"; body=params)
+end
+
+create_channel(c::Client, g::AbstractGuild; params...) = create_channel(c, g.id; params...)
+
+"""
+    add_member(c::Client; params...) -> Response{Member}
+
+Add a [`User`](@ref) to a [`Guild`](@ref).
+
+# Keywords
+- `access_token::AbstractString`: Oath2 access token.
+- `nick::AbstractString`: Value to set users nickname to.
+- `roles::Vector{Snowflake}`: Array of role IDs the member is assigned.
+- `mute::Boolean`: Whether the user should be muted.
+- `deaf::Boolean`: Whether the user should be deafened.
+
+More details [here](https://discordapp.com/developers/docs/resources/guild#add-guild-member).
+"""
+function add_member(c::Client, guild::Integer, user::Integer; params...)
+    return Response{Member}(c, :PUT, "/guilds/$guild/members/$user"; body=params)
+end
+
+add_member(c::Client, g::AbstractGuild, u::User; params...) = add_member(c, g.id, u.id; params...)
+add_member(c::Client, g::AbstractGuild, u::Integer; params...) = add_member(c, g.id, u; params...)
+add_member(c::Client, g::Integer, u::User; params...) = add_member(c, g, u.id; params...)
+
+"""
+    get_member(c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer}
+    ) -> Response{Member}
+
+Get a [`Member`](@ref).
+"""
+function get_member(c::Client, guild::Integer, user::Integer)
+    return Response{Member}(c, :GET, "/guilds/$guild/members/$user")
+end
+
+get_member(c::Client, g::AbstractGuild, u::User) = get_member(c, g.id, u.id)
+get_member(c::Client, g::AbstractGuild, u::Integer) = get_member(c, g.id, u)
+get_member(c::Client, g::Integer, u::User) = get_member(c, g, u.id)
 
 """
     get_webhooks(c::Client,
