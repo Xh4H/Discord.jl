@@ -1,33 +1,9 @@
----
-name: Julicord issue template
-about: Steps to report an issue with Julicord
+If you have a general question, please ask on [Discord](https://discord.gg/pjNUzy9) for a faster response.
 
----
+If you've run into a bug, please supply the following information:
 
-## About
-My PC isn't working as expected 🤔
+* Julia and platform version information (with `versioninfo()`)
+* Package version information (with `]status`)
+* A [MWE](https://en.wikipedia.org/wiki/Minimal_working_example) which demonstrates the bug
 
-
-## Bug Report
-
-**Current Behavior**
-A clear and concise description of the behavior.
-
-**Input Code**
-- REPL or Repository link if applicable:
-
-```julia
-() => error("Ahh!!")
-```
-
-**Expected behavior/code**
-A clear and concise description of what you expected to happen (or code).
-
-**Environment**
-- Julia version: e.g. 0.0.1
-
-**Possible Solution**
-<!--- Only if you have suggestions on a fix for the bug -->
-
-**Additional context/Screenshots**
-Add any other context about the problem here. If applicable, add screenshots to help explain.
+**Please do NOT include a bot token in your issue report.**

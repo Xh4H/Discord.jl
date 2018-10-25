@@ -1,12 +1,11 @@
-**Pull Request Description**
-Explain briefly your PR.
+What have you changed?
 
+* [ ] Added a new feature
+* [ ] Fixed a reported issue (which one?)
+* [ ] Updated documentation
 
-**Why should this Pull Request be merged:**
-Does it fix any issue? Or is it a new feature?
+If you're adding a new feature, please ensure that you've taken care of the following items:
 
-**Type classification**
-- [ ] This PR includes breaking changes.
-- [ ] This PR increases the API coverage.
-- [ ] This PR fixes a reported issue.
-- [ ] This PR includes **only** documentational changes.
+* [ ] Add unit tests if applicable
+* [ ] Document new or changed functionality
+* [ ] Add an example to the `examples/` directory if the feature is sufficiently large, or below otherwise
