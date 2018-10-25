@@ -62,11 +62,3 @@ const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "VOICE_SERVER_UPDAT"          => VoiceServerUpdate,
     "WEBHOOK_UPDATE"              => WebhookUpdate,
 )
-
-function AbstractEvent(data::Dict)
-    return if haskey(EVENT_TYPES, data["t"])
-        EVENT_TYPES[data["t"]](data["d"])
-    else
-        UnknownEvent(data)
-    end
-end

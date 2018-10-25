@@ -3,7 +3,6 @@ mutable struct State
     session_id::String                  # Gateway session ID.
     _trace::Vector{String}              # Guilds the user is in.
     user::Union{User, Nothing}          # Bot user.
-    events::Vector{AbstractEvent}       # Events received by the client.
     guilds::TTL{Snowflake, AbstractGuild}     # Guild ID -> guild.
     channels::TTL{Snowflake, DiscordChannel}  # Channel ID -> channel.
     users::TTL{Snowflake, User}               # User ID -> user.
@@ -26,7 +25,6 @@ function State(ttl::Period)
         "",        # session_id
         [],        # _trace
         nothing,   # user
-        [],        # events
         TTL(ttl),  # guilds
         TTL(ttl),  # channels
         TTL(ttl),  # users

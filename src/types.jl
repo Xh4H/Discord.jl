@@ -13,7 +13,7 @@ process_id(s::Snowflake) = (s & 0x1F000) >> 12
 increment(s::Snowflake) = s & 0xFFF
 
 # Discord sends both Unix and ISO timestamps.
-datetime(s::Integer) = unix2datetime(s)
+datetime(s::Integer) = unix2datetime(s / 1000)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
 
 function lowered(x)

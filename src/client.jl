@@ -466,24 +466,26 @@ end
 
 function dispatch(c::Client, data::AbstractDict)
     c.heartbeat_seq = data["s"]
+
+    T = get(EVENT_TYPES, data["t"], UnknownEvent)
+    haskey(c.handlers, T) || return
+
     evt = try
-        AbstractEvent(data)
+        T(T === UnknownEvent ? data : data["d"])
     catch e
         err = sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
         logmsg(c, ERROR, err; type=data["t"])
         UnknownEvent(data)
     end
-    push!(c.state.events, evt)
-    length(c.state.events) > 100 && popfirst!(c.state.events)
 
     catchalls = collect(get(c.handlers, AbstractEvent, []))
-    specifics = collect(get(c.handlers, typeof(evt), []))
+    specifics = collect(get(c.handlers, T, []))
     for handler in [catchalls; specifics]
         @async try
             handler.f(c, evt)
         catch e
             err = sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
-            logmsg(c, ERROR, err; event=typeof(evt), handler=handler.tag)
+            logmsg(c, ERROR, err; event=T, handler=handler.tag)
         finally
             if handler.remaining != -1
                 handler.remaining -= 1
@@ -492,7 +494,7 @@ function dispatch(c::Client, data::AbstractDict)
     end
 
     filter!(!isexpired, get(c.handlers, AbstractEvent, []))
-    filter!(!isexpired, get(c.handlers, typeof(evt), []))
+    filter!(!isexpired, get(c.handlers, T, []))
 end
 
 function heartbeat(c::Client, ::AbstractDict=Dict())
