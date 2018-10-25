@@ -98,21 +98,22 @@ shards that are created. See the
 for more details.
 """
 mutable struct Client
-    token::String             # Bot token, always with a leading "Bot ".
-    heartbeat_interval::Int   # Milliseconds between heartbeats.
+    token::String               # Bot token, always with a leading "Bot ".
+    heartbeat_interval::Int     # Milliseconds between heartbeats.
     heartbeat_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
-    last_heartbeat::DateTime  # Last heartbeat send.
-    last_ack::DateTime        # Last heartbeat ack.
-    ttl::Period               # Cache lifetime.
-    version::Int              # Discord API version.
-    state::State              # Client state, cached data, etc.
-    shards::Int               # Number of shards in use.
-    shard::Int                # Client's shard index.
-    limiter::Limiter          # Rate limiter.
-    on_limit::OnLimit         # Rate limit behaviour.
+    last_heartbeat::DateTime    # Last heartbeat send.
+    last_ack::DateTime          # Last heartbeat ack.
+    ttl::Period                 # Cache lifetime.
+    version::Int                # Discord API version.
+    state::State                # Client state, cached data, etc.
+    shards::Int                 # Number of shards in use.
+    shard::Int                  # Client's shard index.
+    limiter::Limiter            # Rate limiter.
+    on_limit::OnLimit           # Rate limit behaviour.
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
-    closed::Bool              # Client is closed and will not reconnect.
-    conn::Conn                # WebSocket connection.
+    closed::Bool                # Client is closed and will not reconnect.
+    lock::Threads.AbstractLock  # Mutex for various tasks.
+    conn::Conn                  # WebSocket connection.
 
     function Client(
         token::String;
@@ -136,6 +137,7 @@ mutable struct Client
             on_limit,                         # on_limit
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
             true,                             # closed
+            Threads.SpinLock()                # lock
             # conn left undef, it gets assigned in open.
         )
     end
@@ -705,18 +707,19 @@ end
 function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
     haskey(c.state.messages, e.message_id) || return
 
-    # TODO: This has race conditions.
-    touch(c.state.messages, e.message_id)
-    m = c.state.messages[e.message_id]
-    if ismissing(m.reactions)
-        m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
-    else
-        idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
-        if idx === nothing
-            push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
+    locked(c) do
+        touch(c.state.messages, e.message_id)
+        m = c.state.messages[e.message_id]
+        if ismissing(m.reactions)
+            m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
         else
-            m.reactions[idx].count += 1
-            m.reactions[idx].me |= e.user_id == c.state.user.id
+            idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
+            if idx === nothing
+                push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
+            else
+                m.reactions[idx].count += 1
+                m.reactions[idx].me |= e.user_id == c.state.user.id
+            end
         end
     end
 end
@@ -725,15 +728,17 @@ function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
-    touch(c.state.messages, e.message_id)
-    rs = c.state.messages[e.message_id].reactions
-    idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
-    if idx !== nothing
-        if rs[idx].count == 1
-            deleteat!(rs, idx)
-        else
-            rs[idx].count -= 1
-            rs[idx].me &= e.user_id != c.state.user.id
+    locked(c) do
+        touch(c.state.messages, e.message_id)
+        rs = c.state.messages[e.message_id].reactions
+        idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
+        if idx !== nothing
+            if rs[idx].count == 1
+                deleteat!(rs, idx)
+            else
+                rs[idx].count -= 1
+                rs[idx].me &= e.user_id != c.state.user.id
+            end
         end
     end
 end
@@ -742,8 +747,10 @@ function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveA
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
-    touch(c.state.messages, e.message_id)
-    empty!(c.state.messages[e.message_id].reactions)
+    locked(c) do
+        touch(c.state.messages, e.message_id)
+        empty!(c.state.messages[e.message_id].reactions)
+    end
 end
 
 const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Handler}}(
@@ -797,6 +804,7 @@ function handle_read_error(c::Client, e::Exception)
         handle_close(c, e)
     else
         logmsg(c, ERROR, sprint(showerror, e))
+        isopen(c.conn.io) || !c.closed || reconnect(c; resume=true)
     end
 end
 
@@ -851,6 +859,15 @@ writejson(io, body) = writeguarded(io, json(body))
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
     return match === nothing ? nothing : parse(Int, String(first(m.captures)))
+end
+
+function locked(f::Function, c::Client)
+    lock(c.lock)
+    try
+        f()
+    finally
+        unlock(c.lock)
+    end
 end
 
 insert_or_update(d, k, v) = d[k] = haskey(d, k) ? merge(d[k], v) : v
