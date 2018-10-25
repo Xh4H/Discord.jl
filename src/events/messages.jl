@@ -70,7 +70,6 @@ end
 Sent when all [`Reaction`](@ref)s are removed from a [`Message`](@ref).
 """
 struct MessageReactionRemoveAll <: AbstractEvent
-    user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}

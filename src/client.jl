@@ -624,7 +624,6 @@ function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
         m.joined_at,
         m.deaf,
         m.mute,
-        Dict(),
     )
     insert_or_update(c.state.users, e.user.id, e.user)
 end
