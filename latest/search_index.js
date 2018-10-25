@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Base.open",
     "category": "function",
-    "text": "open(c::Client)\n\nConnect to the Discord gateway and begin responding to events.\n\n\n\n\n\n"
+    "text": "open(c::Client; delay::Period=Second(7))\n\nConnect to the Discord gateway and begin responding to events.\n\nThe delay keyword is the number of seconds between shards connecting. It can be increased from its default if you are frequently experiencing invalid sessions upon connection.\n\n\n\n\n\n"
 },
 
 {
@@ -525,7 +525,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.Ready",
     "category": "type",
-    "text": "Sent when the Client has successfully authenticated, and contains the initial state.\n\n\n\n\n\n"
+    "text": "Sent when the Client has authenticated, and contains the initial state.\n\n\n\n\n\n"
 },
 
 {
