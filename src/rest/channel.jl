@@ -71,7 +71,7 @@ Get a list of [`Message`](@ref)s from a [`DiscordChannel`](@ref).
 - `around::Integer`: Get messages around this message ID.
 - `before::Integer`: Get messages before this message ID.
 - `after::Integer`: Get messages after this message ID.
-- `limit::Int`: Maximum number of messages.
+- `limit::Integer`: Maximum number of messages.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
 """
@@ -147,10 +147,10 @@ Modify a [`DiscordChannel`](@ref).
 - `name::AbstractString`: Channel name (2-100 characters).
 - `topic::AbstractString`: Channel topic (up to 1024 characters).
 - `nsfw::Bool`: Whether the channel is NSFW.
-- `rate_limit_per_user::Int`: Seconds a user must wait before sending another message.
-- `position::Int` The position in the left-hand listing.
-- `bitrate::Int` The bitrate in bits of the voice channel.
-- `user_limit::Int`: The user limit of the voice channel.
+- `rate_limit_per_user::Integer`: Seconds a user must wait before sending another message.
+- `position::Integer`: The position in the left-hand listing.
+- `bitrate::Integer`: The bitrate in bits of the voice channel.
+- `user_limit::Integer`: The user limit of the voice channel.
 - `permission_overwrites::Vector{Union{<:AbstractDict, Overwrite}}`: Channel or
   category-specific permissions.
 - `parent_id::Integer`: ID of the new parent category.
@@ -193,8 +193,8 @@ delete_channel(c::Client, ch::DiscordChannel) = delete_channel(c, ch.id)
 Create an [`Invite`](@ref) to a [`DiscordChannel`](@ref).
 
 # Keywords
-- `max_uses::Int`: Max number of uses (0 if unlimited).
-- `max_age::Int`: Duration in seconds before expiry (0 if never).
+- `max_uses::Integer`: Max number of uses (0 if unlimited).
+- `max_age::Integer`: Duration in seconds before expiry (0 if never).
 - `temporary::Bool`: Whether this invite only grants temporary membership.
 - `unique::Bool`: Whether not to try to reuse a similar invite.
 
@@ -233,8 +233,8 @@ get_invites(c::Client, ch::DiscordChannel) = get_invites(c, ch.id)
 Create a [`Webhook`](@ref) in a [`DiscordChannel`](@ref).
 
 # Keywords
-- `name::AbstractString` - name of the webhook (2-23 characters)
-- `avatar::AbstractString` - image for the default webhook avatar
+- `name::AbstractString`: name of the webhook (2-23 characters)
+- `avatar::AbstractString`: image for the default webhook avatar
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#create-webhook).
 """

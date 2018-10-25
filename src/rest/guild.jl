@@ -2,6 +2,8 @@ export create_guild,
         get_guild,
         modify_guild,
         delete_guild,
+        leave_guild,
+        create_role,
         get_webhooks,
         get_regions,
         get_guild_regions,
@@ -78,13 +80,77 @@ end
 """
     delete_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Nothing}
 
-Delete the given [`Guild`](@ref)s.
+Delete a [`Guild`](@ref).
 """
 function delete_guild(c::Client, guild::Integer)
     return Response{Nothing}(c, :DELETE, "/guilds/$guild")
 end
 
 delete_guild(c::Client, g::AbstractGuild) = delete_guild(c, g.id)
+
+"""
+    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Nothing}
+
+Leave a [`Guild`](@ref).
+"""
+function leave_guild(c::Client, guild::Integer)
+    return Response{Nothing}(c, :DELETE, "/users/@me/guilds/$guild")
+end
+
+leave_guild(c::Client, g::AbstractGuild) = delete_guild(c, g.id)
+
+"""
+    create_role(c::Client,
+        guild::Union{AbstractGuild, Integer};
+        params...
+    ) -> Response{Role}
+
+Create a [`Role`](@ref).
+
+# Keywords
+- `name::AbstractString`: Role name.
+- `permissions::Integer`: Bitwise value of the enabled/disabled permissions.
+- `color::Integer`: RGB color value.
+- `hoist::Boolean`: Whether the role should be displayed separately in the sidebar.
+- `mentionable::Boolean`: Whether the role should be mentionable.
+"""
+function create_role(c::Client, guild::Integer; params...)
+    return Response{Role}(c, :POST, "/guilds/$guild/roles"; body=params)
+end
+
+create_role(c::Client, g::AbstractGuild; params...) = create_role(c, g.id; params...)
+
+"""
+    edit_role_positions(c::Client,
+        guild::Union{AbstractGuild, Integer};
+        params...
+    ) -> Response{Vector{Role}}
+
+Modify the positions of a set of [`Role`](@ref)s.
+
+# Keywords
+Must be a list with the keywords listed below.
+- `id::Snowflake`: Role ID.
+- `position::Integer`: Position of the role.
+"""
+function edit_role_positions(c::Client, guild::Integer; params...)
+    return Response{Role}(c, :PATCH, "/guilds/$guild/roles"; body=params)
+end
+
+function edit_role_positions(c::Client, g::AbstractGuild; params...)
+    return edit_role_positions(c, g.id; params...)
+end
+
+"""
+    get_roles(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Role}}
+
+Get the [`Role`](@ref)s.
+"""
+function get_roles(c::Client, guild::Integer)
+    return Response{Role}(c, :GET, "/guilds/$guild/roles")
+end
+
+get_roles(c::Client, g::AbstractGuild) = get_roles(c, g.id)
 
 """
     get_webhooks(c::Client,

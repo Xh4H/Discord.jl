@@ -12,8 +12,8 @@ export modify_overwrite,
 Modify an [`Overwrite`](@ref) in a [`DiscordChannel`](@ref).
 
 # Keywords
-- `allow::Int`: the bitwise OR of the allowed permissions.
-- `deny::Int`: the bitwise OR of the denied permissions.
+- `allow::Integer`: the bitwise OR of the allowed permissions.
+- `deny::Integer`: the bitwise OR of the denied permissions.
 - `type::AbstractString`: "member" for a user or "role" for a role.
 
 More details [here](https://discordapp.com/developers/docs/resources/channel#edit-channel-permissions).
