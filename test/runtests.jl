@@ -31,7 +31,7 @@ struct Foo
 end
 ))
 Discord.eval(:(
-@boilerplate Foo :dict :lower :merge
+@boilerplate Foo :dict :docs :lower :merge
 ))
 using Discord: Foo
 
@@ -98,6 +98,8 @@ using Discord: Foo
 
         f = Foo(d)
         @test f.g === nothing
+
+        @test occursin("a :: String", string(@doc Foo))
 
         d["b"] = d["h"]["b"] = round(Int, datetime2unix(f.b))
         d["c"] = d["h"]["c"] = snowflake(f.c)

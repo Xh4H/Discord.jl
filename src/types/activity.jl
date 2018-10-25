@@ -27,7 +27,7 @@ struct ActivityTimestamps
     start::Union{DateTime, Missing}
     stop::Union{DateTime, Missing}
 end
-@boilerplate ActivityTimestamps :dict :lower :merge
+@boilerplate ActivityTimestamps :dict :docs :lower :merge
 
 """
 The current party of an [`Activity`](@ref)'s player.
@@ -37,7 +37,7 @@ struct ActivityParty
     id::Union{String, Missing}
     size::Union{Vector{Int}, Missing}
 end
-@boilerplate ActivityParty :dict :lower :merge
+@boilerplate ActivityParty :dict :docs :lower :merge
 
 """
 Images and hover text for an [`Activity`](@ref).
@@ -49,7 +49,7 @@ struct ActivityAssets
     small_image::Union{String, Missing}
     small_text::Union{String, Missing}
 end
-@boilerplate ActivityAssets :dict :lower :merge
+@boilerplate ActivityAssets :dict :docs :lower :merge
 
 """
 Secrets for Rich Presence joining and spectating of an [`Activity`](@ref).
@@ -60,7 +60,7 @@ struct ActivitySecrets
     spectate::Union{String, Missing}
     match::Union{String, Missing}
 end
-@boilerplate ActivitySecrets :dict :lower :merge
+@boilerplate ActivitySecrets :dict :docs :lower :merge
 
 """
 A [`User`](@ref) activity.
@@ -80,4 +80,4 @@ struct Activity
     instance::Union{Bool, Missing}
     flags::Union{Int, Missing}
 end
-@boilerplate Activity :dict :lower :merge
+@boilerplate Activity :dict :docs :lower :merge

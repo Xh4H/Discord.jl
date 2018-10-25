@@ -44,7 +44,7 @@ struct UnavailableGuild <: AbstractGuild
     id::Snowflake
     unavailable::Bool
 end
-@boilerplate UnavailableGuild :dict :lower :merge
+@boilerplate UnavailableGuild :dict :docs :lower :merge
 
 """
 A guild (server).
@@ -83,4 +83,4 @@ struct Guild <: AbstractGuild
     channels::Union{Vector{DiscordChannel}, Missing}
     presences::Union{Vector{Presence}, Missing}
 end
-@boilerplate Guild :dict :lower :merge
+@boilerplate Guild :dict :docs :lower :merge

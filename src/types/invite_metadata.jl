@@ -11,4 +11,4 @@ struct InviteMetadata
     created_at::DateTime
     revoked::Bool
 end
-@boilerplate InviteMetadata :dict :lower :merge
+@boilerplate InviteMetadata :dict :docs :lower :merge

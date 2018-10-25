@@ -12,6 +12,7 @@ Sent when a [`Message`](@ref) is sent.
 struct MessageCreate <: AbstractEvent
     message::Message
 end
+@boilerplate MessageCreate :docs
 MessageCreate(d::Dict{String, Any}) = MessageCreate(Message(d))
 
 """
@@ -20,6 +21,7 @@ Sent when a [`Message`](@ref) is updated.
 struct MessageUpdate <: AbstractEvent
     message::Message
 end
+@boilerplate MessageUpdate :docs
 MessageUpdate(d::Dict{String, Any}) = MessageUpdate(Message(d))
 
 """
@@ -30,7 +32,7 @@ struct MessageDelete <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageDelete :dict
+@boilerplate MessageDelete :dict :docs
 
 """
 Sent when multiple [`Message`](@ref)s are deleted in bulk.
@@ -40,7 +42,7 @@ struct MessageDeleteBulk <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageDeleteBulk :dict
+@boilerplate MessageDeleteBulk :dict :docs
 
 """
 Sent when a [`Reaction`](@ref) is added to a [`Message`](@ref).
@@ -52,7 +54,7 @@ struct MessageReactionAdd <: AbstractEvent
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
-@boilerplate MessageReactionAdd :dict
+@boilerplate MessageReactionAdd :dict :docs
 
 """
 Sent when a [`Reaction`](@ref) is removed from a [`Message`](@ref).
@@ -64,7 +66,7 @@ struct MessageReactionRemove <: AbstractEvent
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
-@boilerplate MessageReactionRemove :dict
+@boilerplate MessageReactionRemove :dict :docs
 
 """
 Sent when all [`Reaction`](@ref)s are removed from a [`Message`](@ref).
@@ -74,4 +76,4 @@ struct MessageReactionRemoveAll <: AbstractEvent
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageReactionRemoveAll :dict
+@boilerplate MessageReactionRemoveAll :dict :docs

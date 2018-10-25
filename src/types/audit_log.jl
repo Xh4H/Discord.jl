@@ -56,6 +56,7 @@ struct AuditLogChange{T, U}
     key::String
     type::Type{U}
 end
+@boilerplate AuditLogChange :docs
 
 function AuditLogChange(d::Dict{String, Any})
     return if haskey(AUDIT_LOG_CHANGE_TYPES, d["key"])
@@ -88,6 +89,8 @@ function JSON.lower(alc::AuditLogChange)
     return d
 end
 
+# TODO: merge method?
+
 """
 Optional information in an [`AuditLogEntry`](@ref).
 """
@@ -101,7 +104,7 @@ struct AuditLogOptions
     type::Union{String, Missing}  # TODO: Enum?
     role_name::Union{String, Missing}
 end
-@boilerplate AuditLogOptions :dict :lower :merge
+@boilerplate AuditLogOptions :dict :docs :lower :merge
 
 """
 An entry in an [`AuditLog`](@ref).
@@ -116,7 +119,7 @@ struct AuditLogEntry
     options::Union{AuditLogOptions, Missing}
     reason::Union{String, Missing}
 end
-@boilerplate AuditLogEntry :dict :lower :merge
+@boilerplate AuditLogEntry :dict :docs :lower :merge
 
 """
 An audit log.
@@ -127,4 +130,4 @@ struct AuditLog
     users::Vector{User}
     audit_log_entries::Vector{AuditLogEntry}
 end
-@boilerplate AuditLog :dict :lower :merge
+@boilerplate AuditLog :dict :docs :lower :merge

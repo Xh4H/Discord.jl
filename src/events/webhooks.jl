@@ -7,4 +7,4 @@ struct WebhookUpdate <: AbstractEvent
     guild_id::Snowflake
     channel_id::Snowflake
 end
-@boilerplate WebhookUpdate :dict
+@boilerplate WebhookUpdate :dict :docs

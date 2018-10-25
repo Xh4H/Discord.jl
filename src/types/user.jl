@@ -16,4 +16,4 @@ struct User
     email::Union{String, Nothing, Missing}  # Not supposed to be nullable.
     # TODO: There's a member field here in one case.
 end
-@boilerplate User :dict :lower :merge
+@boilerplate User :dict :docs :lower :merge

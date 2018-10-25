@@ -8,7 +8,7 @@ struct EmbedThumbnail
     height::Union{Int, Missing}
     width::Union{Int, Missing}
 end
-@boilerplate EmbedThumbnail :dict :lower :merge
+@boilerplate EmbedThumbnail :dict :docs :lower :merge
 
 """
 An [`Embed`](@ref)'s video information.
@@ -19,7 +19,7 @@ struct EmbedVideo
     height::Union{Int, Missing}
     width::Union{Int, Missing}
 end
-@boilerplate EmbedVideo :dict :lower :merge
+@boilerplate EmbedVideo :dict :docs :lower :merge
 
 """
 An [`Embed`](@ref)'s image information.
@@ -31,7 +31,7 @@ struct EmbedImage
     height::Union{Int, Missing}
     width::Union{Int, Missing}
 end
-@boilerplate EmbedImage :dict :lower :merge
+@boilerplate EmbedImage :dict :docs :lower :merge
 
 """
 An [`Embed`](@ref)'s provider information.
@@ -41,7 +41,7 @@ struct EmbedProvider
     name::Union{String, Missing}
     url::Union{String, Nothing, Missing}  # Not supposed to be nullable.
 end
-@boilerplate EmbedProvider :dict :lower :merge
+@boilerplate EmbedProvider :dict :docs :lower :merge
 
 """
 An [`Embed`](@ref)'s author information.
@@ -53,7 +53,7 @@ struct EmbedAuthor
     icon_url::Union{String, Missing}
     proxy_icon_url::Union{String, Missing}
 end
-@boilerplate EmbedAuthor :dict :lower :merge
+@boilerplate EmbedAuthor :dict :docs :lower :merge
 
 """
 An [`Embed`](@ref)'s footer information.
@@ -64,7 +64,7 @@ struct EmbedFooter
     icon_url::Union{String, Missing}
     proxy_icon_url::Union{String, Missing}
 end
-@boilerplate EmbedFooter :dict :lower :merge
+@boilerplate EmbedFooter :dict :docs :lower :merge
 
 """
 An [`Embed`](@ref) field.
@@ -75,7 +75,7 @@ struct EmbedField
     value::String
     inline::Union{Bool, Missing}
 end
-@boilerplate EmbedField :dict :lower :merge
+@boilerplate EmbedField :dict :docs :lower :merge
 
 """
 A [`Message`](@ref) embed.
@@ -96,4 +96,4 @@ struct Embed
     author::Union{EmbedAuthor, Missing}
     fields::Union{Vector{EmbedField}, Missing}
 end
-@boilerplate Embed :dict :lower :merge
+@boilerplate Embed :dict :docs :lower :merge

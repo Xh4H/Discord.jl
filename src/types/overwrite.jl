@@ -8,4 +8,4 @@ struct Overwrite
     allow::Int
     deny::Int
 end
-@boilerplate Overwrite :dict :lower :merge
+@boilerplate Overwrite :dict :docs :lower :merge

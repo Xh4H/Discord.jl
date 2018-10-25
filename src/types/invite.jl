@@ -9,4 +9,4 @@ struct Invite
     approximate_presence_cound::Union{Int, Missing}
     approximate_member_count::Union{Int, Missing}
 end
-@boilerplate Invite :dict :lower :merge
+@boilerplate Invite :dict :docs :lower :merge

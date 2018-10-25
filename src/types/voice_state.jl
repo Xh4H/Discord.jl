@@ -14,4 +14,4 @@ struct VoiceState
     self_mute::Bool
     suppress::Bool
 end
-@boilerplate VoiceState :dict :lower :merge
+@boilerplate VoiceState :dict :docs :lower :merge

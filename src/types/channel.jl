@@ -29,4 +29,4 @@ struct DiscordChannel
     parent_id::Union{Snowflake, Nothing, Missing}
     last_pin_timestamp::Union{DateTime, Nothing, Missing}  # Not supposed to be nullable.
 end
-@boilerplate DiscordChannel :dict :lower :merge
+@boilerplate DiscordChannel :dict :docs :lower :merge

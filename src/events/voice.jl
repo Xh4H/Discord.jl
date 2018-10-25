@@ -7,6 +7,7 @@ Sent when a [`User`](@ref) updates their [`VoiceState`](@ref).
 struct VoiceStateUpdate <: AbstractEvent
     state::VoiceState
 end
+@boilerplate VoiceStateUpdate :docs
 VoiceStateUpdate(d::Dict{String, Any}) = VoiceStateUpdate(VoiceState(d))
 
 """
@@ -17,4 +18,4 @@ struct VoiceServerUpdate <: AbstractEvent
     guild_id::Snowflake
     endpoint::String
 end
-@boilerplate VoiceServerUpdate :dict
+@boilerplate VoiceServerUpdate :dict :docs

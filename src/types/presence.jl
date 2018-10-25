@@ -26,4 +26,4 @@ struct Presence
     status::PresenceStatus
     activities::Vector{Activity}
 end
-@boilerplate Presence :dict :lower :merge
+@boilerplate Presence :dict :docs :lower :merge

@@ -11,4 +11,4 @@ struct Attachment
     height::Union{Int, Missing}
     width::Union{Int, Missing}
 end
-@boilerplate Attachment :dict :lower :merge
+@boilerplate Attachment :dict :docs :lower :merge

@@ -7,4 +7,4 @@ mutable struct Reaction  # Mutable to update count and me.
     me::Bool
     emoji::Emoji
 end
-@boilerplate Reaction :dict :lower :merge
+@boilerplate Reaction :dict :docs :lower :merge

@@ -6,4 +6,4 @@ struct Ban
     reason::Union{String, Nothing}
     user::User
 end
-@boilerplate Ban :dict :lower :merge
+@boilerplate Ban :dict :docs :lower :merge

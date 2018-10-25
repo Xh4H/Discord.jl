@@ -10,4 +10,4 @@ struct Member
     deaf::Bool
     mute::Bool
 end
-@boilerplate Member :dict :lower :merge
+@boilerplate Member :dict :docs :lower :merge

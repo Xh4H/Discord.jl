@@ -10,4 +10,4 @@ struct VoiceRegion
     deprecated::Bool
     custom::Bool
 end
-@boilerplate VoiceRegion :dict :lower :merge
+@boilerplate VoiceRegion :dict :docs :lower :merge

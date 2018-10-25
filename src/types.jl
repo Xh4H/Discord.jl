@@ -102,9 +102,10 @@ macro fielddoc(T)
     docs = join(map(t -> "$(t[1]) :: $(t[2])", zip(ns, ts)), "\n")
     quote
         doc = string(@doc $T)
-        fields = join(map(f -> "$f::$(fieldtype($TT, f))", fieldnames($TT)), "\n\n")
-        docstring = doc * "\n\n# Fields\n" * fields * "\n"
-        @doc docstring $T
+        docstring = doc * "\n# Fields\n\n```\n" * $docs * "\n```\n"
+        Base.CoreLogging.with_logger(Base.CoreLogging.NullLogger()) do
+            @doc docstring $T
+        end
     end
 end
 

@@ -11,4 +11,4 @@ struct Webhook
     avatar::Union{String, Nothing}
     token::String
 end
-@boilerplate Webhook :dict :lower :merge
+@boilerplate Webhook :dict :docs :lower :merge

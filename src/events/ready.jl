@@ -11,4 +11,4 @@ struct Ready <: AbstractEvent
     session_id::String
     _trace::Vector{String}
 end
-@boilerplate Ready :dict
+@boilerplate Ready :dict :docs

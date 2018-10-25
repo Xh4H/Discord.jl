@@ -6,7 +6,7 @@ struct IntegrationAccount
     id::String
     name::String
 end
-@boilerplate IntegrationAccount :dict :lower :merge
+@boilerplate IntegrationAccount :dict :docs :lower :merge
 
 """
 A [`Guild`](@ref) integration.
@@ -25,4 +25,4 @@ struct Integration
     account::IntegrationAccount
     synced_at::DateTime
 end
-@boilerplate Integration :dict :lower :merge
+@boilerplate Integration :dict :docs :lower :merge

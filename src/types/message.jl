@@ -29,7 +29,7 @@ struct MessageActivity
     type::MessageActivityType
     party_id::Union{String, Missing}
 end
-@boilerplate MessageActivity :dict :lower :merge
+@boilerplate MessageActivity :dict :docs :lower :merge
 
 """
 A Rich Presence [`Message`](@ref)'s application information.
@@ -42,7 +42,7 @@ struct MessageApplication
     icon::String
     name::String
 end
-@boilerplate MessageApplication :dict :lower :merge
+@boilerplate MessageApplication :dict :docs :lower :merge
 
 """
 A message.
@@ -71,4 +71,4 @@ mutable struct Message  # Mutable to add reactions.
     activity::Union{MessageActivity, Missing}
     application::Union{MessageApplication, Missing}
 end
-@boilerplate Message :dict :lower :merge
+@boilerplate Message :dict :docs :lower :merge
