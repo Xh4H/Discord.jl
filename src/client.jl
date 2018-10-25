@@ -812,7 +812,7 @@ end
 
 function handle_close(c::Client, e::WebSocketClosedError)
     code = closecode(e)
-    code === nothing && throw(e)
+    code === nothing && return reconnect(c; resume=true)  # Network error, etc.
     err = get(CLOSE_CODES, code, :UNKNOWN_ERROR)
     if err !== :NORMAL
         logmsg(c, WARN, "WebSocket connnection was closed"; code=code, reason=err)
@@ -860,7 +860,7 @@ writejson(io, body) = writeguarded(io, json(body))
 
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
-    return match === nothing ? nothing : parse(Int, String(first(m.captures)))
+    return m === nothing ? nothing : parse(Int, String(first(m.captures)))
 end
 
 function locked(f::Function, c::Client)
