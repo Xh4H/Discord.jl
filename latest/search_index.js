@@ -165,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.request_guild_members",
     "category": "function",
-    "text": "request_guild_members(\n    c::Client,\n    guild_id::Union{Snowflake, Vector{Snowflake};\n    query::AbstractString=\"\",\n    limit::Int=0,\n) -> Bool\n\nRequest offline guild members of one or more guilds. GuildMemberChunk events are sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "request_guild_members(\n    c::Client,\n    guild_id::Union{Snowflake, Vector{Snowflake};\n    query::AbstractString=\"\",\n    limit::Int=0,\n) -> Bool\n\nRequest offline guild members of one or more guilds. GuildMembersChunk events are sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
 },
 
 {
@@ -673,6 +673,46 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "types.html#Discord.AuditLog",
+    "page": "Types",
+    "title": "Discord.AuditLog",
+    "category": "type",
+    "text": "An audit log. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLogEntry",
+    "page": "Types",
+    "title": "Discord.AuditLogEntry",
+    "category": "type",
+    "text": "An entry in an AuditLog. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLogChange",
+    "page": "Types",
+    "title": "Discord.AuditLogChange",
+    "category": "type",
+    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLogOptions",
+    "page": "Types",
+    "title": "Discord.AuditLogOptions",
+    "category": "type",
+    "text": "Optional information in an AuditLogEntry.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActionType",
+    "page": "Types",
+    "title": "Discord.ActionType",
+    "category": "type",
+    "text": "AuditLog action types. More details here.\n\n\n\n\n\n"
+},
+
+{
     "location": "types.html#Discord.Ban",
     "page": "Types",
     "title": "Discord.Ban",
@@ -701,7 +741,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Connection",
     "category": "type",
-    "text": "A User connection to an external service (Twitch, YouTube, etc.). More details here.\n\n\n\n\n\n"
+    "text": "<<<<<<< HEAD A User Connection. ======= A User connection to an external service (Twitch, YouTube, etc.).\n\nmaster\n\nMore details here.\n\n\n\n\n\n"
 },
 
 {
@@ -997,7 +1037,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 ]}
