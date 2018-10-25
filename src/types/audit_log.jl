@@ -40,8 +40,7 @@ More details [here](https://discordapp.com/developers/docs/resources/audit-log#a
     AT_EMOJI_DELETE=62
     AT_MESSAGE_DELETE=72
 end
-
-JSON.lower(at::ActionType) = Int(at)
+@boilerplate ActionType :lower
 
 """
 A change item in an [`AuditLogEntry`](@ref).
@@ -56,7 +55,6 @@ struct AuditLogChange{T, U}
     old_value::Union{T, Missing}
     key::String
     type::Type{U}
-    extra_fields::Dict{String, Any}
 end
 
 function AuditLogChange(d::Dict{String, Any})
@@ -67,7 +65,6 @@ function AuditLogChange(d::Dict{String, Any})
             haskey(d, "old_value") ? T(d["old_value"]) : missing,
             d["key"],
             U,
-            extra_fields(AuditLogChange, d),
         )
     else
         AuditLogChange{Any, Any}(
@@ -75,7 +72,6 @@ function AuditLogChange(d::Dict{String, Any})
             get(d, "old_value", missing),
             d["key"],
             Any,
-            extra_fields(AuditLogChange, d),
         )
     end
 end
@@ -95,7 +91,8 @@ end
 """
 Optional information in an [`AuditLogEntry`](@ref).
 """
-@from_dict struct AuditLogOptions
+struct AuditLogOptions
+    # TODO: We should probably parse/lower this manually.
     delete_member_days::Union{String, Missing}  # TODO: Int?
     members_removed::Union{String, Missing}  # TODO: Int?
     channel_id::Union{Snowflake, Missing}
@@ -104,12 +101,13 @@ Optional information in an [`AuditLogEntry`](@ref).
     type::Union{String, Missing}  # TODO: Enum?
     role_name::Union{String, Missing}
 end
+@boilerplate AuditLogOptions :dict :lower :merge
 
 """
 An entry in an [`AuditLog`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object).
 """
-@from_dict struct AuditLogEntry
+struct AuditLogEntry
     target_id::Union{Snowflake, Nothing}
     changes::Union{Vector{AuditLogChange}, Missing}
     user_id::Snowflake
@@ -118,13 +116,15 @@ More details [here](https://discordapp.com/developers/docs/resources/audit-log#a
     options::Union{AuditLogOptions, Missing}
     reason::Union{String, Missing}
 end
+@boilerplate AuditLogEntry :dict :lower :merge
 
 """
 An audit log.
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-object).
 """
-@from_dict struct AuditLog
+struct AuditLog
     webhooks::Vector{Webhook}
     users::Vector{User}
     audit_log_entries::Vector{AuditLogEntry}
 end
+@boilerplate AuditLog :dict :lower :merge
