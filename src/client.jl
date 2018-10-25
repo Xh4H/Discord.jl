@@ -12,7 +12,7 @@ export LIMIT_IGNORE,
 
 # Properties for gateway connections.
 const conn_properties = Dict(
-    "\$os"      => String(Sys.KERNEL),
+    "\$os"      => string(Sys.KERNEL),
     "\$browser" => "Discord.jl",
     "\$device"  => "Discord.jl",
 )
@@ -111,7 +111,7 @@ mutable struct Client
     limiter::Limiter            # Rate limiter.
     on_limit::OnLimit           # Rate limit behaviour.
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
-    closed::Bool                # Client is closed and will not reconnect.
+    ready::Bool                 # Client is connected and authenticated.
     lock::Threads.AbstractLock  # Mutex for various tasks.
     conn::Conn                  # WebSocket connection.
 
@@ -136,7 +136,7 @@ mutable struct Client
             Limiter(),                        # limiter
             on_limit,                         # on_limit
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
-            true,                             # closed
+            false,                            # ready
             Threads.SpinLock()                # lock
             # conn left undef, it gets assigned in open.
         )
@@ -144,16 +144,19 @@ mutable struct Client
 end
 
 """
-    open(c::Client)
+    open(c::Client; delay::Period=Second(7))
 
 Connect to the Discord gateway and begin responding to events.
-"""
-function Base.open(c::Client; resume::Bool=false)
-    isopen(c) && error("Client is already open")
 
-    # For some reason I'm getting invalid sessions (opcode 9) when non-zero shards connect
-    # before shard 0 or at the same time. This seems to fix it.
-    c.shard > 0 && sleep(5)
+The `delay` keyword is the number of seconds between shards connecting. It can be increased
+from its default if you are frequently experiencing invalid sessions upon connection.
+"""
+function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
+    isopen(c) && error("Client is already open")
+    c.ready = false
+
+    # Clients can only identify once per 5 seconds.
+    resume || sleep(c.shard * delay)
 
     logmsg(c, DEBUG, "Requesting gateway URL")
     resp = HTTP.get("$DISCORD_API/v$(c.version)/gateway")
@@ -195,7 +198,7 @@ function Base.open(c::Client; resume::Bool=false)
     @async heartbeat_loop(c)
     @async read_loop(c)
 
-    c.closed = false
+    c.ready = true
     logmsg(c, INFO, "Logged in")
 end
 
@@ -204,7 +207,7 @@ end
 
 Determine whether the client is connected to the gateway.
 """
-Base.isopen(c::Client) = !c.closed && isdefined(c, :conn) && isopen(c.conn.io)
+Base.isopen(c::Client) = c.ready && isdefined(c, :conn) && isopen(c.conn.io)
 
 """
     Base.close(c::Client)
@@ -212,10 +215,7 @@ Base.isopen(c::Client) = !c.closed && isdefined(c, :conn) && isopen(c.conn.io)
 Disconnect from the Discord gateway.
 """
 function Base.close(c::Client; permanent::Bool=true, statusnumber::Int=1000)
-    if permanent
-        logmsg(c, INFO, "Logging out")
-        c.closed = true
-    end
+    c.ready = false
     isdefined(c, :conn) && close(c.conn.io; statusnumber=statusnumber)
 end
 
@@ -433,8 +433,8 @@ end
 function heartbeat_loop(c::Client)
     v = c.conn.v
     while c.conn.v == v && isopen(c)
-        if c.last_heartbeat > c.last_ack
-            logmsg(c, DEBUG, "Encountered zombie connection")
+        if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
+            logmsg(c, DEBUG, "Encountered zombie connection (connection $v)")
             reconnect(c; resume=true, statusnumber=1001)
         elseif !heartbeat(c) && c.conn.v == v && isopen(c)
             logmsg(c, ERROR, "Writing HEARTBEAT failed")
@@ -510,7 +510,7 @@ function reconnect(
     statusnumber::Int=1000,
 )
     logmsg(c, INFO, "Reconnecting"; status=statusnumber, resume=resume)
-    close(c; permanent=false, statusnumber=statusnumber)
+    close(c; statusnumber=statusnumber)
     open(c; resume=resume)
 end
 
@@ -799,12 +799,12 @@ const CLOSE_CODES = Dict(
 
 function handle_read_error(c::Client, e::Exception)
     logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e, conn=c.conn.v)
-    c.closed && return
+    c.ready || return
     if isa(e, WebSocketClosedError)
         handle_close(c, e)
     else
         logmsg(c, ERROR, sprint(showerror, e))
-        isopen(c.conn.io) || !c.closed || reconnect(c; resume=true)
+        c.ready || isopen(c.conn.io) || reconnect(c; resume=true)
     end
 end
 
