@@ -165,7 +165,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     logmsg(c, DEBUG, "Connecting to gateway"; url=url)
     c.conn = Conn(opentrick(WebSockets.open, url), isdefined(c, :conn) ? c.conn.v + 1 : 1)
 
-    logmsg(c, DEBUG, "receiving HELLO")
+    logmsg(c, DEBUG, "receiving HELLO"; conn=c.conn.v)
     data, e = readjson(c.conn.io)
     e === nothing || throw(e)
     op = get(OPCODES, data["op"], data["op"])
@@ -191,15 +191,14 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     end
 
     op = resume ? :RESUME : :IDENTIFY
-    logmsg(c, DEBUG, "Writing $op")
+    logmsg(c, DEBUG, "Writing $op"; conn=c.conn.v)
     writejson(c.conn.io, data) || error("Writing $op failed")
 
-    logmsg(c, DEBUG, "Starting background maintenance tasks")
+    logmsg(c, DEBUG, "Starting background maintenance tasks"; conn=c.conn.v)
     @async heartbeat_loop(c)
     @async read_loop(c)
 
     c.ready = true
-    logmsg(c, INFO, "Logged in")
 end
 
 """
@@ -433,16 +432,15 @@ end
 function heartbeat_loop(c::Client)
     v = c.conn.v
     while c.conn.v == v && isopen(c)
+        sleep(c.heartbeat_interval / 1000)
         if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
-            logmsg(c, DEBUG, "Encountered zombie connection (connection $v)")
+            logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
             reconnect(c; resume=true, statusnumber=1001)
         elseif !heartbeat(c) && c.conn.v == v && isopen(c)
-            logmsg(c, ERROR, "Writing HEARTBEAT failed")
-        elseif c.conn.v == v && isopen(c)
-            sleep(c.heartbeat_interval / 1000)
+            logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
         end
     end
-    logmsg(c, DEBUG, "Heartbeat loop $v exited")
+    logmsg(c, DEBUG, "Heartbeat loop exited"; conn=v)
 end
 
 function read_loop(c::Client)
@@ -452,14 +450,14 @@ function read_loop(c::Client)
         if e !== nothing && c.conn.v == v
             handle_read_error(c, e)
         elseif e !== nothing
-            logmsg(c, DEBUG, "Read failed, but the connection is outdated"; e=e)
+            logmsg(c, DEBUG, "Read failed, but the connection is outdated"; conn=v, e=e)
         elseif haskey(HANDLERS, data["op"])
             HANDLERS[data["op"]](c, data)
         else
             logmsg(c, WARN, "Unkown opcode"; op=data["op"])
         end
     end
-    logmsg(c, DEBUG, "Read loop $v exited")
+    logmsg(c, DEBUG, "Read loop exited"; conn=v)
 end
 
 # Event handlers.
@@ -572,7 +570,7 @@ function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate
             end
             push!(ms[missing], m)
         else
-            insert_or_update(ms, m.user.id, m) 
+            insert_or_update(ms, m.user.id, m)
             insert_or_update(c.state.users, m.user.id, m.user)
         end
     end
