@@ -9,12 +9,20 @@ export create_guild,
         create_channel,
         add_member,
         get_member,
+        list_members,
+        get_prune,
+        do_prune,
+        get_bans,
+        get_ban,
+        unban,
+        get_invites,
+        create_integration,
+        get_integrations,
         get_webhooks,
         get_regions,
         get_guild_regions,
         get_vanity_code
 
-# functions
 """
     create_guild(c::Client; params...) -> Response{Guild}
 
@@ -228,6 +236,151 @@ end
 get_member(c::Client, g::AbstractGuild, u::User) = get_member(c, g.id, u.id)
 get_member(c::Client, g::AbstractGuild, u::Integer) = get_member(c, g.id, u)
 get_member(c::Client, g::Integer, u::User) = get_member(c, g, u.id)
+
+"""
+    list_members(c::Client
+        guild::Union{AbstractGuild, Integer};
+        params...
+    ) -> Response{Vector{Member}}
+
+Get the [`Member`](@ref)s from a [`Guild`](@ref).
+
+# Query Params
+- `limit::Integer`: Max number of members to return (1-1000).
+- `after::Snowflake`: The highest user ID in the previous page.
+
+More details [here](https://discordapp.com/developers/docs/resources/guild#list-guild-members).
+"""
+function list_members(c::Client, guild::Integer; params...)
+    return Response{Member}(c, :GET, "/guilds/$guild/members"; params...)
+end
+
+list_members(c::Client, g::AbstractGuild; params...) = list_members(c, g.id; params...)
+
+"""
+    get_prune(c::Client
+        guild::Union{AbstractGuild, Integer};
+        params...
+    ) -> Response{Integer}
+
+Get the number of [`Member`](@ref)s that would be removed in a prune.
+
+# Query Params
+- `days::Integer`: Number of days to count prune for (1 or more).
+
+More details [here](https://discordapp.com/developers/docs/resources/guild#get-guild-prune-count).
+"""
+function get_prune(c::Client, guild::Integer; params...)
+    return Response{Integer}(c, :GET, "/guilds/$guild/prune"; params...)
+end
+
+get_prune(c::Client, g::AbstractGuild; params...) = get_prune(c, g.id; params...)
+
+"""
+    do_prune(c::Client
+        guild::Union{AbstractGuild, Integer};
+        params...
+    ) -> Response{Integer}
+
+Begin a prune.
+
+# Query Params
+- `days::Integer`: Number of days to prune for (1 or more).
+
+More details [here](https://discordapp.com/developers/docs/resources/guild#begin-guild-prune).
+"""
+function do_prune(c::Client, guild::Integer; params...)
+    return Response{Integer}(c, :POST, "/guilds/$guild/prune"; params...)
+end
+
+do_prune(c::Client, g::AbstractGuild; params...) = do_prune(c, g.id; params...)
+
+"""
+    get_bans(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Ban}}
+
+Get the [`Ban`](@ref)s.
+"""
+function get_bans(c::Client, guild::Integer)
+    return Response{Ban}(c, :GET, "/guilds/$guild/bans")
+end
+
+get_bans(c::Client, g::AbstractGuild) = get_bans(c, g.id)
+
+"""
+    get_ban(c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer}
+    ) -> Response{Ban}
+
+Get a [`Ban`](@ref).
+"""
+function get_ban(c::Client, guild::Integer, user::Integer)
+    return Response{Ban}(c, :GET, "/guilds/$guild/bans/$user")
+end
+
+get_ban(c::Client, g::AbstractGuild, u::User) = get_ban(c, g.id, u.id)
+get_ban(c::Client, g::AbstractGuild, u::Integer) = get_ban(c, g.id, u)
+get_ban(c::Client, g::Integer, u::User) = get_ban(c, g, u.id)
+
+"""
+    unban(c::Client,
+        guild::Union{AbstractGuild, Integer},
+        user::Union{Member, Integer}
+    ) -> Response{Ban}
+
+Get a [`Ban`](@ref).
+"""
+function unban(c::Client, guild::Integer, user::Integer)
+    return Response{Ban}(c, :GET, "/guilds/$guild/bans/$user")
+end
+
+unban(c::Client, g::AbstractGuild, u::Member) = unban(c, g.id, u.id)
+unban(c::Client, g::AbstractGuild, u::Integer) = unban(c, g.id, u)
+unban(c::Client, g::Integer, u::Member) = unban(c, g, u.id)
+
+"""
+    get_invites(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Invite}}
+
+Get the [`Invite`](@ref)s.
+"""
+function get_invites(c::Client, guild::Integer)
+    return Response{Invite}(c, :GET, "/guilds/$guild/invites")
+end
+
+get_invites(c::Client, g::AbstractGuild) = get_invites(c, g.id)
+
+"""
+    create_integration(c::Client
+        guild::Union{AbstractGuild, Integer};
+        params...
+    ) -> Response{Integration}
+
+Create / Attach an [`Integration`](@ref).
+
+# Query Params
+- `type::Integer`: Integration type.
+- `id::Snowflake`: Integration ID.
+
+More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-integration).
+"""
+function create_integration(c::Client, guild::Integer; params...)
+    return Response{Integration}(c, :POST, "/guilds/$guild/integrations"; params...)
+end
+
+create_integration(c::Client, g::AbstractGuild; params...) = create_integration(c, g.id; params...)
+
+"""
+    get_integrations(c::Client,
+        guild::Union{AbstractGuild, Integer}
+    ) -> Response{Vector{Integration}}
+
+Get a list of [`Integration`](@ref)s.
+"""
+function get_integrations(c::Client, guild::Integer)
+    return Response{Integration}(c, :GET, "/guilds/$guild/integrations")
+end
+
+get_integrations(c::Client, guild::AbstractGuild) = get_integrations(c, guild.id)
 
 """
     get_webhooks(c::Client,
