@@ -92,12 +92,37 @@ macro dict(T)
     end
 end
 
+macro fielddoc(T)
+    TT = eval(T)
+    ns = collect(string.(fieldnames(TT)))
+    width = maximum(length, ns)
+    map!(n -> rpad(n, width), ns, ns)
+    ts = collect(map(f -> string(fieldtype(TT, f)), fieldnames(TT)))
+    map!(s -> replace(s, "Discord." => ""), ts, ts)
+    docs = join(map(t -> "$(t[1]) :: $(t[2])", zip(ns, ts)), "\n")
+    quote
+        doc = string(@doc $T)
+        fields = join(map(f -> "$f::$(fieldtype($TT, f))", fieldnames($TT)), "\n\n")
+        docstring = doc * "\n\n# Fields\n" * fields * "\n"
+        @doc docstring $T
+    end
+end
+
 macro boilerplate(T, exs...)
     macros = map(e -> e.value, exs)
     quote
-        :dict in $macros && @dict $T
-        :lower in $macros && @lower $T
-        :merge in $macros && @merge $T
+        @static if :docs in $macros
+            @fielddoc $T
+        end
+        @static if :dict in $macros
+            @dict $T
+        end
+        @static if :lower in $macros
+            @lower $T
+        end
+        @static if :merge in $macros
+            @merge $T
+        end
     end
 end
 

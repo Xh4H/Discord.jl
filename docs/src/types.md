@@ -5,6 +5,9 @@ CurrentModule = Discord
 # Types
 
 This page is organized in mostly-alphabetical order.
+Note that `Snowflake ===  UInt64`.
+`Union`s with `Nothing` indicate that a field is nullable, whereas `Union`s with `Missing` indicate that a field is optional.
+More details [here](https://discordapp.com/developers/docs/reference#nullable-and-optional-resource-fields).
 
 ```@docs
 Activity
