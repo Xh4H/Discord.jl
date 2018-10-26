@@ -19,7 +19,7 @@ struct ChannelUpdate <: AbstractEvent
     channel::DiscordChannel
 end
 @boilerplate ChannelUpdate :docs
-ChannelUpdate(d::Dict{String, Any}) = ChannelCreate(DiscordChannel(d))
+ChannelUpdate(d::Dict{String, Any}) = ChannelUpdate(DiscordChannel(d))
 
 """
 Sent when a [`DiscordChannel`](@ref) is deleted.
@@ -28,7 +28,7 @@ struct ChannelDelete <: AbstractEvent
     channel::DiscordChannel
 end
 @boilerplate ChannelDelete :docs
-ChannelDelete(d::Dict{String, Any}) = ChannelCreate(DiscordChannel(d))
+ChannelDelete(d::Dict{String, Any}) = ChannelDelete(DiscordChannel(d))
 
 """
 Sent when a [`DiscordChannel`](@ref)'s pins are updated.
