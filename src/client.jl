@@ -213,7 +213,7 @@ Base.isopen(c::Client) = c.ready && isdefined(c, :conn) && isopen(c.conn.io)
 
 Disconnect from the Discord gateway.
 """
-function Base.close(c::Client; permanent::Bool=true, statusnumber::Int=1000)
+function Base.close(c::Client; statusnumber::Int=1000)
     c.ready = false
     isdefined(c, :conn) && close(c.conn.io; statusnumber=statusnumber)
 end
@@ -435,7 +435,7 @@ function heartbeat_loop(c::Client)
         sleep(c.heartbeat_interval / 1000)
         if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
             logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
-            reconnect(c; resume=true, statusnumber=1001)
+            reconnect(c; resume=true)
         elseif !heartbeat(c) && c.conn.v == v && isopen(c)
             logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
         end
@@ -503,14 +503,9 @@ function heartbeat(c::Client, ::AbstractDict=Dict())
     return ok
 end
 
-function reconnect(
-    c::Client,
-    ::AbstractDict=Dict();
-    resume::Bool=false,
-    statusnumber::Int=1000,
-)
-    logmsg(c, INFO, "Reconnecting"; status=statusnumber, resume=resume)
-    close(c; statusnumber=statusnumber)
+function reconnect(c::Client, ::AbstractDict=Dict(); resume::Bool=false)
+    logmsg(c, INFO, "Reconnecting"; resume=resume)
+    close(c; statusnumber=resume ? 4000 : 1000)
     open(c; resume=resume)
 end
 
@@ -803,7 +798,7 @@ function handle_read_error(c::Client, e::Exception)
         handle_close(c, e)
     else
         logmsg(c, ERROR, sprint(showerror, e))
-        c.ready || isopen(c.conn.io) || reconnect(c; resume=true)
+        isopen(c) || reconnect(c; resume=true)
     end
 end
 
