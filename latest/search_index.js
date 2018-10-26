@@ -221,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Events",
     "category": "section",
-    "text": "AbstractEvent\nUnknownEvent"
+    "text": "Note that Snowflake === UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.AbstractEvent\nUnknownEvent"
 },
 
 {
@@ -229,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.ChannelCreate",
     "category": "type",
-    "text": "Sent when a new DiscordChannel is created.\n\n\n\n\n\n"
+    "text": "Sent when a new DiscordChannel is created.\n\nFields\n\nchannel :: DiscordChannel\n\n\n\n\n\n"
 },
 
 {
@@ -237,7 +237,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.ChannelUpdate",
     "category": "type",
-    "text": "Sent when a DiscordChannel is updated.\n\n\n\n\n\n"
+    "text": "Sent when a DiscordChannel is updated.\n\nFields\n\nchannel :: DiscordChannel\n\n\n\n\n\n"
 },
 
 {
@@ -245,7 +245,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.ChannelDelete",
     "category": "type",
-    "text": "Sent when a DiscordChannel is deleted.\n\n\n\n\n\n"
+    "text": "Sent when a DiscordChannel is deleted.\n\nFields\n\nchannel :: DiscordChannel\n\n\n\n\n\n"
 },
 
 {
@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.ChannelPinsUpdate",
     "category": "type",
-    "text": "Sent when a DiscordChannel\'s pins are updated.\n\n\n\n\n\n"
+    "text": "Sent when a DiscordChannel\'s pins are updated.\n\nFields\n\nchannel_id         :: UInt64\nlast_pin_timestamp :: Union{Nothing, DateTime}\n\n\n\n\n\n"
 },
 
 {
@@ -269,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildCreate",
     "category": "type",
-    "text": "Sent when a new Guild is created.\n\n\n\n\n\n"
+    "text": "Sent when a new Guild is created.\n\nFields\n\nguild :: Guild\n\n\n\n\n\n"
 },
 
 {
@@ -277,7 +277,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildUpdate",
     "category": "type",
-    "text": "Sent when a Guild is updated.\n\n\n\n\n\n"
+    "text": "Sent when a Guild is updated.\n\nFields\n\nguild :: Guild\n\n\n\n\n\n"
 },
 
 {
@@ -285,7 +285,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildDelete",
     "category": "type",
-    "text": "Sent when a guild is deleted, and contains an UnavailableGuild.\n\n\n\n\n\n"
+    "text": "Sent when a guild is deleted, and contains an UnavailableGuild.\n\nFields\n\nguild :: UnavailableGuild\n\n\n\n\n\n"
 },
 
 {
@@ -293,7 +293,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildBanAdd",
     "category": "type",
-    "text": "Sent when a User is banned from a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a User is banned from a Guild.\n\nFields\n\nguild_id :: UInt64\nuser     :: User\n\n\n\n\n\n"
 },
 
 {
@@ -301,7 +301,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildBanRemove",
     "category": "type",
-    "text": "Sent when a User is unbanned from a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a User is unbanned from a Guild.\n\nFields\n\nguild_id :: UInt64\nuser     :: User\n\n\n\n\n\n"
 },
 
 {
@@ -309,7 +309,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildEmojisUpdate",
     "category": "type",
-    "text": "Sent when a Guild has its Emojis updated.\n\n\n\n\n\n"
+    "text": "Sent when a Guild has its Emojis updated.\n\nFields\n\nguild_id :: UInt64\nemojis   :: Array{Emoji,1}\n\n\n\n\n\n"
 },
 
 {
@@ -317,7 +317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildIntegrationsUpdate",
     "category": "type",
-    "text": "Sent when a Guild has its Integrations updated.\n\n\n\n\n\n"
+    "text": "Sent when a Guild has its Integrations updated.\n\nFields\n\nguild_id :: UInt64\n\n\n\n\n\n"
 },
 
 {
@@ -325,7 +325,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildMemberAdd",
     "category": "type",
-    "text": "Sent when a Member is added to a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a Member is added to a Guild.\n\nFields\n\nguild_id :: UInt64\nmember   :: Member\n\n\n\n\n\n"
 },
 
 {
@@ -333,7 +333,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildMemberRemove",
     "category": "type",
-    "text": "Sent when a Member is removed from a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a Member is removed from a Guild.\n\nFields\n\nguild_id :: UInt64\nuser     :: User\n\n\n\n\n\n"
 },
 
 {
@@ -341,7 +341,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildMemberUpdate",
     "category": "type",
-    "text": "Sent when a Member is updated in a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a Member is updated in a Guild.\n\nFields\n\nguild_id :: UInt64\nroles    :: Array{UInt64,1}\nuser     :: User\nnick     :: Union{Nothing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -349,7 +349,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildMembersChunk",
     "category": "type",
-    "text": "Sent when the Client requests guild members with request_guild_members.\n\n\n\n\n\n"
+    "text": "Sent when the Client requests guild members with request_guild_members.\n\nFields\n\nguild_id :: UInt64\nmembers  :: Array{Member,1}\n\n\n\n\n\n"
 },
 
 {
@@ -357,7 +357,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildRoleCreate",
     "category": "type",
-    "text": "Sent when a new Role is created in a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a new Role is created in a Guild.\n\nFields\n\nguild_id :: UInt64\nrole     :: Role\n\n\n\n\n\n"
 },
 
 {
@@ -365,7 +365,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildRoleUpdate",
     "category": "type",
-    "text": "Sent when a Role is updated in a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a Role is updated in a Guild.\n\nFields\n\nguild_id :: UInt64\nrole     :: Role\n\n\n\n\n\n"
 },
 
 {
@@ -373,7 +373,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildRoleDelete",
     "category": "type",
-    "text": "Sent when a Role is deleted from a Guild.\n\n\n\n\n\n"
+    "text": "Sent when a Role is deleted from a Guild.\n\nFields\n\nguild_id :: UInt64\nrole_id  :: UInt64\n\n\n\n\n\n"
 },
 
 {
@@ -389,7 +389,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageCreate",
     "category": "type",
-    "text": "Sent when a Message is sent.\n\n\n\n\n\n"
+    "text": "Sent when a Message is sent.\n\nFields\n\nmessage :: Message\n\n\n\n\n\n"
 },
 
 {
@@ -397,7 +397,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageUpdate",
     "category": "type",
-    "text": "Sent when a Message is updated.\n\n\n\n\n\n"
+    "text": "Sent when a Message is updated.\n\nFields\n\nmessage :: Message\n\n\n\n\n\n"
 },
 
 {
@@ -405,7 +405,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageDelete",
     "category": "type",
-    "text": "Sent when a Message is deleted.\n\n\n\n\n\n"
+    "text": "Sent when a Message is deleted.\n\nFields\n\nid         :: UInt64\nchannel_id :: UInt64\nguild_id   :: Union{Missing, UInt64}\n\n\n\n\n\n"
 },
 
 {
@@ -413,7 +413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageDeleteBulk",
     "category": "type",
-    "text": "Sent when multiple Messages are deleted in bulk.\n\n\n\n\n\n"
+    "text": "Sent when multiple Messages are deleted in bulk.\n\nFields\n\nids        :: Array{UInt64,1}\nchannel_id :: UInt64\nguild_id   :: Union{Missing, UInt64}\n\n\n\n\n\n"
 },
 
 {
@@ -421,7 +421,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageReactionAdd",
     "category": "type",
-    "text": "Sent when a Reaction is added to a Message.\n\n\n\n\n\n"
+    "text": "Sent when a Reaction is added to a Message.\n\nFields\n\nuser_id    :: UInt64\nchannel_id :: UInt64\nmessage_id :: UInt64\nguild_id   :: Union{Missing, UInt64}\nemoji      :: Emoji\n\n\n\n\n\n"
 },
 
 {
@@ -429,7 +429,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageReactionRemove",
     "category": "type",
-    "text": "Sent when a Reaction is removed from a Message.\n\n\n\n\n\n"
+    "text": "Sent when a Reaction is removed from a Message.\n\nFields\n\nuser_id    :: UInt64\nchannel_id :: UInt64\nmessage_id :: UInt64\nguild_id   :: Union{Missing, UInt64}\nemoji      :: Emoji\n\n\n\n\n\n"
 },
 
 {
@@ -437,7 +437,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.MessageReactionRemoveAll",
     "category": "type",
-    "text": "Sent when all Reactions are removed from a Message.\n\n\n\n\n\n"
+    "text": "Sent when all Reactions are removed from a Message.\n\nFields\n\nchannel_id :: UInt64\nmessage_id :: UInt64\nguild_id   :: Union{Missing, UInt64}\n\n\n\n\n\n"
 },
 
 {
@@ -453,7 +453,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.PresenceUpdate",
     "category": "type",
-    "text": "Sent when a User\'s Presence is updated.\n\n\n\n\n\n"
+    "text": "Sent when a User\'s Presence is updated.\n\nFields\n\npresence :: Presence\n\n\n\n\n\n"
 },
 
 {
@@ -461,7 +461,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.TypingStart",
     "category": "type",
-    "text": "Sent when a User begins typing.\n\n\n\n\n\n"
+    "text": "Sent when a User begins typing.\n\nFields\n\nchannel_id :: UInt64\nguild_id   :: Union{Missing, UInt64}\nuser_id    :: UInt64\ntimestamp  :: Dates.DateTime\n\n\n\n\n\n"
 },
 
 {
@@ -469,7 +469,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.UserUpdate",
     "category": "type",
-    "text": "Sent when a User\'s details are updated.\n\n\n\n\n\n"
+    "text": "Sent when a User\'s details are updated.\n\nFields\n\nuser :: User\n\n\n\n\n\n"
 },
 
 {
@@ -485,7 +485,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.VoiceStateUpdate",
     "category": "type",
-    "text": "Sent when a User updates their VoiceState.\n\n\n\n\n\n"
+    "text": "Sent when a User updates their VoiceState.\n\nFields\n\nstate :: VoiceState\n\n\n\n\n\n"
 },
 
 {
@@ -493,7 +493,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.VoiceServerUpdate",
     "category": "type",
-    "text": "Sent when a Guild\'s voice server is updated.\n\n\n\n\n\n"
+    "text": "Sent when a Guild\'s voice server is updated.\n\nFields\n\ntoken    :: String\nguild_id :: UInt64\nendpoint :: String\n\n\n\n\n\n"
 },
 
 {
@@ -509,7 +509,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.WebhookUpdate",
     "category": "type",
-    "text": "Sent when a DiscordChannel\'s Webhooks are updated.\n\n\n\n\n\n"
+    "text": "Sent when a DiscordChannel\'s Webhooks are updated.\n\nFields\n\nguild_id   :: UInt64\nchannel_id :: UInt64\n\n\n\n\n\n"
 },
 
 {
@@ -525,7 +525,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.Ready",
     "category": "type",
-    "text": "Sent when the Client has authenticated, and contains the initial state.\n\n\n\n\n\n"
+    "text": "Sent when the Client has authenticated, and contains the initial state.\n\nFields\n\nv                :: Int64\nuser             :: User\nprivate_channels :: Array{DiscordChannel,1}\nguilds           :: Array{UnavailableGuild,1}\nsession_id       :: String\n_trace           :: Array{String,1}\n\n\n\n\n\n"
 },
 
 {
@@ -533,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.Resumed",
     "category": "type",
-    "text": "Sent when a Client resumes its connection.\n\n\n\n\n\n"
+    "text": "Sent when a Client resumes its connection.\n\nFields\n\n_trace :: Array{String,1}\n\n\n\n\n\n"
 },
 
 {
@@ -613,7 +613,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Activity",
     "category": "type",
-    "text": "A User activity. More details here.\n\n\n\n\n\n"
+    "text": "A User activity. More details here.\n\nFields\n\nname           :: String\ntype           :: ActivityType\nurl            :: Union{Missing, Nothing, String}\ntimestamps     :: Union{Missing, ActivityTimestamps}\napplication_id :: Union{Missing, UInt64}\ndetails        :: Union{Missing, Nothing, String}\nstate          :: Union{Missing, Nothing, String}\nparty          :: Union{Missing, ActivityParty}\nassets         :: Union{Missing, ActivityAssets}\nsecrets        :: Union{Missing, ActivitySecrets}\ninstance       :: Union{Missing, Bool}\nflags          :: Union{Missing, Int64}\n\n\n\n\n\n"
 },
 
 {
@@ -621,7 +621,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivityTimestamps",
     "category": "type",
-    "text": "Indicates the start and stop of an Activity. More details here.\n\n\n\n\n\n"
+    "text": "Indicates the start and stop of an Activity. More details here.\n\nFields\n\nstart :: Union{Missing, DateTime}\nstop  :: Union{Missing, DateTime}\n\n\n\n\n\n"
 },
 
 {
@@ -629,7 +629,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivityParty",
     "category": "type",
-    "text": "The current party of an Activity\'s player. More details here.\n\n\n\n\n\n"
+    "text": "The current party of an Activity\'s player. More details here.\n\nFields\n\nid   :: Union{Missing, String}\nsize :: Union{Missing, Array{Int64,1}}\n\n\n\n\n\n"
 },
 
 {
@@ -637,7 +637,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivityAssets",
     "category": "type",
-    "text": "Images and hover text for an Activity. More details here.\n\n\n\n\n\n"
+    "text": "Images and hover text for an Activity. More details here.\n\nFields\n\nlarge_image :: Union{Missing, String}\nlarge_text  :: Union{Missing, String}\nsmall_image :: Union{Missing, String}\nsmall_text  :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -645,7 +645,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivitySecrets",
     "category": "type",
-    "text": "Secrets for Rich Presence joining and spectating of an Activity. More details here.\n\n\n\n\n\n"
+    "text": "Secrets for Rich Presence joining and spectating of an Activity. More details here.\n\nFields\n\njoin     :: Union{Missing, String}\nspectate :: Union{Missing, String}\nmatch    :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -669,7 +669,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Attachment",
     "category": "type",
-    "text": "A Message attachment. More details here.\n\n\n\n\n\n"
+    "text": "A Message attachment. More details here.\n\nFields\n\nid        :: UInt64\nfilename  :: String\nsize      :: Int64\nurl       :: String\nproxy_url :: String\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
 },
 
 {
@@ -677,7 +677,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.AuditLog",
     "category": "type",
-    "text": "An audit log. More details here.\n\n\n\n\n\n"
+    "text": "An audit log. More details here.\n\nFields\n\nwebhooks          :: Array{Webhook,1}\nusers             :: Array{User,1}\naudit_log_entries :: Array{AuditLogEntry,1}\n\n\n\n\n\n"
 },
 
 {
@@ -685,7 +685,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.AuditLogEntry",
     "category": "type",
-    "text": "An entry in an AuditLog. More details here.\n\n\n\n\n\n"
+    "text": "An entry in an AuditLog. More details here.\n\nFields\n\ntarget_id   :: Union{Nothing, UInt64}\nchanges     :: Union{Missing, Array{AuditLogChange,1}}\nuser_id     :: UInt64\nid          :: UInt64\naction_type :: ActionType\noptions     :: Union{Missing, AuditLogOptions}\nreason      :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -693,7 +693,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.AuditLogChange",
     "category": "type",
-    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\nFields\n\nnew_value :: Union{Missing, T} where T\nold_value :: Union{Missing, T} where T\nkey       :: String\ntype      :: Type{U} where U\n\n\n\n\n\n"
 },
 
 {
@@ -701,7 +701,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.AuditLogOptions",
     "category": "type",
-    "text": "Optional information in an AuditLogEntry.\n\n\n\n\n\n"
+    "text": "Optional information in an AuditLogEntry.\n\nFields\n\ndelete_member_days :: Union{Missing, String}\nmembers_removed    :: Union{Missing, String}\nchannel_id         :: Union{Missing, UInt64}\ncount              :: Union{Missing, String}\nid                 :: Union{Missing, UInt64}\ntype               :: Union{Missing, String}\nrole_name          :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -717,7 +717,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Ban",
     "category": "type",
-    "text": "A User ban. More details here.\n\n\n\n\n\n"
+    "text": "A User ban. More details here.\n\nFields\n\nreason :: Union{Nothing, String}\nuser   :: User\n\n\n\n\n\n"
 },
 
 {
@@ -725,7 +725,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.DiscordChannel",
     "category": "type",
-    "text": "A Discord channel. More details here. Note: The name Channel is already used, hence the prefix.\n\n\n\n\n\n"
+    "text": "A Discord channel. More details here. Note: The name Channel is already used, hence the prefix.\n\nFields\n\nid                    :: UInt64\ntype                  :: ChannelType\nguild_id              :: Union{Missing, UInt64}\nposition              :: Union{Missing, Int64}\npermission_overwrites :: Union{Missing, Array{Overwrite,1}}\nname                  :: Union{Missing, String}\ntopic                 :: Union{Missing, Nothing, String}\nnsfw                  :: Union{Missing, Bool}\nlast_message_id       :: Union{Missing, Nothing, UInt64}\nbitrate               :: Union{Missing, Int64}\nuser_limit            :: Union{Missing, Int64}\nrate_limit_per_user   :: Union{Missing, Int64}\nrecipients            :: Union{Missing, Array{User,1}}\nicon                  :: Union{Missing, Nothing, String}\nowner_id              :: Union{Missing, UInt64}\napplication_id        :: Union{Missing, UInt64}\nparent_id             :: Union{Missing, Nothing, UInt64}\nlast_pin_timestamp    :: Union{Missing, Nothing, DateTime}\n\n\n\n\n\n"
 },
 
 {
@@ -741,7 +741,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Connection",
     "category": "type",
-    "text": "<<<<<<< HEAD A User Connection. ======= A User connection to an external service (Twitch, YouTube, etc.).\n\nmaster\n\nMore details here.\n\n\n\n\n\n"
+    "text": "A User connection to an external service (Twitch, YouTube, etc.). More details here.\n\nFields\n\nid           :: String\nname         :: String\ntype         :: String\nrevoked      :: Bool\nintegrations :: Array{Integration,1}\n\n\n\n\n\n"
 },
 
 {
@@ -749,7 +749,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Embed",
     "category": "type",
-    "text": "A Message embed. More details here.\n\n\n\n\n\n"
+    "text": "A Message embed. More details here.\n\nFields\n\ntitle       :: Union{Missing, String}\ntype        :: Union{Missing, String}\ndescription :: Union{Missing, String}\nurl         :: Union{Missing, String}\ntimestamp   :: Union{Missing, DateTime}\ncolor       :: Union{Missing, Int64}\nfooter      :: Union{Missing, EmbedFooter}\nimage       :: Union{Missing, EmbedImage}\nthumbnail   :: Union{Missing, EmbedThumbnail}\nvideo       :: Union{Missing, EmbedVideo}\nprovider    :: Union{Missing, EmbedProvider}\nauthor      :: Union{Missing, EmbedAuthor}\nfields      :: Union{Missing, Array{EmbedField,1}}\n\n\n\n\n\n"
 },
 
 {
@@ -757,7 +757,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedThumbnail",
     "category": "type",
-    "text": "An Embed\'s thumbnail image information. More details here.\n\n\n\n\n\n"
+    "text": "An Embed\'s thumbnail image information. More details here.\n\nFields\n\nurl       :: Union{Missing, String}\nproxy_url :: Union{Missing, String}\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
 },
 
 {
@@ -765,7 +765,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedVideo",
     "category": "type",
-    "text": "An Embed\'s video information. More details here.\n\n\n\n\n\n"
+    "text": "An Embed\'s video information. More details here.\n\nFields\n\nurl    :: Union{Missing, String}\nheight :: Union{Missing, Int64}\nwidth  :: Union{Missing, Int64}\n\n\n\n\n\n"
 },
 
 {
@@ -773,7 +773,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedImage",
     "category": "type",
-    "text": "An Embed\'s image information. More details here.\n\n\n\n\n\n"
+    "text": "An Embed\'s image information. More details here.\n\nFields\n\nurl       :: Union{Missing, String}\nproxy_url :: Union{Missing, String}\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
 },
 
 {
@@ -781,7 +781,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedProvider",
     "category": "type",
-    "text": "An Embed\'s provider information. More details here.\n\n\n\n\n\n"
+    "text": "An Embed\'s provider information. More details here.\n\nFields\n\nname :: Union{Missing, String}\nurl  :: Union{Missing, Nothing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -789,7 +789,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedAuthor",
     "category": "type",
-    "text": "An Embed\'s author information. More details here.\n\n\n\n\n\n"
+    "text": "An Embed\'s author information. More details here.\n\nFields\n\nname           :: Union{Missing, String}\nurl            :: Union{Missing, String}\nicon_url       :: Union{Missing, String}\nproxy_icon_url :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -797,7 +797,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedFooter",
     "category": "type",
-    "text": "An Embed\'s footer information. More details here.\n\n\n\n\n\n"
+    "text": "An Embed\'s footer information. More details here.\n\nFields\n\ntext           :: String\nicon_url       :: Union{Missing, String}\nproxy_icon_url :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -805,7 +805,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.EmbedField",
     "category": "type",
-    "text": "An Embed field. More details here.\n\n\n\n\n\n"
+    "text": "An Embed field. More details here.\n\nFields\n\nname   :: String\nvalue  :: String\ninline :: Union{Missing, Bool}\n\n\n\n\n\n"
 },
 
 {
@@ -813,7 +813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Emoji",
     "category": "type",
-    "text": "An emoji. More details here.\n\n\n\n\n\n"
+    "text": "An emoji. More details here.\n\nFields\n\nid             :: Union{Nothing, UInt64}\nname           :: String\nroles          :: Union{Missing, Array{UInt64,1}}\nuser           :: Union{Missing, User}\nrequire_colons :: Union{Missing, Bool}\nmanaged        :: Union{Missing, Bool}\nanimated       :: Union{Missing, Bool}\n\n\n\n\n\n"
 },
 
 {
@@ -829,7 +829,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Guild",
     "category": "type",
-    "text": "A guild (server). More details here.\n\n\n\n\n\n"
+    "text": "A guild (server). More details here.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: UInt64\npermissions                   :: Union{Missing, Int64}\nregion                        :: String\nafk_channel_id                :: Union{Nothing, UInt64}\nafk_timeout                   :: Int64\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: MessageNotificationLevel\nexplicit_content_filter       :: ExplicitContentFilterLevel\nroles                         :: Array{Role,1}\nemojis                        :: Array{Emoji,1}\nfeatures                      :: Array{String,1}\nmfa_level                     :: MFALevel\napplication_id                :: Union{Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, UInt64}\nsystem_channel_id             :: Union{Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\n\n\n\n\n\n"
 },
 
 {
@@ -837,7 +837,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.UnavailableGuild",
     "category": "type",
-    "text": "An unavailable guild (server). More details here.\n\n\n\n\n\n"
+    "text": "An unavailable guild (server). More details here.\n\nFields\n\nid          :: UInt64\nunavailable :: Bool\n\n\n\n\n\n"
 },
 
 {
@@ -877,7 +877,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.GuildEmbed",
     "category": "type",
-    "text": "A Guild embed. More details here.\n\n\n\n\n\n"
+    "text": "A Guild embed. More details here.\n\nFields\n\nenabled    :: Bool\nchannel_id :: Union{Nothing, UInt64}\n\n\n\n\n\n"
 },
 
 {
@@ -885,7 +885,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Integration",
     "category": "type",
-    "text": "A Guild integration. More details here.\n\n\n\n\n\n"
+    "text": "A Guild integration. More details here.\n\nFields\n\nid                  :: UInt64\nname                :: String\n_type               :: String\nenabled             :: Bool\nsyncing             :: Bool\nrole_id             :: UInt64\nexpire_behaviour    :: Int64\nexpire_grace_period :: Int64\nuser                :: User\naccount             :: IntegrationAccount\nsynced_at           :: Dates.DateTime\n\n\n\n\n\n"
 },
 
 {
@@ -893,7 +893,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.IntegrationAccount",
     "category": "type",
-    "text": "An Integration account. More details here.\n\n\n\n\n\n"
+    "text": "An Integration account. More details here.\n\nFields\n\nid   :: String\nname :: String\n\n\n\n\n\n"
 },
 
 {
@@ -901,7 +901,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Invite",
     "category": "type",
-    "text": "An invite to a Guild. More details here.\n\n\n\n\n\n"
+    "text": "An invite to a Guild. More details here.\n\nFields\n\ncode                       :: String\nguild                      :: Union{Missing, Guild}\nchannel                    :: DiscordChannel\napproximate_presence_cound :: Union{Missing, Int64}\napproximate_member_count   :: Union{Missing, Int64}\n\n\n\n\n\n"
 },
 
 {
@@ -909,7 +909,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.InviteMetadata",
     "category": "type",
-    "text": "Metadata for an Invite. More details here.\n\n\n\n\n\n"
+    "text": "Metadata for an Invite. More details here.\n\nFields\n\ninviter    :: User\nuses       :: Int64\nmax_uses   :: Int64\nmax_age    :: Int64\ntemporary  :: Bool\ncreated_at :: Dates.DateTime\nrevoked    :: Bool\n\n\n\n\n\n"
 },
 
 {
@@ -917,7 +917,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Member",
     "category": "type",
-    "text": "A Guild member. More details here.\n\n\n\n\n\n"
+    "text": "A Guild member. More details here.\n\nFields\n\nuser      :: Union{Missing, User}\nnick      :: Union{Missing, Nothing, String}\nroles     :: Array{UInt64,1}\njoined_at :: Dates.DateTime\ndeaf      :: Bool\nmute      :: Bool\n\n\n\n\n\n"
 },
 
 {
@@ -925,7 +925,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Message",
     "category": "type",
-    "text": "A message. More details here.\n\n\n\n\n\n"
+    "text": "A message. More details here.\n\nFields\n\nid               :: UInt64\nchannel_id       :: UInt64\nguild_id         :: Union{Missing, UInt64}\nauthor           :: Union{Missing, User}\nmember           :: Union{Missing, Member}\ncontent          :: Union{Missing, String}\ntimestamp        :: Union{Missing, DateTime}\nedited_timestamp :: Union{Missing, Nothing, DateTime}\ntts              :: Union{Missing, Bool}\nmention_everyone :: Union{Missing, Bool}\nmentions         :: Union{Missing, Array{User,1}}\nmention_roles    :: Union{Missing, Array{UInt64,1}}\nattachments      :: Union{Missing, Array{Attachment,1}}\nembeds           :: Union{Missing, Array{Embed,1}}\nreactions        :: Union{Missing, Array{Reaction,1}}\nnonce            :: Union{Missing, Nothing, UInt64}\npinned           :: Union{Missing, Bool}\nwebhook_id       :: Union{Missing, UInt64}\ntype             :: Union{Missing, MessageType}\nactivity         :: Union{Missing, MessageActivity}\napplication      :: Union{Missing, MessageApplication}\n\n\n\n\n\n"
 },
 
 {
@@ -933,7 +933,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.MessageActivity",
     "category": "type",
-    "text": "A Message activity. More details here.\n\n\n\n\n\n"
+    "text": "A Message activity. More details here.\n\nFields\n\ntype     :: MessageActivityType\nparty_id :: Union{Missing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -941,7 +941,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.MessageApplication",
     "category": "type",
-    "text": "A Rich Presence Message\'s application information. More details here.\n\n\n\n\n\n"
+    "text": "A Rich Presence Message\'s application information. More details here.\n\nFields\n\nid          :: UInt64\ncover_image :: String\ndescription :: String\nicon        :: String\nname        :: String\n\n\n\n\n\n"
 },
 
 {
@@ -965,7 +965,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Overwrite",
     "category": "type",
-    "text": "A permission overwrite. More details here.\n\n\n\n\n\n"
+    "text": "A permission overwrite. More details here.\n\nFields\n\nid    :: UInt64\ntype  :: String\nallow :: Int64\ndeny  :: Int64\n\n\n\n\n\n"
 },
 
 {
@@ -973,7 +973,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Presence",
     "category": "type",
-    "text": "A User\'s presence. More details here.\n\n\n\n\n\n"
+    "text": "A User\'s presence. More details here.\n\nFields\n\nuser       :: User\nroles      :: Union{Missing, Array{UInt64,1}}\ngame       :: Union{Nothing, Activity}\nguild_id   :: Union{Missing, UInt64}\nstatus     :: PresenceStatus\nactivities :: Array{Activity,1}\n\n\n\n\n\n"
 },
 
 {
@@ -989,7 +989,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Reaction",
     "category": "type",
-    "text": "A Message reaction. More details here.\n\n\n\n\n\n"
+    "text": "A Message reaction. More details here.\n\nFields\n\ncount :: Int64\nme    :: Bool\nemoji :: Emoji\n\n\n\n\n\n"
 },
 
 {
@@ -997,7 +997,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Role",
     "category": "type",
-    "text": "A User role. More details here.\n\n\n\n\n\n"
+    "text": "A User role. More details here.\n\nFields\n\nid          :: UInt64\nname        :: String\ncolor       :: Int64\nhoist       :: Bool\nposition    :: Int64\npermissions :: Int64\nmanaged     :: Bool\nmentionable :: Bool\n\n\n\n\n\n"
 },
 
 {
@@ -1005,7 +1005,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.User",
     "category": "type",
-    "text": "A Discord user. More details here.\n\n\n\n\n\n"
+    "text": "A Discord user. More details here.\n\nFields\n\nid            :: UInt64\nusername      :: Union{Missing, String}\ndiscriminator :: Union{Missing, String}\navatar        :: Union{Missing, Nothing, String}\nbot           :: Union{Missing, Bool}\nmfa_enabled   :: Union{Missing, Bool}\nlocale        :: Union{Missing, String}\nverified      :: Union{Missing, Bool}\nemail         :: Union{Missing, Nothing, String}\n\n\n\n\n\n"
 },
 
 {
@@ -1013,7 +1013,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.VoiceRegion",
     "category": "type",
-    "text": "A region for a Guild\'s voice server. More details here.\n\n\n\n\n\n"
+    "text": "A region for a Guild\'s voice server. More details here.\n\nFields\n\nid         :: String\nname       :: String\nvip        :: Bool\noptimal    :: Bool\ndeprecated :: Bool\ncustom     :: Bool\n\n\n\n\n\n"
 },
 
 {
@@ -1021,7 +1021,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.VoiceState",
     "category": "type",
-    "text": "A User\'s voice connection status. More details here.\n\n\n\n\n\n"
+    "text": "A User\'s voice connection status. More details here.\n\nFields\n\nguild_id   :: Union{Missing, UInt64}\nchannel_id :: Union{Nothing, UInt64}\nuser_id    :: UInt64\nmember     :: Union{Missing, Member}\nsession_id :: String\ndeaf       :: Bool\nmute       :: Bool\nself_deaf  :: Bool\nself_mute  :: Bool\nsuppress   :: Bool\n\n\n\n\n\n"
 },
 
 {
@@ -1029,7 +1029,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Webhook",
     "category": "type",
-    "text": "A Webhook. More details here.\n\n\n\n\n\n"
+    "text": "A Webhook. More details here.\n\nFields\n\nid         :: UInt64\nguild_id   :: Union{Missing, UInt64}\nchannel_id :: UInt64\nuser       :: Union{Missing, User}\nname       :: Union{Nothing, String}\navatar     :: Union{Nothing, String}\ntoken      :: String\n\n\n\n\n\n"
 },
 
 {
@@ -1037,7 +1037,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 ]}
