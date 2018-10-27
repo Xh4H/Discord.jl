@@ -550,26 +550,29 @@ function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate
     else
         c.state.guilds[e.guild.id] = e.guild
     end
-    for ch in e.guild.channels
-        insert_or_update(c.state.channels, ch.id, ch)
-    end
-
-    if !haskey(c.state.members, e.guild.id)
-        c.state.members[e.guild.id] = TTL(c.ttl)
-    end
-    ms = c.state.members[e.guild.id]
-    for m in e.guild.members
-        if ismissing(m.user)
-            if !haskey(ms, missing)
-                ms[missing] = []
-            end
-            push!(ms[missing], m)
-        else
-            insert_or_update(ms, m.user.id, m)
-            insert_or_update(c.state.users, m.user.id, m.user)
+    if !ismissing(e.guild.channels)
+        for ch in e.guild.channels
+            insert_or_update(c.state.channels, ch.id, ch)
         end
     end
 
+    if !ismissing(e.guild.members)
+        if !haskey(c.state.members, e.guild.id)
+            c.state.members[e.guild.id] = TTL(c.ttl)
+        end
+        ms = c.state.members[e.guild.id]
+        for m in e.guild.members
+            if ismissing(m.user)
+                if !haskey(ms, missing)
+                    ms[missing] = []
+                end
+                push!(ms[missing], m)
+            else
+                insert_or_update(ms, m.user.id, m)
+                insert_or_update(c.state.users, m.user.id, m.user)
+            end
+        end
+    end
 end
 
 function handle_guild_delete(c::Client, e::GuildDelete)
@@ -841,8 +844,7 @@ end
 
 function readjson(io)
     return try
-        json = read(io)
-        JSON.parse(String(json)), nothing
+        JSON.parse(String(read(io))), nothing
     catch e
         nothing, e
     end
