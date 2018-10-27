@@ -3,7 +3,7 @@ module Defaults
 export handler
 
 using Discord
-using Discord: Guild, insert_or_update
+using Discord: Guild, Member, Reaction, insert_or_update, locked
 using TimeToLive
 
 function handler(c::Client, e::Ready)
