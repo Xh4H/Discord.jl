@@ -17,5 +17,7 @@ include("state.jl")
 include("limiter.jl")
 include("client.jl")
 include("rest.jl")
+include("commands.jl")
+include("Defaults.jl")
 
 end

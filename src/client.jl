@@ -4,8 +4,6 @@ export LIMIT_IGNORE,
     me,
     add_handler!,
     delete_handler!,
-    clear_handlers!,
-    add_command!,
     request_guild_members,
     update_voice_status,
     update_status
@@ -81,8 +79,8 @@ new application. Once you've created a bot user, you will have access to its tok
 By default, most data that comes from Discord is cached for later use. However, to avoid
 memory leakage, it's deleted after some time (determined by the `ttl` keyword). Although
 it's not recommended, you can also disable caching of certain data by clearing default
-handlers for relevant event types with [`clear_handlers!`](@ref). For example, if you
-wanted to avoid caching any messages, you would clear handlers for [`MessageCreate`](@ref)
+handlers for relevant event types with [`delete_handler!`](@ref). For example, if you
+wanted to avoid caching any messages, you would delete handlers for [`MessageCreate`](@ref)
 and [`MessageUpdate`](@ref) events.
 
 # Rate Limiting
@@ -121,24 +119,26 @@ mutable struct Client
         version::Int=API_VERSION,
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
-        return new(
-            token,                            # token
-            0,                                # heartbeat_interval
-            nothing,                          # heartbeat_seq
-            DateTime(0),                      # last_heartbeat
-            DateTime(0),                      # last_ack
-            ttl,                              # ttl
-            version,                          # version
-            State(ttl),                       # state
-            nprocs(),                         # shards
-            myid() - 1,                       # shard
-            Limiter(),                        # limiter
-            on_limit,                         # on_limit
-            copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
-            false,                            # ready
-            Threads.SpinLock(),               # lock
+        c = new(
+            token,               # token
+            0,                   # heartbeat_interval
+            nothing,             # heartbeat_seq
+            DateTime(0),         # last_heartbeat
+            DateTime(0),         # last_ack
+            ttl,                 # ttl
+            version,             # version
+            State(ttl),          # state
+            nprocs(),            # shards
+            myid() - 1,          # shard
+            Limiter(),           # limiter
+            on_limit,            # on_limit
+            Dict(),              # handlers
+            false,               # ready
+            Threads.SpinLock(),  # lock
             # conn left undef, it gets assigned in open.
         )
+        add_handler!(c, Defaults)
+        return c
     end
 end
 
@@ -337,10 +337,9 @@ end
         expiry::Union{Int, Period}=-1,
     )
 
-Add a handler for an event type.
-The handler should be a function which takes two arguments: A [`Client`](@ref) and an
-[`AbstractEvent`](@ref) (or a subtype).
-The handler is appended the event's current handlers.
+Add an event handler. The handler should be a function which takes two arguments: A
+[`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). The handler is appended to
+the event's current handlers.
 
 # Keywords
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
@@ -376,54 +375,36 @@ function add_handler!(
 end
 
 """
-    delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
+    add_handler!(c::Client, m::Module)
 
-Delete a single handler by event type and tag.
+Add all of the event handlers defined in a module. Any function you wish to use as a
+handler must be exported. Only functions with correct type signatures (see above) are used.
 """
-function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
-    filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
+function add_handler!(c::Client, m::Module)
+    # TODO: This is super hacky and relies on internal struct fields which is ugly.
+    for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
+        for m in methods(f).ms
+            ts = m.sig.types[2:end]
+            length(m.sig.types) == 3 || continue
+            if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
+                add_handler!(c, m.sig.types[3], f)
+            end
+        end
+    end
 end
 
 """
-    clear_handlers!(c::Client, evt::Type{<:AbstractEvent})
+    delete_handler!(c::Client, evt::Type{<:AbstractEvent})
+    delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
 
-Remove all handlers for an event type. Using this is generally not recommended
-because it also clears default handlers which maintain the client state. Instead, it's
-preferred add handlers with specific tags and delete them with [`delete_handler!`](@ref).
+Delete event handlers. If no `tag` is supplied, all handlers for the event are deleted.
+Using the tagless method is generally not recommended because it also clears default
+handlers which maintain the client state.
 """
-clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, event)
+delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt)
 
-"""
-    add_command!(
-        c::Client,
-        prefix::AbstractString,
-        func::Function;
-        tag::Symbol=gensym(),
-        expiry::Union{Int, Period}=-1
-    )
-
-Add a text command handler. The handler function should take two arguments: A
-[`Client`](@ref) and a [`Message`](@ref). The keyword arguments are identical to
-[`add_handler!`](@ref).
-"""
-function add_command!(
-    c::Client,
-    prefix::AbstractString,
-    func::Function;
-    tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1,
-)
-    if !hasmethod(func, (Client, Message))
-        error("Handler function must accept (::Client, ::Message")
-    end
-
-    function handler(c::Client, e::MessageCreate)
-        e.message.author.id == me(c).id && return
-        startswith(e.message.content, prefix) || return
-        func(c, e.message)
-    end
-
-    add_handler!(c, MessageCreate, handler; tag=tag, expiry=expiry)
+function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
+    filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
 end
 
 # Client maintenance.
@@ -531,265 +512,6 @@ const HANDLERS = Dict(
     9   => invalid_session,
     10  => hello,
     11  => heartbeat_ack,
-)
-
-# Default dispatch event handlers.
-# Note: These are only for opcode 0 (DISPATCH).
-
-handle_ready(c::Client, e::Ready) = ready(c.state, e)
-
-handle_resumed(c::Client, e::Resumed) = c.state._trace = e._trace
-
-function handle_channel_create_update(c::Client, e::Union{ChannelCreate, ChannelUpdate})
-    insert_or_update(c.state.channels, e.channel.id, e.channel)
-end
-
-handle_channel_delete(c::Client, e::ChannelDelete) = delete!(c.state.channels, e.channel.id)
-
-function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate})
-    if get(c.state.guilds, e.guild.id, nothing) isa Guild
-        insert_or_update(c.state.guilds, e.guild.id, e.guild)
-    else
-        c.state.guilds[e.guild.id] = e.guild
-    end
-
-    if !ismissing(e.guild.channels)
-        for ch in e.guild.channels
-            insert_or_update(c.state.channels, ch.id, ch)
-        end
-    end
-
-    if !ismissing(e.guild.members)
-        if !haskey(c.state.members, e.guild.id)
-            c.state.members[e.guild.id] = TTL(c.ttl)
-        end
-
-        ms = c.state.members[e.guild.id]
-
-        for m in e.guild.members
-            if ismissing(m.user)
-                if !haskey(ms, missing)
-                    ms[missing] = []
-                end
-                push!(ms[missing], m)
-            else
-                insert_or_update(ms, m.user.id, m)
-                insert_or_update(c.state.users, m.user.id, m.user)
-            end
-        end
-    end
-end
-
-function handle_guild_delete(c::Client, e::GuildDelete)
-    delete!(c.state.guilds, e.id)
-    delete!(c.state.members, e.id)
-    delete!(c.state.presences, e.id)
-end
-
-function handle_guild_emojis_update(c::Client, e::GuildEmojisUpdate)
-    haskey(c.state.guilds, e.guild_id) || return
-    c.state.guilds[e.guild_id] isa Guild || return
-
-    es = c.state.guilds[e.guild_id].emojis
-    empty!(es)
-    append!(es, e.emojis)
-end
-
-function handle_guild_member_add(c::Client, e::GuildMemberAdd)
-    if !haskey(c.state.members, e.guild_id)
-        c.state.members[e.guild_id] = TTL(c.ttl)
-    end
-
-    ms = c.state.members[e.guild_id]
-
-    if ismissing(e.member.user)
-        if !haskey(ms, missing)
-            ms[missing] = []
-        end
-        touch(ms, missing)
-        push!(ms[missing], e.member)
-    else
-        ms[e.member.user.id] = e.member
-        insert_or_update(c.state.users, e.member.user.id, e.member.user)
-    end
-end
-
-function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
-    haskey(c.state.members, e.guild_id) || return
-    haskey(c.state.members[e.guild_id], e.user.id) || return
-
-    ms = c.state.members[e.guild_id]
-    m = ms[e.user.id]
-    ms[e.user.id] = Member(
-        e.user,
-        e.nick,
-        e.roles,
-        m.joined_at,
-        m.deaf,
-        m.mute,
-    )
-
-    insert_or_update(c.state.users, e.user.id, e.user)
-end
-
-function handle_guild_member_remove(c::Client, e::GuildMemberRemove)
-    haskey(c.state.members, e.guild_id) || return
-    delete!(c.state.members[e.guild_id], e.user.id)
-end
-
-function handle_guild_members_chunk(c::Client, e::GuildMembersChunk)
-    if !haskey(c.state.members, e.guild_id)
-        c.state.members[e.guild_id] = TTL(c.ttl)
-    end
-
-    ms = c.state.members[e.guild_id]
-
-    for m in e.members
-        if ismissing(m.user)
-            if !haskey(ms, missing)
-                ms[missing] = []
-            end
-
-            touch(ms, missing)
-            push!(ms[missing], m)
-        else
-            insert_or_update(ms, m.user.id, m)
-            insert_or_update(c.state.users, m.user.id, m.user)
-        end
-    end
-end
-
-function handle_guild_role_create(c::Client, e::GuildRoleCreate)
-    haskey(c.state.guilds, e.guild_id) || return
-    isa(c.state.guilds[e.guild_id], Guild) || return
-    push!(c.state.guilds[e.guild_id].roles, e.role)
-end
-
-function handle_guild_role_update(c::Client, e::GuildRoleUpdate)
-    haskey(c.state.guilds, e.guild_id) || return
-    isa(c.state.guilds[e.guild_id], Guild) || return
-
-    rs = c.state.guilds[e.guild_id].roles
-    idx = findfirst(r -> r.id == e.role.id, rs)
-    role = if idx !== nothing
-        r = merge(rs[idx], e.role)
-        deleteat!(rs, idx)
-        r
-    else
-        e.role
-    end
-
-    push!(rs, role)
-end
-
-function handle_guild_role_delete(c::Client, e::GuildRoleDelete)
-    haskey(c.state.guilds, e.guild_id) || return
-    isa(c.state.guilds[e.guild_id], Guild) || return
-
-    rs = c.state.guilds[e.guild_id].roles
-    idx = findfirst(r -> r.id == e.role_id, rs)
-    idx === nothing || deleteat!(rs, idx)
-end
-
-function handle_message_create_update(c::Client, e::Union{MessageCreate, MessageUpdate})
-    insert_or_update(c.state.messages, e.message.id, e.message)
-end
-
-handle_message_delete(c::Client, e::MessageDelete) = delete!(c.state.messages, e.id)
-
-function handle_message_delete_bulk(c::Client, e::MessageDeleteBulk)
-    for id in e.ids
-        delete!(c.state.messages, id)
-    end
-end
-
-function handle_presence_update(c::Client, e::PresenceUpdate)
-    if !haskey(c.state.presences, e.presence.guild_id)
-        c.state.presences[e.presence.guild_id] = TTL(c.ttl)
-    end
-
-    insert_or_update(c.state.presences[e.presence.guild_id], e.presence.user.id, e.presence)
-end
-
-function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
-    haskey(c.state.messages, e.message_id) || return
-
-    locked(c) do
-        touch(c.state.messages, e.message_id)
-
-        m = c.state.messages[e.message_id]
-
-        if ismissing(m.reactions)
-            m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
-        else
-            idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
-
-            if idx === nothing
-                push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
-            else
-                m.reactions[idx].count += 1
-                m.reactions[idx].me |= e.user_id == c.state.user.id
-            end
-        end
-    end
-end
-
-function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
-    haskey(c.state.messages, e.message_id) || return
-    ismissing(c.state.messages[e.message_id].reactions) && return
-
-    locked(c) do
-        touch(c.state.messages, e.message_id)
-
-        rs = c.state.messages[e.message_id].reactions
-        idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
-
-        if idx !== nothing
-            if rs[idx].count == 1
-                deleteat!(rs, idx)
-            else
-                rs[idx].count -= 1
-                rs[idx].me &= e.user_id != c.state.user.id
-            end
-        end
-    end
-end
-
-function handle_message_reaction_remove_all(c::Client, e::MessageReactionRemoveAll)
-    haskey(c.state.messages, e.message_id) || return
-    ismissing(c.state.messages[e.message_id].reactions) && return
-
-    locked(c) do
-        touch(c.state.messages, e.message_id)
-        empty!(c.state.messages[e.message_id].reactions)
-    end
-end
-
-const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Handler}}(
-    Ready                    => Set([Handler(handle_ready)]),
-    Resumed                  => Set([Handler(handle_resumed)]),
-    ChannelCreate            => Set([Handler(handle_channel_create_update)]),
-    ChannelUpdate            => Set([Handler(handle_channel_create_update)]),
-    ChannelDelete            => Set([Handler(handle_channel_delete)]),
-    GuildCreate              => Set([Handler(handle_guild_create_update)]),
-    GuildUpdate              => Set([Handler(handle_guild_create_update)]),
-    GuildDelete              => Set([Handler(handle_guild_delete)]),
-    GuildEmojisUpdate        => Set([Handler(handle_guild_emojis_update)]),
-    GuildMemberAdd           => Set([Handler(handle_guild_member_add)]),
-    GuildMemberUpdate        => Set([Handler(handle_guild_member_update)]),
-    GuildMemberRemove        => Set([Handler(handle_guild_member_remove)]),
-    GuildMembersChunk        => Set([Handler(handle_guild_members_chunk)]),
-    GuildRoleCreate          => Set([Handler(handle_guild_role_create)]),
-    GuildRoleUpdate          => Set([Handler(handle_guild_role_update)]),
-    GuildRoleDelete          => Set([Handler(handle_guild_role_delete)]),
-    MessageCreate            => Set([Handler(handle_message_create_update)]),
-    MessageUpdate            => Set([Handler(handle_message_create_update)]),
-    MessageDelete            => Set([Handler(handle_message_delete)]),
-    MessageDeleteBulk        => Set([Handler(handle_message_delete_bulk)]),
-    MessageReactionAdd       => Set([Handler(handle_message_reaction_add)]),
-    MessageReactionRemove    => Set([Handler(handle_message_reaction_remove)]),
-    MessageReactionRemoveAll => Set([Handler(handle_message_reaction_remove_all)]),
-    PresenceUpdate           => Set([Handler(handle_presence_update)]),
 )
 
 # Error handling.

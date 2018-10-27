@@ -35,6 +35,20 @@ Discord.eval(:(
 ))
 using Discord: Foo
 
+# A module with event handlers.
+module Handlers
+
+export a, b
+
+using Discord
+
+a(::Client, ::AbstractEvent) = nothing
+a(::Client, ::TypingStart) = nothing
+b(::Client, ::WebhookUpdate) = nothing
+c(::Client, ::WebhookUpdate) = nothing
+
+end
+
 @testset "Discord.jl" begin
     @testset "Client token" begin
         c = Client("token")
@@ -143,29 +157,43 @@ using Discord: Foo
         g(c, e) = nothing
         c = Client("token")
 
-        clear_handlers!(c, MessageCreate)
+        # Deleting handlers without a tag clears all handlers for that type.
+        delete_handler!(c, MessageCreate)
         @test !haskey(c.handlers, MessageCreate)
 
         # Adding handlers without a tag means we can have duplicates.
         add_handler!(c, MessageCreate, f)
         add_handler!(c, MessageCreate, f)
         @test length(get(c.handlers, MessageCreate, [])) == 2
-        clear_handlers!(c, MessageCreate)
+        delete_handler!(c, MessageCreate)
 
         # Using tags prevents duplicates.
         add_handler!(c, MessageCreate, f; tag=:f)
         add_handler!(c, MessageCreate, f; tag=:f)
         @test length(get(c.handlers, MessageCreate, [])) == 1
 
-        # With tags, we can delete handlers.
+        # With tags, we can delete specific handlers.
         add_handler!(c, MessageCreate, g; tag=:g)
         @test length(get(c.handlers, MessageCreate, [])) == 2
         delete_handler!(c, MessageCreate, :g)
         @test length(get(c.handlers, MessageCreate, [])) == 1
         @test first(collect(c.handlers[MessageCreate])).f == f
 
+        # We can also add handlers from a module.
+        add_handler!(c, Handlers)
+        @test length(get(c.handlers, AbstractEvent, [])) == 1
+        @test length(get(c.handlers, TypingStart, [])) == 1
+        # Only exported functions are considered.
+        @test length(get(c.handlers, WebhookUpdate, [])) == 1
+        @test first(collect(c.handlers[WebhookUpdate])).f == Handlers.b
+    end
+
+    @testset "Bot commands" begin
+        f(c, e) = nothing
+        c = Client("token")
+
         # Adding commands adds to the MessageCreate handlers.
-        clear_handlers!(c, MessageCreate)
+        delete_handler!(c, MessageCreate)
         h(c, m) = nothing
         add_command!(c, "!test", h)
         @test length(get(c.handlers, MessageCreate, [])) == 1

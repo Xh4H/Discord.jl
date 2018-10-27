@@ -17,9 +17,13 @@ me
 
 ```@docs
 add_handler!
-add_command!
 delete_handler!
-clear_handlers!
+```
+
+## Bot Commands
+
+```@docs
+add_command!
 ```
 
 ## Gateway Commands
