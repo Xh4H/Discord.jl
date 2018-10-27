@@ -17,6 +17,7 @@ mutable struct State
     # Note: the vector of members with missing user IDs is treated as a single object
     # by the TTL, so they'll all be cleared at the same time.
     members::Dict{Snowflake, TTL{Union{Snowflake, Missing}, Union{Member, Vector{Member}}}}
+    lock::Threads.AbstractLock
 end
 
 function State(ttl::Period)
@@ -30,7 +31,7 @@ function State(ttl::Period)
         TTL(ttl),  # users
         TTL(ttl),  # messages
         Dict(),    # presences
-        Dict()     # members
+        Threads.SpinLock(),  # lock
     )
 end
 
@@ -43,7 +44,7 @@ function ready(s::State, e::Ready)
     for c in e.private_channels
         s.channels[e.id] = haskey(s.channels, e.id) ? merge(s.channels[e.id], e) : e
     end
-    
+
     for g in e.guilds
         # Don't merge here because these guilds are unavailable.
         if !haskey(s.guilds, g.id)

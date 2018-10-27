@@ -174,7 +174,7 @@ end
 function handler(c::Client, e::MessageReactionAdd)
     haskey(c.state.messages, e.message_id) || return
 
-    locked(c) do
+    locked(c.state.lock) do
         touch(c.state.messages, e.message_id)
         m = c.state.messages[e.message_id]
         if ismissing(m.reactions)
@@ -195,7 +195,7 @@ function handler(c::Client, e::MessageReactionRemove)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
-    locked(c) do
+    locked(c.state.lock) do
         touch(c.state.messages, e.message_id)
         rs = c.state.messages[e.message_id].reactions
         idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
@@ -214,7 +214,7 @@ function handler(c::Client, e::MessageReactionRemoveAll)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
-    locked(c) do
+    locked(c.state.lock) do
         touch(c.state.messages, e.message_id)
         empty!(c.state.messages[e.message_id].reactions)
     end

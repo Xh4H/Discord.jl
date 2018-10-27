@@ -1,6 +1,4 @@
-export LIMIT_IGNORE,
-    LIMIT_WAIT,
-    Client,
+export Client,
     me,
     add_handler!,
     delete_handler!,
@@ -29,14 +27,6 @@ const OPCODES = Dict(
     11 => :HEARTBEAT_ACK,
 )
 
-"""
-Passed as a keyword argument to [`Client`](@ref) to determine the client's behaviour when
-it hits a rate limit. If set to `LIMIT_IGNORE`, a [`Response`](@ref) is returned
-immediately with `rate_limited` set to `true`. If set to `LIMIT_WAIT`, the client blocks
-until the rate limit resets, then retries the request.
-"""
-@enum OnLimit LIMIT_IGNORE LIMIT_WAIT
-
 mutable struct Handler
     f::Function
     tag::Symbol
@@ -54,12 +44,7 @@ struct Conn
 end
 
 """
-    Client(
-        token::String;
-        on_limit::OnLimit=LIMIT_IGNORE,
-        ttl::Period=Hour(1),
-        version::Int=$API_VERSION,
-     ) -> Client
+    Client(token::String; ttl::Period=Hour(1), version::Int=$API_VERSION) -> Client
 
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
@@ -68,8 +53,6 @@ To get a bot token, head [here](https://discordapp.com/developers/applications) 
 new application. Once you've created a bot user, you will have access to its token.
 
 # Keywords
-- `on_limit::OnLimit=LIMIT_IGNORE`: Client's behaviour when it hits a rate limit (see "Rate
-  Limiting" below for more details).
 - `ttl::Period=Hour(1)` Amount of time that cache entries are kept (see "Caching" below for
   more details).
 - `version::Int=$API_VERSION`: Version of the Discord API to use. Using anything but
@@ -82,11 +65,6 @@ it's not recommended, you can also disable caching of certain data by clearing d
 handlers for relevant event types with [`delete_handler!`](@ref). For example, if you
 wanted to avoid caching any messages, you would delete handlers for [`MessageCreate`](@ref)
 and [`MessageUpdate`](@ref) events.
-
-# Rate Limiting
-Discord enforces rate limits on usage of its REST API. This  means you can  only send so
-many messages in a given period, and so on. To customize the client's behaviour when
-encountering rate limits, use the `on_limit` keyword and see [`OnLimit`](@ref).
 
 # Sharding
 Sharding is handled automatically: The number of available processes is the number of
@@ -106,35 +84,26 @@ mutable struct Client
     shards::Int                 # Number of shards in use.
     shard::Int                  # Client's shard index.
     limiter::Limiter            # Rate limiter.
-    on_limit::OnLimit           # Rate limit behaviour.
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
     ready::Bool                 # Client is connected and authenticated.
-    lock::Threads.AbstractLock  # Mutex for various tasks.
     conn::Conn                  # WebSocket connection.
 
-    function Client(
-        token::String;
-        on_limit::OnLimit=LIMIT_IGNORE,
-        ttl::Period=Hour(1),
-        version::Int=API_VERSION,
-    )
+    function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION)
         token = startswith(token, "Bot ") ? token : "Bot $token"
         c = new(
-            token,               # token
-            0,                   # heartbeat_interval
-            nothing,             # heartbeat_seq
-            DateTime(0),         # last_heartbeat
-            DateTime(0),         # last_ack
-            ttl,                 # ttl
-            version,             # version
-            State(ttl),          # state
-            nprocs(),            # shards
-            myid() - 1,          # shard
-            Limiter(),           # limiter
-            on_limit,            # on_limit
-            Dict(),              # handlers
-            false,               # ready
-            Threads.SpinLock(),  # lock
+            token,        # token
+            0,            # heartbeat_interval
+            nothing,      # heartbeat_seq
+            DateTime(0),  # last_heartbeat
+            DateTime(0),  # last_ack
+            ttl,          # ttl
+            version,      # version
+            State(ttl),   # state
+            nprocs(),     # shards
+            myid() - 1,   # shard
+            Limiter(),    # limiter
+            Dict(),       # handlers
+            false,        # ready
             # conn left undef, it gets assigned in open.
         )
         add_handler!(c, Defaults)
@@ -594,12 +563,12 @@ function closecode(e::WebSocketClosedError)
     return m === nothing ? nothing : parse(Int, String(first(m.captures)))
 end
 
-function locked(f::Function, c::Client)
-    lock(c.lock)
+function locked(f::Function, l::Threads.AbstractLock)
+    lock(l)
     try
         f()
     finally
-        unlock(c.lock)
+        unlock(l)
     end
 end
 
