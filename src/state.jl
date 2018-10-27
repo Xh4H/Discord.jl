@@ -34,21 +34,3 @@ function State(ttl::Period)
         Threads.SpinLock(),  # lock
     )
 end
-
-function ready(s::State, e::Ready)
-    s.v = e.v
-    s.session_id = e.session_id
-    s._trace = e._trace
-    s.user = e.user
-
-    for c in e.private_channels
-        s.channels[e.id] = haskey(s.channels, e.id) ? merge(s.channels[e.id], e) : e
-    end
-
-    for g in e.guilds
-        # Don't merge here because these guilds are unavailable.
-        if !haskey(s.guilds, g.id)
-            s.guilds[g.id] = g
-        end
-    end
-end

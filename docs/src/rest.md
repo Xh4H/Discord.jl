@@ -8,12 +8,6 @@ CurrentModule = Discord
 Response
 ```
 
-## Rate Limiting
-
-```@docs
-OnLimit
-```
-
 ## Endpoints
 
 ```@docs

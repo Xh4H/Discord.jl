@@ -3,8 +3,25 @@ module Defaults
 export handler
 
 using Discord
+using Discord: Guild, insert_or_update
+using TimeToLive
 
-handler(c::Client, e::Ready) = ready(c.state, e)
+function handler(c::Client, e::Ready)
+    c.state.v = e.v
+    c.state.session_id = e.session_id
+    c.state._trace = e._trace
+    c.state.user = e.user
+
+    for c in e.private_channels
+        insert_or_update(c.state.channels, e.id, c)
+    end
+    for g in e.guilds
+        # Don't merge here because these guilds are unavailable.
+        if !haskey(c.state.guilds, g.id)
+            c.state.guilds[g.id] = g
+        end
+    end
+end
 
 handler(c::Client, e::Resumed) = c.state._trace = e._trace
 

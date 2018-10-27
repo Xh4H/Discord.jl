@@ -308,7 +308,8 @@ end
 
 Add an event handler. The handler should be a function which takes two arguments: A
 [`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). The handler is appended to
-the event's current handlers.
+the event's current handlers. You can also define a single handler for multuple event types
+by using a `Union`.
 
 # Keywords
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
@@ -328,6 +329,12 @@ function add_handler!(
     tag::Symbol=gensym(),
     expiry::Union{Int, Period}=-1,
 )
+    if evt isa Union
+        add_handler!(c, evt.a, func; tag=tag, expiry=expiry)
+        add_handler!(c, evt.b, func; tag=tag, expiry=expiry)
+        return
+    end
+
     if !hasmethod(func, (Client, evt))
         error("Handler function must accept (::Client, ::$evt)")
     end
@@ -380,6 +387,8 @@ end
 
 function heartbeat_loop(c::Client)
     v = c.conn.v
+    sleep(rand(1:round(Int, c.heartbeat_interval / 1000)))
+    heartbeat(c) || logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
 
     while c.conn.v == v && isopen(c)
         sleep(c.heartbeat_interval / 1000)
@@ -390,6 +399,7 @@ function heartbeat_loop(c::Client)
             logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
         end
     end
+
     logmsg(c, DEBUG, "Heartbeat loop exited"; conn=v)
 end
 
@@ -408,6 +418,7 @@ function read_loop(c::Client)
             logmsg(c, WARN, "Unkown opcode"; op=data["op"])
         end
     end
+
     logmsg(c, DEBUG, "Read loop exited"; conn=v)
 end
 
