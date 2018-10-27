@@ -73,6 +73,16 @@ function Response{T}(
         get(SHOULD_SEND, method, false) && push!(args, json(body))
 
         # TODO: Rework rate limiting. Only one request should go through at a time.
+        # To think about:
+        # - Multiple shards share the same rate limit.
+        # - Expect 429s will still happen and handle them nicely.
+        # - Rate limit of n = Base.Semaphore(n)?
+        #   What happens when the rate limit resets?
+        # Anyone who was waiting for it is free to go (and we should have guaranteed that
+        # there were < n waiters) so we can't just create a brand new semaphore.
+        # - Each bucket has a task queue?
+        # Since we can't really predict the rate limits, we should probably limit requests
+        # to one at a time with a single lock.
 
         while islimited(c.limiter, method, endpoint)
             wait(c.limiter, method, endpoint)
