@@ -9,12 +9,12 @@ export send_message,
     create_invite,
     get_channel_invites,
     create_webhook,
-    get_channel_webhooks,
+    get_channel_webhooks
 
 """
     send_message(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
+        channel::Union{DiscordChannel, Integer},
         content::Union{AbstractString, AbstractDict},
     ) -> Response{Message}
 
@@ -39,7 +39,7 @@ end
 """
     get_message(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
+        channel::Union{DiscordChannel, Integer},
         message::Integer,
     ) -> Response{Message}
     get_message(c::Client, m::Message) -> Response{Message}
@@ -61,7 +61,7 @@ end
 """
     get_messages(
         c::Client,
-        channel::Union{DiscordChannel, Integereger};
+        channel::Union{DiscordChannel, Integer};
         params...,
     ) -> Response{Vector{Message}}
 
@@ -86,7 +86,7 @@ end
 """
     get_pinned_messages(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
+        channel::Union{DiscordChannel, Integer},
     ) -> Response{Vector{Message}}
 
 Get a list of [`Message`](@ref)s pinned in a [`DiscordChannel`](@ref).
@@ -98,7 +98,7 @@ end
 get_pinned_messages(c::Client, channel::DiscordChannel) = get_pinned_messages(c, channel.id)
 
 """
-    get_channel(c::Client, channel::Union{DiscordChannel, Integereger}) -> Response{DiscordChannel}
+    get_channel(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{DiscordChannel}
 
 Get a [`DiscordChannel`](@ref).
 """
@@ -114,13 +114,13 @@ get_channel(c::Client, ch::DiscordChannel) = get_channel(c, ch.id)
 """
     bulk_delete(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
-        messages::Union{Vector{Message}, Vector{<:Integereger}},
+        channel::Union{DiscordChannel, Integer},
+        messages::Union{Vector{Message}, Vector{<:Integer}},
     ) -> Response
 
 Delete multiple [`Message`](@ref)s from a [`DiscordChannel`](@ref).
 """
-function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integereger})
+function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integer})
     return Response(
         c,
         :POST,
@@ -129,7 +129,7 @@ function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integereger
     )
 end
 
-function bulk_delete(c::Client, ch::DiscordChannel, messages::Vector{<:Integereger})
+function bulk_delete(c::Client, ch::DiscordChannel, messages::Vector{<:Integer})
     return get_pinned_messages(c, channel.id, messages)
 end
 
@@ -138,7 +138,7 @@ function bulk_delete(c::Client, ch::DiscordChannel, ms::Vector{Message})
 end
 
 """
-    trigger_typing(c::Client, channel::Union{DiscordChannel, Integereger}) -> Response
+    trigger_typing(c::Client, channel::Union{DiscordChannel, Integer}) -> Response
 
 Trigger the typing indicator in a [`DiscordChannel`](@ref).
 """
@@ -151,7 +151,7 @@ trigger_typing(c::Client, ch::DiscordChannel) = trigger_typing(c, ch.id)
 """
     edit_channel(
         c::Client,
-        channel::Union{DiscordChannel, Integereger};
+        channel::Union{DiscordChannel, Integer};
         params...,
     ) -> Response{DiscordChannel}
 
@@ -187,7 +187,7 @@ function edit_channel(c::Client, ch::DiscordChannel; params...)
 end
 
 """
-    delete_channel(c::Client, channel:::Union{DiscordChannel, Integereger}) -> Response{DiscordChannel}
+    delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{DiscordChannel}
 
 Delete a [`DiscordChannel`](@ref).
 """
@@ -200,7 +200,7 @@ delete_channel(c::Client, ch::DiscordChannel) = delete_channel(c, ch.id)
 """
     create_invite(
         c::Client,
-        channel::Union{DiscordChannel, Integereger};
+        channel::Union{DiscordChannel, Integer};
         params...,
     ) -> Response{Invite}
 
@@ -225,7 +225,7 @@ create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id
 """
     get_channel_invites(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
+        channel::Union{DiscordChannel, Integer},
     ) -> Response{Vector{Invite}}
 
 Get a list of [`Invite`](@ref)s from a [`DiscordChannel`](@ref).
@@ -240,7 +240,7 @@ get_channel_invites(c::Client, ch::DiscordChannel) = get_channel_invites(c, ch.i
 """
     create_webhook(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
+        channel::Union{DiscordChannel, Integer},
         params...,
     ) -> Response
 
@@ -263,7 +263,7 @@ end
 """
     get_channel_webhooks(
         c::Client,
-        channel::Union{DiscordChannel, Integereger},
+        channel::Union{DiscordChannel, Integer},
     ) -> Response{Vector{Webhook}}
 
 Get a list of [`Webhook`](@ref)s from a [`DiscordChannel`](@ref).

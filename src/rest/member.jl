@@ -2,12 +2,12 @@ export edit_member,
     ban_member,
     kick_member,
     add_role,
-    remove_role,
+    remove_role
 """
     edit_member(
         c::Client,
-        guild::Union{AbstractGuild, Integereger},
-        user::Union{User, Integereger};
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer};
         params...,
     ) -> Response{Member}
 
@@ -41,8 +41,8 @@ end
 """
     ban_member(
         c::Client,
-        guild::Union{Guild, Integereger},
-        user::Union{User, Integereger};
+        guild::Union{Guild, Integer},
+        user::Union{User, Integer};
         params...,
     ) -> Response
 
@@ -72,8 +72,8 @@ end
 """
     kick_member(
         c::Client,
-        guild::Union{AbstractGuild, Integereger},
-        user::Union{User, Integereger},
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
     ) -> Response
 
 Kick a [`Member`](@ref).
@@ -91,9 +91,9 @@ kick_member(c::Client, g::AbstractGuild, user::Integer) = kick_member(c, g.id, u
 """
     add_role(
         c::Client,
-        guild::Union{AbstractGuild, Integereger},
-        user::Union{User, Integereger},
-        role::Union{Role, Integereger},
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
+        role::Union{Role, Integer},
     ) -> Response
 
 Add a [`Role`](@ref) to a [`Member`](@ref).
@@ -133,9 +133,9 @@ end
 """
     remove_role(
         c::Client,
-        guild::Union{AbstractGuild, Integereger},
-        user::Union{User, Integereger},
-        role::Union{Role, Integereger},
+        guild::Union{AbstractGuild, Integer},
+        user::Union{User, Integer},
+        role::Union{Role, Integer},
     ) -> Response
 
 Remove a [`Role`](@ref) from a [`Member`](@ref).

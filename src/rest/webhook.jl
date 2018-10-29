@@ -3,13 +3,13 @@ export get_webhook,
     delete_webhook,
     execute_webhook,
     execute_github,
-    execute_slack,
+    execute_slack
 
 """
-    get_webhook(c::Client, webhook::Union{Webhook, Integereger}) -> Response{Webhook}
+    get_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response{Webhook}
     get_webhook(
         c::Client,
-        webhook::Union{Webhook, Integereger},
+        webhook::Union{Webhook, Integer},
         token::AbstractString,
     ) -> Response{Webhook}
 
@@ -28,10 +28,10 @@ get_webhook(c::Client, w::Webhook) = get_webhook(c, w.id)
 get_webhook(c::Client, w::Webhook, token::AbstractString) = get_webhook(c, w.id, token)
 
 """
-    edit_webhook(c::Client, webhook::Union{Webhook, Integereger}; params...) -> Response{Webhook}
+    edit_webhook(c::Client, webhook::Union{Webhook, Integer}; params...) -> Response{Webhook}
     edit_webhook(
         c::Client,
-        webhook::Union{Webhook, Integereger},
+        webhook::Union{Webhook, Integer},
         token::AbstractString;
         params...,
     ) -> Response{Webhook}
@@ -68,10 +68,10 @@ function edit_webhook(c::Client, w::Webhook, token::AbstractString; params...)
 end
 
 """
-    delete_webhook(c::Client, webhook::Union{Webhook, Integereger}) -> Response
+    delete_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response
     delete_webhook(
         c::Client,
-        webhook::Union{Webhook, Integereger},
+        webhook::Union{Webhook, Integer},
         token::AbstractString,
     ) -> Response
 
@@ -96,7 +96,7 @@ end
 """
     execute_webhook(
         c::Client,
-        webhook::Union{Webhook, Integereger},
+        webhook::Union{Webhook, Integer},
         token::AbstractString;
         wait::Bool=false,
         params...,
@@ -133,7 +133,7 @@ execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=f
 """
     execute_github(
         c::Client,
-        webhook::Union{Webhook, Integereger},
+        webhook::Union{Webhook, Integer},
         token::AbstractString;
         wait::Bool=true,
         params...
@@ -176,7 +176,7 @@ end
 """
     execute_slack(
         c::Client,
-        webhook::Union{Webhook, Integereger},
+        webhook::Union{Webhook, Integer},
         token::AbstractString;
         wait::Bool=true,
         params...,

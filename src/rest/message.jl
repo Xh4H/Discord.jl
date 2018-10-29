@@ -5,7 +5,7 @@ export reply,
     unpin,
     react,
     get_reactions,
-    delete_reactions,
+    delete_reactions
 
 """
     reply(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}

@@ -1,101 +1,101 @@
-export edit_Integeregration,
-    sync_Integeregration,
-    delete_Integeregration,
+export edit_Integration,
+    sync_Integration,
+    delete_Integration
 
 """
-    edit_Integeregration(
+    edit_Integration(
         c::Client,
-        guild::Union{AbstractGuild, Integereger},
-        Integeregration::Union{Integeregration, Integereger};
+        guild::Union{AbstractGuild, Integer},
+        Integration::Union{Integration, Integer};
         params...,
-    ) -> Response{Integeregration}
+    ) -> Response{Integration}
 
-Modify an [`Integeregration`](@ref) in an [`AbstractGuild`](@ref).
+Modify an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 
 # Keywords
-- `expire_behavior::Integer`: The behavior when an Integeregration subscription lapses.
-- `expire_grace_period::Integer`: Period (in seconds) where the Integeregration will ignore
+- `expire_behavior::Integer`: The behavior when an Integration subscription lapses.
+- `expire_grace_period::Integer`: Period (in seconds) where the Integration will ignore
   lapsed subscriptions.
-- `enable_emoticons::Bool`: Whether emoticons should be synced for this Integeregration (Twitch
+- `enable_emoticons::Bool`: Whether emoticons should be synced for this Integration (Twitch
    only currently).
 """
-function edit_Integeregration(c::Client, guild::Integer, Integeregration::Integer; params...)
-    return Response{Integeregration}(
+function edit_Integration(c::Client, guild::Integer, Integration::Integer; params...)
+    return Response{Integration}(
         c,
         :PATCH,
-        "/guilds/$guild/Integeregrations/$Integeregration";
+        "/guilds/$guild/Integrations/$Integration";
         body=params,
     )
 end
 
-function edit_Integeregration(
+function edit_Integration(
     c::Client,
     guild::AbstractGuild,
-    Integeregration::Integeregration;
+    Integration::Integration;
     params...,
 )
-    return edit_Integeregration(c, guild.id, Integeregration.id; params...)
+    return edit_Integration(c, guild.id, Integration.id; params...)
 end
 
-function edit_Integeregration(c::Client, guild::Integer, Integeregration::Integeregration; params...)
-    return edit_Integeregration(c, guild, Integeregration.id; params...)
+function edit_Integration(c::Client, guild::Integer, Integration::Integration; params...)
+    return edit_Integration(c, guild, Integration.id; params...)
 end
 
-function edit_Integeregration(
+function edit_Integration(
     c::Client,
     guild::AbstractGuild,
-    Integeregration::Integer;
+    Integration::Integer;
     params...,
 )
-    return edit_Integeregration(c, guild.id, Integeregration; params...)
+    return edit_Integration(c, guild.id, Integration; params...)
 end
 
 """
-    sync_Integeregration(
+    sync_Integration(
         c::Client,
-        guild::Union{Guild, Integereger},
-        Integeregration::Union{Integeregration, Integereger},
+        guild::Union{Guild, Integer},
+        Integration::Union{Integration, Integer},
     ) -> Response
 
-Sync an [`Integeregration`](@ref) in an `AbstractGuild`.
+Sync an [`Integration`](@ref) in an `AbstractGuild`.
 """
-function sync_Integeregration(c::Client, guild::Integer, Integeregration::Integer)
-    return Response(c, :POST, "/guilds/$guild/Integeregrations/$Integeregration/sync")
+function sync_Integration(c::Client, guild::Integer, Integration::Integer)
+    return Response(c, :POST, "/guilds/$guild/Integrations/$Integration/sync")
 end
 
-function sync_Integeregration(c::Client, guild::AbstractGuild, Integeregration::Integeregration)
-    return sync_Integeregration(c, guild.id, Integeregration.id)
+function sync_Integration(c::Client, guild::AbstractGuild, Integration::Integration)
+    return sync_Integration(c, guild.id, Integration.id)
 end
 
-function sync_Integeregration(c::Client, guild::Integer, Integeregration::Integeregration)
-    return sync_Integeregration(c, guild, Integeregration.id)
+function sync_Integration(c::Client, guild::Integer, Integration::Integration)
+    return sync_Integration(c, guild, Integration.id)
 end
 
-function sync_Integeregration(c::Client, guild::AbstractGuild, Integeregration::Integer)
-    return sync_Integeregration(c, guild.id, Integeregration)
+function sync_Integration(c::Client, guild::AbstractGuild, Integration::Integer)
+    return sync_Integration(c, guild.id, Integration)
 end
 
 """
-    delete_Integeregration(
+    delete_Integration(
         c::Client,
-        guild::Union{AbstractGuild, Integereger},
-        Integeregration::Union{Integeregration, Integereger},
+        guild::Union{AbstractGuild, Integer},
+        Integration::Union{Integration, Integer},
     ) -> Response
 
-Delete an [`Integeregration`](@ref) in an [`AbstractGuild`](@ref).
+Delete an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 """
-function delete_Integeregration(c::Client, guild::Integer, Integeregration::Integer)
-    return Response(c, :DELETE, "/guilds/$guild/Integeregrations/$Integeregration")
+function delete_Integration(c::Client, guild::Integer, Integration::Integer)
+    return Response(c, :DELETE, "/guilds/$guild/Integrations/$Integration")
 end
 
-function delete_Integeregration(c::Client, guild::AbstractGuild, Integeregration::Integeregration)
-    return delete_Integeregration(c, guild.id, Integeregration.id)
+function delete_Integration(c::Client, guild::AbstractGuild, Integration::Integration)
+    return delete_Integration(c, guild.id, Integration.id)
 end
 
-function delete_Integeregration(c::Client, guild::Integer, Integeregration::Integeregration)
-    return delete_Integeregration(c, guild, Integeregration.id)
+function delete_Integration(c::Client, guild::Integer, Integration::Integration)
+    return delete_Integration(c, guild, Integration.id)
 end
 
-function delete_Integeregration(c::Client, guild::AbstractGuild, Integeregration::Integer)
-    return delete_Integeregration(c, guild.id, Integeregration)
+function delete_Integration(c::Client, guild::AbstractGuild, Integration::Integer)
+    return delete_Integration(c, guild.id, Integration)
 end

@@ -8,13 +8,13 @@ export LIMIT_IGNORE,
     add_command!,
     request_guild_members,
     update_voice_status,
-    update_status,
+    update_status
 
 # Properties for gateway connections.
 const conn_properties = Dict(
     "\$os"      => string(Sys.KERNEL),
     "\$browser" => "Discord.jl",
-    "\$device"  => "Discord.jl"
+    "\$device"  => "Discord.jl",
 )
 
 const OPCODES = Dict(
@@ -180,7 +180,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     else
         d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
                 "token" => c.token,
-                "properties" => conn_properties,
+                "properties" => conn_properties
         ))
 
         if c.shards > 1

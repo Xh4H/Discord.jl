@@ -4,10 +4,10 @@ export get_user,
         get_user_guilds,
         leave_guild,
         create_dm,
-        create_group,
+        create_group
 
 """
-    get_user(c::Client, user::Union{User, Integereger}) -> Response{User}
+    get_user(c::Client, user::Union{User, Integer}) -> Response{User}
 
 Get a [`User`](@ref).
 """

@@ -1,11 +1,11 @@
 export edit_role,
-    delete_role,
+    delete_role
 
 """
     edit_role(
         c::Client,
-        role::Union{Role, Integereger},
-        guild::Union{AbstractGuild, Integereger};
+        role::Union{Role, Integer},
+        guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Role}
 
@@ -39,8 +39,8 @@ end
 """
     delete_role(
         c::Client,
-        role::Union{Role, Integereger},
-        guild::Union{AbstractGuild, Integereger},
+        role::Union{Role, Integer},
+        guild::Union{AbstractGuild, Integer},
     ) -> Response
 
 Modify a [`Role`](@ref) in a [`DiscordChannel`](@ref).

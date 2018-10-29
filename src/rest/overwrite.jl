@@ -1,11 +1,11 @@
 export edit_overwrite,
-    delete_overwrite,
+    delete_overwrite
 
 """
     edit_overwrite(
         c::Client,
-        overwrite::Union{Overwrite, Integereger},
-        channel::Union{DiscordChannel, Integereger};
+        overwrite::Union{Overwrite, Integer},
+        channel::Union{DiscordChannel, Integer};
         params...,
     ) -> Response{Overwrite}
 
@@ -42,8 +42,8 @@ end
 """
     delete_overwrite(
         c::Client,
-        overwrite::Union{Overwrite, Integereger},
-        channel::Union{DiscordChannel, Integereger},
+        overwrite::Union{Overwrite, Integer},
+        channel::Union{DiscordChannel, Integer},
     ) -> Response{Overwrite}
 
 Delete an [`Overwrite`](@ref) in a [`DiscordChannel`](@ref).
