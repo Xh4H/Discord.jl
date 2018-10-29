@@ -4,7 +4,7 @@ const DISCORD_EPOCH = 1420070400000
 # Discord's form of ID.
 const Snowflake = UInt64
 
-snowflake(s::Int) = Snowflake(s)
+snowflake(s::Integer) = Snowflake(s)
 snowflake(s::AbstractString) = parse(UInt64, s)
 
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
@@ -119,7 +119,7 @@ end
 
 macro boilerplate(T, exs...)
     macros = map(e -> e.value, exs)
-    
+
     quote
         @static if :docs in $macros
             @fielddoc $T
