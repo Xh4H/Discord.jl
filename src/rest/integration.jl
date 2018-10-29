@@ -1,12 +1,12 @@
-export edit_Integration,
-    sync_Integration,
-    delete_Integration
+export edit_integration,
+    sync_integration,
+    delete_integration
 
 """
-    edit_Integration(
+    edit_integration(
         c::Client,
         guild::Union{AbstractGuild, Integer},
-        Integration::Union{Integration, Integer};
+        integration::Union{Integration, Integer};
         params...,
     ) -> Response{Integration}
 
@@ -19,7 +19,7 @@ Modify an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 - `enable_emoticons::Bool`: Whether emoticons should be synced for this Integration (Twitch
    only currently).
 """
-function edit_Integration(c::Client, guild::Integer, Integration::Integer; params...)
+function edit_integration(c::Client, guild::Integer, integration::Integer; params...)
     return Response{Integration}(
         c,
         :PATCH,
@@ -28,74 +28,74 @@ function edit_Integration(c::Client, guild::Integer, Integration::Integer; param
     )
 end
 
-function edit_Integration(
+function edit_integration(
     c::Client,
     guild::AbstractGuild,
-    Integration::Integration;
+    integration::Integration;
     params...,
 )
-    return edit_Integration(c, guild.id, Integration.id; params...)
+    return edit_integration(c, guild.id, Integration.id; params...)
 end
 
-function edit_Integration(c::Client, guild::Integer, Integration::Integration; params...)
-    return edit_Integration(c, guild, Integration.id; params...)
+function edit_integration(c::Client, guild::Integer, integration::Integration; params...)
+    return edit_integration(c, guild, Integration.id; params...)
 end
 
-function edit_Integration(
+function edit_integration(
     c::Client,
     guild::AbstractGuild,
-    Integration::Integer;
+    integration::Integer;
     params...,
 )
-    return edit_Integration(c, guild.id, Integration; params...)
+    return edit_integration(c, guild.id, Integration; params...)
 end
 
 """
-    sync_Integration(
+    sync_integration(
         c::Client,
         guild::Union{Guild, Integer},
-        Integration::Union{Integration, Integer},
+        integration::Union{Integration, Integer},
     ) -> Response
 
 Sync an [`Integration`](@ref) in an `AbstractGuild`.
 """
-function sync_Integration(c::Client, guild::Integer, Integration::Integer)
+function sync_integration(c::Client, guild::Integer, integration::Integer)
     return Response(c, :POST, "/guilds/$guild/Integrations/$Integration/sync")
 end
 
-function sync_Integration(c::Client, guild::AbstractGuild, Integration::Integration)
-    return sync_Integration(c, guild.id, Integration.id)
+function sync_integration(c::Client, guild::AbstractGuild, integration::Integration)
+    return sync_integration(c, guild.id, Integration.id)
 end
 
-function sync_Integration(c::Client, guild::Integer, Integration::Integration)
-    return sync_Integration(c, guild, Integration.id)
+function sync_integration(c::Client, guild::Integer, integration::Integration)
+    return sync_integration(c, guild, Integration.id)
 end
 
-function sync_Integration(c::Client, guild::AbstractGuild, Integration::Integer)
-    return sync_Integration(c, guild.id, Integration)
+function sync_integration(c::Client, guild::AbstractGuild, integration::Integer)
+    return sync_integration(c, guild.id, Integration)
 end
 
 """
-    delete_Integration(
+    delete_integration(
         c::Client,
         guild::Union{AbstractGuild, Integer},
-        Integration::Union{Integration, Integer},
+        integration::Union{Integration, Integer},
     ) -> Response
 
 Delete an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 """
-function delete_Integration(c::Client, guild::Integer, Integration::Integer)
+function delete_integration(c::Client, guild::Integer, integration::Integer)
     return Response(c, :DELETE, "/guilds/$guild/Integrations/$Integration")
 end
 
-function delete_Integration(c::Client, guild::AbstractGuild, Integration::Integration)
-    return delete_Integration(c, guild.id, Integration.id)
+function delete_integration(c::Client, guild::AbstractGuild, integration::Integration)
+    return delete_integration(c, guild.id, Integration.id)
 end
 
-function delete_Integration(c::Client, guild::Integer, Integration::Integration)
-    return delete_Integration(c, guild, Integration.id)
+function delete_integration(c::Client, guild::Integer, integration::Integration)
+    return delete_integration(c, guild, Integration.id)
 end
 
-function delete_Integration(c::Client, guild::AbstractGuild, Integration::Integer)
-    return delete_Integration(c, guild.id, Integration)
+function delete_integration(c::Client, guild::AbstractGuild, integration::Integer)
+    return delete_integration(c, guild.id, Integration)
 end

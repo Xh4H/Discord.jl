@@ -16,8 +16,8 @@ export create_guild,
         get_ban,
         unban,
         get_guild_invites,
-        create_Integration,
-        get_Integrations,
+        create_integration,
+        get_integrations,
         get_guild_webhooks,
         get_regions,
         get_guild_regions,
@@ -354,7 +354,7 @@ end
 get_guild_invites(c::Client, g::AbstractGuild) = get_guild_invites(c, g.id)
 
 """
-    create_Integration(c::Client
+    create_integration(c::Client
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Integration}
@@ -367,24 +367,24 @@ Create / Attach an [`Integration`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-Integration).
 """
-function create_Integration(c::Client, guild::Integer; params...)
+function create_integration(c::Client, guild::Integer; params...)
     return Response{Integration}(c, :POST, "/guilds/$guild/Integrations"; params...)
 end
 
-create_Integration(c::Client, g::AbstractGuild; params...) = create_Integration(c, g.id; params...)
+create_integration(c::Client, g::AbstractGuild; params...) = create_integration(c, g.id; params...)
 
 """
-    get_Integrations(c::Client,
+    get_integrations(c::Client,
         guild::Union{AbstractGuild, Integer},
     ) -> Response{Vector{Integration}}
 
 Get a list of [`Integration`](@ref)s.
 """
-function get_Integrations(c::Client, guild::Integer)
+function get_integrations(c::Client, guild::Integer)
     return Response{Integration}(c, :GET, "/guilds/$guild/Integrations")
 end
 
-get_Integrations(c::Client, guild::AbstractGuild) = get_Integrations(c, guild.id)
+get_integrations(c::Client, guild::AbstractGuild) = get_integrations(c, guild.id)
 
 """
     get_guild_webhooks(c::Client,
