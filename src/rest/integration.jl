@@ -23,7 +23,7 @@ function edit_integration(c::Client, guild::Integer, integration::Integer; param
     return Response{Integration}(
         c,
         :PATCH,
-        "/guilds/$guild/Integrations/$Integration";
+        "/guilds/$guild/integrations/$integration";
         body=params,
     )
 end
@@ -60,7 +60,7 @@ end
 Sync an [`Integration`](@ref) in an `AbstractGuild`.
 """
 function sync_integration(c::Client, guild::Integer, integration::Integer)
-    return Response(c, :POST, "/guilds/$guild/Integrations/$Integration/sync")
+    return Response(c, :POST, "/guilds/$guild/integrations/$integration/sync")
 end
 
 function sync_integration(c::Client, guild::AbstractGuild, integration::Integration)
@@ -85,7 +85,7 @@ end
 Delete an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 """
 function delete_integration(c::Client, guild::Integer, integration::Integer)
-    return Response(c, :DELETE, "/guilds/$guild/Integrations/$Integration")
+    return Response(c, :DELETE, "/guilds/$guild/integrations/$integration")
 end
 
 function delete_integration(c::Client, guild::AbstractGuild, integration::Integration)
