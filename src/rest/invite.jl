@@ -1,11 +1,11 @@
 export get_invite,
-    delete_invite
+    delete_invite,
 
 """
     get_invite(
         c::Client,
         invite::Union{Invite, AbstractString};
-        with_counts::Bool=false
+        with_counts::Bool=false,
     ) -> Response{Invite}
 
 Get an [`Invite`](@ref). If `with_counts` is set, the [`Invite`](@ref) will contain

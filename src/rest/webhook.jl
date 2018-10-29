@@ -3,23 +3,23 @@ export get_webhook,
     delete_webhook,
     execute_webhook,
     execute_github,
-    execute_slack
+    execute_slack,
 
 """
-    get_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response{Webhook}
+    get_webhook(c::Client, webhook::Union{Webhook, Integereger}) -> Response{Webhook}
     get_webhook(
         c::Client,
-        webhook::Union{Webhook, Integer},
-        token::AbstractString
+        webhook::Union{Webhook, Integereger},
+        token::AbstractString,
     ) -> Response{Webhook}
 
 Get a [`Webhook`](@ref).
 """
-function get_webhook(c::Client, webhook::Int)
+function get_webhook(c::Client, webhook::Integer)
     return Response{Webhook}(c, :GET, "/webhooks/$webhook")
 end
 
-function get_webhook(c::Client, webhook::Int, token::AbstractString)
+function get_webhook(c::Client, webhook::Integer, token::AbstractString)
     return Response{Webhook}(c, :GET, "/webhooks/$webhook/$token")
 end
 
@@ -28,12 +28,12 @@ get_webhook(c::Client, w::Webhook) = get_webhook(c, w.id)
 get_webhook(c::Client, w::Webhook, token::AbstractString) = get_webhook(c, w.id, token)
 
 """
-    edit_webhook(c::Client, webhook::Union{Webhook, Integer}; params...) -> Response{Webhook}
+    edit_webhook(c::Client, webhook::Union{Webhook, Integereger}; params...) -> Response{Webhook}
     edit_webhook(
         c::Client,
-        webhook::Union{Webhook, Integer},
+        webhook::Union{Webhook, Integereger},
         token::AbstractString;
-        params...
+        params...,
     ) -> Response{Webhook}
 
 Modify a [`Webhook`](@ref).
@@ -41,18 +41,18 @@ Modify a [`Webhook`](@ref).
 # Keywords
 - `name::AbstractString`: Name of the webhook.
 - `avatar::AbstractString`: Avatar data string.
-- `channel_id::Int`: The channel this webhook should be moved to.
+- `channel_id::Integer`: The channel this webhook should be moved to.
 
 If using a `token`, `channel_id` cannot be used and the returned [`Webhook`](@ref) will not
 contain a [`User`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
 """
-function edit_webhook(c::Client, webhook::Int; params...)
+function edit_webhook(c::Client, webhook::Integer; params...)
     return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=params)
 end
 
-function edit_webhook(c::Client, webhook::Int, token::AbstractString; params...)
+function edit_webhook(c::Client, webhook::Integer, token::AbstractString; params...)
     haskey(params, :channel_id) &&
         throw(ArgumentError("channel_id can not be modified using a token"))
 
@@ -68,20 +68,20 @@ function edit_webhook(c::Client, w::Webhook, token::AbstractString; params...)
 end
 
 """
-    delete_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response
+    delete_webhook(c::Client, webhook::Union{Webhook, Integereger}) -> Response
     delete_webhook(
         c::Client,
-        webhook::Union{Webhook, Integer},
-        token::AbstractString
+        webhook::Union{Webhook, Integereger},
+        token::AbstractString,
     ) -> Response
 
 Delete a [`Webhook`](@ref).
 """
-function delete_webhook(c::Client, webhook::Int)
+function delete_webhook(c::Client, webhook::Integer)
     return Response(c, :DELETE, "/webhooks/$webhook")
 end
 
-function delete_webhook(c::Client, webhook::Int, token::AbstractString)
+function delete_webhook(c::Client, webhook::Integer, token::AbstractString)
     return Response{Nothing}(c, :DELETE, "/webhooks/$webhook/$token")
 end
 
@@ -96,10 +96,10 @@ end
 """
     execute_webhook(
         c::Client,
-        webhook::Union{Webhook, Integer},
+        webhook::Union{Webhook, Integereger},
         token::AbstractString;
         wait::Bool=false,
-        params...
+        params...,
     ) -> Union{Response{Message}, Response{Nothing}}
 
 Execute a [`Webhook`](@ref). If `wait` is set, the created [`Message`](@ref) is returned.
@@ -116,10 +116,10 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_webhook(
     c::Client,
-    webhook::Int,
+    webhook::Integer,
     token::AbstractString;
     wait::Bool=false,
-    params...
+    params...,
 )
     return if wait
         Response{Message}(c, :POST, "/webhooks/$webhook/$token"; body=params, wait=wait)
@@ -133,7 +133,7 @@ execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=f
 """
     execute_github(
         c::Client,
-        webhook::Union{Webhook, Integer},
+        webhook::Union{Webhook, Integereger},
         token::AbstractString;
         wait::Bool=true,
         params...
@@ -145,10 +145,10 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_github(
     c::Client,
-    webhook::Int,
+    webhook::Integer,
     token::AbstractString;
     wait::Bool=true,
-    params...
+    params...,
 )
     return if wait
         Response{Message}(
@@ -156,7 +156,7 @@ function execute_github(
             :POST,
             "/webhooks/$webhook/$token/github";
             body=params,
-            wait=wait
+            wait=wait,
         )
     else
         Response(c, :POST, "/webhooks/$webhook/$token/github"; body=params)
@@ -176,10 +176,10 @@ end
 """
     execute_slack(
         c::Client,
-        webhook::Union{Webhook, Integer},
+        webhook::Union{Webhook, Integereger},
         token::AbstractString;
         wait::Bool=true,
-        params...
+        params...,
     ) -> Union{Response{Message}, Response}
 
 Execute a *Slack* [`Webhook`](@ref).
@@ -188,10 +188,10 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_slack(
     c::Client,
-    webhook::Int,
+    webhook::Integer,
     token::AbstractString;
     wait::Bool=true,
-    params...
+    params...,
 )
     return if wait
         Response{Message}(
@@ -199,7 +199,7 @@ function execute_slack(
             :POST,
             "/webhooks/$webhook/$token/slack";
             body=params,
-            wait=wait
+            wait=wait,
         )
     else
         Response(c, :POST, "/webhooks/$webhook/$token/slack"; body=params)

@@ -8,7 +8,7 @@ export LIMIT_IGNORE,
     add_command!,
     request_guild_members,
     update_voice_status,
-    update_status
+    update_status,
 
 # Properties for gateway connections.
 const conn_properties = Dict(
@@ -28,7 +28,7 @@ const OPCODES = Dict(
     8 =>  :REQUEST_GUILD_MEMBERS,
     9 =>  :INVALID_SESSION,
     10 => :HELLO,
-    11 => :HEARTBEAT_ACK
+    11 => :HEARTBEAT_ACK,
 )
 
 """
@@ -60,7 +60,7 @@ end
         token::String;
         on_limit::OnLimit=LIMIT_IGNORE,
         ttl::Period=Hour(1),
-        version::Int=$API_VERSION
+        version::Int=$API_VERSION,
      ) -> Client
 
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
@@ -118,7 +118,7 @@ mutable struct Client
         token::String;
         on_limit::OnLimit=LIMIT_IGNORE,
         ttl::Period=Hour(1),
-        version::Int=API_VERSION
+        version::Int=API_VERSION,
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
         return new(
@@ -136,7 +136,7 @@ mutable struct Client
             on_limit,                         # on_limit
             copy(DEFAULT_DISPATCH_HANDLERS),  # handlers
             false,                            # ready
-            Threads.SpinLock()                # lock
+            Threads.SpinLock(),               # lock
             # conn left undef, it gets assigned in open.
         )
     end
@@ -175,12 +175,12 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         Dict("op" => 6, "d" => Dict(
             "token" => c.token,
             "session_id" => c.state.session_id,
-            "seq" => c.heartbeat_seq
+            "seq" => c.heartbeat_seq,
         ))
     else
         d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
                 "token" => c.token,
-                "properties" => conn_properties
+                "properties" => conn_properties,
         ))
 
         if c.shards > 1
@@ -238,7 +238,7 @@ me(c::Client) = c.state.user
         c::Client,
         guild_id::Union{Snowflake, Vector{Snowflake};
         query::AbstractString="",
-        limit::Int=0
+        limit::Int=0,
     ) -> Bool
 
 Request offline guild members of one or more guilds. [`GuildMembersChunk`](@ref) events are
@@ -250,7 +250,7 @@ function request_guild_members(
     c::Client,
     guild_id::Snowflake;
     query::AbstractString="",
-    limit::Int=0
+    limit::Int=0,
 )
     return request_guild_members(c, [guild_id]; query=query, limit=limit)
 end
@@ -259,12 +259,12 @@ function request_guild_members(
     c::Client,
     guild_id::Vector{Snowflake};
     query::AbstractString="",
-    limit::Int=0
+    limit::Int=0,
 )
     return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
-        "limit" => limit
+        "limit" => limit,
     )))
 end
 
@@ -274,7 +274,7 @@ end
         guild_id::Snowflake,
         channel_id::Union{Snowflake, Nothing},
         self_mute::Bool,
-        self_deaf::Bool
+        self_deaf::Bool,
     ) -> Bool
 
 Join, move, or disconnect from a voice channel. A [`VoiceStateUpdate`](@ref) event is sent
@@ -287,13 +287,13 @@ function update_voice_state(
     guild_id::Snowflake,
     channel_id::Union{Snowflake, Nothing},
     self_mute::Bool,
-    self_deaf::Bool
+    self_deaf::Bool,
 )
     return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
-        "self_deaf" => self_deaf
+        "self_deaf" => self_deaf,
     )))
 end
 
@@ -303,7 +303,7 @@ end
         since::Union{Int, Nothing},
         activity::Union{Activity, Nothing},
         status::PresenceStatus,
-        afk::Bool
+        afk::Bool,
     ) -> Bool
 
 Indicate a presence or status update. A [`PresenceUpdate`](@ref) event is sent by the
@@ -316,13 +316,13 @@ function update_status(
     since::Union{Int, Nothing},
     activity::Union{Activity, Nothing},
     status::PresenceStatus,
-    afk::Bool
+    afk::Bool,
 )
     return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
-        "afk" => afk
+        "afk" => afk,
     )))
 end
 
@@ -334,7 +334,7 @@ end
         evt::Type{<:AbstractEvent},
         func::Function;
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period}=-1
+        expiry::Union{Int, Period}=-1,
     )
 
 Add a handler for an event type.
@@ -358,7 +358,7 @@ function add_handler!(
     evt::Type{<:AbstractEvent},
     func::Function;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1
+    expiry::Union{Int, Period}=-1,
 )
     if !hasmethod(func, (Client, evt))
         error("Handler function must accept (::Client, ::$evt)")
@@ -411,7 +411,7 @@ function add_command!(
     prefix::AbstractString,
     func::Function;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1
+    expiry::Union{Int, Period}=-1,
 )
     if !hasmethod(func, (Client, Message))
         error("Handler function must accept (::Client, ::Message")
@@ -530,7 +530,7 @@ const HANDLERS = Dict(
     7   => reconnect,
     9   => invalid_session,
     10  => hello,
-    11  => heartbeat_ack
+    11  => heartbeat_ack,
 )
 
 # Default dispatch event handlers.
@@ -626,7 +626,7 @@ function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
         e.roles,
         m.joined_at,
         m.deaf,
-        m.mute
+        m.mute,
     )
 
     insert_or_update(c.state.users, e.user.id, e.user)
@@ -789,7 +789,7 @@ const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Handler}}(
     MessageReactionAdd       => Set([Handler(handle_message_reaction_add)]),
     MessageReactionRemove    => Set([Handler(handle_message_reaction_remove)]),
     MessageReactionRemoveAll => Set([Handler(handle_message_reaction_remove_all)]),
-    PresenceUpdate           => Set([Handler(handle_presence_update)])
+    PresenceUpdate           => Set([Handler(handle_presence_update)]),
 )
 
 # Error handling.
