@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(\n    token::String;\n    on_limit::OnLimit=LIMIT_IGNORE,\n    ttl::Period=Hour(1),\n    version::Int=6\n ) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nTo get a bot token, head here to create a new application. Once you\'ve created a bot user, you will have access to its token.\n\nKeywords\n\non_limit::OnLimit=LIMIT_IGNORE: Client\'s behaviour when it hits a rate limit (see \"Rate Limiting\" below for more details).\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nCaching\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (determined by the ttl keyword). Although it\'s not recommended, you can also disable caching of certain data by clearing default handlers for relevant event types with clear_handlers!. For example, if you wanted to avoid caching any messages, you would clear handlers for MessageCreate and MessageUpdate events.\n\nRate Limiting\n\nDiscord enforces rate limits on usage of its REST API. This  means you can  only send so many messages in a given period, and so on. To customize the client\'s behaviour when encountering rate limits, use the on_limit keyword and see OnLimit.\n\nSharding\n\nSharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
+    "text": "Client(\n    token::String;\n    on_limit::OnLimit=LIMIT_IGNORE,\n    ttl::Period=Hour(1),\n    version::Int=6,\n ) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nTo get a bot token, head here to create a new application. Once you\'ve created a bot user, you will have access to its token.\n\nKeywords\n\non_limit::OnLimit=LIMIT_IGNORE: Client\'s behaviour when it hits a rate limit (see \"Rate Limiting\" below for more details).\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nCaching\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (determined by the ttl keyword). Although it\'s not recommended, you can also disable caching of certain data by clearing default handlers for relevant event types with clear_handlers!. For example, if you wanted to avoid caching any messages, you would clear handlers for MessageCreate and MessageUpdate events.\n\nRate Limiting\n\nDiscord enforces rate limits on usage of its REST API. This  means you can  only send so many messages in a given period, and so on. To customize the client\'s behaviour when encountering rate limits, use the on_limit keyword and see OnLimit.\n\nSharding\n\nSharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
 },
 
 {
@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1\n)\n\nAdd a handler for an event type. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended the event\'s current handlers.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run a set number of times before expiring. If a Period is given, the handler will expire after that amount of time has elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd a handler for an event type. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended the event\'s current handlers.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run a set number of times before expiring. If a Period is given, the handler will expire after that amount of time has elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\n"
 },
 
 {
@@ -165,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.request_guild_members",
     "category": "function",
-    "text": "request_guild_members(\n    c::Client,\n    guild_id::Union{Snowflake, Vector{Snowflake};\n    query::AbstractString=\"\",\n    limit::Int=0\n) -> Bool\n\nRequest offline guild members of one or more guilds. GuildMembersChunk events are sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "request_guild_members(\n    c::Client,\n    guild_id::Union{Snowflake, Vector{Snowflake};\n    query::AbstractString=\"\",\n    limit::Int=0,\n) -> Bool\n\nRequest offline guild members of one or more guilds. GuildMembersChunk events are sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
 },
 
 {
@@ -173,7 +173,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.update_voice_state",
     "category": "function",
-    "text": "update_voice_state(\n    c::Client,\n    guild_id::Snowflake,\n    channel_id::Union{Snowflake, Nothing},\n    self_mute::Bool,\n    self_deaf::Bool\n) -> Bool\n\nJoin, move, or disconnect from a voice channel. A VoiceStateUpdate event is sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "update_voice_state(\n    c::Client,\n    guild_id::Snowflake,\n    channel_id::Union{Snowflake, Nothing},\n    self_mute::Bool,\n    self_deaf::Bool,\n) -> Bool\n\nJoin, move, or disconnect from a voice channel. A VoiceStateUpdate event is sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
 },
 
 {
@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.update_status",
     "category": "function",
-    "text": "update_status(\n    c::Client,\n    since::Union{Int, Nothing},\n    activity::Union{Activity, Nothing},\n    status::PresenceStatus,\n    afk::Bool\n) -> Bool\n\nIndicate a presence or status update. A PresenceUpdate event is sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "update_status(\n    c::Client,\n    since::Union{Int, Nothing},\n    activity::Union{Activity, Nothing},\n    status::PresenceStatus,\n    afk::Bool,\n) -> Bool\n\nIndicate a presence or status update. A PresenceUpdate event is sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
 },
 
 {
