@@ -39,12 +39,14 @@ macro lower(T)
         quote
             function JSON.lower(x::$T)
                 d = Dict()
+
                 for f in fieldnames($T)
                     v = getfield(x, f)
                     if !ismissing(v)
                         d[string(f)] = lowered(v)
                     end
                 end
+
                 return d
             end
         end
@@ -55,11 +57,13 @@ macro merge(T)
     quote
         function Base.merge(a::$T, b::$T)
             vals = []
+
             for f in fieldnames($T)
                 va = getfield(a, f)
                 vb = getfield(b, f)
                 push!(vals, ismissing(vb) ? va : vb)
             end
+
             return $T(vals...)
         end
     end
@@ -85,6 +89,7 @@ end
 macro dict(T)
     TT = eval(T)
     args = map(f -> field(string(f), fieldtype(TT, f)), fieldnames(TT))
+
     quote
         function $(esc(T))(d::Dict{String, Any})
             $(esc(T))($(args...))
@@ -96,13 +101,16 @@ macro fielddoc(T)
     TT = eval(T)
     ns = collect(string.(fieldnames(TT)))
     width = maximum(length, ns)
+
     map!(n -> rpad(n, width), ns, ns)
     ts = collect(map(f -> string(fieldtype(TT, f)), fieldnames(TT)))
     map!(s -> replace(s, "Discord." => ""), ts, ts)
     docs = join(map(t -> "$(t[1]) :: $(t[2])", zip(ns, ts)), "\n")
+
     quote
         doc = string(@doc $T)
         docstring = doc * "\n# Fields\n\n```\n" * $docs * "\n```\n"
+
         Base.CoreLogging.with_logger(Base.CoreLogging.NullLogger()) do
             @doc docstring $T
         end
@@ -111,6 +119,7 @@ end
 
 macro boilerplate(T, exs...)
     macros = map(e -> e.value, exs)
+    
     quote
         @static if :docs in $macros
             @fielddoc $T

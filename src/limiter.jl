@@ -36,7 +36,7 @@ function update(
     l::Limiter,
     method::Symbol,
     endpoint::AbstractString,
-    r::HTTP.Messages.Response,
+    r::HTTP.Messages.Response
 )
     if r.status == 429
         d = JSON.parse(String(copy(r.body)))
@@ -47,8 +47,10 @@ function update(
     end
 
     headers = Dict(r.headers)
+
     haskey(headers, "X-RateLimit-Remaining") || return
     haskey(headers, "X-RateLimit-Reset") || return
+
     remaining = parse(Int, headers["X-RateLimit-Remaining"])
     reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
 
@@ -57,6 +59,7 @@ end
 
 function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
     n = now(UTC)
+
     if l.reset !== nothing
         if n < l.reset
             return true
@@ -66,7 +69,9 @@ function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
     end
 
     endpoint = parse_endpoint(endpoint, method)
+
     haskey(l.buckets, endpoint) || return false
+    
     b = l.buckets[endpoint]
 
     if n > b.reset

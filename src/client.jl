@@ -14,7 +14,7 @@ export LIMIT_IGNORE,
 const conn_properties = Dict(
     "\$os"      => string(Sys.KERNEL),
     "\$browser" => "Discord.jl",
-    "\$device"  => "Discord.jl",
+    "\$device"  => "Discord.jl"
 )
 
 const OPCODES = Dict(
@@ -28,7 +28,7 @@ const OPCODES = Dict(
     8 =>  :REQUEST_GUILD_MEMBERS,
     9 =>  :INVALID_SESSION,
     10 => :HELLO,
-    11 => :HEARTBEAT_ACK,
+    11 => :HEARTBEAT_ACK
 )
 
 """
@@ -46,7 +46,6 @@ mutable struct Handler
 end
 
 Handler(f::Function) = Handler(f, gensym(), -1)
-
 Handler(f::Function, tag::Symbol, expiry::Period) = Handler(f, tag, now(UTC) + expiry)
 
 isexpired(h::Handler) = h.expiry isa Int ? h.expiry == 0 : now(UTC) > h.expiry
@@ -61,7 +60,7 @@ end
         token::String;
         on_limit::OnLimit=LIMIT_IGNORE,
         ttl::Period=Hour(1),
-        version::Int=$API_VERSION,
+        version::Int=$API_VERSION
      ) -> Client
 
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
@@ -119,7 +118,7 @@ mutable struct Client
         token::String;
         on_limit::OnLimit=LIMIT_IGNORE,
         ttl::Period=Hour(1),
-        version::Int=API_VERSION,
+        version::Int=API_VERSION
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
         return new(
@@ -176,12 +175,12 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         Dict("op" => 6, "d" => Dict(
             "token" => c.token,
             "session_id" => c.state.session_id,
-            "seq" => c.heartbeat_seq,
+            "seq" => c.heartbeat_seq
         ))
     else
         d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
                 "token" => c.token,
-                "properties" => conn_properties,
+                "properties" => conn_properties
         ))
 
         if c.shards > 1
@@ -239,7 +238,7 @@ me(c::Client) = c.state.user
         c::Client,
         guild_id::Union{Snowflake, Vector{Snowflake};
         query::AbstractString="",
-        limit::Int=0,
+        limit::Int=0
     ) -> Bool
 
 Request offline guild members of one or more guilds. [`GuildMembersChunk`](@ref) events are
@@ -251,7 +250,7 @@ function request_guild_members(
     c::Client,
     guild_id::Snowflake;
     query::AbstractString="",
-    limit::Int=0,
+    limit::Int=0
 )
     return request_guild_members(c, [guild_id]; query=query, limit=limit)
 end
@@ -260,12 +259,12 @@ function request_guild_members(
     c::Client,
     guild_id::Vector{Snowflake};
     query::AbstractString="",
-    limit::Int=0,
+    limit::Int=0
 )
     return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guild_id,
         "query" => query,
-        "limit" => limit,
+        "limit" => limit
     )))
 end
 
@@ -275,7 +274,7 @@ end
         guild_id::Snowflake,
         channel_id::Union{Snowflake, Nothing},
         self_mute::Bool,
-        self_deaf::Bool,
+        self_deaf::Bool
     ) -> Bool
 
 Join, move, or disconnect from a voice channel. A [`VoiceStateUpdate`](@ref) event is sent
@@ -288,13 +287,13 @@ function update_voice_state(
     guild_id::Snowflake,
     channel_id::Union{Snowflake, Nothing},
     self_mute::Bool,
-    self_deaf::Bool,
+    self_deaf::Bool
 )
     return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild_id,
         "channel_id" => channel_id,
         "self_mute" => self_mute,
-        "self_deaf" => self_deaf,
+        "self_deaf" => self_deaf
     )))
 end
 
@@ -304,7 +303,7 @@ end
         since::Union{Int, Nothing},
         activity::Union{Activity, Nothing},
         status::PresenceStatus,
-        afk::Bool,
+        afk::Bool
     ) -> Bool
 
 Indicate a presence or status update. A [`PresenceUpdate`](@ref) event is sent by the
@@ -317,13 +316,13 @@ function update_status(
     since::Union{Int, Nothing},
     activity::Union{Activity, Nothing},
     status::PresenceStatus,
-    afk::Bool,
+    afk::Bool
 )
     return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "activity" => activity,
         "status" => status,
-        "afk" => afk,
+        "afk" => afk
     )))
 end
 
@@ -335,7 +334,7 @@ end
         evt::Type{<:AbstractEvent},
         func::Function;
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period}=-1,
+        expiry::Union{Int, Period}=-1
     )
 
 Add a handler for an event type.
@@ -359,7 +358,7 @@ function add_handler!(
     evt::Type{<:AbstractEvent},
     func::Function;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1,
+    expiry::Union{Int, Period}=-1
 )
     if !hasmethod(func, (Client, evt))
         error("Handler function must accept (::Client, ::$evt)")
@@ -400,7 +399,7 @@ clear_handlers!(c::Client, event::Type{<:AbstractEvent}) = delete!(c.handlers, e
         prefix::AbstractString,
         func::Function;
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period}=-1,
+        expiry::Union{Int, Period}=-1
     )
 
 Add a text command handler. The handler function should take two arguments: A
@@ -412,7 +411,7 @@ function add_command!(
     prefix::AbstractString,
     func::Function;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1,
+    expiry::Union{Int, Period}=-1
 )
     if !hasmethod(func, (Client, Message))
         error("Handler function must accept (::Client, ::Message")
@@ -431,6 +430,7 @@ end
 
 function heartbeat_loop(c::Client)
     v = c.conn.v
+
     while c.conn.v == v && isopen(c)
         sleep(c.heartbeat_interval / 1000)
         if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
@@ -445,6 +445,7 @@ end
 
 function read_loop(c::Client)
     v = c.conn.v
+
     while c.conn.v == v && isopen(c)
         data, e = readjson(c.conn.io)
         if e !== nothing && c.conn.v == v
@@ -478,6 +479,7 @@ function dispatch(c::Client, data::AbstractDict)
 
     catchalls = collect(get(c.handlers, AbstractEvent, []))
     specifics = collect(get(c.handlers, T, []))
+
     for handler in [catchalls; specifics]
         @async try
             handler.f(c, evt)
@@ -528,7 +530,7 @@ const HANDLERS = Dict(
     7   => reconnect,
     9   => invalid_session,
     10  => hello,
-    11  => heartbeat_ack,
+    11  => heartbeat_ack
 )
 
 # Default dispatch event handlers.
@@ -550,6 +552,7 @@ function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate
     else
         c.state.guilds[e.guild.id] = e.guild
     end
+
     if !ismissing(e.guild.channels)
         for ch in e.guild.channels
             insert_or_update(c.state.channels, ch.id, ch)
@@ -560,7 +563,9 @@ function handle_guild_create_update(c::Client, e::Union{GuildCreate, GuildUpdate
         if !haskey(c.state.members, e.guild.id)
             c.state.members[e.guild.id] = TTL(c.ttl)
         end
+
         ms = c.state.members[e.guild.id]
+
         for m in e.guild.members
             if ismissing(m.user)
                 if !haskey(ms, missing)
@@ -594,7 +599,9 @@ function handle_guild_member_add(c::Client, e::GuildMemberAdd)
     if !haskey(c.state.members, e.guild_id)
         c.state.members[e.guild_id] = TTL(c.ttl)
     end
+
     ms = c.state.members[e.guild_id]
+
     if ismissing(e.member.user)
         if !haskey(ms, missing)
             ms[missing] = []
@@ -619,8 +626,9 @@ function handle_guild_member_update(c::Client, e::GuildMemberUpdate)
         e.roles,
         m.joined_at,
         m.deaf,
-        m.mute,
+        m.mute
     )
+
     insert_or_update(c.state.users, e.user.id, e.user)
 end
 
@@ -670,6 +678,7 @@ function handle_guild_role_update(c::Client, e::GuildRoleUpdate)
     else
         e.role
     end
+
     push!(rs, role)
 end
 
@@ -698,6 +707,7 @@ function handle_presence_update(c::Client, e::PresenceUpdate)
     if !haskey(c.state.presences, e.presence.guild_id)
         c.state.presences[e.presence.guild_id] = TTL(c.ttl)
     end
+
     insert_or_update(c.state.presences[e.presence.guild_id], e.presence.user.id, e.presence)
 end
 
@@ -706,11 +716,14 @@ function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
 
     locked(c) do
         touch(c.state.messages, e.message_id)
+
         m = c.state.messages[e.message_id]
+
         if ismissing(m.reactions)
             m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
         else
             idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
+            
             if idx === nothing
                 push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
             else
@@ -727,8 +740,10 @@ function handle_message_reaction_remove(c::Client, e::MessageReactionRemove)
 
     locked(c) do
         touch(c.state.messages, e.message_id)
+
         rs = c.state.messages[e.message_id].reactions
         idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
+
         if idx !== nothing
             if rs[idx].count == 1
                 deleteat!(rs, idx)
@@ -774,7 +789,7 @@ const DEFAULT_DISPATCH_HANDLERS = Dict{Type{<:AbstractEvent}, Set{Handler}}(
     MessageReactionAdd       => Set([Handler(handle_message_reaction_add)]),
     MessageReactionRemove    => Set([Handler(handle_message_reaction_remove)]),
     MessageReactionRemoveAll => Set([Handler(handle_message_reaction_remove_all)]),
-    PresenceUpdate           => Set([Handler(handle_presence_update)]),
+    PresenceUpdate           => Set([Handler(handle_presence_update)])
 )
 
 # Error handling.
@@ -791,7 +806,7 @@ const CLOSE_CODES = Dict(
     4008 => :RATE_LIMITED,
     4009 => :SESSION_TIMEOUT,
     4010 => :INVALID_SHARD,
-    4011 => :SHARDING_REQUIRED,
+    4011 => :SHARDING_REQUIRED
 )
 
 function handle_read_error(c::Client, e::Exception)

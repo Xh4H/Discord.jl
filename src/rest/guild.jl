@@ -128,8 +128,8 @@ Create a [`Role`](@ref).
 - `name::AbstractString`: Role name.
 - `permissions::Integer`: Bitwise value of the enabled/disabled permissions.
 - `color::Integer`: RGB color value.
-- `hoist::Boolean`: Whether the role should be displayed separately in the sidebar.
-- `mentionable::Boolean`: Whether the role should be mentionable.
+- `hoist::Bool`: Whether the role should be displayed separately in the sidebar.
+- `mentionable::Bool`: Whether the role should be mentionable.
 """
 function create_role(c::Client, guild::Integer; params...)
     return Response{Role}(c, :POST, "/guilds/$guild/roles"; body=params)
@@ -183,7 +183,7 @@ Create a [`DiscordChannel`](@ref).
 - `rate_limit_per_user::Integer`: Amount of seconds a user has to wait before
     sending another message (0-120).
 - `permission_overwrites::Vector{Overwrite}`: The channel's permission overwrites.
-- `nsfw::Boolean`: Whether the channel is nsfw.
+- `nsfw::Bool`: Whether the channel is nsfw.
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-channel).
 """
@@ -208,8 +208,8 @@ Add a [`User`](@ref) to a [`Guild`](@ref).
 - `access_token::AbstractString`: Oath2 access token.
 - `nick::AbstractString`: Value to set users nickname to.
 - `roles::Vector{Snowflake}`: Array of role IDs the member is assigned.
-- `mute::Boolean`: Whether the user should be muted.
-- `deaf::Boolean`: Whether the user should be deafened.
+- `mute::Bool`: Whether the user should be muted.
+- `deaf::Bool`: Whether the user should be deafened.
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#add-guild-member).
 """

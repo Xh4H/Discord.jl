@@ -30,7 +30,7 @@ function State(ttl::Period)
         TTL(ttl),  # users
         TTL(ttl),  # messages
         Dict(),    # presences
-        Dict(),    # members
+        Dict()     # members
     )
 end
 
@@ -43,6 +43,7 @@ function ready(s::State, e::Ready)
     for c in e.private_channels
         s.channels[e.id] = haskey(s.channels, e.id) ? merge(s.channels[e.id], e) : e
     end
+    
     for g in e.guilds
         # Don't merge here because these guilds are unavailable.
         if !haskey(s.guilds, g.id)

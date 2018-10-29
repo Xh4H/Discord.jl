@@ -58,7 +58,7 @@ function Response(
     method::Symbol,
     endpoint::AbstractString;
     body="",
-    params...,
+    params...
 )
     return Response{Nothing}(c, method, endpoint; body=body, params...)
 end
@@ -69,9 +69,10 @@ function Response{T}(
     method::Symbol,
     endpoint::AbstractString;
     body="",
-    params...,
+    params...
 ) where T
     limited = islimited(c.limiter, method, endpoint)
+
     if limited
         if c.on_limit === LIMIT_IGNORE
             return Response{T}(nothing, false, false, true, nothing)
