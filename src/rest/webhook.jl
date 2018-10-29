@@ -10,16 +10,16 @@ export get_webhook,
     get_webhook(
         c::Client,
         webhook::Union{Webhook, Integer},
-        token::AbstractString,
+        token::AbstractString
     ) -> Response{Webhook}
 
 Get a [`Webhook`](@ref).
 """
-function get_webhook(c::Client, webhook::Integer)
+function get_webhook(c::Client, webhook::Int)
     return Response{Webhook}(c, :GET, "/webhooks/$webhook")
 end
 
-function get_webhook(c::Client, webhook::Integer, token::AbstractString)
+function get_webhook(c::Client, webhook::Int, token::AbstractString)
     return Response{Webhook}(c, :GET, "/webhooks/$webhook/$token")
 end
 
@@ -33,7 +33,7 @@ get_webhook(c::Client, w::Webhook, token::AbstractString) = get_webhook(c, w.id,
         c::Client,
         webhook::Union{Webhook, Integer},
         token::AbstractString;
-        params...,
+        params...
     ) -> Response{Webhook}
 
 Modify a [`Webhook`](@ref).
@@ -41,18 +41,18 @@ Modify a [`Webhook`](@ref).
 # Keywords
 - `name::AbstractString`: Name of the webhook.
 - `avatar::AbstractString`: Avatar data string.
-- `channel_id::Integer`: The channel this webhook should be moved to.
+- `channel_id::Int`: The channel this webhook should be moved to.
 
 If using a `token`, `channel_id` cannot be used and the returned [`Webhook`](@ref) will not
 contain a [`User`](@ref).
 
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
 """
-function edit_webhook(c::Client, webhook::Integer; params...)
+function edit_webhook(c::Client, webhook::Int; params...)
     return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=params)
 end
 
-function edit_webhook(c::Client, webhook::Integer, token::AbstractString; params...)
+function edit_webhook(c::Client, webhook::Int, token::AbstractString; params...)
     haskey(params, :channel_id) &&
         throw(ArgumentError("channel_id can not be modified using a token"))
 
@@ -72,16 +72,16 @@ end
     delete_webhook(
         c::Client,
         webhook::Union{Webhook, Integer},
-        token::AbstractString,
+        token::AbstractString
     ) -> Response
 
 Delete a [`Webhook`](@ref).
 """
-function delete_webhook(c::Client, webhook::Integer)
+function delete_webhook(c::Client, webhook::Int)
     return Response(c, :DELETE, "/webhooks/$webhook")
 end
 
-function delete_webhook(c::Client, webhook::Integer, token::AbstractString)
+function delete_webhook(c::Client, webhook::Int, token::AbstractString)
     return Response{Nothing}(c, :DELETE, "/webhooks/$webhook/$token")
 end
 
@@ -99,7 +99,7 @@ end
         webhook::Union{Webhook, Integer},
         token::AbstractString;
         wait::Bool=false,
-        params...,
+        params...
     ) -> Union{Response{Message}, Response{Nothing}}
 
 Execute a [`Webhook`](@ref). If `wait` is set, the created [`Message`](@ref) is returned.
@@ -116,7 +116,7 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_webhook(
     c::Client,
-    webhook::Integer,
+    webhook::Int,
     token::AbstractString;
     wait::Bool=false,
     params...
@@ -136,7 +136,7 @@ execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=f
         webhook::Union{Webhook, Integer},
         token::AbstractString;
         wait::Bool=true,
-        params...,
+        params...
     ) -> Union{Response{Message}, Response{Nothing}}
 
 Execute a *Github* [`Webhook`](@ref).
@@ -145,10 +145,10 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_github(
     c::Client,
-    webhook::Integer,
+    webhook::Int,
     token::AbstractString;
     wait::Bool=true,
-    params...,
+    params...
 )
     return if wait
         Response{Message}(
@@ -156,7 +156,7 @@ function execute_github(
             :POST,
             "/webhooks/$webhook/$token/github";
             body=params,
-            wait=wait,
+            wait=wait
         )
     else
         Response(c, :POST, "/webhooks/$webhook/$token/github"; body=params)
@@ -168,7 +168,7 @@ function execute_github(
     w::Webhook,
     token::AbstractString;
     wait::Bool=false,
-    params...,
+    params...
 )
     return execute_github(c, w.id, token; wait=wait, params...)
 end
@@ -179,7 +179,7 @@ end
         webhook::Union{Webhook, Integer},
         token::AbstractString;
         wait::Bool=true,
-        params...,
+        params...
     ) -> Union{Response{Message}, Response}
 
 Execute a *Slack* [`Webhook`](@ref).
@@ -188,10 +188,10 @@ More details [here](https://discordapp.com/developers/docs/resources/webhook#exe
 """
 function execute_slack(
     c::Client,
-    webhook::Integer,
+    webhook::Int,
     token::AbstractString;
     wait::Bool=true,
-    params...,
+    params...
 )
     return if wait
         Response{Message}(
@@ -199,7 +199,7 @@ function execute_slack(
             :POST,
             "/webhooks/$webhook/$token/slack";
             body=params,
-            wait=wait,
+            wait=wait
         )
     else
         Response(c, :POST, "/webhooks/$webhook/$token/slack"; body=params)

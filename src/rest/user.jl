@@ -11,7 +11,7 @@ export get_user,
 
 Get a [`User`](@ref).
 """
-function get_user(c::Client, user::Integer)
+function get_user(c::Client, user::Int)
     return if haskey(c.state.users, user)
         Response{User}(c.state.users[user])
     else
@@ -51,9 +51,9 @@ get_connections(c::Client) = Response{User}(c, :GET, "/users/@me/connections")
 Get a Vector of [`AbstractGuild`](@ref)s the current user is a member of.
 
 # Query Params
-- `before::Integer`: Get guilds before this guild ID.
-- `after::Integer`: Get guilds after this guild ID.
-- `limit::Integer`: Max number of guilds to return (1-100). Defaults to 100.
+- `before::Int`: Get guilds before this guild ID.
+- `after::Int`: Get guilds after this guild ID.
+- `limit::Int`: Max number of guilds to return (1-100). Defaults to 100.
 
 More details [here](https://discordapp.com/developers/docs/resources/user#get-current-user-guilds).
 """
@@ -67,11 +67,11 @@ function get_user_guilds(c::Client; params...)
 end
 
 """
-    create_dm(c::Client, user::Integer) -> Response{DiscordChannel}
+    create_dm(c::Client, user::Int) -> Response{DiscordChannel}
 
 Create a DM [`DiscordChannel`](@ref).
 """
-function create_dm(c::Client, user::Integer)
+function create_dm(c::Client, user::Int)
     return Response{DiscordChannel}(
         c,
         :POST,

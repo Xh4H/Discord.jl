@@ -723,7 +723,7 @@ function handle_message_reaction_add(c::Client, e::MessageReactionAdd)
             m.reactions = [Reaction(1, e.user_id == c.state.user.id, e.emoji)]
         else
             idx = findfirst(r -> r.emoji.name == e.emoji.name, m.reactions)
-            
+
             if idx === nothing
                 push!(m.reactions, Reaction(1, e.user_id == c.state.user.id, e.emoji))
             else

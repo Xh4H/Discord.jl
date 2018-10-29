@@ -17,7 +17,10 @@ function reply(c::Client, m::Message, content::Union{AbstractString, Dict})
 end
 
 """
-    edit_message(c::Client, m::Message, content::Union{AbstractString, Dict}) -> Response{Message}
+    edit_message(c::Client
+        m::Message
+        content::Union{AbstractString, Dict}
+    ) -> Response{Message}
 
 Edit a [`Message`](@ref).
 """
@@ -26,7 +29,7 @@ function edit_message(c::Client, m::Message, content::AbstractDict)
         c,
         :PATCH,
         "/channels/$(m.channel_id)/messages/$(m.id)";
-        body=content,
+        body=content
     )
 end
 
@@ -78,7 +81,7 @@ end
     get_reactions(
         c::Client,
         m::Message,
-        emoji::Union{Emoji, AbstractString},
+        emoji::Union{Emoji, AbstractString}
     ) -> Response{Vector{User}}
 
 Get the users who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
@@ -87,7 +90,7 @@ function get_reactions(c::Client, m::Message, emoji::AbstractString)
     return Response{User}(
         c,
         :GET,
-        "/channels/$(m.channel_id)/messages/$(m.id)/reactions/$(HTTP.escapeuri(emoji))",
+        "/channels/$(m.channel_id)/messages/$(m.id)/reactions/$(HTTP.escapeuri(emoji))"
     )
 end
 

@@ -4,7 +4,7 @@ const DISCORD_EPOCH = 1420070400000
 # Discord's form of ID.
 const Snowflake = UInt64
 
-snowflake(s::Integer) = Snowflake(s)
+snowflake(s::Int) = Snowflake(s)
 snowflake(s::AbstractString) = parse(UInt64, s)
 
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
@@ -13,7 +13,7 @@ process_id(s::Snowflake) = (s & 0x1F000) >> 12
 increment(s::Snowflake) = s & 0xFFF
 
 # Discord sends both Unix and ISO timestamps.
-datetime(s::Integer) = unix2datetime(s / 1000)
+datetime(s::Int) = unix2datetime(s / 1000)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
 
 function lowered(x)
