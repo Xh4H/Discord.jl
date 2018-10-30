@@ -13,11 +13,11 @@ export edit_integration,
 Modify an [`Integration`](@ref) in an [`AbstractGuild`](@ref).
 
 # Keywords
-- `expire_behavior::Integer`: The behavior when an Integration subscription lapses.
-- `expire_grace_period::Integer`: Period (in seconds) where the Integration will ignore
+- `expire_behavior::Integer`: The behavior when an integration subscription lapses.
+- `expire_grace_period::Integer`: Period (in seconds) where the integration will ignore
   lapsed subscriptions.
-- `enable_emoticons::Bool`: Whether emoticons should be synced for this Integration (Twitch
-   only currently).
+- `enable_emoticons::Bool`: Whether emoticons should be synced for this integration (Twitch
+  only currently).
 """
 function edit_integration(c::Client, guild::Integer, integration::Integer; params...)
     return Response{Integration}(
@@ -28,26 +28,16 @@ function edit_integration(c::Client, guild::Integer, integration::Integer; param
     )
 end
 
-function edit_integration(
-    c::Client,
-    guild::AbstractGuild,
-    integration::Integration;
-    params...,
-)
-    return edit_integration(c, guild.id, Integration.id; params...)
+function edit_integration(c::Client, g::AbstractGuild, i::Integration; params...)
+    return edit_integration(c, g.id, i.id; params...)
 end
 
-function edit_integration(c::Client, guild::Integer, integration::Integration; params...)
-    return edit_integration(c, guild, Integration.id; params...)
+function edit_integration(c::Client, guild::Integer, i::Integration; params...)
+    return edit_integration(c, guild, i.id; params...)
 end
 
-function edit_integration(
-    c::Client,
-    guild::AbstractGuild,
-    integration::Integer;
-    params...,
-)
-    return edit_integration(c, guild.id, Integration; params...)
+function edit_integration(c::Client, g::AbstractGuild, integration::Integer; params...)
+    return edit_integration(c, g.id, integration; params...)
 end
 
 """
@@ -63,16 +53,16 @@ function sync_integration(c::Client, guild::Integer, integration::Integer)
     return Response(c, :POST, "/guilds/$guild/integrations/$integration/sync")
 end
 
-function sync_integration(c::Client, guild::AbstractGuild, integration::Integration)
-    return sync_integration(c, guild.id, Integration.id)
+function sync_integration(c::Client, g::AbstractGuild, i::Integration)
+    return sync_integration(c, g.id, i.id)
 end
 
-function sync_integration(c::Client, guild::Integer, integration::Integration)
-    return sync_integration(c, guild, Integration.id)
+function sync_integration(c::Client, guild::Integer, i::Integration)
+    return sync_integration(c, guild, i.id)
 end
 
-function sync_integration(c::Client, guild::AbstractGuild, integration::Integer)
-    return sync_integration(c, guild.id, Integration)
+function sync_integration(c::Client, g::AbstractGuild, integration::Integer)
+    return sync_integration(c, g.id, Integration)
 end
 
 """
@@ -88,14 +78,14 @@ function delete_integration(c::Client, guild::Integer, integration::Integer)
     return Response(c, :DELETE, "/guilds/$guild/integrations/$integration")
 end
 
-function delete_integration(c::Client, guild::AbstractGuild, integration::Integration)
-    return delete_integration(c, guild.id, Integration.id)
+function delete_integration(c::Client, g::AbstractGuild, i::Integration)
+    return delete_integration(c, g.id, i.id)
 end
 
-function delete_integration(c::Client, guild::Integer, integration::Integration)
-    return delete_integration(c, guild, Integration.id)
+function delete_integration(c::Client, guild::Integer, i::Integration)
+    return delete_integration(c, guild, i.id)
 end
 
-function delete_integration(c::Client, guild::AbstractGuild, integration::Integer)
-    return delete_integration(c, guild.id, Integration)
+function delete_integration(c::Client, g::AbstractGuild, integration::Integer)
+    return delete_integration(c, g.id, Integration)
 end

@@ -1,30 +1,23 @@
 export get_user,
-        edit_client,
-        get_connections,
-        get_user_guilds,
-        leave_guild,
-        create_dm,
-        create_group
+    edit_client,
+    get_connections,
+    get_user_guilds,
+    leave_guild,
+    create_dm,
+    create_group
 
 """
     get_user(c::Client, user::Union{User, Integer}) -> Response{User}
 
 Get a [`User`](@ref).
 """
-function get_user(c::Client, user::Integer)
-    return if haskey(c.state.users, user)
-        Response{User}(c.state.users[user])
-    else
-        Response{User}(c, :GET, "/users/$user")
-    end
-end
-
-get_user(c::Client, user::User) = get_user(c, user.id)
+get_user(c::Client, user::Integer) = Response{User}(c, :GET, "/users/$user")
+get_user(c::Client, u::User) = get_user(c, u.id)
 
 """
     edit_client(c::Client; params...) -> Response{User}
 
-Modify the local Client / Bot.
+Modify the [`Client`](@ref) user.
 
 # Keywords
 - `username::AbstractString`: Username of the client.
@@ -39,8 +32,7 @@ end
 """
     get_connections(c::Client) -> Response{Vector{Connection}}
 
-Get a Vector of [`Connection`](@ref)s for the local Client / Bot.
-
+Get the [`Client`](@ref)'s [`Connection`](@ref)s.
 More details [here](https://discordapp.com/developers/docs/resources/user#get-user-connections).
 """
 get_connections(c::Client) = Response{User}(c, :GET, "/users/@me/connections")
@@ -50,7 +42,7 @@ get_connections(c::Client) = Response{User}(c, :GET, "/users/@me/connections")
 
 Get a Vector of [`AbstractGuild`](@ref)s the current user is a member of.
 
-# Query Params
+# Keywords
 - `before::Integer`: Get guilds before this guild ID.
 - `after::Integer`: Get guilds after this guild ID.
 - `limit::Integer`: Max number of guilds to return (1-100). Defaults to 100.
@@ -88,7 +80,8 @@ create_dm(c::Client, user::User) = create_dm(c, user.id)
 Create a group DM [`DiscordChannel`](@ref).
 
 # Keywords
-- `access_tokens::Array`: Access tokens of users that have granted your app the `gdm.join` scope.
+- `access_tokens::Vector`: Access tokens of users that have granted your app the `gdm.join`
+   scope.
 - `nicks::Dict`: A dictionary of [`User`](@ref) IDs to their respective nicknames.
 """
 function create_group(c::Client; params...)

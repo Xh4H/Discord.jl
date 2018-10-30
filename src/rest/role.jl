@@ -51,6 +51,6 @@ end
 
 delete_role(c::Client, guild::Integer, r::Role) = delete_role(c, guild, r.id)
 
-delete_role(c::Client, guild::AbstractGuild, role::Integer) = delete_role(c, g.id, role)
+delete_role(c::Client, g::AbstractGuild, role::Integer) = delete_role(c, g.id, role)
 
-delete_role(c::Client, guild::AbstractGuild, role::Role) = delete_role(c, g.id, r.id)
+delete_role(c::Client, g::AbstractGuild, r::Role) = delete_role(c, g.id, r.id)

@@ -31,6 +31,7 @@ function State(ttl::Period)
         TTL(ttl),  # users
         TTL(ttl),  # messages
         Dict(),    # presences
+        Dict(),    # members
         Threads.SpinLock(),  # lock
     )
 end

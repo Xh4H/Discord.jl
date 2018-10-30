@@ -68,7 +68,7 @@ end
 
 Get a list of [`Message`](@ref)s from a [`DiscordChannel`](@ref).
 
-# Query Params
+# Keywords
 - `around::Integer`: Get messages around this message ID.
 - `before::Integer`: Get messages before this message ID.
 - `after::Integer`: Get messages after this message ID.
@@ -90,7 +90,7 @@ end
         channel::Union{DiscordChannel, Integer},
     ) -> Response{Vector{Message}}
 
-Get a list of [`Message`](@ref)s pinned in a [`DiscordChannel`](@ref).
+Get the pinned [`Message`](@ref)s in a [`DiscordChannel`](@ref).
 """
 function get_pinned_messages(c::Client, channel::Integer)
     return Response{Message}(c, :GET, "/channels/$channel/pins")
@@ -99,19 +99,19 @@ end
 get_pinned_messages(c::Client, channel::DiscordChannel) = get_pinned_messages(c, channel.id)
 
 """
-    get_channel(c::Client, channel::Union{DiscordChannel, Integer}) -> Response{DiscordChannel}
+    get_channel(
+        c::Client,
+        channel::Union{DiscordChannel, Integer},
+    ) -> Response{DiscordChannel}
 
 Get a [`DiscordChannel`](@ref).
 """
 function get_channel(c::Client, channel::Integer)
-    return if haskey(c.state.channels, channel)
-        Response{DiscordChannel}(c.state.channels[channel])
-    else
-        Response{DiscordChannel}(c, :GET, "/channels/$guild")
-    end
+    return Response{DiscordChannel}(c, :GET, "/channels/$guild")
 end
 
 get_channel(c::Client, ch::DiscordChannel) = get_channel(c, ch.id)
+
 """
     bulk_delete(
         c::Client,
@@ -126,12 +126,12 @@ function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integer})
         c,
         :POST,
         "/channels/$channel/messages/bulk-delete";
-        body=Dict("messages" => messages)
+        body=Dict("messages" => messages),
     )
 end
 
 function bulk_delete(c::Client, ch::DiscordChannel, messages::Vector{<:Integer})
-    return get_pinned_messages(c, channel.id, messages)
+    return bulk_delete(c, channel.id, messages)
 end
 
 function bulk_delete(c::Client, ch::DiscordChannel, ms::Vector{Message})
@@ -183,12 +183,13 @@ function edit_channel(c::Client, channel::Integer; params...)
     return Response{DiscordChannel}(c, :PATCH, "/channels/$channel"; body=params)
 end
 
-function edit_channel(c::Client, ch::DiscordChannel; params...)
-    return edit_channel(c, ch.id; params...)
-end
+edit_channel(c::Client, ch::DiscordChannel; params...) = edit_channel(c, ch.id; params...)
 
 """
-    delete_channel(c::Client, channel:::Union{DiscordChannel, Integer}) -> Response{DiscordChannel}
+    delete_channel(
+        c::Client,
+        channel:::Union{DiscordChannel, Integer},
+    ) -> Response{DiscordChannel}
 
 Delete a [`DiscordChannel`](@ref).
 """
@@ -217,8 +218,6 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#cre
 """
 function create_invite(c::Client, channel::Integer, params...)
     return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=params)
-    # TODO: add the guild and channel from the cache.
-    # This would require one of Response or Invite to be mutable.
 end
 
 create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id; params...)
@@ -233,7 +232,6 @@ Get a list of [`Invite`](@ref)s from a [`DiscordChannel`](@ref).
 """
 function get_channel_invites(c::Client, channel::Integer)
     return Response{Invite}(c, :GET, "/channels/$channel/invites")
-    # See create_invite TODO.
 end
 
 get_channel_invites(c::Client, ch::DiscordChannel) = get_channel_invites(c, ch.id)
@@ -271,7 +269,6 @@ Get a list of [`Webhook`](@ref)s from a [`DiscordChannel`](@ref).
 """
 function get_channel_webhooks(c::Client, channel::Integer)
     return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
-    # See create_invite TODO.
 end
 
 get_channel_webhooks(c::Client, ch::DiscordChannel) = get_channel_webhooks(c, ch.id)

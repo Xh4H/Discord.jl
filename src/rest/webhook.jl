@@ -82,7 +82,7 @@ function delete_webhook(c::Client, webhook::Integer)
 end
 
 function delete_webhook(c::Client, webhook::Integer, token::AbstractString)
-    return Response{Nothing}(c, :DELETE, "/webhooks/$webhook/$token")
+    return Response(c, :DELETE, "/webhooks/$webhook/$token")
 end
 
 function delete_webhook(c::Client, w::Webhook)
@@ -100,7 +100,7 @@ end
         token::AbstractString;
         wait::Bool=false,
         params...,
-    ) -> Union{Response{Message}, Response{Nothing}}
+    ) -> Response
 
 Execute a [`Webhook`](@ref). If `wait` is set, the created [`Message`](@ref) is returned.
 
@@ -137,7 +137,7 @@ execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=f
         token::AbstractString;
         wait::Bool=true,
         params...
-    ) -> Union{Response{Message}, Response{Nothing}}
+    ) -> Response
 
 Execute a *Github* [`Webhook`](@ref).
 

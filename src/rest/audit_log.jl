@@ -9,7 +9,7 @@ export get_audit_log
 
 Get an [`AuditLog`](@ref).
 
-# Query Params
+# Keywords
 - `user_id::Integer`: Filter the log for a [`User`](@ref) ID.
 - `action_type::Integer`: The type of audit log event.
 - `before::Integer`: filter the log before a certain entry ID.

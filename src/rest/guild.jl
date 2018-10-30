@@ -45,9 +45,7 @@ function create_guild(c::Client; params...)
 end
 
 """
-    get_guild(c::Client,
-        guild::Union{AbstractGuild, Integer},
-    ) -> Response{Guild}
+    get_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Guild}
 
 Get a [`Guild`](@ref).
 """
@@ -95,29 +93,30 @@ function edit_guild(c::Client, g::AbstractGuild; params...)
 end
 
 """
-    delete_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Nothing}
+    delete_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response
 
 Delete a [`Guild`](@ref).
 """
 function delete_guild(c::Client, guild::Integer)
-    return Response{Nothing}(c, :DELETE, "/guilds/$guild")
+    return Response(c, :DELETE, "/guilds/$guild")
 end
 
 delete_guild(c::Client, g::AbstractGuild) = delete_guild(c, g.id)
 
 """
-    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Nothing}
+    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response
 
 Leave a [`Guild`](@ref).
 """
 function leave_guild(c::Client, guild::Integer)
-    return Response{Nothing}(c, :DELETE, "/users/@me/guilds/$guild")
+    return Response(c, :DELETE, "/users/@me/guilds/$guild")
 end
 
 leave_guild(c::Client, g::AbstractGuild) = delete_guild(c, g.id)
 
 """
-    create_role(c::Client,
+    create_role(
+        c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Role}
@@ -138,7 +137,8 @@ end
 create_role(c::Client, g::AbstractGuild; params...) = create_role(c, g.id; params...)
 
 """
-    edit_role_positions(c::Client,
+    edit_role_positions(
+        c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Vector{Role}}
@@ -146,7 +146,6 @@ create_role(c::Client, g::AbstractGuild; params...) = create_role(c, g.id; param
 Modify the positions of a set of [`Role`](@ref)s.
 
 # Keywords
-Must be a list with the keywords listed below.
 - `id::Snowflake`: Role ID.
 - `position::Integer`: Position of the role.
 """
@@ -161,7 +160,7 @@ end
 """
     get_roles(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Role}}
 
-Get the [`Role`](@ref)s.
+Get an [`AbstractGuild`](@ref)'s [`Role`](@ref)s.
 """
 function get_roles(c::Client, guild::Integer)
     return Response{Role}(c, :GET, "/guilds/$guild/roles")
@@ -181,7 +180,7 @@ Create a [`DiscordChannel`](@ref).
 - `bitrate::Integer`: The bitrate (in bits) of the voice channel (voice only).
 - `user_limit::Integer`: The user limit of the voice channel (voice only).
 - `rate_limit_per_user::Integer`: Amount of seconds a user has to wait before
-    sending another message (0-120).
+  sending another message (0-120).
 - `permission_overwrites::Vector{Overwrite}`: The channel's permission overwrites.
 - `nsfw::Bool`: Whether the channel is nsfw.
 
@@ -205,7 +204,7 @@ create_channel(c::Client, g::AbstractGuild; params...) = create_channel(c, g.id;
 Add a [`User`](@ref) to a [`Guild`](@ref).
 
 # Keywords
-- `access_token::AbstractString`: Oath2 access token.
+- `access_token::AbstractString`: OAuth2 access token.
 - `nick::AbstractString`: Value to set users nickname to.
 - `roles::Vector{Snowflake}`: Array of role IDs the member is assigned.
 - `mute::Bool`: Whether the user should be muted.
@@ -217,12 +216,21 @@ function add_member(c::Client, guild::Integer, user::Integer; params...)
     return Response{Member}(c, :PUT, "/guilds/$guild/members/$user"; body=params)
 end
 
-add_member(c::Client, g::AbstractGuild, u::User; params...) = add_member(c, g.id, u.id; params...)
-add_member(c::Client, g::AbstractGuild, u::Integer; params...) = add_member(c, g.id, u; params...)
-add_member(c::Client, g::Integer, u::User; params...) = add_member(c, g, u.id; params...)
+function add_member(c::Client, g::AbstractGuild, u::User; params...)
+    return add_member(c, g.id, u.id; params...)
+end
+
+function add_member(c::Client, g::AbstractGuild, u::Integer; params...)
+    return add_member(c, g.id, u; params...)
+end
+
+function add_member(c::Client, g::Integer, u::User; params...)
+    return add_member(c, g, u.id; params...)
+end
 
 """
-    get_member(c::Client,
+    get_member(
+        c::Client,
         guild::Union{AbstractGuild, Integer},
         user::Union{User, Integer},
     ) -> Response{Member}
@@ -242,14 +250,15 @@ get_member(c::Client, g::AbstractGuild, u::Integer) = get_member(c, g.id, u)
 get_member(c::Client, g::Integer, u::User) = get_member(c, g, u.id)
 
 """
-    list_members(c::Client
+    list_members(
+        c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Vector{Member}}
 
 Get the [`Member`](@ref)s from a [`Guild`](@ref).
 
-# Query Params
+# Keywords
 - `limit::Integer`: Max number of members to return (1-1000).
 - `after::Snowflake`: The highest user ID in the previous page.
 
@@ -262,14 +271,15 @@ end
 list_members(c::Client, g::AbstractGuild; params...) = list_members(c, g.id; params...)
 
 """
-    get_prune(c::Client
+    get_prune(
+        c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Integer}
 
 Get the number of [`Member`](@ref)s that would be removed in a prune.
 
-# Query Params
+# Keywords
 - `days::Integer`: Number of days to count prune for (1 or more).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#get-guild-prune-count).
@@ -281,14 +291,15 @@ end
 get_prune(c::Client, g::AbstractGuild; params...) = get_prune(c, g.id; params...)
 
 """
-    do_prune(c::Client
+    do_prune(
+        c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Integer}
 
 Begin a prune.
 
-# Query Params
+# Keywords
 - `days::Integer`: Number of days to prune for (1 or more).
 
 More details [here](https://discordapp.com/developers/docs/resources/guild#begin-guild-prune).
@@ -304,14 +315,12 @@ do_prune(c::Client, g::AbstractGuild; params...) = do_prune(c, g.id; params...)
 
 Get the [`Ban`](@ref)s.
 """
-function get_bans(c::Client, guild::Integer)
-    return Response{Ban}(c, :GET, "/guilds/$guild/bans")
-end
-
+get_bans(c::Client, guild::Integer) = Response{Ban}(c, :GET, "/guilds/$guild/bans")
 get_bans(c::Client, g::AbstractGuild) = get_bans(c, g.id)
 
 """
-    get_ban(c::Client,
+    get_ban(
+        c::Client,
         guild::Union{AbstractGuild, Integer},
         user::Union{User, Integer},
     ) -> Response{Ban}
@@ -327,7 +336,8 @@ get_ban(c::Client, g::AbstractGuild, u::Integer) = get_ban(c, g.id, u)
 get_ban(c::Client, g::Integer, u::User) = get_ban(c, g, u.id)
 
 """
-    unban(c::Client,
+    unban(
+        c::Client,
         guild::Union{AbstractGuild, Integer},
         user::Union{Member, Integer},
     ) -> Response{Ban}
@@ -343,7 +353,10 @@ unban(c::Client, g::AbstractGuild, u::Integer) = unban(c, g.id, u)
 unban(c::Client, g::Integer, u::Member) = unban(c, g, u.id)
 
 """
-    get_guild_invites(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Invite}}
+    get_guild_invites(
+        c::Client,
+        guild::Union{AbstractGuild, Integer},
+    ) -> Response{Vector{Invite}}
 
 Get the [`Invite`](@ref)s.
 """
@@ -354,14 +367,15 @@ end
 get_guild_invites(c::Client, g::AbstractGuild) = get_guild_invites(c, g.id)
 
 """
-    create_integration(c::Client
+    create_integration(
+        c::Client,
         guild::Union{AbstractGuild, Integer};
         params...,
     ) -> Response{Integration}
 
-Create / Attach an [`Integration`](@ref).
+Create/attach an [`Integration`](@ref).
 
-# Query Params
+# Keywords
 - `type::Integer`: Integration type.
 - `id::Snowflake`: Integration ID.
 
@@ -371,10 +385,13 @@ function create_integration(c::Client, guild::Integer; params...)
     return Response{Integration}(c, :POST, "/guilds/$guild/Integrations"; params...)
 end
 
-create_integration(c::Client, g::AbstractGuild; params...) = create_integration(c, g.id; params...)
+function create_integration(c::Client, g::AbstractGuild; params...)
+    return create_integration(c, g.id; params...)
+end
 
 """
-    get_integrations(c::Client,
+    get_integrations(
+        c::Client,
         guild::Union{AbstractGuild, Integer},
     ) -> Response{Vector{Integration}}
 
@@ -387,7 +404,8 @@ end
 get_integrations(c::Client, guild::AbstractGuild) = get_integrations(c, guild.id)
 
 """
-    get_guild_webhooks(c::Client,
+    get_guild_webhooks(
+        c::Client,
         guild::Union{AbstractGuild, Integer},
     ) -> Response{Vector{Webhook}}
 
@@ -404,12 +422,11 @@ get_guild_webhooks(c::Client, guild::AbstractGuild) = get_guild_webhooks(c, guil
 
 Get a list of [`VoiceRegion`](@ref)s.
 """
-function get_regions(c::Client)
-    return Response{VoiceRegion}(c, :GET, "/voice/regions")
-end
+get_regions(c::Client) = Response{VoiceRegion}(c, :GET, "/voice/regions")
 
 """
-    get_guild_regions(c::Client,
+    get_guild_regions(
+        c::Client,
         guild::Union{AbstractGuild, Integer},
     ) -> Response{Vector{VoiceRegion}}
 
@@ -422,9 +439,7 @@ end
 get_guild_regions(c::Client, guild::AbstractGuild) = get_guild_regions(c, guild.id)
 
 """
-    get_vanity_code(c::Client
-        guild::Union{AbstractGuild, Integer},
-    ) -> Response{Invite}
+    get_vanity_code(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Invite}
 
 Get the vanity code from the given [`AbstractGuild`](@ref).
 """

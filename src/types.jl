@@ -101,7 +101,6 @@ macro fielddoc(T)
     TT = eval(T)
     ns = collect(string.(fieldnames(TT)))
     width = maximum(length, ns)
-
     map!(n -> rpad(n, width), ns, ns)
     ts = collect(map(f -> string(fieldtype(TT, f)), fieldnames(TT)))
     map!(s -> replace(s, "Discord." => ""), ts, ts)
