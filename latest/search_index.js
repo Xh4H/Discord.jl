@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(\n    token::String;\n    on_limit::OnLimit=LIMIT_IGNORE,\n    ttl::Period=Hour(1),\n    version::Int=6,\n ) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nTo get a bot token, head here to create a new application. Once you\'ve created a bot user, you will have access to its token.\n\nKeywords\n\non_limit::OnLimit=LIMIT_IGNORE: Client\'s behaviour when it hits a rate limit (see \"Rate Limiting\" below for more details).\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nCaching\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (determined by the ttl keyword). Although it\'s not recommended, you can also disable caching of certain data by clearing default handlers for relevant event types with clear_handlers!. For example, if you wanted to avoid caching any messages, you would clear handlers for MessageCreate and MessageUpdate events.\n\nRate Limiting\n\nDiscord enforces rate limits on usage of its REST API. This  means you can  only send so many messages in a given period, and so on. To customize the client\'s behaviour when encountering rate limits, use the on_limit keyword and see OnLimit.\n\nSharding\n\nSharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
+    "text": "Client(token::String; ttl::Period=Hour(1), version::Int=6) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nTo get a bot token, head here to create a new application. Once you\'ve created a bot user, you will have access to its token.\n\nKeywords\n\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nCaching\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (determined by the ttl keyword). Although it\'s not recommended, you can also disable caching of certain data by clearing default handlers for relevant event types with delete_handler!. For example, if you wanted to avoid caching any messages, you would delete handlers for MessageCreate and MessageUpdate events.\n\nSharding\n\nSharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
 },
 
 {
@@ -93,7 +93,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Base.close",
     "category": "function",
-    "text": "Base.close(c::Client)\n\nDisconnect from the Discord gateway.\n\n\n\n\n\n"
+    "text": "close(c::Client)\n\nDisconnect from the Discord gateway.\n\n\n\n\n\n"
 },
 
 {
@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.me",
     "category": "function",
-    "text": "me(c::Client) -> Union{User, Nothing}\n\nGet the client\'s bot user.\n\n\n\n\n\n"
+    "text": "me(c::Client) -> Union{User, Nothing}\n\nGet the Client\'s bot user.\n\n\n\n\n\n"
 },
 
 {
@@ -125,15 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd a handler for an event type. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended the event\'s current handlers.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run a set number of times before expiring. If a Period is given, the handler will expire after that amount of time has elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Discord.add_command!",
-    "page": "Client",
-    "title": "Discord.add_command!",
-    "category": "function",
-    "text": "add_command!(\n    c::Client,\n    prefix::AbstractString,\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1\n)\n\nAdd a text command handler. The handler function should take two arguments: A Client and a Message. The keyword arguments are identical to add_handler!.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multuple event types by using a Union.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run a set number of times before expiring. If a Period is given, the handler will expire after that amount of time has elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(c::Client, m::Module)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\n\n\n\n\n"
 },
 
 {
@@ -141,15 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.delete_handler!",
     "category": "function",
-    "text": "delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete a single handler by event type and tag.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Discord.clear_handlers!",
-    "page": "Client",
-    "title": "Discord.clear_handlers!",
-    "category": "function",
-    "text": "clear_handlers!(c::Client, evt::Type{<:AbstractEvent})\n\nRemove all handlers for an event type. Using this is generally not recommended because it also clears default handlers which maintain the client state. Instead, it\'s preferred add handlers with specific tags and delete them with delete_handler!.\n\n\n\n\n\n"
+    "text": "delete_handler!(c::Client, evt::Type{<:AbstractEvent})\ndelete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state.\n\n\n\n\n\n"
 },
 
 {
@@ -157,7 +141,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Event Handlers",
     "category": "section",
-    "text": "add_handler!\nadd_command!\ndelete_handler!\nclear_handlers!"
+    "text": "add_handler!\ndelete_handler!"
+},
+
+{
+    "location": "client.html#Discord.add_command!",
+    "page": "Client",
+    "title": "Discord.add_command!",
+    "category": "function",
+    "text": "add_command!(\n    c::Client,\n    prefix::AbstractString,\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd a text command handler. The handler function should take two arguments: A Client and a Message. The keyword arguments are identical to add_handler!.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Bot-Commands-1",
+    "page": "Client",
+    "title": "Bot Commands",
+    "category": "section",
+    "text": "add_command!"
 },
 
 {
@@ -557,7 +557,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.Response",
     "category": "type",
-    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a value of this type.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, a call to get_message will return a Response{Message} for which this value is a Message. If success is false, it is nothing.\nsuccess::Bool: The success state of the request. If this is true, then it is safe to access val.\ncache_hit::Bool: Whether val came from the cache.\nrate_limited::Bool: Whether the request was rate limited.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response. If no HTTP request was made (cache hit, rate limit, etc.), it is nothing.\n\n\n\n\n\n"
+    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_message, this value will be a Message.\nsuccess::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response. If no HTTP request was made in the case of a cache hit, it is nothing.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> send_message(c, ch, string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Discord.Message}\n\n\n\n\n\n"
 },
 
 {
@@ -566,22 +566,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Response",
     "category": "section",
     "text": "Response"
-},
-
-{
-    "location": "rest.html#Discord.OnLimit",
-    "page": "REST API",
-    "title": "Discord.OnLimit",
-    "category": "type",
-    "text": "Passed as a keyword argument to Client to determine the client\'s behaviour when it hits a rate limit. If set to LIMIT_IGNORE, a Response is returned immediately with rate_limited set to true. If set to LIMIT_WAIT, the client blocks until the rate limit resets, then retries the request.\n\n\n\n\n\n"
-},
-
-{
-    "location": "rest.html#Rate-Limiting-1",
-    "page": "REST API",
-    "title": "Rate Limiting",
-    "category": "section",
-    "text": "OnLimit"
 },
 
 {
