@@ -1,1 +1,3 @@
-ignore: [src/rest, src/gateway.jl]
+ignore:
+  - src/rest
+  - src/gateway.jl
