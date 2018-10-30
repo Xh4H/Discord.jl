@@ -13,6 +13,19 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
 - `success::Bool`: The state of the request. If `true`, then it is safe to access `val`.
 - `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response.
   If no HTTP request was made in the case of a cache hit, it is `nothing`.
+
+# Example
+```jldoctest
+julia> using Discord; c = Client("token"); ch = 1234567890;
+
+julia> fs = map(i -> send_message(c, ch, string(i)), 1:10);
+
+julia> typeof(first(fs))
+Distributed.Future
+
+julia> typeof(fetch(first(fs)))
+Discord.Response{Discord.Message}
+```
 """
 struct Response{T}
     val::Union{T, Nothing}
