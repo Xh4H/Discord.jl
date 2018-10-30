@@ -3,41 +3,58 @@ const ENDS_MAJOR_ID_REGEX = r"(?:channels|guilds|webhooks)/\d+$"
 const ENDS_ID_REGEX = r"/\d+$"
 const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
-struct Bucket
-    remaining::Int
-    reset::DateTime  # UTC.
+# TODO: Bucket code could definitely be full of race conditions.
+
+mutable struct Bucket
+    remaining::Union{Int, Nothing}
+    reset::Union{DateTime, Nothing}  # UTC.
+    sem::Base.Semaphore
+
+    Bucket() = new(nothing, nothing, Base.Semaphore(1))
+    Bucket(remaining::Int, reset::DateTime) = new(remaining, reset, Base.Semaphore(1))
+end
+
+Base.acquire(b::Bucket) = Base.acquire(b.sem)
+Base.release(b::Bucket) = Base.release(b.sem)
+
+function reset!(b::Bucket)
+    b.remaining = nothing
+    b.reset = nothing
 end
 
 mutable struct Limiter
     reset::Union{DateTime, Nothing}  # The global limit.
     buckets::Dict{AbstractString, Bucket}
+    lock::Threads.AbstractLock
 
-    Limiter() = new(nothing, Dict())
+    Limiter() = new(nothing, Dict(), Threads.SpinLock())
+end
+
+function bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
+    locked(l.lock) do
+        endpoint = parse_endpoint(endpoint, method)
+        if !haskey(l.buckets, endpoint)
+            l.buckets[endpoint] = Bucket()
+        end
+        return l.buckets[endpoint]
+    end
 end
 
 # Note: These DateTime operations only work if your system clock is accurate.
 
-function Base.wait(l::Limiter, method::Symbol, endpoint::AbstractString)
+function Base.wait(l::Limiter, b::Bucket)
     n = now(UTC)
     if l.reset !== nothing && l.reset > n
         sleep(l.reset - n)
     end
 
-    endpoint = parse_endpoint(endpoint)
-    b = get(l.buckets, endpoint, nothing)
-
-    if b !== nothing
-        n < b.reset && sleep(b.reset - n)
-        delete!(l.buckets, endpoint)
+    if n < b.reset
+        sleep(b.reset - n)
+        reset!(b)
     end
 end
 
-function update(
-    l::Limiter,
-    method::Symbol,
-    endpoint::AbstractString,
-    r::HTTP.Messages.Response
-)
+function update!(l::Limiter, b::Bucket, r::HTTP.Messages.Response)
     if r.status == 429
         d = JSON.parse(String(copy(r.body)))
         if get(d, "global", false)
@@ -51,13 +68,11 @@ function update(
     haskey(headers, "X-RateLimit-Remaining") || return
     haskey(headers, "X-RateLimit-Reset") || return
 
-    remaining = parse(Int, headers["X-RateLimit-Remaining"])
-    reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
-
-    l.buckets[parse_endpoint(endpoint, method)] = Bucket(remaining, reset)
+    b.remaining = parse(Int, headers["X-RateLimit-Remaining"])
+    b.reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
 end
 
-function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
+function islimited(l::Limiter, b::Bucket)
     n = now(UTC)
 
     if l.reset !== nothing
@@ -68,14 +83,9 @@ function islimited(l::Limiter, method::Symbol, endpoint::AbstractString)
         end
     end
 
-    endpoint = parse_endpoint(endpoint, method)
-
-    haskey(l.buckets, endpoint) || return false
-    
-    b = l.buckets[endpoint]
-
+    b.remaining === nothing && return false
     if n > b.reset
-        delete!(l.buckets, endpoint)
+        reset!(b)
         return false
     end
 

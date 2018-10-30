@@ -1,5 +1,6 @@
 const HEADERS = Dict("User-Agent" => "Discord.jl", "Content-Type" => "application/json")
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
+const RATELIMITED = ErrorException("rate limited")
 
 """
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
@@ -25,9 +26,14 @@ function Response{Nothing}(r::HTTP.Messages.Response)
 end
 
 # HTTP response with body (maybe).
-function Response{T}(r::HTTP.Messages.Response) where T
-    r.status == 204 && return Response{T}(nothing, true, r)
-    r.status >= 300 && return Response{T}(nothing, false, r)
+function Response{T}(c::Client, r::HTTP.Messages.Response) where T
+    if r.status == 204  # No content, but successful.
+        return Response{T}(nothing, true, r)
+    elseif r.status == 429  # Rate limited.
+        throw(RATELIMITED)  # TODO: Make this cleaner, we shouldn't need to throw.
+    elseif r.status >= 300  # Unsuccessful.
+        return Response{T}(nothing, false, r)
+    end
 
     data = JSON.parse(String(copy(r.body)))
     val, TT = data isa Vector ? (T.(data), Vector{T}) : (T(data), T)
@@ -72,26 +78,37 @@ function Response{T}(
         args = [method, url, headers]
         get(SHOULD_SEND, method, false) && push!(args, json(body))
 
-        # TODO: Rework rate limiting. Only one request should go through at a time.
-        # To think about:
-        # - Multiple shards share the same rate limit.
-        # - Expect 429s will still happen and handle them nicely.
-        # - Rate limit of n = Base.Semaphore(n)?
-        #   What happens when the rate limit resets?
-        # Anyone who was waiting for it is free to go (and we should have guaranteed that
-        # there were < n waiters) so we can't just create a brand new semaphore.
-        # - Each bucket has a task queue?
-        # Since we can't really predict the rate limits, we should probably limit requests
-        # to one at a time with a single lock.
+        # TODO: Sometimes a request stalls and holds up the entire queue for minutes at a
+        # time. Maybe we need some kind of external timeout mechanism, because it can be
+        # far longer than HTTP's default minute. Or maybe my internet just sucks.
 
-        while islimited(c.limiter, method, endpoint)
-            wait(c.limiter, method, endpoint)
+        # Acquire the lock, then check if we're rate limited. If we are, then release the
+        # lock and wait for the reset. Once we get the lock back and we're not rate
+        # limited, we can go through with the request (at that point we know we're the only
+        # task requesting from that endpoint). We update the bucket (we are still the only
+        # task touching the bucket) and then release the lock.
+
+        b = bucket(c.limiter, method, endpoint)
+        while true
+            Base.acquire(b)
+            if islimited(c.limiter, b)
+                Base.release(b)
+                wait(c.limiter, b)
+            else
+                try
+                    r = HTTP.request(args...; status_exception=false)
+                    update!(c.limiter, b, r)
+                    put!(f, Response{T}(c, r))
+                catch e
+                    # If we're rate limited, then just go back to the top.
+                    e == RATELIMITED && continue
+                    logmsg(c, ERROR, catchmsg(e); endpoint=endpoint, method=method)
+                finally
+                    Base.release(b)
+                end
+                break
+            end
         end
-
-        r = HTTP.request(args...; status_exception=false)
-        update(c.limiter, method, endpoint, r)
-
-        put!(f, Response{T}(r))
     end
 
     return f

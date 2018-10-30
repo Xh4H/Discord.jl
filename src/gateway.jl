@@ -252,8 +252,7 @@ function dispatch(c::Client, data::AbstractDict)
     evt = try
         T(T === UnknownEvent ? data : data["d"])
     catch e
-        err = sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
-        logmsg(c, ERROR, err; type=data["t"])
+        logmsg(c, ERROR, catchmsg(e); type=data["t"])
         UnknownEvent(data)
     end
 
@@ -264,8 +263,7 @@ function dispatch(c::Client, data::AbstractDict)
         @async try
             handler.f(c, evt)
         catch e
-            err = sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
-            logmsg(c, ERROR, err; event=T, handler=handler.tag)
+            logmsg(c, ERROR, catchmsg(e); event=T, handler=handler.tag)
         finally
             if handler.remaining != -1
                 handler.remaining -= 1

@@ -18,6 +18,10 @@ function locked(f::Function, l::Threads.AbstractLock)
     try f() finally unlock(l) end
 end
 
+function catchmsg(e::Exception)
+    return sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
+end
+
 insert_or_update(d, k, v) = d[k] = haskey(d, k) ? merge(d[k], v) : v
 
 include("types.jl")
