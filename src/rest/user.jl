@@ -95,3 +95,12 @@ end
 
 # Get User DMs not supported for bots
 # More info here https://discordapp.com/developers/docs/resources/user#get-user-dms
+
+"""
+    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response
+
+Leave a [`Guild`](@ref).
+"""
+function leave_guild(c::Client, guild::Integer)
+    return Response(c, :DELETE, "/users/@me/guilds/$guild")
+end

@@ -1,99 +1,34 @@
-export create_guild,
-        get_guild,
-        edit_guild,
-        delete_guild,
-        leave_guild,
-        create_role,
-        edit_role_positions,
-        get_roles,
-        create_channel,
-        add_member,
-        get_member,
-        list_members,
-        get_prune,
-        do_prune,
-        get_bans,
-        get_ban,
-        unban,
-        get_guild_invites,
-        create_integration,
-        get_integrations,
-        get_guild_webhooks,
-        get_regions,
-        get_guild_regions,
-        get_vanity_code
-
 """
-    create_guild(c::Client; params...) -> Response{Guild}
+    create_guild(c::Client; kwargs...) -> Guild
 
 Create a [`Guild`](@ref).
-
-# Keywords
-- `name::AbstractString`: Guild name (2-100 characters).
-- `region::Snowflake`: Desired voice region ID.
-- `icon::AbstractString`: Base64 128x128 jpeg image for the guild icon.
-- `verification_level::Integer`: Verification level.
-- `default_message_notifications::Integer`: Default message notification level.
-- `explicit_content_filter::Integer`: Explicit content filter level.
-- `roles::Vector{Role}`: New guild roles.
-- `channels::Vector{DiscordChannel}`: New guild channels.
-
 More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild).
 """
-function create_guild(c::Client; params...)
-    return Response{Guild}(c, :POST, "/guilds"; body=params)
+function create_guild(c::Client; kwargs...)
+    return Response{Guild}(c, :POST, "/guilds"; body=kwargs)
 end
 
 """
-    get_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Guild}
+    get_guild(c::Client, guild::Integer) -> Guild
 
 Get a [`Guild`](@ref).
 """
 function get_guild(c::Client, guild::Integer)
-    return if haskey(c.state.guilds, guild)
-        Response{Guild}(c.state.guilds[guild])
-    else
-        Response{Guild}(c, :GET, "/guilds/$guild")
-    end
+    return Response{Guild}(c, :GET, "/guilds/$guild")
 end
 
-get_guild(c::Client, guild::AbstractGuild) = get_guild(c, guild.id)
-
 """
-    edit_guild(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Guild}
+    modify_guild(c::Client, guild::Integer; kwargs...) -> Guild
 
-Modify a [`Guild`](@ref).
-
-# Keywords
-- `name::AbstractString`: Guild name (2-100 characters).
-- `region::Snowflake`: Desired voice region ID.
-- `icon::AbstractString`: Base64 128x128 jpeg image for the guild icon.
-- `verification_level::Integer`: Verification level.
-- `default_message_notifications::Integer`: Default message notification level.
-- `explicit_content_filter::Integer`: Explicit content filter level.
-- `afk_channel_id::Snowflake`: ID for afk channel.
-- `afk_timeout::Integer`: Afk timeout in seconds.
-- `icon::AbstractString`: Base64 128x128 jpeg image for the guild icon.
-- `owner_id::Snowflake`: User ID to transfer guild ownership to (must be owner).
-- `splash::AbstractString`: Base64 128x128 jpeg image for the guild splash (VIP only).
-- `system_channel_id::Snowflake`: The ID of the channel to which system messages are sent.
-
+Edit a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild).
 """
-function edit_guild(c::Client, guild::Integer; params...)
-    return Response{Guild}(c, :PATCH, "/guilds/$guild"; body=params)
-end
-
-function edit_guild(c::Client, g::AbstractGuild; params...)
-    return edit_guild(c, g.id; params...)
+function modify_guild(c::Client, guild::Integer; kwargs...)
+    return Response{Guild}(c, :PATCH, "/guilds/$guild"; body=kwargs)
 end
 
 """
-    delete_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response
+    delete_guild(c::Client, guild::Integer)
 
 Delete a [`Guild`](@ref).
 """
@@ -101,350 +36,301 @@ function delete_guild(c::Client, guild::Integer)
     return Response(c, :DELETE, "/guilds/$guild")
 end
 
-delete_guild(c::Client, g::AbstractGuild) = delete_guild(c, g.id)
-
 """
-    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response
+    get_guild_channels(c::Client, guild::Integer) -> Vector{DiscordChannel}
 
-Leave a [`Guild`](@ref).
+Get the [`DiscordChannel`](@ref)s in a [`Guild`](@ref).
 """
-function leave_guild(c::Client, guild::Integer)
-    return Response(c, :DELETE, "/users/@me/guilds/$guild")
-end
-
-leave_guild(c::Client, g::AbstractGuild) = delete_guild(c, g.id)
-
-"""
-    create_role(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Role}
-
-Create a [`Role`](@ref).
-
-# Keywords
-- `name::AbstractString`: Role name.
-- `permissions::Integer`: Bitwise value of the enabled/disabled permissions.
-- `color::Integer`: RGB color value.
-- `hoist::Bool`: Whether the role should be displayed separately in the sidebar.
-- `mentionable::Bool`: Whether the role should be mentionable.
-"""
-function create_role(c::Client, guild::Integer; params...)
-    return Response{Role}(c, :POST, "/guilds/$guild/roles"; body=params)
-end
-
-create_role(c::Client, g::AbstractGuild; params...) = create_role(c, g.id; params...)
-
-"""
-    edit_role_positions(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Vector{Role}}
-
-Modify the positions of a set of [`Role`](@ref)s.
-
-# Keywords
-- `id::Snowflake`: Role ID.
-- `position::Integer`: Position of the role.
-"""
-function edit_role_positions(c::Client, guild::Integer; params...)
-    return Response{Role}(c, :PATCH, "/guilds/$guild/roles"; body=params)
-end
-
-function edit_role_positions(c::Client, g::AbstractGuild; params...)
-    return edit_role_positions(c, g.id; params...)
+function get_guild_channels(c::Client, guild::Integer)
+    return Response{DiscordChannel}(c, :GET, "/guilds/$guild/channels")
 end
 
 """
-    get_roles(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Role}}
+    create_guild_channel(c::Client, guild::Integer; kwargs...) -> DiscordChannel
 
-Get an [`AbstractGuild`](@ref)'s [`Role`](@ref)s.
+Create a [`DiscordChannel`](@ref) in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-channel).
 """
-function get_roles(c::Client, guild::Integer)
+function create_guild_channel(c::Client, guild::Integer; params...)
+    return Response{Guild}(c, :POST, "/guilds/$guild/channels"; body=kwargs)
+end
+
+"""
+    modify_guild_channel_positions(c::Client, guild::Integer, positions...)
+
+Modify the positions of [`DiscordChannel`](@ref)s in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-channel-positions).
+"""
+function modify_guild_channel_positions(c::Client, guild::Integer, positions...)
+    return Response(c, :PATCH, "/guilds/$guild/channels"; body=positions)
+end
+
+"""
+    get_guild_member(c::Client, guild::Integer, user::Integer) -> Member
+
+Get a [`Member`](@ref) in a [`Guild`](@ref).
+"""
+function get_guild_member(c::Client, guild::Integer, user::Integer)
+    return Response{Member}(c, :GET, "/guilds/$guild/members/$user")
+end
+
+"""
+    list_guild_members(c::Client, guild::Integer; kwargs...) -> Vector{Member}
+
+Get a list of [`Member`](@ref)s in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#list-guild-members).
+"""
+function list_guild_members(c::Client, guild::Integer; kwargs...)
+    return Response{Member}(c, :GET, "/guilds/$guild/members"; kwargs...)
+end
+
+"""
+    add_guild_member(c::Client; kwargs...) -> Member
+
+Add a [`User`](@ref) to a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#add-guild-member).
+"""
+function add_guild_member(c::Client, guild::Integer, user::Integer; kwargs...)
+    return Response{Member}(c, :PUT, "/guilds/$guild/members/$user"; body=kwargs)
+end
+
+"""
+    modify_guild__member(c::Client, guild::Integer, user::Integer; kwargs...)
+
+Modify a [`Member`](@ref) in a [`Guild`](@ref)..
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-member).
+"""
+function edit_guild_member(c::Client, guild::Integer, user::Integer; kwargs...)
+    return Response(c, :PATCH, "/guilds/$guild/members/$user"; body=kwargs)
+end
+
+"""
+    modify_current_user_nick(c::Client, guild::Intger; kwargs...) -> String
+
+Modify the [`Client`](@ref) user's nickname in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-current-user-nick).
+"""
+function modify_current_user_nick(c::Client, guild::Integer; kwargs...)
+    return Response{String}(c, :PATCH, "/guilds/$guild/members/@me/nick"; body=kwargs)
+end
+
+"""
+    add_guild_member_role(c::Client, guild::Integer, user::Integer, role::Integer)
+
+Add a [`Role`](@ref) to a [`Member`](@ref).
+"""
+function add_guild_member_role(c::Client, guild::Integer, user::Integer, role::Integer)
+    return Response(c, :PUT, "/guilds/$guild/members/$user/roles/$role")
+end
+
+"""
+    remove_guild_member_role(c::Client, guild::Integer, user::Integer, role::Integer)
+
+Remove a [`Role`](@ref) from a [`Member`](@ref).
+"""
+function remove_guild_member_role(c::Client, guild::Integer, user::Integer, role::Integer)
+    return Response(c, :DELETE, "/guilds/$guild/members/$user/roles/$role")
+end
+
+"""
+    remove_guild_member(c::Client, guild::Integer, user::Integer)
+
+Kick a [`Member`](@ref) from a [`Guild`](@ref)..
+"""
+function remove_guild_member(c::Client, guild::Integer, user::Integer)
+    return Response(c, :DELETE, "/guilds/$guild/members/$user")
+end
+
+"""
+    get_guild_bans(c::Client, guild::Integer) -> Vector{Ban}
+
+Get a list of [`Ban`](@ref)s in a [`Guild`](@ref).
+"""
+function get_guild_bans(c::Client, guild::Integer)
+    return Response{Ban}(c, :GET, "/guilds/$guild/bans")
+end
+
+"""
+    get_ban(c::Client, guild::Integer,  user::Integer) -> Ban
+
+Get a [`Ban`](@ref) in a [`Guild`](@ref).
+"""
+function get_guild_ban(c::Client, guild::Integer, user::Integer)
+    return Response{Ban}(c, :GET, "/guilds/$guild/bans/$user")
+end
+
+"""
+    create_guild_ban(c::Client, guild::Integer, user::Integer; kwargs...)
+
+Ban a [`Member`](@ref) from a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-ban).
+"""
+function create_guild_ban(c::Client, guild::Integer, user::Integer; kwargs...)
+    return Response(c, :PUT, "/guilds/$guild/bans/$user"; kwargs...)
+end
+
+"""
+    remove_guild_ban(c::Client, guild::Integer, user::Integer)
+
+Unban a [`User`](@ref) from a [`Guild`](@ref).
+"""
+function remove_guild_ban(c::Client, guild::Integer, user::Integer)
+    return Response(c, :GET, "/guilds/$guild/bans/$user")
+end
+
+"""
+    get_guild_roles(c::Client, guild::Integer) -> Vector{Role}
+
+Get a [`Guild`](@ref)'s [`Role`](@ref)s.
+"""
+function get_guild_roles(c::Client, guild::Integer)
     return Response{Role}(c, :GET, "/guilds/$guild/roles")
 end
 
-get_roles(c::Client, g::AbstractGuild) = get_roles(c, g.id)
-
 """
-    create_channel(c::Client; params...) -> Response{DiscordChannel}
+    create_guild_role(c::Client, guild::Integer; kwargs) -> Role
 
-Create a [`DiscordChannel`](@ref).
-
-# Keywords
-- `name::AbstractString`: Channel name (2-100 characters).
-- `type::Integer`: Channel type.
-- `topic::AbstractString`: Channel topic (0-1024 characters).
-- `bitrate::Integer`: The bitrate (in bits) of the voice channel (voice only).
-- `user_limit::Integer`: The user limit of the voice channel (voice only).
-- `rate_limit_per_user::Integer`: Amount of seconds a user has to wait before
-  sending another message (0-120).
-- `permission_overwrites::Vector{Overwrite}`: The channel's permission overwrites.
-- `nsfw::Bool`: Whether the channel is nsfw.
-
-More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-channel).
+Create a [`Role`](@ref) in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-role).
 """
-function create_channel(c::Client, guild::Integer; params...)
-    (haskey(params, :bitrate) || haskey(params, :user_limit)) &&
-        haskey(c.state.channels, channel) &&
-        params["type"] === CT_GUILD_VOICE &&
-        throw(ArgumentError(
-            "Bitrate and user limit can only be modified for voice channels",
-        ))
-    return Response{Guild}(c, :POST, "/guilds/$guild/channels"; body=params)
-end
-
-create_channel(c::Client, g::AbstractGuild; params...) = create_channel(c, g.id; params...)
-
-"""
-    add_member(c::Client; params...) -> Response{Member}
-
-Add a [`User`](@ref) to a [`Guild`](@ref).
-
-# Keywords
-- `access_token::AbstractString`: OAuth2 access token.
-- `nick::AbstractString`: Value to set users nickname to.
-- `roles::Vector{Snowflake}`: Array of role IDs the member is assigned.
-- `mute::Bool`: Whether the user should be muted.
-- `deaf::Bool`: Whether the user should be deafened.
-
-More details [here](https://discordapp.com/developers/docs/resources/guild#add-guild-member).
-"""
-function add_member(c::Client, guild::Integer, user::Integer; params...)
-    return Response{Member}(c, :PUT, "/guilds/$guild/members/$user"; body=params)
-end
-
-function add_member(c::Client, g::AbstractGuild, u::User; params...)
-    return add_member(c, g.id, u.id; params...)
-end
-
-function add_member(c::Client, g::AbstractGuild, u::Integer; params...)
-    return add_member(c, g.id, u; params...)
-end
-
-function add_member(c::Client, g::Integer, u::User; params...)
-    return add_member(c, g, u.id; params...)
+function create_guild_role(c::Client, guild::Integer; kwargs...)
+    return Response{Role}(c, :POST, "/guilds/$guild/roles"; body=kwargs)
 end
 
 """
-    get_member(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-        user::Union{User, Integer},
-    ) -> Response{Member}
+    modify_guild_role_positions(c::Client, guild::Integer, positions...) -> Vector{Role}
 
-Get a [`Member`](@ref).
+Modify the positions of [`Role`](@ref)s in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-role-positions).
 """
-function get_member(c::Client, guild::Integer, user::Integer)
-    return if haskey(c.state.members, user)
-        Response{Member}(c.state.members[user])
-    else
-        Response{Member}(c, :GET, "/guilds/$guild/members/$user")
-    end
+function modify_guild_role_positions(c::Client, guild::Integer, positions...)
+    return Response{Role}(c, :PATCH, "/guilds/$guild/roles"; body=positions)
 end
 
-get_member(c::Client, g::AbstractGuild, u::User) = get_member(c, g.id, u.id)
-get_member(c::Client, g::AbstractGuild, u::Integer) = get_member(c, g.id, u)
-get_member(c::Client, g::Integer, u::User) = get_member(c, g, u.id)
-
 """
-    list_members(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Vector{Member}}
+    delete_guild_role(c::Client, guild::Integer, role::Integer)
 
-Get the [`Member`](@ref)s from a [`Guild`](@ref).
-
-# Keywords
-- `limit::Integer`: Max number of members to return (1-1000).
-- `after::Snowflake`: The highest user ID in the previous page.
-
-More details [here](https://discordapp.com/developers/docs/resources/guild#list-guild-members).
+Delete a [`Role`](@ref) from a [`Guild`](@ref).
 """
-function list_members(c::Client, guild::Integer; params...)
-    return Response{Member}(c, :GET, "/guilds/$guild/members"; params...)
+function delete_guild_role(c::Client, guild::Integer, role::Integer)
+    return Response(c, :DELETE, "/guilds/$guild/roles/$role")
 end
 
-list_members(c::Client, g::AbstractGuild; params...) = list_members(c, g.id; params...)
-
 """
-    get_prune(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Integer}
+    get_guild_prune_count(c::Client, guild::Integer; kwargs...) -> Dict
 
-Get the number of [`Member`](@ref)s that would be removed in a prune.
-
-# Keywords
-- `days::Integer`: Number of days to count prune for (1 or more).
-
+Get the number of [`Member`](@ref)s that would be removed from a [`Guild`](@ref) in a prune.
 More details [here](https://discordapp.com/developers/docs/resources/guild#get-guild-prune-count).
 """
-function get_prune(c::Client, guild::Integer; params...)
-    return Response{Integer}(c, :GET, "/guilds/$guild/prune"; params...)
+function get_guild_prune_count(c::Client, guild::Integer; kwargs...)
+    return Response{Dict}(c, :GET, "/guilds/$guild/prune"; kwargs...)
 end
 
-get_prune(c::Client, g::AbstractGuild; params...) = get_prune(c, g.id; params...)
-
 """
-    do_prune(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Integer}
+    begin_guild_prune(c::Client, guild::Integer; kwargs...) -> Dict
 
-Begin a prune.
-
-# Keywords
-- `days::Integer`: Number of days to prune for (1 or more).
-
+Begin pruning [`Member`](@ref)s from a [`Guild`](@ref)..
 More details [here](https://discordapp.com/developers/docs/resources/guild#begin-guild-prune).
 """
-function do_prune(c::Client, guild::Integer; params...)
-    return Response{Integer}(c, :POST, "/guilds/$guild/prune"; params...)
+function begin_guild_prune(c::Client, guild::Integer; kwargs...)
+    return Response{Dict}(c, :POST, "/guilds/$guild/prune"; kwargs...)
 end
 
-do_prune(c::Client, g::AbstractGuild; params...) = do_prune(c, g.id; params...)
-
 """
-    get_bans(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Vector{Ban}}
+    get_guild_voice_regions(c::Client, guild::Integer) -> Vector{VoiceRegion}
 
-Get the [`Ban`](@ref)s.
+Get a list of [`VoiceRegion`](@ref)s for the [`Guild`](@ref).
 """
-get_bans(c::Client, guild::Integer) = Response{Ban}(c, :GET, "/guilds/$guild/bans")
-get_bans(c::Client, g::AbstractGuild) = get_bans(c, g.id)
-
-"""
-    get_ban(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-        user::Union{User, Integer},
-    ) -> Response{Ban}
-
-Get a [`Ban`](@ref).
-"""
-function get_ban(c::Client, guild::Integer, user::Integer)
-    return Response{Ban}(c, :GET, "/guilds/$guild/bans/$user")
+function get_guild_voice_regions(c::Client, guild::Integer)
+    return Response{VoiceRegion}(c, :GET, "/guilds/$guild/regions")
 end
 
-get_ban(c::Client, g::AbstractGuild, u::User) = get_ban(c, g.id, u.id)
-get_ban(c::Client, g::AbstractGuild, u::Integer) = get_ban(c, g.id, u)
-get_ban(c::Client, g::Integer, u::User) = get_ban(c, g, u.id)
-
 """
-    unban(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-        user::Union{Member, Integer},
-    ) -> Response{Ban}
+    get_guild_invites(c::Client, guild::Integer) -> Vector{Invite}
 
-Get a [`Ban`](@ref).
-"""
-function unban(c::Client, guild::Integer, user::Integer)
-    return Response{Ban}(c, :GET, "/guilds/$guild/bans/$user")
-end
-
-unban(c::Client, g::AbstractGuild, u::Member) = unban(c, g.id, u.id)
-unban(c::Client, g::AbstractGuild, u::Integer) = unban(c, g.id, u)
-unban(c::Client, g::Integer, u::Member) = unban(c, g, u.id)
-
-"""
-    get_guild_invites(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-    ) -> Response{Vector{Invite}}
-
-Get the [`Invite`](@ref)s.
+Get a list of [`Invite`](@ref)s to a [`Guild`](@ref).
 """
 function get_guild_invites(c::Client, guild::Integer)
     return Response{Invite}(c, :GET, "/guilds/$guild/invites")
 end
 
-get_guild_invites(c::Client, g::AbstractGuild) = get_guild_invites(c, g.id)
-
 """
-    create_integration(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{Integration}
+    get_guild_integrations(c::Client, guild::Integer) -> Vector{Integration}
 
-Create/attach an [`Integration`](@ref).
-
-# Keywords
-- `type::Integer`: Integration type.
-- `id::Snowflake`: Integration ID.
-
-More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-Integration).
+Get a list of [`Integration`](@ref)s for a [`Guild`](@ref).
 """
-function create_integration(c::Client, guild::Integer; params...)
-    return Response{Integration}(c, :POST, "/guilds/$guild/Integrations"; params...)
-end
-
-function create_integration(c::Client, g::AbstractGuild; params...)
-    return create_integration(c, g.id; params...)
+function get_guild_integrations(c::Client, guild::Integer)
+    return Response{Integration}(c, :GET, "/guilds/$guild/integrations")
 end
 
 """
-    get_integrations(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-    ) -> Response{Vector{Integration}}
+    create_guild_integration(c::Client, guild::Integer; kwargs...)
 
-Get a list of [`Integration`](@ref)s.
+Create/attach an [`Integration`](@ref) to a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-integration).
 """
-function get_integrations(c::Client, guild::Integer)
-    return Response{Integration}(c, :GET, "/guilds/$guild/Integrations")
+function create_integration(c::Client, guild::Integer; kwargs...)
+    return Response{Integration}(c, :POST, "/guilds/$guild/integrations"; body=kwargs)
 end
 
-get_integrations(c::Client, guild::AbstractGuild) = get_integrations(c, guild.id)
-
 """
-    get_guild_webhooks(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-    ) -> Response{Vector{Webhook}}
+    modify_guild_integration(c::Client, guild::Integer, integration::Integer; kwargs...)
 
-Get a list of [`Webhook`](@ref)s.
+Modify an [`Integration`](@ref) in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-integration).
 """
-function get_guild_webhooks(c::Client, guild::Integer)
-    return Response{Webhook}(c, :GET, "/guilds/$guild/webhooks")
+function modify_guild_integration(
+    c::Client,
+    guild::Integer,
+    integration::Integer;
+    kwargs...,
+)
+    return Response(c, :PATCH, "/guilds/$guild/integrations/$integration"; body=kwargs)
 end
 
-get_guild_webhooks(c::Client, guild::AbstractGuild) = get_guild_webhooks(c, guild.id)
-
 """
-    get_regions(c::Client) -> Response{Vector{VoiceRegion}}
+    delete_guild_integration(c::Client, guild::Integer, integration::Integer)
 
-Get a list of [`VoiceRegion`](@ref)s.
+Delete an [`Integration`](@ref) from a [`Guild`](@ref).
 """
-get_regions(c::Client) = Response{VoiceRegion}(c, :GET, "/voice/regions")
-
-"""
-    get_guild_regions(
-        c::Client,
-        guild::Union{AbstractGuild, Integer},
-    ) -> Response{Vector{VoiceRegion}}
-
-Get a list of [`VoiceRegion`](@ref)s from the given [`AbstractGuild`](@ref).
-"""
-function get_guild_regions(c::Client, guild::Integer)
-    return Response{VoiceRegion}(c, :GET, "/guilds/$guild/regions")
+function delete_guild_integration(c::Client, guild::Integer, integration::Integer)
+    return Response(c, :DELETE, "/guilds/$guild/integrations/$integration")
 end
 
-get_guild_regions(c::Client, guild::AbstractGuild) = get_guild_regions(c, guild.id)
 
 """
-    get_vanity_code(c::Client, guild::Union{AbstractGuild, Integer}) -> Response{Invite}
+    sync_guild_integration(c::Client, guild::Integer, integration::Integer)
 
-Get the vanity code from the given [`AbstractGuild`](@ref).
+Sync an [`Integration`](@ref) in a [`Guild`](@ref).
+"""
+function sync_guild_integration(c::Client, guild::Integer, integration::Integer)
+    return Response(c, :POST, "/guilds/$guild/integrations/$integration/sync")
+end
+
+"""
+    get_guild_embed(c::Client, guild::Integer) -> GuildEmbed
+
+Get a [`Guild`](@ref)'s [`GuildEmbed`](@ref).
+"""
+function get_guild_embed(c::Client, guild::Integer)
+    return Response{GuildEmbed}(c, :GET, "/guilds/$guild/embed")
+end
+
+"""
+    modify_guild_embed(c::Client, guild::Integer; kwargs...) -> GuildEmbed
+
+Modify a [`Guild`](@ref)'s [`GuildEmbed`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-embed).
+"""
+function modify_guild_embed(c::Client, guild::Integer; kwargs...)
+    return Response{GuildEmbed}(c, :PATCH, "/guilds/$guild/embed"; body=kwargs)
+end
+
+"""
+    get_vanity_url(c::Client, guild::Integer) -> Invite
+
+Get a [`Guild`](@ref)'s vanity URL, if it supports that feature.
 """
 function get_vanity_code(c::Client, guild::Integer)
     return Response{Invite}(c, :GET, "/guilds/$guild/vanity-url")
 end
-
-get_vanity_code(c::Client, guild::AbstractGuild) = get_vanity_code(c, guild.id)
