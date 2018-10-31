@@ -1,17 +1,33 @@
-export get_webhook,
-    edit_webhook,
-    delete_webhook,
-    execute_webhook,
-    execute_github,
-    execute_slack
+"""
+    create_webhook(c::Client, channel::Integer; kwargs...) -> Webhook
+
+Create a [`Webhook`](@ref) in a [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/webhook#create-webhook).
+"""
+function create_webhook(c::Client, channel::Integer; kwargs...)
+    return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=kwargs)
+end
 
 """
-    get_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response{Webhook}
-    get_webhook(
-        c::Client,
-        webhook::Union{Webhook, Integer},
-        token::AbstractString,
-    ) -> Response{Webhook}
+    get_channel_webhooks(c::Client, channel::Integer) -> Vector{Webhook}
+
+Get a list of [`Webhook`](@ref)s in a [`DiscordChannel`](@ref).
+"""
+function get_channel_webhooks(c::Client, channel::Integer)
+    return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
+end
+
+"""
+    get_guild_webhooks(c::Client, guild::Integer) -> Vector{Webhook}
+
+Get a list of [`Webhook`](@ref)s in a [`Guild`](@ref).
+"""
+function get_guild_webhooks(c::Client, guild::Integer)
+    return Response{Webhook}(c, :GET, "/guilds/$guild/webhooks")
+end
+
+"""
+    get_webhook(c::Client, webhook::Integer) -> Webhook
 
 Get a [`Webhook`](@ref).
 """
@@ -19,61 +35,42 @@ function get_webhook(c::Client, webhook::Integer)
     return Response{Webhook}(c, :GET, "/webhooks/$webhook")
 end
 
-function get_webhook(c::Client, webhook::Integer, token::AbstractString)
+"""
+    get_webhook(c::Client, webhook::Integer, token::AbstractString) -> Webhook
+
+Get a [`Webhook`](@ref) with a token.
+"""
+function get_webhook_with_token(c::Client, webhook::Integer, token::AbstractString)
     return Response{Webhook}(c, :GET, "/webhooks/$webhook/$token")
 end
 
-get_webhook(c::Client, w::Webhook) = get_webhook(c, w.id)
-
-get_webhook(c::Client, w::Webhook, token::AbstractString) = get_webhook(c, w.id, token)
-
 """
-    edit_webhook(c::Client, webhook::Union{Webhook, Integer}; params...) -> Response{Webhook}
-    edit_webhook(
-        c::Client,
-        webhook::Union{Webhook, Integer},
-        token::AbstractString;
-        params...,
-    ) -> Response{Webhook}
+    modify_webhook(c::Client, webhook::Integer; kwargs...) -> Webhook
 
 Modify a [`Webhook`](@ref).
-
-# Keywords
-- `name::AbstractString`: Name of the webhook.
-- `avatar::AbstractString`: Avatar data string.
-- `channel_id::Integer`: The channel this webhook should be moved to.
-
-If using a `token`, `channel_id` cannot be used and the returned [`Webhook`](@ref) will not
-contain a [`User`](@ref).
-
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
 """
-function edit_webhook(c::Client, webhook::Integer; params...)
-    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=params)
-end
-
-function edit_webhook(c::Client, webhook::Integer, token::AbstractString; params...)
-    haskey(params, :channel_id) &&
-        throw(ArgumentError("channel_id can not be modified using a token"))
-
-    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook/$token"; body=params)
-end
-
-function edit_webhook(c::Client, w::Webhook; params...)
-    return edit_webhook(c, w.id, params)
-end
-
-function edit_webhook(c::Client, w::Webhook, token::AbstractString; params...)
-    return edit_webhook(c, w.id, token; params...)
+function modify_webhook(c::Client, webhook::Integer; kwargs...)
+    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook"; body=kwargs)
 end
 
 """
-    delete_webhook(c::Client, webhook::Union{Webhook, Integer}) -> Response
-    delete_webhook(
-        c::Client,
-        webhook::Union{Webhook, Integer},
-        token::AbstractString,
-    ) -> Response
+    modify_webhook(c::Client, webhook::Integer, token::AbstractString; kwargs...) -> Webhook
+
+Modify a [`Webhook`](@ref) with a token.
+More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
+"""
+function modify_webhook_with_token(
+    c::Client,
+    webhook::Integer,
+    token::AbstractString;
+    kwargs...,
+)
+    return Response{Webhook}(c, :PATCH, "/webhooks/$webhook/$token"; body=kwargs)
+end
+
+"""
+    delete_webhook(c::Client, webhook::Integer)
 
 Delete a [`Webhook`](@ref).
 """
@@ -81,37 +78,25 @@ function delete_webhook(c::Client, webhook::Integer)
     return Response(c, :DELETE, "/webhooks/$webhook")
 end
 
-function delete_webhook(c::Client, webhook::Integer, token::AbstractString)
+"""
+    delete_webhook(c::Client, webhook::Integer, token::AbstractString)
+
+Delete a [`Webhook`](@ref) with a token.
+"""
+function delete_webhook_with_token(c::Client, webhook::Integer, token::AbstractString)
     return Response(c, :DELETE, "/webhooks/$webhook/$token")
-end
-
-function delete_webhook(c::Client, w::Webhook)
-    return delete_webhook(c, w.id)
-end
-
-function delete_webhook(c::Client, w::Webhook, token::AbstractString)
-    return delete_webhook(c, w.id, token)
 end
 
 """
     execute_webhook(
         c::Client,
-        webhook::Union{Webhook, Integer},
+        webhook::Integer,
         token::AbstractString;
         wait::Bool=false,
-        params...,
-    ) -> Response
+        kwargs...,
+    ) -> Message
 
-Execute a [`Webhook`](@ref). If `wait` is set, the created [`Message`](@ref) is returned.
-
-# Keywords
-- `content::AbstractString`: The message contents (up to 2000 characters).
-- `username::AbstractString`: Override the default username of the webhook.
-- `avatar_url::AbstractString`: Override the default avatar of the webhook.
-- `tts::Bool`: Whether this is a TTS message.
-- `file::AbstractDict`: The contents of the file being sent.
-- `embeds::AbstractDict`: Embedded `rich` content.
-
+Execute a [`Webhook`](@ref). If `wait` is not set, no [`Message`](@ref) is returned.
 More details [here](https://discordapp.com/developers/docs/resources/webhook#execute-webhook).
 """
 function execute_webhook(
@@ -119,93 +104,63 @@ function execute_webhook(
     webhook::Integer,
     token::AbstractString;
     wait::Bool=false,
-    params...,
+    kwargs...,
 )
-    return if wait
-        Response{Message}(c, :POST, "/webhooks/$webhook/$token"; body=params, wait=wait)
-    else
-        Response(c, :POST, "/webhooks/$webhook/$token"; body=params)
-    end
+    return Response{Message}(c, :POST, "/webhooks/$webhook/$token"; body=params, wait=wait)
 end
 
-execute_webhook(c::Client, webhook::Webhook, token::AbstractString; wait::Bool=false, params...) = execute_webhook(c, webhook.id, token; wait=wait, params...)
-
 """
-    execute_github(
+    execute_slack_compatible_webhook(
         c::Client,
-        webhook::Union{Webhook, Integer},
+        webhook::Integer,
         token::AbstractString;
         wait::Bool=true,
-        params...
-    ) -> Response
+        kwargs...,
+    )
 
-Execute a *Github* [`Webhook`](@ref).
-
-More details [here](https://discordapp.com/developers/docs/resources/webhook#execute-githubcompatible-webhook).
-"""
-function execute_github(
-    c::Client,
-    webhook::Integer,
-    token::AbstractString;
-    wait::Bool=true,
-    params...,
-)
-    return if wait
-        Response{Message}(
-            c,
-            :POST,
-            "/webhooks/$webhook/$token/github";
-            body=params,
-            wait=wait,
-        )
-    else
-        Response(c, :POST, "/webhooks/$webhook/$token/github"; body=params)
-    end
-end
-
-function execute_github(
-    c::Client,
-    w::Webhook,
-    token::AbstractString;
-    wait::Bool=false,
-    params...
-)
-    return execute_github(c, w.id, token; wait=wait, params...)
-end
-
-"""
-    execute_slack(
-        c::Client,
-        webhook::Union{Webhook, Integer},
-        token::AbstractString;
-        wait::Bool=true,
-        params...,
-    ) -> Union{Response{Message}, Response}
-
-Execute a *Slack* [`Webhook`](@ref).
-
+Execute a Slack [`Webhook`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/webhook#execute-slackcompatible-webhook).
 """
-function execute_slack(
+function execute_slack_compatible_webhook(
     c::Client,
     webhook::Integer,
     token::AbstractString;
     wait::Bool=true,
     params...,
 )
-    return if wait
-        Response{Message}(
-            c,
-            :POST,
-            "/webhooks/$webhook/$token/slack";
-            body=params,
-            wait=wait,
-        )
-    else
-        Response(c, :POST, "/webhooks/$webhook/$token/slack"; body=params)
-    end
+    return Response{Message}(
+        c,
+        :POST,
+        "/webhooks/$webhook/$token/slack";
+        body=params,
+        wait=wait,
+    )
 end
 
-function execute_slack(c::Client, w::Webhook, token::AbstractString; wait::Bool=false, params...)
-    return execute_slack(c, w.id, token; wait=wait, params...)
+"""
+    execute_github_compatible_webhook(
+        c::Client,
+        webhook::Integer,
+        token::AbstractString;
+        wait::Bool=true,
+        kwargs...,
+    )
+
+Execute a Github [`Webhook`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/webhook#execute-githubcompatible-webhook).
+"""
+function execute_github_compatible_webhook(
+    c::Client,
+    webhook::Integer,
+    token::AbstractString;
+    wait::Bool=true,
+    kwargs...,
+)
+    return Response{Message}(
+        c,
+        :POST,
+        "/webhooks/$webhook/$token/github";
+        body=kwargs,
+        wait=wait,
+    )
 end

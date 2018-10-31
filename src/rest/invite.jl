@@ -1,31 +1,18 @@
-export get_invite,
-    delete_invite
-
 """
-    get_invite(
-        c::Client,
-        invite::Union{Invite, AbstractString};
-        with_counts::Bool=false,
-    ) -> Response{Invite}
+    get_invite(c::Client, invite::AbstractString; kwargs...} -> Invite
 
-Get an [`Invite`](@ref). If `with_counts` is set, the [`Invite`](@ref) will contain
-approximate member counts.
+Get an [`Invite`](@ref) to a [`Guild`](@ref)..
+More details [here](https://discordapp.com/developers/docs/resources/invite#get-invite).
 """
-function get_invite(c::Client, invite::AbstractString; with_counts::Bool=false)
-    return Response{Invite}(c, :GET, "/invites/$invite"; with_counts=with_counts)
-end
-
-function get_invite(c::Client, i::Invite; with_counts::Bool=false)
-    return get_invite(c, i.code; with_counts=with_counts)
+function get_invite(c::Client, invite::AbstractString; kwargs...)
+    return Response{Invite}(c, :GET, "/invites/$invite"; kwargs...)
 end
 
 """
-    delete_invite(c::Client, invite::Union{Invite, AbstractString}) -> Response{Invite}
+    delete_invite(c::Client, invite::AbstractString) -> Invite
 
-Delete an [`Invite`](@ref).
+Delete an [`Invite`](@ref) to a [`Guild`](@ref).
 """
 function delete_invite(c::Client, invite::AbstractString)
     return Response{Invite}(c, :DELETE, "/invites/$invite")
 end
-
-delete_invite(c::Client, i::Invite) = delete_invite(c, i.code)

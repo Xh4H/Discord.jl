@@ -1,106 +1,76 @@
-export get_user,
-    edit_client,
-    get_connections,
-    get_user_guilds,
-    leave_guild,
-    create_dm,
-    create_group
+"""
+    get_current_user(c::Client) -> User
+
+Get the [`Client`](@ref)'s [`User`](@ref).
+"""
+function get_current_user(c::Client)
+    return Response{User}(c, :GET, "/users/@me")
+end
 
 """
-    get_user(c::Client, user::Union{User, Integer}) -> Response{User}
+    get_user(c::Client, user::Integer) -> User
 
 Get a [`User`](@ref).
 """
-get_user(c::Client, user::Integer) = Response{User}(c, :GET, "/users/$user")
-get_user(c::Client, u::User) = get_user(c, u.id)
+function get_user(c::Client, user::Integer)
+    return Response{User}(c, :GET, "/users/$user")
+end
 
 """
-    edit_client(c::Client; params...) -> Response{User}
+    modify_current_user(c::Client; kwargs...) -> User
 
-Modify the [`Client`](@ref) user.
-
-# Keywords
-- `username::AbstractString`: Username of the client.
-- `avatar::AbstractString`: Avatar data string.
-
+Modify the [`Client`](@ref)'s [`User`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/user#modify-current-user).
 """
-function edit_client(c::Client; params...)
-    return Response{User}(c, :PATCH, "/users/@me"; body=params)
+function modify_current_user(c::Client; kwargs...)
+    return Response{User}(c, :PATCH, "/users/@me"; body=kwargs)
 end
 
 """
-    get_connections(c::Client) -> Response{Vector{Connection}}
+    get_user_guilds(c::Client; kwargs...) -> Vector{Guild}
 
-Get the [`Client`](@ref)'s [`Connection`](@ref)s.
-More details [here](https://discordapp.com/developers/docs/resources/user#get-user-connections).
-"""
-get_connections(c::Client) = Response{User}(c, :GET, "/users/@me/connections")
-
-"""
-    get_user_guilds(c::Client; params...) -> Response{Vector{AbstractGuild}}
-
-Get a Vector of [`AbstractGuild`](@ref)s the current user is a member of.
-
-# Keywords
-- `before::Integer`: Get guilds before this guild ID.
-- `after::Integer`: Get guilds after this guild ID.
-- `limit::Integer`: Max number of guilds to return (1-100). Defaults to 100.
-
+Get a list of [`Guild`](@ref)s the [`Client`](@ref)'s [`User`](@ref) is a member of.
 More details [here](https://discordapp.com/developers/docs/resources/user#get-current-user-guilds).
 """
-function get_user_guilds(c::Client; params...)
-    return Response{AbstractGuild}(
-        c,
-        :GET,
-        "/users/@me/connections";
-        params...,
-    )
+function get_current_user_guilds(c::Client; kwargs...)
+    return Response{Guild}(c, :GET, "/users/@me/connections"; kwargs...)
 end
 
 """
-    create_dm(c::Client, user::Integer) -> Response{DiscordChannel}
-
-Create a DM [`DiscordChannel`](@ref).
-"""
-function create_dm(c::Client, user::Integer)
-    return Response{DiscordChannel}(
-        c,
-        :POST,
-        "/users/@me/channels";
-        body=Dict("recipient_id" => user),
-    )
-end
-
-create_dm(c::Client, user::User) = create_dm(c, user.id)
-
-"""
-    create_group(c::Client; params...) -> Response{DiscordChannel}
-
-Create a group DM [`DiscordChannel`](@ref).
-
-# Keywords
-- `access_tokens::Vector`: Access tokens of users that have granted your app the `gdm.join`
-   scope.
-- `nicks::Dict`: A dictionary of [`User`](@ref) IDs to their respective nicknames.
-"""
-function create_group(c::Client; params...)
-    return Response{DiscordChannel}(
-        c,
-        :POST,
-        "/users/@me/channels";
-        body=params,
-    )
-end
-
-# Get User DMs not supported for bots
-# More info here https://discordapp.com/developers/docs/resources/user#get-user-dms
-
-"""
-    leave_guild(c::Client, guild::Union{AbstractGuild, Integer}) -> Response
+    leave_guild(c::Client, guild::::Integer)
 
 Leave a [`Guild`](@ref).
 """
 function leave_guild(c::Client, guild::Integer)
     return Response(c, :DELETE, "/users/@me/guilds/$guild")
+end
+
+"""
+    create_dm(c::Client; kwargs...) -> DiscordChannel
+
+Create a DM [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/user#create-dm).
+"""
+function create_dm(c::Client; kwargs...)
+    return Response{DiscordChannel}(c, :POST, "/users/@me/channels"; body=kwargs)
+end
+
+"""
+    create_group_dm(c::Client; kwargs...) -> DiscordChannel
+
+Create a group DM [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/user#create-group-dm).
+"""
+function create_group_dm(c::Client; kwargs...)
+    return Response{DiscordChannel}(c, :POST, "/users/@me/channels"; body=kwargs)
+end
+
+"""
+    get_user_connections(c::Client) -> Vector{Connection}
+
+Get the [`Client`](@ref)'s [`Connection`](@ref)s.
+More details [here](https://discordapp.com/developers/docs/resources/user#get-user-connections).
+"""
+function get_user_connections(c::Client)
+    return Response{Connection}(c, :GET, "/users/@me/connections")
 end
