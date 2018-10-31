@@ -3,9 +3,9 @@ const AUDIT_LOG_CHANGE_TYPES = Dict(
     "icon_hash" => (String, Guild) ,
     "splash_hash" => (String, Guild),
     "owner_id" => (Snowflake, Guild),
-    # ...
     "mentionable" => (Bool, Role),
-    "permissions" => (Int, Role)
+    "permissions" => (Int, Role),
+    # TODO
 )
 
 """
@@ -65,31 +65,27 @@ function AuditLogChange(d::Dict{String, Any})
             haskey(d, "new_value") ? T(d["new_value"]) : missing,
             haskey(d, "old_value") ? T(d["old_value"]) : missing,
             d["key"],
-            U
+            U,
         )
     else
         AuditLogChange{Any, Any}(
             get(d, "new_value", missing),
             get(d, "old_value", missing),
             d["key"],
-            Any
+            Any,
         )
     end
 end
 
 function JSON.lower(alc::AuditLogChange)
     d = Dict()
-
     if !ismissing(alc.new_value)
         d["new_value"] = alc.new_value
     end
-
     if !ismissing(alc.old_value)
         d["old_value"] = alc.new_value
     end
-
     d["key"] = alc.key
-    
     return d
 end
 

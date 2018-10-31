@@ -97,7 +97,7 @@ end
 """
     modify_guild__member(c::Client, guild::Integer, user::Integer; kwargs...)
 
-Modify a [`Member`](@ref) in a [`Guild`](@ref)..
+Modify a [`Member`](@ref) in a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-member).
 """
 function modify_guild_member(c::Client, guild::Integer, user::Integer; kwargs...)
@@ -135,7 +135,7 @@ end
 """
     remove_guild_member(c::Client, guild::Integer, user::Integer)
 
-Kick a [`Member`](@ref) from a [`Guild`](@ref)..
+Kick a [`Member`](@ref) from a [`Guild`](@ref).
 """
 function remove_guild_member(c::Client, guild::Integer, user::Integer)
     return Response(c, :DELETE, "/guilds/$guild/members/$user")
@@ -229,7 +229,7 @@ end
 """
     begin_guild_prune(c::Client, guild::Integer; kwargs...) -> Dict
 
-Begin pruning [`Member`](@ref)s from a [`Guild`](@ref)..
+Begin pruning [`Member`](@ref)s from a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#begin-guild-prune).
 """
 function begin_guild_prune(c::Client, guild::Integer; kwargs...)
