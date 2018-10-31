@@ -1,4 +1,4 @@
-function edit(c::Client, ch::DiscordChannel, o::Overwrite; kwargs...)
+function update(c::Client, ch::DiscordChannel, o::Overwrite; kwargs...)
     return edit_channel_permissions(c, ch.id, o.id; kwargs...)
 end
 

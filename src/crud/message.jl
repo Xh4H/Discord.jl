@@ -5,11 +5,11 @@ function retrieve(::Type{Message}, c::Client, ch::DiscordChannel, message::Integ
     return retrieve(Message, c, ch.id, snowflake(message))
 end
 
-function create(::Type{Message}, c::Client, channel::DiscordChannel; kwargs...)
+function create(::Type{Message}, c::Client, ch::DiscordChannel; kwargs...)
     return create_message(c, ch.id; kwargs...)
 end
 
-edit(c::Client, m::Message) = edit_message(c, m.channel_id, m.id; kwargs...)
+update(c::Client, m::Message; kwargs...) = edit_message(c, m.channel_id, m.id; kwargs...)
 delete(c::Client, m::Message) = delete_message(c, m.channel_id, m.id)
 
 function retrieve(::Type{Vector{Message}}, c::Client, ch::DiscordChannel; kwargs...)

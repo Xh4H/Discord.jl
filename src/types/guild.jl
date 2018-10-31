@@ -62,7 +62,7 @@ struct Guild <: AbstractGuild
     afk_channel_id::Union{Snowflake, Nothing}
     afk_timeout::Int
     embed_enabled::Union{Bool, Missing}
-    embed_channel_id::Union{Snowflake, Missing}
+    embed_channel_id::Union{Snowflake, Missing, Nothing}  # Not supposed to be nullable.
     verification_level::VerificationLevel
     default_message_notifications::MessageNotificationLevel
     explicit_content_filter::ExplicitContentFilterLevel
@@ -72,7 +72,7 @@ struct Guild <: AbstractGuild
     mfa_level::MFALevel
     application_id::Union{Snowflake, Nothing}
     widget_enabled::Union{Bool, Missing}
-    widget_channel_id::Union{Snowflake, Missing}
+    widget_channel_id::Union{Snowflake, Missing, Nothing}  # Not supposed to be nullable.
     system_channel_id::Union{Snowflake, Nothing}
     joined_at::Union{DateTime, Missing}
     large::Union{Bool, Missing}

@@ -37,7 +37,7 @@ function get_current_user_guilds(c::Client; kwargs...)
 end
 
 """
-    leave_guild(c::Client, guild::::Integer)
+    leave_guild(c::Client, guild::Integer)
 
 Leave a [`Guild`](@ref).
 """
