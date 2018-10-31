@@ -1,11 +1,5 @@
-export get_audit_log
-
 """
-    get_audit_log(
-        c::Client,
-        guild::Union{AbstractGuild, Integer};
-        params...,
-    ) -> Response{AuditLog}
+    get_guild_audit_log(c::Client, guild::Integer; kwargs...) -> Future{Response{AuditLog}}
 
 Get an [`AuditLog`](@ref).
 
@@ -15,10 +9,6 @@ Get an [`AuditLog`](@ref).
 - `before::Integer`: filter the log before a certain entry ID.
 - `limit::Integer`: How many entries are returned (default 50, minimum 1, maximum 100).
 """
-function get_audit_log(c::Client, guild::Integer; params...)
-    return Response{AuditLog}(c, :GET, "/guilds/$guild/audit-logs"; params...)
-end
-
-function get_audit_log(c::Client, guild::AbstractGuild; params...)
-    return get_audit_log(c, guild.id; params...)
+function get_guild_audit_log(c::Client, guild::Integer; kwargs...)
+    return Response{AuditLog}(c, :GET, "/guilds/$guild/audit-logs"; kwargs...)
 end

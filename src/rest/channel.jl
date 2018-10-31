@@ -1,195 +1,24 @@
-export send_message,
-    get_message,
-    get_messages,
-    get_pinned_messages,
-    get_channel,
-    bulk_delete,
-    trigger_typing,
-    edit_channel,
-    delete_channel,
-    create_invite,
-    get_channel_invites,
-    create_webhook,
-    get_channel_webhooks
-
 """
-    send_message(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-        content::Union{AbstractString, AbstractDict},
-    ) -> Response{Message}
-
-Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
-"""
-function send_message(c::Client, channel::Integer, content::AbstractDict)
-    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=content)
-end
-
-function send_message(c::Client, channel::Integer, content::AbstractString)
-    return send_message(c, channel, Dict("content" => content))
-end
-
-function send_message(
-    c::Client,
-    ch::DiscordChannel,
-    content::Union{AbstractString, AbstractDict},
-)
-    return send_message(c, ch.id, content)
-end
-
-"""
-    get_message(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-        message::Integer,
-    ) -> Response{Message}
-    get_message(c::Client, m::Message) -> Response{Message}
-
-Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
-"""
-function get_message(c::Client, channel::Integer, message::Integer)
-    return Response{Message}(c, :GET, "/channels/$channel/messages/$message")
-end
-
-function get_message(c::Client, m::Message)
-    return get_message(c, m.channel_id, m.id)
-end
-
-function get_message(c::Client, ch::DiscordChannel, message::Integer)
-    return get_message(c, ch.id, message)
-end
-
-"""
-    get_messages(
-        c::Client,
-        channel::Union{DiscordChannel, Integer};
-        params...,
-    ) -> Response{Vector{Message}}
-
-Get a list of [`Message`](@ref)s from a [`DiscordChannel`](@ref).
-
-# Keywords
-- `around::Integer`: Get messages around this message ID.
-- `before::Integer`: Get messages before this message ID.
-- `after::Integer`: Get messages after this message ID.
-- `limit::Integer`: Maximum number of messages.
-
-More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
-"""
-function get_messages(c::Client, channel::Integer; params...)
-    return Response{Message}(c, :GET, "/channels/$channel/messages"; params...)
-end
-
-function get_messages(c::Client, channel::DiscordChannel; params...)
-    return get_messages(c, channel.id; params...)
-end
-
-"""
-    get_pinned_messages(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-    ) -> Response{Vector{Message}}
-
-Get the pinned [`Message`](@ref)s in a [`DiscordChannel`](@ref).
-"""
-function get_pinned_messages(c::Client, channel::Integer)
-    return Response{Message}(c, :GET, "/channels/$channel/pins")
-end
-
-get_pinned_messages(c::Client, channel::DiscordChannel) = get_pinned_messages(c, channel.id)
-
-"""
-    get_channel(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-    ) -> Response{DiscordChannel}
+    get_channel(c::Client, channel::Integer) -> DiscordChannel
 
 Get a [`DiscordChannel`](@ref).
 """
 function get_channel(c::Client, channel::Integer)
-    return Response{DiscordChannel}(c, :GET, "/channels/$guild")
-end
-
-get_channel(c::Client, ch::DiscordChannel) = get_channel(c, ch.id)
-
-"""
-    bulk_delete(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-        messages::Union{Vector{Message}, Vector{<:Integer}},
-    ) -> Response
-
-Delete multiple [`Message`](@ref)s from a [`DiscordChannel`](@ref).
-"""
-function bulk_delete(c::Client, channel::Integer, messages::Vector{<:Integer})
-    return Response(
-        c,
-        :POST,
-        "/channels/$channel/messages/bulk-delete";
-        body=Dict("messages" => messages),
-    )
-end
-
-function bulk_delete(c::Client, ch::DiscordChannel, messages::Vector{<:Integer})
-    return bulk_delete(c, channel.id, messages)
-end
-
-function bulk_delete(c::Client, ch::DiscordChannel, ms::Vector{Message})
-    return bulk_delete(c, ch.id, map(m -> m.id, ms))
+    return Response{DiscordChannel}(c, :GET, "/channels/$channel")
 end
 
 """
-    trigger_typing(c::Client, channel::Union{DiscordChannel, Integer}) -> Response
-
-Trigger the typing indicator in a [`DiscordChannel`](@ref).
-"""
-function trigger_typing(c::Client, channel::Integer)
-    return Response(c, :POST, "/channels/$channel/typing")
-end
-
-trigger_typing(c::Client, ch::DiscordChannel) = trigger_typing(c, ch.id)
-
-"""
-    edit_channel(
-        c::Client,
-        channel::Union{DiscordChannel, Integer};
-        params...,
-    ) -> Response{DiscordChannel}
+    modify_channel(c::Client, channel::Integer; kwargs...) -> DiscordChannel
 
 Modify a [`DiscordChannel`](@ref).
-
-# Keywords
-- `name::AbstractString`: Channel name (2-100 characters).
-- `topic::AbstractString`: Channel topic (up to 1024 characters).
-- `nsfw::Bool`: Whether the channel is NSFW.
-- `rate_limit_per_user::Integer`: Seconds a user must wait before sending another message.
-- `position::Integer`: The position in the left-hand listing.
-- `bitrate::Integer`: The bitrate in bits of the voice channel.
-- `user_limit::Integer`: The user limit of the voice channel.
-- `permission_overwrites::Vector{Union{<:AbstractDict, Overwrite}}`: Channel or
-  category-specific permissions.
-- `parent_id::Integer`: ID of the new parent category.
-
 More details [here](https://discordapp.com/developers/docs/resources/channel#modify-channel).
 """
-function edit_channel(c::Client, channel::Integer; params...)
-    (haskey(params, :bitrate) || haskey(params, :user_limit)) &&
-        haskey(c.state.channels, channel) &&
-        c.state.channels[channel].type === CT_GUILD_VOICE &&
-        throw(ArgumentError(
-            "Bitrate and user limit can only be modified for voice channels",
-        ))
-
-    return Response{DiscordChannel}(c, :PATCH, "/channels/$channel"; body=params)
+function modify_channel(c::Client, channel::Integer; kwargs...)
+    return Response{DiscordChannel}(c, :PATCH, "/channels/$channel"; body=kwargs)
 end
 
-edit_channel(c::Client, ch::DiscordChannel; params...) = edit_channel(c, ch.id; params...)
-
 """
-    delete_channel(
-        c::Client,
-        channel:::Union{DiscordChannel, Integer},
-    ) -> Response{DiscordChannel}
+    delete_channel(c::Client, channel::Integer) -> DiscordChannel
 
 Delete a [`DiscordChannel`](@ref).
 """
@@ -197,78 +26,235 @@ function delete_channel(c::Client, channel::Integer)
     return Response{DiscordChannel}(c, :DELETE, "/channels/$channel")
 end
 
-delete_channel(c::Client, ch::DiscordChannel) = delete_channel(c, ch.id)
-
 """
-    create_invite(
-        c::Client,
-        channel::Union{DiscordChannel, Integer};
-        params...,
-    ) -> Response{Invite}
+    get_channel_messages(c::Client, channel::Integer; kwargs...) -> Vector{Message}
 
-Create an [`Invite`](@ref) to a [`DiscordChannel`](@ref).
-
-# Keywords
-- `max_uses::Integer`: Max number of uses (0 if unlimited).
-- `max_age::Integer`: Duration in seconds before expiry (0 if never).
-- `temporary::Bool`: Whether this invite only grants temporary membership.
-- `unique::Bool`: Whether not to try to reuse a similar invite.
-
-More details [here](https://discordapp.com/developers/docs/resources/channel#create-channel-invite).
+Get a list of [`Message`](@ref)s from a [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
 """
-function create_invite(c::Client, channel::Integer, params...)
-    return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=params)
+function get_channel_messages(c::Client, channel::Integer; kwargs...)
+    return Response{Message}(c, :GET, "/channels/$channel/messages"; kwargs...)
 end
 
-create_invite(c::Client, ch::DiscordChannel; params...) = create_invite(c, ch.id; params...)
+"""
+    get_channel_message(c::Client, channel::Integer, message::Integer) -> Message
+
+Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
+"""
+function get_message(c::Client, channel::Integer, message::Integer)
+    return Response{Message}(c, :GET, "/channels/$channel/messages/$message")
+end
 
 """
-    get_channel_invites(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-    ) -> Response{Vector{Invite}}
+    create_message(c::Client, channel::Integer; kwargs...) -> Message
 
-Get a list of [`Invite`](@ref)s from a [`DiscordChannel`](@ref).
+Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#create-message).
+"""
+function send_message(c::Client, channel::Integer; kwargs...)
+    return Response{Message}(c, :POST, "/channels/$channel/messages"; body=kwargs)
+end
+
+"""
+    create_reaction(c::Client, channel::Integer, message::Integer, emoji::AbstractString)
+
+React to a [`Message`](@ref).
+"""
+function create_reaction(
+    c::Client,
+    channel::Integer,
+    message::Integer,
+    emoji::AbstractString,
+)
+    return Response(
+        c,
+        :PUT,
+        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/@me",
+    )
+end
+
+"""
+    delete_own_reaction(
+        c::Client,
+        channel::Integer,
+        message::Integer,
+        emoji::AbstractString,
+    )
+
+Delete the [`Client`](@ref) user's reaction to a [`Message`](@ref).
+"""
+function delete_own_reaction(
+    c::Client,
+    channel::Integer,
+    message::Integer,
+    emoji::AbstractString,
+)
+    return Response(
+        c,
+        :DELETE,
+        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/@me",
+    )
+end
+
+function delete_user_reaction(
+    c::Client,
+    channel::Integer,
+    message::Integer,
+    emoji::AbstractString,
+    user::Integer,
+)
+    return Response(
+        c,
+        :DELETE,
+        "channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/$user",
+    )
+end
+
+"""
+    get_reactions(
+        c::Client,
+        channel::Integer,
+        message::Integer,
+        emoji::AbstractString,
+    ) -> Vector{User}
+
+Get the [`User`](@ref)s who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
+"""
+function get_reactions(c::Client, channel::Integer, message::Integer, emoji::AbstractString)
+    return Response{User}(
+        c,
+        :GET,
+        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))",
+    )
+end
+
+"""
+    delete_all_reactions(c::Client, channel::Integer, message::Integer)
+
+Delete all reactions from a [`Message`](@ref).
+"""
+function delete_all_reactions(c::Client, channel::Integer, message::Integer)
+    return Response(c, :DELETE, "/channels/$channel/messages/$message/reactions")
+end
+
+"""
+    edit_message(c::Client, channel::Integer, message::Integer; kwargs...) -> Message
+
+Edit a [`Message`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#edit-message).
+"""
+function edit_message(c::Client, channel::Integer, message::Integer; kwargs...)
+    return Response{Message}(c, :PATCH, "/channels/$channel/messages/$message"; body=kwargs)
+end
+
+"""
+    delete_message(c::Client, channel::Integer, message::Integer)
+
+Delete a [`Message`](@ref).
+"""
+function delete_message(c::Client, channel::Integer, message::Integer)
+    return Response(c, :DELETE, "/channels/$channel/messages/$message")
+end
+
+"""
+    bulk_delete_messages(c::Client, channel::Integer; kwargs...)
+
+Delete multuple [`Message`](@ref)s.
+"""
+function bulk_delete_messages(c::Client, channel::Integer; kwargs...)
+    return Response(c, :DELETE, "/channels/$channel/messages"; body=kwargs...)
+end
+
+"""
+    edit_channel_permissions(
+        c::Client,
+        channel::Integer,
+        overwrite::Integer;
+        kwargs...,
+    )
+
+Edit permissions for a [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#edit-channel-permissions).
+"""
+function edit_channel_permissions(
+    c::Client,
+    channel::Integer,
+    overwrite::Integer;
+    kwargs...,
+)
+    return Response(c, :PUT, "/channels/$channel/permissions/$overwrite"; body=kwargs)
+end
+
+"""
+    get_channel_invites(c::Client, channel::Integer) -> Vector{Invite}
+
+Get the [`Invite`](@ref)s for a [`DiscordChannel`](@ref).
 """
 function get_channel_invites(c::Client, channel::Integer)
     return Response{Invite}(c, :GET, "/channels/$channel/invites")
 end
 
-get_channel_invites(c::Client, ch::DiscordChannel) = get_channel_invites(c, ch.id)
-
 """
-    create_webhook(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-        params...,
-    ) -> Response
+    create_channel_invite(c::Client, channel::Integer; kwargs...) -> Invite
 
-Create a [`Webhook`](@ref) in a [`DiscordChannel`](@ref).
-
-# Keywords
-- `name::AbstractString`: name of the webhook (2-23 characters)
-- `avatar::AbstractString`: image for the default webhook avatar
-
-More details [here](https://discordapp.com/developers/docs/resources/webhook#create-webhook).
+Create an [`Invite`](@ref) to a [`DiscordChannel`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/channel#create-channel-invite).
 """
-function create_webhook(c::Client, channel::Integer, params...)
-    return Response{Webhook}(c, :POST, "/channels/$channel/webhooks"; body=params)
-end
-
-function create_webhook(c::Client, ch::DiscordChannel; params...)
-    return create_webhook(c, ch.id; params...)
+function create_channel_invite(c::Client, channel::Integer, kwargs...)
+    return Response{Invite}(c, :POST, "/channels/$channel/invites"; body=kwargs)
 end
 
 """
-    get_channel_webhooks(
-        c::Client,
-        channel::Union{DiscordChannel, Integer},
-    ) -> Response{Vector{Webhook}}
+    delete_channel_permission(c::Client, channel::Integer, overwrite::Integer)
 
-Get a list of [`Webhook`](@ref)s from a [`DiscordChannel`](@ref).
+Delete an [`Overwrite`](@ref) from a [`DiscordChannel`](@ref).
 """
-function get_channel_webhooks(c::Client, channel::Integer)
-    return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
+function delete_channel_permission(c::Client, channel::Integer, overwrite::Integer)
+    return Response(c, :DELETE, "/channels/$channel/permissions/$overwrite")
 end
 
-get_channel_webhooks(c::Client, ch::DiscordChannel) = get_channel_webhooks(c, ch.id)
+"""
+    trigger_typing_indicator(c::Client, channel::Integer)
+
+Trigger the typing indicator in a [`DiscordChannel`](@ref).
+"""
+function trigger_typing_indicator(c::Client, channel::Integer)
+    return Response(c, :PUT, "/channels/$channel/typing")
+end
+
+"""
+    get_pinned_messages(c::Client, channel::Integer) -> Vector{Message}
+
+Get the pinned [`Message`](@ref)s in a [`DiscordChannel`](@ref).
+"""
+function get_pinned_messages(c::Client, channel::Integer)
+    return Response{Message}(c, :GET, "/channels/$channel/pins")
+end
+
+"""
+    add_pinned_channel_message(c::Client, channel::Integer, message::Integer)
+
+Pin a [`Message`](@ref) in a [`DiscordChannel`](@ref).
+"""
+function add_pinned_channel_message(c::Client, channel::Integer, message::Integer)
+    return Response(c, :PUT, "/channels/$channel/pins/$message")
+end
+
+"""
+    group_dm_add_recipient(c::Client, channel::Integer, user::Integer; kwargs...)
+
+Add a [`User`](@ref) to a group DM.
+More details [here](https://discordapp.com/developers/docs/resources/channel#group-dm-add-recipient).
+"""
+function group_dm_add_recipient(c::Client, channel::Integer, user::Integer; kwargs...)
+    return Response(c, :PUT, "/channels/$channel/recipients/$user"; body=kwargs)
+end
+
+"""
+    group_dm_remove_recipient(c::Client, channel::Integer, user::Integer)
+
+Remove a [`User`](@ref) from a group DM.
+"""
+function group_dm_remove_recipient(c::Client, channel::Integer, user::Integer)
+    return Response(c, :DELETE, "/channels/$channel/recipients/$user")
+end
