@@ -106,7 +106,7 @@ function delete_user_reaction(
     return Response(
         c,
         :DELETE,
-        "channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/$user",
+        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/$user",
     )
 end
 

@@ -11,14 +11,15 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, for a
   call to [`get_message`](@ref), this value will be a [`Message`](@ref).
 - `success::Bool`: The state of the request. If `true`, then it is safe to access `val`.
-- `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response.
-  If no HTTP request was made in the case of a cache hit, it is `nothing`.
+- `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response, if
+  a request was made.
+- `exception::Union{Exception, Nothing}`: The caught exception, if one is thrown.
 
 # Example
 ```jldoctest
 julia> using Discord; c = Client("token"); ch = 1234567890;
 
-julia> fs = map(i -> send_message(c, ch, string(i)), 1:10);
+julia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);
 
 julia> typeof(first(fs))
 Distributed.Future
@@ -31,32 +32,33 @@ struct Response{T}
     val::Union{T, Nothing}
     success::Bool
     http_response::Union{HTTP.Messages.Response, Nothing}
+    exception::Union{Exception, Nothing}
 end
 
 # HTTP response with no body.
 function Response{Nothing}(r::HTTP.Messages.Response)
-    return Response{Nothing}(nothing, r.status < 300, r)
+    return Response{Nothing}(nothing, r.status < 300, r, nothing)
 end
 
 # HTTP response with body (maybe).
 function Response{T}(c::Client, r::HTTP.Messages.Response) where T
     if r.status == 204  # No content, but successful.
-        return Response{T}(nothing, true, r)
+        return Response{T}(nothing, true, r, nothing)
     elseif r.status == 429  # Rate limited.
         throw(RATELIMITED)  # TODO: Make this cleaner, we shouldn't need to throw.
     elseif r.status >= 300  # Unsuccessful.
-        return Response{T}(nothing, false, r)
+        return Response{T}(nothing, false, r, nothing)
     end
 
     data = JSON.parse(String(copy(r.body)))
     val, TT = data isa Vector ? (T.(data), Vector{T}) : (T(data), T)
-    return Response{TT}(val, true, r)
+    return Response{TT}(val, true, r, nothing)
 end
 
 # Cache hit.
 function Response{T}(val::T) where T
     f = Future()
-    put!(f, Response{T}(val, true, nothing))
+    put!(f, Response{T}(val, true, nothing, nothing))
     return f
 end
 
@@ -115,7 +117,7 @@ function Response{T}(
                 catch e
                     # If we're rate limited, then just go back to the top.
                     e == RATELIMITED && continue
-                    logmsg(c, ERROR, catchmsg(e); endpoint=endpoint, method=method)
+                    put!(f, Response{T}(nothing, false, nothing, e))
                 finally
                     Base.release(b)
                 end
