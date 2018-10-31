@@ -106,7 +106,7 @@ function execute_webhook(
     wait::Bool=false,
     kwargs...,
 )
-    return Response{Message}(c, :POST, "/webhooks/$webhook/$token"; body=params, wait=wait)
+    return Response{Message}(c, :POST, "/webhooks/$webhook/$token"; body=kwargs, wait=wait)
 end
 
 """
@@ -126,13 +126,13 @@ function execute_slack_compatible_webhook(
     webhook::Integer,
     token::AbstractString;
     wait::Bool=true,
-    params...,
+    kwargs...,
 )
     return Response{Message}(
         c,
         :POST,
         "/webhooks/$webhook/$token/slack";
-        body=params,
+        body=kwargs,
         wait=wait,
     )
 end

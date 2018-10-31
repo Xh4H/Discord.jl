@@ -66,9 +66,9 @@ function Response(
     method::Symbol,
     endpoint::AbstractString;
     body="",
-    params...
+    kwargs...
 )
-    return Response{Nothing}(c, method, endpoint; body=body, params...)
+    return Response{Nothing}(c, method, endpoint; body=body, kwargs...)
 end
 
 # HTTP request.
@@ -77,14 +77,14 @@ function Response{T}(
     method::Symbol,
     endpoint::AbstractString;
     body="",
-    params...
+    kwargs...
 ) where T
     f = Future()
 
     @async begin
         url = "$DISCORD_API/v$(c.version)$endpoint"
-        if !isempty(params)
-            url *= "?" * HTTP.escapeuri(params)
+        if !isempty(kwargs)
+            url *= "?" * HTTP.escapeuri(kwargs)
         end
         headers = copy(HEADERS)
         headers["Authorization"] = c.token
@@ -128,13 +128,8 @@ function Response{T}(
 end
 
 include(joinpath("rest", "audit_log.jl"))
-include(joinpath("rest", "integration.jl"))
-include(joinpath("rest", "invite.jl"))
 include(joinpath("rest", "channel.jl"))
-include(joinpath("rest", "member.jl"))
-include(joinpath("rest", "message.jl"))
-include(joinpath("rest", "overwrite.jl"))
-include(joinpath("rest", "role.jl"))
+include(joinpath("rest", "guild.jl"))
+include(joinpath("rest", "invite.jl"))
 include(joinpath("rest", "user.jl"))
 include(joinpath("rest", "webhook.jl"))
-include(joinpath("rest", "guild.jl"))

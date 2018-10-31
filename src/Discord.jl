@@ -31,6 +31,7 @@ include("limiter.jl")
 include("client.jl")
 include("gateway.jl")
 include("rest.jl")
+include("crud.jl")
 include("commands.jl")
 include("Defaults.jl")
 

@@ -1,4 +1,4 @@
-function get(::Type{Vector{Invite}}, c::Client, ch::DiscordChannel)
+function retrieve(::Type{Vector{Invite}}, c::Client, ch::DiscordChannel)
     return get_channel_invites(c, ch.id)
 end
 

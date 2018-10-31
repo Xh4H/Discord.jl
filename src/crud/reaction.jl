@@ -1,7 +1,7 @@
-function get(::Type{Reaction}, c::Client, m::Message, emoji::AbstractString)
+function retrieve(::Type{Reaction}, c::Client, m::Message, emoji::AbstractString)
     return get_reactions(c, m.channel_id, m.id, emoji)
 end
-get(::Type{Reaction}, c::Client, m::Message, e::Emoji) = get(Reaction, c, m, e.name)
+retrieve(::Type{Reaction}, c::Client, m::Message, e::Emoji) = get(Reaction, c, m, e.name)
 
 function create(::Type{Reaction}, c::Client, m::Message, emoji::AbstractString)
     return create_reaction(c, m.channel_id, m.id, emoji)

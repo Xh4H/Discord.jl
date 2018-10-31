@@ -26,6 +26,16 @@ end
 handler(c::Client, e::Resumed) = c.state._trace = e._trace
 
 function handler(c::Client, e::Union{ChannelCreate, ChannelUpdate})
+    if  haskey(c.state.guilds, e.channel.guild_id)
+        cs = c.state.guilds[e.channel.guild_id].channels
+        idx = findfirst(c -> c.id == e.channel.id, cs)
+        if idx === nothing
+            push!(cs, e.channel)
+        else
+            push!(cs, merge(cs[idx], e.channel))
+            deleteat!(cs, idx)
+        end
+    end
     insert_or_update(c.state.channels, e.channel.id, e.channel)
 end
 

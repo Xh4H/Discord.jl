@@ -51,8 +51,8 @@ end
 Create a [`DiscordChannel`](@ref) in a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-channel).
 """
-function create_guild_channel(c::Client, guild::Integer; params...)
-    return Response{Guild}(c, :POST, "/guilds/$guild/channels"; body=kwargs)
+function create_guild_channel(c::Client, guild::Integer; kwargs...)
+    return Response{DiscordChannel}(c, :POST, "/guilds/$guild/channels"; body=kwargs)
 end
 
 """
@@ -100,7 +100,7 @@ end
 Modify a [`Member`](@ref) in a [`Guild`](@ref)..
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-member).
 """
-function edit_guild_member(c::Client, guild::Integer, user::Integer; kwargs...)
+function modify_guild_member(c::Client, guild::Integer, user::Integer; kwargs...)
     return Response(c, :PATCH, "/guilds/$guild/members/$user"; body=kwargs)
 end
 

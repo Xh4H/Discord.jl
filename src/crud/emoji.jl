@@ -1,7 +1,7 @@
-function get(::Type{Vector{Emoji}}, c::Client, g::AbstractGuild)
+function retrieve(::Type{Vector{Emoji}}, c::Client, g::AbstractGuild)
     return list_guild_emojis(c, g.id)
 end
-function get(::Type{Emoji}, c::Client, g::AbstractGuild, e::Emoji)
+function retrieve(::Type{Emoji}, c::Client, g::AbstractGuild, e::Emoji)
     return get_guild_emoji(c, g.id, e.id)
 end
 
