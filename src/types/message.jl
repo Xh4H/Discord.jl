@@ -1,5 +1,7 @@
+export Message
+
 """
-The type of a [`Message`](@ref).
+A [`Message`](@ref)'s type.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-types).
 """
 @enum MessageType begin
@@ -15,7 +17,7 @@ end
 @boilerplate MessageType :lower
 
 """
-The type of a [`Message`](@ref) activity.
+A [`Message`](@ref)'s activity type.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-activity-types).
 """
 @enum MessageActivityType MAT_JOIN MAT_SPECTATE MAT_LISTEN MAT_JOIN_REQUEST

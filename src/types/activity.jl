@@ -1,5 +1,5 @@
 """
-The type of an [`Activity`](@ref).
+An [`Activity`](@ref)'s type.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).
 """
 @enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_UNKNOWN  # Supposed to only go to 2.
@@ -20,7 +20,7 @@ end
 @boilerplate ActivityFlags :lower
 
 """
-Indicates the start and stop of an [`Activity`](@ref).
+The start and stop times of an [`Activity`](@ref).
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-timestamps).
 """
 struct ActivityTimestamps

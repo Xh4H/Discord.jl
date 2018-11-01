@@ -1,5 +1,7 @@
+export DiscordChannel
+
 """
-The type of a [`DiscordChannel`](@ref).
+A [`DiscordChannel`](@ref)'s type.
 """
 @enum ChannelType CT_GUILD_TEXT CT_DM CT_GUILD_VOICE CT_GROUP_DM CT_GUILD_CATEGORY
 @boilerplate ChannelType :lower

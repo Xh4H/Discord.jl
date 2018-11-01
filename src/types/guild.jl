@@ -1,3 +1,5 @@
+export Guild
+
 """
 A [`Guild`](@ref)'s verification level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-verification-level).
