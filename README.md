@@ -5,7 +5,6 @@
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable)
 [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Discord.jl/latest)
 [![Build Status](https://travis-ci.com/PurgePJ/Discord.jl.svg?branch=master)](https://travis-ci.com/PurgePJ/Discord.jl)
-[![CodeCov](https://codecov.io/gh/PurgePJ/Discord.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PurgePJ/Discord.jl)
 
 Discord.jl is the solution for creating [Discord](https://discordapp.com) bots with the [Julia programming language](https://julialang.org).
 
