@@ -1,19 +1,24 @@
+function create(::Type{Member}, c::Client, g::AbstractGuild, u::User; kwargs...)
+    return add_guild_member(c, g.id, u.id; kwargs...)
+end
+
 function retrieve(::Type{Member}, c::Client, g::AbstractGuild, u::User)
     return get_guild_member(c, g.id, u.id)
 end
-
-function create(::Type{Member}, c::Client, g::AbstractGuild, u::User; kwargs...)
-    return add_guild_member(c, g.id, u.id; kwargs...)
+function retrieve(::Type{Member}, c::Client, g::AbstractGuild)
+    return list_guild_members(c, g.id)
 end
 
 function update(c::Client, m::Member, g::AbstractGuild; kwargs...)
     return modify_guild_member(c, g.id, m.user.id; kwargs...)
 end
+function update(c::Client, m::Member, r::Role, g::AbstractGuild)
+    return add_guild_member_role(c, g.id, u.id, r.id)
+end
 
 function delete(c::Client, m::Member, g::AbstractGuild)
     return remove_guild_member(c, g.id, m.user.id)
 end
-
-function retrieve(::Type{Vector{Member}}, c::Client, g::AbstractGuild)
-    return list_guild_members(c, g.id)
+function delete(c::Client, m::Member, r::Role, g::AbstractGuild)
+    return remove_guild_member_role(c, g.id, u.id, r.id)
 end

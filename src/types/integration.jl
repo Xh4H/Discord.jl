@@ -15,7 +15,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#integ
 struct Integration
     id::Snowflake
     name::String
-    _type::String
+    type::String
     enabled::Bool
     syncing::Bool
     role_id::Snowflake

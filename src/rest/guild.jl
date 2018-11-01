@@ -208,6 +208,16 @@ function modify_guild_role_positions(c::Client, guild::Integer, positions...)
 end
 
 """
+    modify_guild_role(c::Client, guild::Integer, role::Integer; kwargs) -> Role
+
+Modify a [`Role`](@ref) in a [`Guild`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-role).
+"""
+function modify_guild_role(c::Client, guild::Integer, role::Integer; kwargs...)
+    return Response{Role}(c, :PATCH, "/guilds/$guild/roles/$role"; body=kwargs)
+end
+
+"""
     delete_guild_role(c::Client, guild::Integer, role::Integer)
 
 Delete a [`Role`](@ref) from a [`Guild`](@ref).

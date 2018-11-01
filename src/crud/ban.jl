@@ -5,6 +5,7 @@ end
 function retrieve(::Type{Ban}, c::Client, g::AbstractGuild, u::User)
     return get_guild_ban(c, g.id, u.id)
 end
+retrieve(::Type{Ban}, c::Client, g::AbstractGuild) = get_guild_bans(c, g.id)
 
 function delete(c::Client, b::Ban, g::AbstractGuild)
     return remove_guild_ban(c, g.id, b.user.id)

@@ -13,7 +13,7 @@ end
 Get an [`Emoji`](@ref) in a [`Guild`](@ref).
 """
 function get_guild_emoji(c::Client, guild::Integer, emoji::Integer)
-    return Response{Emoji}{c, :GET, "/guilds/$guild/emojis/$emoji")
+    return Response{Emoji}(c, :GET, "/guilds/$guild/emojis/$emoji")
 end
 
 """

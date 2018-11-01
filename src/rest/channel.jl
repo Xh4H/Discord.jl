@@ -219,7 +219,7 @@ end
 Trigger the typing indicator in a [`DiscordChannel`](@ref).
 """
 function trigger_typing_indicator(c::Client, channel::Integer)
-    return Response(c, :PUT, "/channels/$channel/typing")
+    return Response(c, :POST, "/channels/$channel/typing")
 end
 
 """
@@ -238,6 +238,15 @@ Pin a [`Message`](@ref) in a [`DiscordChannel`](@ref).
 """
 function add_pinned_channel_message(c::Client, channel::Integer, message::Integer)
     return Response(c, :PUT, "/channels/$channel/pins/$message")
+end
+
+"""
+    delete_pinned_channel_message(c::Client, channel::Integer, message::Integer)
+
+Unpin a [`Message`](@ref) from a [`DiscordChannel`](@ref).
+"""
+function delete_pinned_channel_message(c::Client, channel::Integer, message::Integer)
+    return Response(c, :DELETE, "/channels/$channel/pins/$message")
 end
 
 """

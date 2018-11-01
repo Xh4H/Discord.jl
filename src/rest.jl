@@ -131,7 +131,9 @@ end
 
 include(joinpath("rest", "audit_log.jl"))
 include(joinpath("rest", "channel.jl"))
+include(joinpath("rest", "emoji.jl"))
 include(joinpath("rest", "guild.jl"))
 include(joinpath("rest", "invite.jl"))
 include(joinpath("rest", "user.jl"))
+include(joinpath("rest", "voice.jl"))
 include(joinpath("rest", "webhook.jl"))

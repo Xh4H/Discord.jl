@@ -1,21 +1,29 @@
-function retrieve(::Type{Message}, c::Client, ch::DiscordChannel, message::Snowflake)
-    return get_message(c, ch.id, message)
-end
-function retrieve(::Type{Message}, c::Client, ch::DiscordChannel, message::Integer)
-    return retrieve(Message, c, ch.id, snowflake(message))
-end
-
 function create(::Type{Message}, c::Client, ch::DiscordChannel; kwargs...)
     return create_message(c, ch.id; kwargs...)
 end
 
-update(c::Client, m::Message; kwargs...) = edit_message(c, m.channel_id, m.id; kwargs...)
-delete(c::Client, m::Message) = delete_message(c, m.channel_id, m.id)
-
-function retrieve(::Type{Vector{Message}}, c::Client, ch::DiscordChannel; kwargs...)
-    return get_messages(c, ch.id; kwargs...)
+function retrieve(::Type{Message}, c::Client, ch::DiscordChannel, message::Integer)
+    return get_message(c, ch.id, message)
+end
+function retrieve(
+    ::Type{Message},
+    c::Client,
+    ch::DiscordChannel;
+    pinned::Bool=false,
+    kwargs...,
+)
+    return pinned ? get_pinned_messages(c, ch.id) : get_messages(c, ch.id; kwargs...)
 end
 
+update(c::Client, m::Message; kwargs...) = edit_message(c, m.channel_id, m.id; kwargs...)
+
+function delete(c::Client, m::Message; pinned::Bool=false)
+    return if pinned
+        delete_pinned_channel_message(c, m.channel_id, m.id)
+    else
+        delete_message(c, m.channel_id, m.id)
+    end
+end
 function delete(c::Client, ms::Vector{Message})
     return bulk_delete_messages(c, ms[1].channel_id, map(m -> m.id, ms))
 end
