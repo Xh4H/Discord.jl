@@ -1,5 +1,7 @@
 export Client,
     me,
+    enable_cache!,
+    disable_cache!,
     add_handler!,
     delete_handler!
 
@@ -62,6 +64,7 @@ mutable struct Client
     limiter::Limiter            # Rate limiter.
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
     ready::Bool                 # Client is connected and authenticated.
+    use_cache::Bool             # Whether or not to use the cache for REST ops.
     conn::Conn                  # WebSocket connection.
 
     function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION)
@@ -80,6 +83,7 @@ mutable struct Client
             Limiter(),    # limiter
             Dict(),       # handlers
             false,        # ready
+            true,         # use_cache
             # conn left undef, it gets assigned in open.
         )
         add_handler!(c, Defaults)
@@ -94,7 +98,31 @@ Get the [`Client`](@ref)'s bot user.
 """
 me(c::Client) = c.state.user
 
-# Handler insertion/deletion.
+"""
+    enable_cache!(c::Client)
+    enable_cache!(f::Function c::Client)
+
+Enable the cache for REST operations.
+"""
+enable_cache!(c::Client) = c.use_cache = true
+function enable_cache!(f::Function, c::Client)
+    old = c.use_cache
+    c.use_cache = true
+    try f() finally c.use_cache = old end
+end
+
+"""
+    disable_cache!(c::Client)
+    disable_cache!(f::Function, c::Client)
+
+Disable the cache for REST operations.
+"""
+disable_cache!(c::Client) = c.use_cache = false
+function disable_cache!(f::Function, c::Client)
+    old = c.use_cache
+    c.use_cache = false
+    try f() finally c.use_cache = old end
+end
 
 """
     add_handler!(
@@ -180,25 +208,4 @@ delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt
 
 function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
     filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
-end
-
-# Logging.
-
-@enum LogLevel DEBUG INFO WARN ERROR
-
-function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
-    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
-    msg = "$(now()) $msg"
-
-    if level === DEBUG
-        @debug msg kwargs...
-    elseif level === INFO
-        @info msg kwargs...
-    elseif level === WARN
-        @warn msg kwargs...
-    elseif level == ERROR
-        @error msg kwargs...
-    else
-        error("Unknown log level $level")
-    end
 end

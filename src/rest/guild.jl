@@ -352,7 +352,5 @@ Get a [`Guild`](@ref)'s widget image in PNG format.
 More details [here](https://discordapp.com/developers/docs/resources/guild#get-guild-widget-image).
 """
 function get_guild_widget_image(c::Client, guild::Integer; kwargs...)
-    # TODO: I don't think this is going to work since we're trying to parse JSON.
-    # Response should probably react to the HTTP response headers.
-    return Response{Vector{UInt8}}(c, :GET, "/guilds/$guild/widget.png"; kwargs...)
+    return Response{UInt8}(c, :GET, "/guilds/$guild/widget.png"; kwargs...)
 end

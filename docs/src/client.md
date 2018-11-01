@@ -13,6 +13,13 @@ Base.wait
 me
 ```
 
+## Caching
+
+```@docs
+enable_cache!
+disable_cache!
+```
+
 ## Event Handlers
 
 ```@docs

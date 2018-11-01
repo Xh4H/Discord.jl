@@ -3,8 +3,10 @@ module Defaults
 export handler
 
 using Discord
-using Discord: Guild, Member, Reaction, insert_or_update, locked
+using Discord: locked
 using TimeToLive
+
+insert_or_update(d, k, v) = d[k] = haskey(d, k) ? merge(d[k], v) : v
 
 function handler(c::Client, e::Ready)
     c.state.v = e.v

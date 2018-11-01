@@ -10,7 +10,7 @@ If `at` is set, then the message is prefixed with the sender's mention.
 """
 function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
     content = at ? mention(m.author) * " " * content : content
-    return create(Message, c, m.channel_id; content=content)
+    return create_message(c, m.channel_id; content=content)
 end
 
 """

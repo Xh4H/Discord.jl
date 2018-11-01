@@ -62,8 +62,8 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         ))
     else
         d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
-                "token" => c.token,
-                "properties" => conn_properties
+            "token" => c.token,
+            "properties" => conn_properties,
         ))
 
         if c.shards > 1
@@ -396,4 +396,23 @@ writejson(io, body) = writeguarded(io, json(body))
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
     return m === nothing ? nothing : parse(Int, String(first(m.captures)))
+end
+
+@enum LogLevel DEBUG INFO WARN ERROR
+
+function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
+    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
+    msg = "$(now()) $msg"
+
+    if level === DEBUG
+        @debug msg kwargs...
+    elseif level === INFO
+        @info msg kwargs...
+    elseif level === WARN
+        @warn msg kwargs...
+    elseif level == ERROR
+        @error msg kwargs...
+    else
+        error("Unknown log level $level")
+    end
 end

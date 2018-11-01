@@ -50,16 +50,13 @@ function Response{T}(c::Client, r::HTTP.Messages.Response) where T
         return Response{T}(nothing, false, r, nothing)
     end
 
-    data = JSON.parse(String(copy(r.body)))
+    data = if get(Dict(r.headers), "Content-Type", "") == "application/json"
+        JSON.parse(String(copy(r.body)))
+    else
+        copy(r.body)
+    end
     val, TT = data isa Vector ? (T.(data), Vector{T}) : (T(data), T)
     return Response{TT}(val, true, r, nothing)
-end
-
-# Cache hit.
-function Response{T}(val::T) where T
-    f = Future()
-    put!(f, Response{T}(val, true, nothing, nothing))
-    return f
 end
 
 # HTTP request with no expected response body.
@@ -84,6 +81,11 @@ function Response{T}(
     f = Future()
 
     @async begin
+        if c.use_cache
+            # TODO: Check the cache.
+            # Have to be clever with T and parsing the endpoint string.
+        end
+
         url = "$DISCORD_API/v$(c.version)$endpoint"
         if !isempty(kwargs)
             url *= "?" * HTTP.escapeuri(kwargs)
