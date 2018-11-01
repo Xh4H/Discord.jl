@@ -2,7 +2,7 @@
 CurrentModule = Discord
 ```
 
-## Client
+# Client
 
 ```@docs
 Client

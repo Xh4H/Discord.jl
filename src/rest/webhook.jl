@@ -36,7 +36,7 @@ function get_webhook(c::Client, webhook::Integer)
 end
 
 """
-    get_webhook(c::Client, webhook::Integer, token::AbstractString) -> Webhook
+    get_webhook_with_token(c::Client, webhook::Integer, token::AbstractString) -> Webhook
 
 Get a [`Webhook`](@ref) with a token.
 """
@@ -55,7 +55,12 @@ function modify_webhook(c::Client, webhook::Integer; kwargs...)
 end
 
 """
-    modify_webhook(c::Client, webhook::Integer, token::AbstractString; kwargs...) -> Webhook
+    modify_webhook_with_token(
+        c::Client,
+        webhook::Integer,
+        token::AbstractString;
+        kwargs...,
+    ) -> Webhook
 
 Modify a [`Webhook`](@ref) with a token.
 More details [here](https://discordapp.com/developers/docs/resources/webhook#modify-webhook).
@@ -79,7 +84,7 @@ function delete_webhook(c::Client, webhook::Integer)
 end
 
 """
-    delete_webhook(c::Client, webhook::Integer, token::AbstractString)
+    delete_webhook_with_token(c::Client, webhook::Integer, token::AbstractString)
 
 Delete a [`Webhook`](@ref) with a token.
 """

@@ -9,7 +9,7 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
 
 # Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, for a
-  call to [`get_message`](@ref), this value will be a [`Message`](@ref).
+  call to [`get_channel_message`](@ref), this value will be a [`Message`](@ref).
 - `success::Bool`: The state of the request. If `true`, then it is safe to access `val`.
 - `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response, if
   a request was made.

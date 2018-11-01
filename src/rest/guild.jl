@@ -279,7 +279,7 @@ end
 Create/attach an [`Integration`](@ref) to a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#create-guild-integration).
 """
-function create_integration(c::Client, guild::Integer; kwargs...)
+function create_guild_integration(c::Client, guild::Integer; kwargs...)
     return Response{Integration}(c, :POST, "/guilds/$guild/integrations"; body=kwargs)
 end
 
@@ -341,6 +341,18 @@ end
 
 Get a [`Guild`](@ref)'s vanity URL, if it supports that feature.
 """
-function get_vanity_code(c::Client, guild::Integer)
+function get_vanity_url(c::Client, guild::Integer)
     return Response{Invite}(c, :GET, "/guilds/$guild/vanity-url")
+end
+
+"""
+    get_guild_widget_image(c::Client, guild::Integer; kwargs...) -> Vector{UInt8}
+
+Get a [`Guild`](@ref)'s widget image in PNG format.
+More details [here](https://discordapp.com/developers/docs/resources/guild#get-guild-widget-image).
+"""
+function get_guild_widget_image(c::Client, guild::Integer; kwargs...)
+    # TODO: I don't think this is going to work since we're trying to parse JSON.
+    # Response should probably react to the HTTP response headers.
+    return Response{Vector{UInt8}}(c, :GET, "/guilds/$guild/widget.png"; kwargs...)
 end

@@ -3,7 +3,7 @@ function create(::Type{Message}, c::Client, ch::DiscordChannel; kwargs...)
 end
 
 function retrieve(::Type{Message}, c::Client, ch::DiscordChannel, message::Integer)
-    return get_message(c, ch.id, message)
+    return get_channel_message(c, ch.id, message)
 end
 function retrieve(
     ::Type{Message},
@@ -12,7 +12,11 @@ function retrieve(
     pinned::Bool=false,
     kwargs...,
 )
-    return pinned ? get_pinned_messages(c, ch.id) : get_messages(c, ch.id; kwargs...)
+    return if pinned
+        get_pinned_messages(c, ch.id)
+    else
+        get_channel_messages(c, ch.id; kwargs...)
+    end
 end
 
 update(c::Client, m::Message; kwargs...) = edit_message(c, m.channel_id, m.id; kwargs...)

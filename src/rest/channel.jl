@@ -41,7 +41,7 @@ end
 
 Get a [`Message`](@ref) from a [`DiscordChannel`](@ref).
 """
-function get_message(c::Client, channel::Integer, message::Integer)
+function get_channel_message(c::Client, channel::Integer, message::Integer)
     return Response{Message}(c, :GET, "/channels/$channel/messages/$message")
 end
 
@@ -96,6 +96,17 @@ function delete_own_reaction(
     )
 end
 
+"""
+    delete_user_reaction(
+        c::Client,
+        channel::Integer,
+        message::Integer,
+        emoji::AbstractString,
+        user::Integer,
+    )
+
+Delete a [`User`](@ref)'s reaction to a [`Message`](@ref).
+"""
 function delete_user_reaction(
     c::Client,
     channel::Integer,
@@ -159,7 +170,8 @@ end
 """
     bulk_delete_messages(c::Client, channel::Integer; kwargs...)
 
-Delete multuple [`Message`](@ref)s.
+Delete multiple [`Message`](@ref)s.
+More details [here](https://discordapp.com/developers/docs/resources/channel#bulk-delete-messages).
 """
 function bulk_delete_messages(c::Client, channel::Integer; kwargs...)
     return Response(c, :DELETE, "/channels/$channel/messages"; body=kwargs...)
