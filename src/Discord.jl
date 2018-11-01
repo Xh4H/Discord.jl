@@ -33,6 +33,7 @@ include("gateway.jl")
 include("rest.jl")
 include("crud.jl")
 include("commands.jl")
+include("helpers.jl")
 include("Defaults.jl")
 
 end
