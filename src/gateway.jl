@@ -105,7 +105,14 @@ end
 
 Wait for an open client to close.
 """
-Base.wait(c::Client) = isopen(c) && wait(c.conn.io.cond)
+function Base.wait(c::Client)
+    while isopen(c)
+        wait(c.conn.io.cond)
+        # This is an arbitrary amount of time to wait,
+        # but we want to wait long enough to potentially reconnect.
+        sleep(30)
+    end
+end
 
 # Gateway commands.
 
