@@ -10,11 +10,12 @@ function main()
     c = Client(ENV["DISCORD_TOKEN"])
     add_handler!(c, MessageCreate, on_message_create)
     open(c)
-    wait(c)
+    return c
 end
 
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    PingPong.main()
+    c = PingPong.main()
+    wait(c)
 end

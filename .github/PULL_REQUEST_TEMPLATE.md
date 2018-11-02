@@ -4,7 +4,7 @@ What have you changed?
 * [ ] Fixed a reported issue (which one?)
 * [ ] Updated documentation
 
-If you're adding a new feature, please ensure that you've taken care of the following items:
+If you're adding a new feature, please ensure that you take of the following items:
 
 * [ ] Add unit tests if applicable
 * [ ] Document new or changed functionality

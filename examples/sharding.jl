@@ -12,11 +12,14 @@ function main()
     c = Client(ENV["DISCORD_TOKEN"])
     add_handler!(c, AbstractEvent, handler)
     open(c)
-    wait(c)
+    return c
 end
 
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    @everywhere Sharding.main()
+    @everywhere begin
+        c = Sharding.main()
+        wait(c)
+    end
 end

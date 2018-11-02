@@ -51,11 +51,12 @@ function main()
     c = Client(ENV["DISCORD_TOKEN"])
     add_command!(c, "!eval", eval_codeblock)
     open(c)
-    wait(c)
+    return c
 end
 
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    Eval.main()
+    c = Eval.main()
+    wait(c)
 end
