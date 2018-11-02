@@ -11,7 +11,6 @@ end
 
 retrieve(::Type{DiscordChannel}, c::Client, channel::Integer) = get_channel(c, channel)
 retrieve(::Type{DiscordChannel}, c::Client, g::AbstractGuild) = get_guild_channels(c, g.id)
-retrieve(::Type{DiscordChannel}, c::Client) = get_user_dms(c)
 
 update(c::Client, ch::DiscordChannel; kwargs...) = modify_channel(c, ch.id; kwargs...)
 

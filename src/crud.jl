@@ -34,7 +34,6 @@ Functions not covered here:
 - get_guild_vanity_url
 - get_guild_widget_image
 - leave_guild (combine with delete?)
-- get_user_connections
 - execute_webhook
 - execute_slack_compatible_webhook
 - execute_github_compatible_webhook

@@ -46,15 +46,6 @@ function leave_guild(c::Client, guild::Integer)
 end
 
 """
-    get_user_dms(c::Client) -> Vector{DiscordChannel}
-
-Get the [`Client`](@ref) [`User`](@ref)'s DM [`DiscordChannel`](@ref)s.
-"""
-function get_user_dms(c::Client)
-    return Response{Vector{DiscordChannel}}(c, :GET, "/users/@me/channels")
-end
-
-"""
     create_dm(c::Client; kwargs...) -> DiscordChannel
 
 Create a DM [`DiscordChannel`](@ref).
@@ -72,14 +63,4 @@ More details [here](https://discordapp.com/developers/docs/resources/user#create
 """
 function create_group_dm(c::Client; kwargs...)
     return Response{DiscordChannel}(c, :POST, "/users/@me/channels"; body=kwargs)
-end
-
-"""
-    get_user_connections(c::Client) -> Vector{Connection}
-
-Get the [`Client`](@ref)'s [`Connection`](@ref)s.
-More details [here](https://discordapp.com/developers/docs/resources/user#get-user-connections).
-"""
-function get_user_connections(c::Client)
-    return Response{Vector{Connection}}(c, :GET, "/users/@me/connections")
 end
