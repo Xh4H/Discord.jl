@@ -42,7 +42,7 @@ end
 Get the [`DiscordChannel`](@ref)s in a [`Guild`](@ref).
 """
 function get_guild_channels(c::Client, guild::Integer)
-    return Response{DiscordChannel}(c, :GET, "/guilds/$guild/channels")
+    return Response{Vector{DiscordChannel}}(c, :GET, "/guilds/$guild/channels")
 end
 
 """
@@ -81,7 +81,7 @@ Get a list of [`Member`](@ref)s in a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#list-guild-members).
 """
 function list_guild_members(c::Client, guild::Integer; kwargs...)
-    return Response{Member}(c, :GET, "/guilds/$guild/members"; kwargs...)
+    return Response{Vector{Member}}(c, :GET, "/guilds/$guild/members"; kwargs...)
 end
 
 """
@@ -147,7 +147,7 @@ end
 Get a list of [`Ban`](@ref)s in a [`Guild`](@ref).
 """
 function get_guild_bans(c::Client, guild::Integer)
-    return Response{Ban}(c, :GET, "/guilds/$guild/bans")
+    return Response{Vector{Ban}}(c, :GET, "/guilds/$guild/bans")
 end
 
 """
@@ -184,7 +184,7 @@ end
 Get a [`Guild`](@ref)'s [`Role`](@ref)s.
 """
 function get_guild_roles(c::Client, guild::Integer)
-    return Response{Role}(c, :GET, "/guilds/$guild/roles")
+    return Response{Vector{Role}}(c, :GET, "/guilds/$guild/roles")
 end
 
 """
@@ -204,7 +204,7 @@ Modify the positions of [`Role`](@ref)s in a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/guild#modify-guild-role-positions).
 """
 function modify_guild_role_positions(c::Client, guild::Integer, positions...)
-    return Response{Role}(c, :PATCH, "/guilds/$guild/roles"; body=positions)
+    return Response{Vector{Role}}(c, :PATCH, "/guilds/$guild/roles"; body=positions)
 end
 
 """
@@ -252,7 +252,7 @@ end
 Get a list of [`VoiceRegion`](@ref)s for the [`Guild`](@ref).
 """
 function get_guild_voice_regions(c::Client, guild::Integer)
-    return Response{VoiceRegion}(c, :GET, "/guilds/$guild/regions")
+    return Response{Vector{VoiceRegion}}(c, :GET, "/guilds/$guild/regions")
 end
 
 """
@@ -261,7 +261,7 @@ end
 Get a list of [`Invite`](@ref)s to a [`Guild`](@ref).
 """
 function get_guild_invites(c::Client, guild::Integer)
-    return Response{Invite}(c, :GET, "/guilds/$guild/invites")
+    return Response{Vector{Invite}}(c, :GET, "/guilds/$guild/invites")
 end
 
 """
@@ -270,7 +270,7 @@ end
 Get a list of [`Integration`](@ref)s for a [`Guild`](@ref).
 """
 function get_guild_integrations(c::Client, guild::Integer)
-    return Response{Integration}(c, :GET, "/guilds/$guild/integrations")
+    return Response{Vector{Integration}}(c, :GET, "/guilds/$guild/integrations")
 end
 
 """
@@ -352,5 +352,5 @@ Get a [`Guild`](@ref)'s widget image in PNG format.
 More details [here](https://discordapp.com/developers/docs/resources/guild#get-guild-widget-image).
 """
 function get_guild_widget_image(c::Client, guild::Integer; kwargs...)
-    return Response{UInt8}(c, :GET, "/guilds/$guild/widget.png"; kwargs...)
+    return Response{Vector{UInt8}}(c, :GET, "/guilds/$guild/widget.png"; kwargs...)
 end

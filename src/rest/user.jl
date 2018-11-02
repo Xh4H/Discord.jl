@@ -1,7 +1,7 @@
 """
     get_current_user(c::Client) -> User
 
-Get the [`Client`](@ref)'s [`User`](@ref).
+Get the [`Client`](@ref) [`User`](@ref).
 """
 function get_current_user(c::Client)
     return Response{User}(c, :GET, "/users/@me")
@@ -19,7 +19,7 @@ end
 """
     modify_current_user(c::Client; kwargs...) -> User
 
-Modify the [`Client`](@ref)'s [`User`](@ref).
+Modify the [`Client`](@ref) [`User`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/user#modify-current-user).
 """
 function modify_current_user(c::Client; kwargs...)
@@ -29,11 +29,11 @@ end
 """
     get_user_guilds(c::Client; kwargs...) -> Vector{Guild}
 
-Get a list of [`Guild`](@ref)s the [`Client`](@ref)'s [`User`](@ref) is a member of.
+Get a list of [`Guild`](@ref)s the [`Client`](@ref) [`User`](@ref) is a member of.
 More details [here](https://discordapp.com/developers/docs/resources/user#get-current-user-guilds).
 """
 function get_current_user_guilds(c::Client; kwargs...)
-    return Response{Guild}(c, :GET, "/users/@me/connections"; kwargs...)
+    return Response{Vector{Guild}}(c, :GET, "/users/@me/connections"; kwargs...)
 end
 
 """
@@ -43,6 +43,15 @@ Leave a [`Guild`](@ref).
 """
 function leave_guild(c::Client, guild::Integer)
     return Response(c, :DELETE, "/users/@me/guilds/$guild")
+end
+
+"""
+    get_user_dms(c::Client) -> Vector{DiscordChannel}
+
+Get the [`Client`](@ref) [`User`](@ref)'s DM [`DiscordChannel`](@ref)s.
+"""
+function get_user_dms(c::Client)
+    return Response{Vector{DiscordChannel}}(c, :GET, "/users/@me/channels")
 end
 
 """
@@ -72,5 +81,5 @@ Get the [`Client`](@ref)'s [`Connection`](@ref)s.
 More details [here](https://discordapp.com/developers/docs/resources/user#get-user-connections).
 """
 function get_user_connections(c::Client)
-    return Response{Connection}(c, :GET, "/users/@me/connections")
+    return Response{Vector{Connection}}(c, :GET, "/users/@me/connections")
 end

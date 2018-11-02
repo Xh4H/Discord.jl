@@ -1,6 +1,6 @@
 const HEADERS = Dict("User-Agent" => "Discord.jl", "Content-Type" => "application/json")
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
-const RATELIMITED = ErrorException("rate limited")
+const RATELIMITED = ErrorException("Rate limited")
 
 """
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
@@ -35,6 +35,8 @@ struct Response{T}
     exception::Union{Exception, Nothing}
 end
 
+Base.eltype(r::Response{T}) where T = T
+
 # HTTP response with no body.
 function Response{Nothing}(r::HTTP.Messages.Response)
     return Response{Nothing}(nothing, r.status < 300, r, nothing)
@@ -42,21 +44,18 @@ end
 
 # HTTP response with body (maybe).
 function Response{T}(c::Client, r::HTTP.Messages.Response) where T
-    if r.status == 204  # No content, but successful.
-        return Response{T}(nothing, true, r, nothing)
-    elseif r.status == 429  # Rate limited.
-        throw(RATELIMITED)  # TODO: Make this cleaner, we shouldn't need to throw.
-    elseif r.status >= 300  # Unsuccessful.
-        return Response{T}(nothing, false, r, nothing)
-    end
+    r.status == 429 && throw(RATELIMITED)
+    r.status == 204 && return Response{T}(nothing, true, r, nothing)
+    r.status >= 300 && return Response{T}(nothing, false, r, nothing)
 
-    data = if get(Dict(r.headers), "Content-Type", "") == "application/json"
+    data = if HTTP.header(r, "Content-Type") == "application/json"
         JSON.parse(String(copy(r.body)))
     else
         copy(r.body)
     end
-    val, TT = data isa Vector ? (T.(data), Vector{T}) : (T(data), T)
-    return Response{TT}(val, true, r, nothing)
+
+    val, e = tryparse(c, T, data)
+    return Response{T}(val, e === nothing, r, e)
 end
 
 # HTTP request with no expected response body.
@@ -96,8 +95,7 @@ function Response{T}(
         get(SHOULD_SEND, method, false) && push!(args, json(body))
 
         # TODO: Sometimes a request stalls and holds up the entire queue for minutes at a
-        # time. Maybe we need some kind of external timeout mechanism, because it can be
-        # far longer than HTTP's default minute. Or maybe my internet just sucks.
+        # time. I'm not quite sure if it's the request hanging, or a synchronization bug.
 
         # Acquire the lock, then check if we're rate limited. If we are, then release the
         # lock and wait for the reset. Once we get the lock back and we're not rate
@@ -108,6 +106,7 @@ function Response{T}(
         b = bucket(c.limiter, method, endpoint)
         while true
             Base.acquire(b)
+
             if islimited(c.limiter, b)
                 Base.release(b)
                 wait(c.limiter, b)
@@ -119,11 +118,13 @@ function Response{T}(
                 catch e
                     # If we're rate limited, then just go back to the top.
                     e == RATELIMITED && continue
+                    logmsg(c, ERROR, catchmsg(e))
                     put!(f, Response{T}(nothing, false, nothing, e))
                 finally
                     Base.release(b)
                 end
-                break
+
+                break  # If we reached here, it means we got the request through.
             end
         end
     end

@@ -14,7 +14,7 @@ end
 Get a list of [`Webhook`](@ref)s in a [`DiscordChannel`](@ref).
 """
 function get_channel_webhooks(c::Client, channel::Integer)
-    return Response{Webhook}(c, :GET, "/channels/$channel/webhooks")
+    return Response{Vector{Webhook}}(c, :GET, "/channels/$channel/webhooks")
 end
 
 """
@@ -23,7 +23,7 @@ end
 Get a list of [`Webhook`](@ref)s in a [`Guild`](@ref).
 """
 function get_guild_webhooks(c::Client, guild::Integer)
-    return Response{Webhook}(c, :GET, "/guilds/$guild/webhooks")
+    return Response{Vector{Webhook}}(c, :GET, "/guilds/$guild/webhooks")
 end
 
 """

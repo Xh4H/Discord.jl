@@ -4,5 +4,5 @@
 Get a list of the [`VoiceRegion`](@ref)s that can be used when creating [`Guild`](@ref)s.
 """
 function list_voice_regions(c::Client)
-    return Response{VoiceRegion}(c, :GET, "/voice/regions")
+    return Response{Vector{VoiceRegion}}(c, :GET, "/voice/regions")
 end

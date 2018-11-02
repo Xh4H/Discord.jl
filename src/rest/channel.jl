@@ -33,7 +33,7 @@ Get a list of [`Message`](@ref)s from a [`DiscordChannel`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/channel#get-channel-messages).
 """
 function get_channel_messages(c::Client, channel::Integer; kwargs...)
-    return Response{Message}(c, :GET, "/channels/$channel/messages"; kwargs...)
+    return Response{Vector{Message}}(c, :GET, "/channels/$channel/messages"; kwargs...)
 end
 
 """
@@ -132,7 +132,7 @@ end
 Get the [`User`](@ref)s who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
 """
 function get_reactions(c::Client, channel::Integer, message::Integer, emoji::AbstractString)
-    return Response{User}(
+    return Response{Vector{User}}(
         c,
         :GET,
         "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))",
@@ -203,7 +203,7 @@ end
 Get the [`Invite`](@ref)s for a [`DiscordChannel`](@ref).
 """
 function get_channel_invites(c::Client, channel::Integer)
-    return Response{Invite}(c, :GET, "/channels/$channel/invites")
+    return Response{Vector{Invite}}(c, :GET, "/channels/$channel/invites")
 end
 
 """
@@ -240,7 +240,7 @@ end
 Get the pinned [`Message`](@ref)s in a [`DiscordChannel`](@ref).
 """
 function get_pinned_messages(c::Client, channel::Integer)
-    return Response{Message}(c, :GET, "/channels/$channel/pins")
+    return Response{Vector{Message}}(c, :GET, "/channels/$channel/pins")
 end
 
 """

@@ -58,24 +58,24 @@ struct Guild <: AbstractGuild
     icon::Union{String, Nothing}
     splash::Union{String, Nothing}
     owner::Union{Bool, Missing}
-    owner_id::Snowflake
+    owner_id::Union{Snowflake, Missing}  # Missing in Invite.
     permissions::Union{Int, Missing}
-    region::String
-    afk_channel_id::Union{Snowflake, Nothing}
-    afk_timeout::Int
+    region::Union{String, Missing}  # Invite
+    afk_channel_id::Union{Snowflake, Missing, Nothing}  # Invite
+    afk_timeout::Union{Int, Missing}  # Invite
     embed_enabled::Union{Bool, Missing}
     embed_channel_id::Union{Snowflake, Missing, Nothing}  # Not supposed to be nullable.
     verification_level::VerificationLevel
-    default_message_notifications::MessageNotificationLevel
-    explicit_content_filter::ExplicitContentFilterLevel
-    roles::Vector{Role}
-    emojis::Vector{Emoji}
+    default_message_notifications::Union{MessageNotificationLevel, Missing}  # Invite
+    explicit_content_filter::Union{ExplicitContentFilterLevel, Missing}  # Invite
+    roles::Union{Vector{Role}, Missing}  # Invite
+    emojis::Union{Vector{Emoji}, Missing}  # Invite
     features::Vector{String}
-    mfa_level::MFALevel
-    application_id::Union{Snowflake, Nothing}
+    mfa_level::Union{MFALevel, Missing}  # Invite
+    application_id::Union{Snowflake, Missing, Nothing}  # Invite
     widget_enabled::Union{Bool, Missing}
     widget_channel_id::Union{Snowflake, Missing, Nothing}  # Not supposed to be nullable.
-    system_channel_id::Union{Snowflake, Nothing}
+    system_channel_id::Union{Snowflake, Missing, Nothing}  # Invite
     joined_at::Union{DateTime, Missing}
     large::Union{Bool, Missing}
     unavailable::Union{Bool, Missing}

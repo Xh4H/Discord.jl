@@ -65,6 +65,7 @@ mutable struct Client
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
     ready::Bool                 # Client is connected and authenticated.
     use_cache::Bool             # Whether or not to use the cache for REST ops.
+    errors::Vector{Dict}        # Values for which deserializing failed.
     conn::Conn                  # WebSocket connection.
 
     function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION)
@@ -84,6 +85,7 @@ mutable struct Client
             Dict(),       # handlers
             false,        # ready
             true,         # use_cache
+            [],           # errors
             # conn left undef, it gets assigned in open.
         )
         add_handler!(c, Defaults)
@@ -208,4 +210,33 @@ delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt
 
 function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
     filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
+end
+
+@enum LogLevel DEBUG INFO WARN ERROR
+
+function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
+    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
+    msg = "$(now()) $msg"
+
+    if level === DEBUG
+        @debug msg kwargs...
+    elseif level === INFO
+        @info msg kwargs...
+    elseif level === WARN
+        @warn msg kwargs...
+    elseif level == ERROR
+        @error msg kwargs...
+    else
+        error("Unknown log level $level")
+    end
+end
+
+function Base.tryparse(c::Client, T::Type, data)
+    return try
+        T <: Vector ? eltype(T).(data) : T(data), nothing
+    catch e
+        logmsg(c, ERROR, catchmsg(e))
+        push!(c.errors, data)
+        nothing, e
+    end
 end

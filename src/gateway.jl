@@ -250,17 +250,19 @@ end
 
 # Event handlers.
 
-function dispatch(c::Client, data::AbstractDict)
+function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
 
     T = get(EVENT_TYPES, data["t"], UnknownEvent)
     haskey(c.handlers, T) || return
 
-    evt = try
-        T(T === UnknownEvent ? data : data["d"])
-    catch e
-        logmsg(c, ERROR, catchmsg(e); type=data["t"])
-        UnknownEvent(data)
+    evt = begin
+        if T === UnknownEvent
+            UnknownEvent(data)
+        else
+            val, e = tryparse(c, T, data["d"])
+            e === nothing ? val : UnknownEvent(data)
+        end
     end
 
     catchalls = collect(get(c.handlers, AbstractEvent, []))
@@ -282,7 +284,7 @@ function dispatch(c::Client, data::AbstractDict)
     filter!(!isexpired, get(c.handlers, T, []))
 end
 
-function heartbeat(c::Client, ::AbstractDict=Dict())
+function heartbeat(c::Client, ::Dict=Dict())
     ok = writejson(c.conn.io, Dict("op" => 1, "d" => c.heartbeat_seq))
     if ok
         c.last_heartbeat = now()
@@ -290,23 +292,23 @@ function heartbeat(c::Client, ::AbstractDict=Dict())
     return ok
 end
 
-function reconnect(c::Client, ::AbstractDict=Dict(); resume::Bool=false)
+function reconnect(c::Client, ::Dict=Dict(); resume::Bool=false)
     logmsg(c, INFO, "Reconnecting"; resume=resume)
     close(c; statusnumber=resume ? 4000 : 1000)
     open(c; resume=resume)
 end
 
-function invalid_session(c::Client, data::AbstractDict)
+function invalid_session(c::Client, data::Dict)
     logmsg(c, WARN, "Received INVALID_SESSION"; resumable=data["d"])
     sleep(rand(1:5))
     reconnect(c; resume=data["d"])
 end
 
-function hello(c::Client, data::AbstractDict)
+function hello(c::Client, data::Dict)
     c.heartbeat_interval = data["d"]["heartbeat_interval"]
 end
 
-heartbeat_ack(c::Client, ::AbstractDict) = c.last_ack = now()
+heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
 const HANDLERS = Dict(
@@ -396,23 +398,4 @@ writejson(io, body) = writeguarded(io, json(body))
 function closecode(e::WebSocketClosedError)
     m = match(r"OPCODE_CLOSE (\d+)", e.message)
     return m === nothing ? nothing : parse(Int, String(first(m.captures)))
-end
-
-@enum LogLevel DEBUG INFO WARN ERROR
-
-function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
-    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
-    msg = "$(now()) $msg"
-
-    if level === DEBUG
-        @debug msg kwargs...
-    elseif level === INFO
-        @info msg kwargs...
-    elseif level === WARN
-        @warn msg kwargs...
-    elseif level == ERROR
-        @error msg kwargs...
-    else
-        error("Unknown log level $level")
-    end
 end

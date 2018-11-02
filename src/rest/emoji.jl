@@ -4,7 +4,7 @@
 Get the [`Emoji`](@ref)s in a [`Guild`](@ref).
 """
 function list_guild_emojis(c::Client, guild::Integer)
-    return Response{Emoji}(c, :GET, "/guilds/$guild/emojis")
+    return Response{Vector{Emoji}}(c, :GET, "/guilds/$guild/emojis")
 end
 
 """
