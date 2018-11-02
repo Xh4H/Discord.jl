@@ -1,11 +1,11 @@
-function create(::Type{Emoji}, c::Client, g::AbstractGuild; kwargs...)
+function create(c::Client, ::Type{Emoji}, g::AbstractGuild; kwargs...)
     return create_guild_emoji(c, g.id; kwargs...)
 end
 
-function retrieve(::Type{Emoji}, c::Client, g::AbstractGuild, e::Emoji)
+function retrieve(c::Client, ::Type{Emoji}, g::AbstractGuild, e::Emoji)
     return get_guild_emoji(c, g.id, e.id)
 end
-function retrieve(::Type{Emoji}, c::Client, g::AbstractGuild)
+function retrieve(c::Client, ::Type{Emoji}, g::AbstractGuild)
     return list_guild_emojis(c, g.id)
 end
 

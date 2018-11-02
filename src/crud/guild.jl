@@ -1,7 +1,7 @@
-create(::Type{Guild}, c::Client; kwargs...) = create_guild(c; kwargs...)
+create(c::Client, ::Type{Guild}; kwargs...) = create_guild(c; kwargs...)
 
-retrieve(::Type{Guild}, c::Client, guild::Integer) = get_guild(c, guild)
-retrieve(::Type{Guild}, c::Client; kwargs...) = get_current_user_guilds(c; kwargs...)
+retrieve(c::Client, ::Type{Guild}, guild::Integer) = get_guild(c, guild)
+retrieve(c::Client, ::Type{Guild}; kwargs...) = get_current_user_guilds(c; kwargs...)
 
 update(c::Client, g::AbstractGuild; kwargs...) = modify_guild(c, g.id; kwargs...)
 

@@ -6,12 +6,27 @@ CurrentModule = Discord
 
 ```@docs
 Response
+fetchval
 ```
 
 # CRUD API
 
-```
-TODO
+On top of functions for accessing individual endpoints such as [`get_channel_messages`](@ref), Discord.jl also offers a unified API with just four functions.
+Named after [the *CRUD* model](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete), they cover most of the Discord REST API and allow you to write concise, expressive code, and forget about the subtleties of endpoint naming.
+The argument ordering convention is roughly as follows:
+
+1. A [`Client`](@ref), always.
+2. For cases when we don't yet have the entity to be manipulated (usually [`create`](@ref) and [`retrieve`](@ref), the entity's type.
+   If we do have the entity ([`update`](@ref) and [`delete`](@ref)), the entity itself.
+4. The remaining positional arguments supply whatever context is needed to specify the entity.
+   For example, sending a message requires a [`DiscordChannel`](@ref) parameter.
+5. Keyword arguments follow, most frequently for [`create`](@ref) and [`update`](@ref).
+
+```@docs
+create
+retrieve
+update
+delete
 ```
 
 # Endpoints
@@ -122,7 +137,6 @@ get_current_user_guilds
 leave_guild
 create_dm
 create_group_dm
-get_user_connections
 ```
 
 ## Voice

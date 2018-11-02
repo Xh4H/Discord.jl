@@ -1,11 +1,11 @@
-function create(::Type{Member}, c::Client, g::AbstractGuild, u::User; kwargs...)
+function create(c::Client, ::Type{Member}, g::AbstractGuild, u::User; kwargs...)
     return add_guild_member(c, g.id, u.id; kwargs...)
 end
 
-function retrieve(::Type{Member}, c::Client, g::AbstractGuild, u::User)
+function retrieve(c::Client, ::Type{Member}, g::AbstractGuild, u::User)
     return get_guild_member(c, g.id, u.id)
 end
-function retrieve(::Type{Member}, c::Client, g::AbstractGuild)
+function retrieve(c::Client, ::Type{Member}, g::AbstractGuild)
     return list_guild_members(c, g.id)
 end
 

@@ -1,11 +1,11 @@
-function create(::Type{Webhook}, c::Client, ch::DiscordChannel; kwargs...)
+function create(c::Client, ::Type{Webhook}, ch::DiscordChannel; kwargs...)
     return create_webhook(c, ch.id; kwargs...)
 end
 
-retrieve(::Type{Webhook}, c::Client, ch::DiscordChannel) = get_channel_webhooks(c, ch.id)
-retrieve(::Type{Webhook}, c::Client, g::AbstractGuild) = get_guild_webhooks(c, g.id)
-retrieve(::Type{Webhook}, c::Client, webhook::Integer) = get_webhook(c, webhook)
-function retrieve(::Type{Webhook}, c::Client, webhook::Integer, token::AbstractString)
+retrieve(c::Client, ::Type{Webhook}, ch::DiscordChannel) = get_channel_webhooks(c, ch.id)
+retrieve(c::Client, ::Type{Webhook}, g::AbstractGuild) = get_guild_webhooks(c, g.id)
+retrieve(c::Client, ::Type{Webhook}, webhook::Integer) = get_webhook(c, webhook)
+function retrieve(c::Client, ::Type{Webhook}, webhook::Integer, token::AbstractString)
     return get_webhook_with_token(c, webhook, token)
 end
 

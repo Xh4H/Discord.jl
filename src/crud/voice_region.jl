@@ -1,4 +1,4 @@
-function retrieve(::Type{VoiceRegion}, c::Client, g::AbstractGuild)
+function retrieve(c::Client, ::Type{VoiceRegion}, g::AbstractGuild)
     return get_guild_voice_regions(c, g.id)
 end
-retrieve(::Type{VoiceRegion}, c::Client) = list_voice_regions(c)
+retrieve(c::Client, ::Type{VoiceRegion}) = list_voice_regions(c)

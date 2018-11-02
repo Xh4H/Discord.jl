@@ -1,7 +1,7 @@
-function create(::Type{DiscordChannel}, c::Client, g::AbstractGuild; kwargs...)
+function create(c::Client, ::Type{DiscordChannel}, g::AbstractGuild; kwargs...)
     return create_guild_channel(c, g.id; kwargs...)
 end
-function create(::Type{DiscordChannel}, c::Client; kwargs...)
+function create(c::Client, ::Type{DiscordChannel}; kwargs...)
     return if haskey(kwargs, :recipient_id)
         create_dm(c; kwargs...)
     else
@@ -9,8 +9,8 @@ function create(::Type{DiscordChannel}, c::Client; kwargs...)
     end
 end
 
-retrieve(::Type{DiscordChannel}, c::Client, channel::Integer) = get_channel(c, channel)
-retrieve(::Type{DiscordChannel}, c::Client, g::AbstractGuild) = get_guild_channels(c, g.id)
+retrieve(c::Client, ::Type{DiscordChannel}, channel::DiscordChannel) = get_channel(c, channel)
+retrieve(c::Client, ::Type{DiscordChannel}, g::AbstractGuild) = get_guild_channels(c, g.id)
 
 update(c::Client, ch::DiscordChannel; kwargs...) = modify_channel(c, ch.id; kwargs...)
 

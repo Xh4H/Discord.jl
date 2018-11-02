@@ -1,13 +1,13 @@
-function create(::Type{Message}, c::Client, ch::DiscordChannel; kwargs...)
+function create(c::Client, ::Type{Message}, ch::DiscordChannel; kwargs...)
     return create_message(c, ch.id; kwargs...)
 end
 
-function retrieve(::Type{Message}, c::Client, ch::DiscordChannel, message::Integer)
+function retrieve(c::Client, ::Type{Message}, ch::DiscordChannel, message::Integer)
     return get_channel_message(c, ch.id, message)
 end
 function retrieve(
-    ::Type{Message},
     c::Client,
+    ::Type{Message},
     ch::DiscordChannel;
     pinned::Bool=false,
     kwargs...,

@@ -1,11 +1,23 @@
+export fetchval
+
 const HEADERS = Dict("User-Agent" => "Discord.jl", "Content-Type" => "application/json")
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
 const RATELIMITED = ErrorException("Rate limited")
 
 """
+    fetchval(f::Future{Response{T}}) -> Union{T, Nothing}
+
+Shortcut for `fetch(f).val`: Fetch a [`Response`](@ref) and return its value. Note that
+there are no guarantees about the response's success and the value being returned, and it
+discards context that can be useful for debugging, such as HTTP responses and caught
+exceptions.
+"""
+fetchval(f::Future) = fetch(f).val
+
+"""
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
-`Response` from the `Future`, use `fetch`.
+`Response` from the `Future`, use `fetch` or [`fetchval`](@ref).
 
 # Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, for a
@@ -25,7 +37,7 @@ julia> typeof(first(fs))
 Distributed.Future
 
 julia> typeof(fetch(first(fs)))
-Discord.Response{Discord.Message}
+Discord.Response{Message}
 ```
 """
 struct Response{T}

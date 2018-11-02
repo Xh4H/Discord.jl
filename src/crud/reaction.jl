@@ -1,14 +1,14 @@
-function retrieve(::Type{Reaction}, c::Client, m::Message, emoji::AbstractString)
+function retrieve(c::Client, ::Type{Reaction}, m::Message, emoji::AbstractString)
     return get_reactions(c, m.channel_id, m.id, emoji)
 end
-retrieve(::Type{Reaction}, c::Client, m::Message, e::Emoji) = get(Reaction, c, m, e.name)
+retrieve(c::Client, ::Type{Reaction}, m::Message, e::Emoji) = get(Reaction, c, m, e.name)
 
-function create(::Type{Reaction}, c::Client, m::Message, emoji::AbstractString)
+function create(c::Client, ::Type{Reaction}, m::Message, emoji::AbstractString)
     return create_reaction(c, m.channel_id, m.id, emoji)
 end
-create(::Type{Reaction}, c::Client, m::Message, e::Emoji) = create(Reaction, c, m, e.name)
+create(c::Client, ::Type{Reaction}, m::Message, e::Emoji) = create(Reaction, c, m, e.name)
 
-function delete(::Type{Reaction}, c::Client, m::Message)
+function delete(c::Client, ::Type{Reaction}, m::Message)
     return delete_all_reactions(c, m.channel_id, m.id)
 end
 function delete(c::Client, m::Message, emoji::AbstractString, u::User)

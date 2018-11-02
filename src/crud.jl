@@ -3,6 +3,83 @@ export create,
     update,
     delete
 
+"""
+    create(c::Client, ::Type{T}, args...; kwargs...)
+
+Create, add, send, etc.
+
+# Examples
+```julia-repl
+# Send a message.
+julia> create(c, Message, channel; content="foo")
+
+# Create a new channel.
+julia> create(c, DiscordChannel, guild; name="bar")
+
+# Ban a user.
+julia> create(c, Ban, guild, user; reason="baz")
+```
+"""
+function create end
+
+"""
+    retrieve(c::Client, ::Type{T}, args...; kwargs...)
+
+Retreive, get, list, etc.
+
+# Examples
+```julia-repl
+# Get the client user.
+julia> retrieve(c, User)
+
+# Get a guild's channels.
+julia> retrieve(c, DiscordChannel, guild)
+
+# Get an invite to a guild by code.
+julia> retrieve(c, Invite, "abcdef")
+```
+"""
+function retrieve end
+
+"""
+    update(c::Client, x::T, args...; kwargs...)
+
+Update, edit, modify, etc.
+
+# Examples
+```julia-repl
+# Edit a message.
+julia> update(c, message; content="foo2")
+
+# Modify a webhook.
+julia> update(c, webhook; name="bar2")
+
+# Update a role.
+julia> update(c, role, guild; permissions=8)
+```
+"""
+function update end
+
+"""
+    delete(c::Client, x::T, args...)
+
+Delete, remove, discard, etc.
+
+# Examples
+```julia-repl
+# Kick a user from a guild.
+julia> delete(c, member)
+
+# Unban a user from a guild.
+julia> delete(c, ban, guild)
+
+# Delete all reactions on a message.
+# This is the only update/delete method which takes a type parameter.
+delete(c, Reaction, message)
+```
+"""
+function delete end
+
 include(joinpath("crud", "audit_log.jl"))
 include(joinpath("crud", "ban.jl"))
 include(joinpath("crud", "channel.jl"))
