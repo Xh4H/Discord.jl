@@ -121,6 +121,30 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "client.html#Discord.enable_cache!",
+    "page": "Client",
+    "title": "Discord.enable_cache!",
+    "category": "function",
+    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache for REST operations.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.disable_cache!",
+    "page": "Client",
+    "title": "Discord.disable_cache!",
+    "category": "function",
+    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache for REST operations.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Caching-1",
+    "page": "Client",
+    "title": "Caching",
+    "category": "section",
+    "text": "enable_cache!\ndisable_cache!"
+},
+
+{
     "location": "client.html#Discord.add_handler!",
     "page": "Client",
     "title": "Discord.add_handler!",
@@ -557,7 +581,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.Response",
     "category": "type",
-    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_message, this value will be a Message.\nsuccess::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response. If no HTTP request was made in the case of a cache hit, it is nothing.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> send_message(c, ch, string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Discord.Message}\n\n\n\n\n\n"
+    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nsuccess::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Discord.Message}\n\n\n\n\n\n"
 },
 
 {
@@ -569,11 +593,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_message",
+    "location": "rest.html#CRUD-API-1",
     "page": "REST API",
-    "title": "Discord.get_message",
-    "category": "function",
-    "text": "get_message(\n    c::Client,\n    channel::Union{DiscordChannel, Integer},\n    message::Integer,\n) -> Response{Message}\nget_message(c::Client, m::Message) -> Response{Message}\n\nGet a Message from a DiscordChannel.\n\n\n\n\n\n"
+    "title": "CRUD API",
+    "category": "section",
+    "text": "TODO"
 },
 
 {
@@ -581,7 +605,791 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Endpoints",
     "category": "section",
-    "text": "get_messageTODO"
+    "text": "Functions which wrap REST API endpoints are named and sorted according to the Discord API documentation."
+},
+
+{
+    "location": "rest.html#Discord.get_guild_audit_log",
+    "page": "REST API",
+    "title": "Discord.get_guild_audit_log",
+    "category": "function",
+    "text": "get_guild_audit_log(c::Client, guild::Integer; kwargs...) -> AuditLog\n\nGet a Guild\'s AuditLog. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Audit-Log-1",
+    "page": "REST API",
+    "title": "Audit Log",
+    "category": "section",
+    "text": "get_guild_audit_log"
+},
+
+{
+    "location": "rest.html#Discord.get_channel",
+    "page": "REST API",
+    "title": "Discord.get_channel",
+    "category": "function",
+    "text": "get_channel(c::Client, channel::Integer) -> DiscordChannel\n\nGet a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_channel",
+    "page": "REST API",
+    "title": "Discord.modify_channel",
+    "category": "function",
+    "text": "modify_channel(c::Client, channel::Integer; kwargs...) -> DiscordChannel\n\nModify a DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_channel",
+    "page": "REST API",
+    "title": "Discord.delete_channel",
+    "category": "function",
+    "text": "delete_channel(c::Client, channel::Integer) -> DiscordChannel\n\nDelete a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_channel_messages",
+    "page": "REST API",
+    "title": "Discord.get_channel_messages",
+    "category": "function",
+    "text": "get_channel_messages(c::Client, channel::Integer; kwargs...) -> Vector{Message}\n\nGet a list of Messages from a DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_channel_message",
+    "page": "REST API",
+    "title": "Discord.get_channel_message",
+    "category": "function",
+    "text": "get_channel_message(c::Client, channel::Integer, message::Integer) -> Message\n\nGet a Message from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_message",
+    "page": "REST API",
+    "title": "Discord.create_message",
+    "category": "function",
+    "text": "create_message(c::Client, channel::Integer; kwargs...) -> Message\n\nSend a Message to a DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_reaction",
+    "page": "REST API",
+    "title": "Discord.create_reaction",
+    "category": "function",
+    "text": "create_reaction(c::Client, channel::Integer, message::Integer, emoji::AbstractString)\n\nReact to a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_own_reaction",
+    "page": "REST API",
+    "title": "Discord.delete_own_reaction",
+    "category": "function",
+    "text": "delete_own_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::AbstractString,\n)\n\nDelete the Client user\'s reaction to a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_user_reaction",
+    "page": "REST API",
+    "title": "Discord.delete_user_reaction",
+    "category": "function",
+    "text": "delete_user_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::AbstractString,\n    user::Integer,\n)\n\nDelete a User\'s reaction to a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_reactions",
+    "page": "REST API",
+    "title": "Discord.get_reactions",
+    "category": "function",
+    "text": "get_reactions(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::AbstractString,\n) -> Vector{User}\n\nGet the Users who reacted to a Message with an Emoji.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_all_reactions",
+    "page": "REST API",
+    "title": "Discord.delete_all_reactions",
+    "category": "function",
+    "text": "delete_all_reactions(c::Client, channel::Integer, message::Integer)\n\nDelete all reactions from a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.edit_message",
+    "page": "REST API",
+    "title": "Discord.edit_message",
+    "category": "function",
+    "text": "edit_message(c::Client, channel::Integer, message::Integer; kwargs...) -> Message\n\nEdit a Message. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_message",
+    "page": "REST API",
+    "title": "Discord.delete_message",
+    "category": "function",
+    "text": "delete_message(c::Client, channel::Integer, message::Integer)\n\nDelete a Message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.bulk_delete_messages",
+    "page": "REST API",
+    "title": "Discord.bulk_delete_messages",
+    "category": "function",
+    "text": "bulk_delete_messages(c::Client, channel::Integer; kwargs...)\n\nDelete multiple Messages. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.edit_channel_permissions",
+    "page": "REST API",
+    "title": "Discord.edit_channel_permissions",
+    "category": "function",
+    "text": "edit_channel_permissions(\n    c::Client,\n    channel::Integer,\n    overwrite::Integer;\n    kwargs...,\n)\n\nEdit permissions for a DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_channel_invites",
+    "page": "REST API",
+    "title": "Discord.get_channel_invites",
+    "category": "function",
+    "text": "get_channel_invites(c::Client, channel::Integer) -> Vector{Invite}\n\nGet the Invites for a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_channel_invite",
+    "page": "REST API",
+    "title": "Discord.create_channel_invite",
+    "category": "function",
+    "text": "create_channel_invite(c::Client, channel::Integer; kwargs...) -> Invite\n\nCreate an Invite to a DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_channel_permission",
+    "page": "REST API",
+    "title": "Discord.delete_channel_permission",
+    "category": "function",
+    "text": "delete_channel_permission(c::Client, channel::Integer, overwrite::Integer)\n\nDelete an Overwrite from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.trigger_typing_indicator",
+    "page": "REST API",
+    "title": "Discord.trigger_typing_indicator",
+    "category": "function",
+    "text": "trigger_typing_indicator(c::Client, channel::Integer)\n\nTrigger the typing indicator in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_pinned_messages",
+    "page": "REST API",
+    "title": "Discord.get_pinned_messages",
+    "category": "function",
+    "text": "get_pinned_messages(c::Client, channel::Integer) -> Vector{Message}\n\nGet the pinned Messages in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.add_pinned_channel_message",
+    "page": "REST API",
+    "title": "Discord.add_pinned_channel_message",
+    "category": "function",
+    "text": "add_pinned_channel_message(c::Client, channel::Integer, message::Integer)\n\nPin a Message in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_pinned_channel_message",
+    "page": "REST API",
+    "title": "Discord.delete_pinned_channel_message",
+    "category": "function",
+    "text": "delete_pinned_channel_message(c::Client, channel::Integer, message::Integer)\n\nUnpin a Message from a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.group_dm_add_recipient",
+    "page": "REST API",
+    "title": "Discord.group_dm_add_recipient",
+    "category": "function",
+    "text": "group_dm_add_recipient(c::Client, channel::Integer, user::Integer; kwargs...)\n\nAdd a User to a group DM. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.group_dm_remove_recipient",
+    "page": "REST API",
+    "title": "Discord.group_dm_remove_recipient",
+    "category": "function",
+    "text": "group_dm_remove_recipient(c::Client, channel::Integer, user::Integer)\n\nRemove a User from a group DM.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Channel-1",
+    "page": "REST API",
+    "title": "Channel",
+    "category": "section",
+    "text": "get_channel\nmodify_channel\ndelete_channel\nget_channel_messages\nget_channel_message\ncreate_message\ncreate_reaction\ndelete_own_reaction\ndelete_user_reaction\nget_reactions\ndelete_all_reactions\nedit_message\ndelete_message\nbulk_delete_messages\nedit_channel_permissions\nget_channel_invites\ncreate_channel_invite\ndelete_channel_permission\ntrigger_typing_indicator\nget_pinned_messages\nadd_pinned_channel_message\ndelete_pinned_channel_message\ngroup_dm_add_recipient\ngroup_dm_remove_recipient"
+},
+
+{
+    "location": "rest.html#Discord.list_guild_emojis",
+    "page": "REST API",
+    "title": "Discord.list_guild_emojis",
+    "category": "function",
+    "text": "list_guild_emojis(c::Client, guild::Integer) -> Vector{Emoji}\n\nGet the Emojis in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_emoji",
+    "page": "REST API",
+    "title": "Discord.get_guild_emoji",
+    "category": "function",
+    "text": "get_guild_emoji(c::Client, guild::Integer, emoji::Integer) -> Emoji\n\nGet an Emoji in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_guild_emoji",
+    "page": "REST API",
+    "title": "Discord.create_guild_emoji",
+    "category": "function",
+    "text": "create_guild_emoji(c::Client, guild::Integer; kwargs...) -> Emoji\n\nCreate an Emoji in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_emoji",
+    "page": "REST API",
+    "title": "Discord.modify_guild_emoji",
+    "category": "function",
+    "text": "modify_guild_emoji(c::Client, guild::Integer, emoji::Integer; kwargs...) -> Emoji\n\nEdit an Emoji in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_guild_emoji",
+    "page": "REST API",
+    "title": "Discord.delete_guild_emoji",
+    "category": "function",
+    "text": "delete_guild_emoji(c::Client, guild::Integer, emoji::Integer)\n\nDelete an Emoji from a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Emoji-1",
+    "page": "REST API",
+    "title": "Emoji",
+    "category": "section",
+    "text": "list_guild_emojis\nget_guild_emoji\ncreate_guild_emoji\nmodify_guild_emoji\ndelete_guild_emoji"
+},
+
+{
+    "location": "rest.html#Discord.create_guild",
+    "page": "REST API",
+    "title": "Discord.create_guild",
+    "category": "function",
+    "text": "create_guild(c::Client; kwargs...) -> Guild\n\nCreate a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild",
+    "page": "REST API",
+    "title": "Discord.get_guild",
+    "category": "function",
+    "text": "get_guild(c::Client, guild::Integer) -> Guild\n\nGet a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild",
+    "page": "REST API",
+    "title": "Discord.modify_guild",
+    "category": "function",
+    "text": "modify_guild(c::Client, guild::Integer; kwargs...) -> Guild\n\nEdit a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_guild",
+    "page": "REST API",
+    "title": "Discord.delete_guild",
+    "category": "function",
+    "text": "delete_guild(c::Client, guild::Integer)\n\nDelete a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_channels",
+    "page": "REST API",
+    "title": "Discord.get_guild_channels",
+    "category": "function",
+    "text": "get_guild_channels(c::Client, guild::Integer) -> Vector{DiscordChannel}\n\nGet the DiscordChannels in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_guild_channel",
+    "page": "REST API",
+    "title": "Discord.create_guild_channel",
+    "category": "function",
+    "text": "create_guild_channel(c::Client, guild::Integer; kwargs...) -> DiscordChannel\n\nCreate a DiscordChannel in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_channel_positions",
+    "page": "REST API",
+    "title": "Discord.modify_guild_channel_positions",
+    "category": "function",
+    "text": "modify_guild_channel_positions(c::Client, guild::Integer, positions...)\n\nModify the positions of DiscordChannels in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_member",
+    "page": "REST API",
+    "title": "Discord.get_guild_member",
+    "category": "function",
+    "text": "get_guild_member(c::Client, guild::Integer, user::Integer) -> Member\n\nGet a Member in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.list_guild_members",
+    "page": "REST API",
+    "title": "Discord.list_guild_members",
+    "category": "function",
+    "text": "list_guild_members(c::Client, guild::Integer; kwargs...) -> Vector{Member}\n\nGet a list of Members in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.add_guild_member",
+    "page": "REST API",
+    "title": "Discord.add_guild_member",
+    "category": "function",
+    "text": "add_guild_member(c::Client; kwargs...) -> Member\n\nAdd a User to a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_member",
+    "page": "REST API",
+    "title": "Discord.modify_guild_member",
+    "category": "function",
+    "text": "modify_guild__member(c::Client, guild::Integer, user::Integer; kwargs...)\n\nModify a Member in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_current_user_nick",
+    "page": "REST API",
+    "title": "Discord.modify_current_user_nick",
+    "category": "function",
+    "text": "modify_current_user_nick(c::Client, guild::Intger; kwargs...) -> String\n\nModify the Client user\'s nickname in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.add_guild_member_role",
+    "page": "REST API",
+    "title": "Discord.add_guild_member_role",
+    "category": "function",
+    "text": "add_guild_member_role(c::Client, guild::Integer, user::Integer, role::Integer)\n\nAdd a Role to a Member.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.remove_guild_member_role",
+    "page": "REST API",
+    "title": "Discord.remove_guild_member_role",
+    "category": "function",
+    "text": "remove_guild_member_role(c::Client, guild::Integer, user::Integer, role::Integer)\n\nRemove a Role from a Member.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.remove_guild_member",
+    "page": "REST API",
+    "title": "Discord.remove_guild_member",
+    "category": "function",
+    "text": "remove_guild_member(c::Client, guild::Integer, user::Integer)\n\nKick a Member from a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_bans",
+    "page": "REST API",
+    "title": "Discord.get_guild_bans",
+    "category": "function",
+    "text": "get_guild_bans(c::Client, guild::Integer) -> Vector{Ban}\n\nGet a list of Bans in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_ban",
+    "page": "REST API",
+    "title": "Discord.get_guild_ban",
+    "category": "function",
+    "text": "get_ban(c::Client, guild::Integer,  user::Integer) -> Ban\n\nGet a Ban in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_guild_ban",
+    "page": "REST API",
+    "title": "Discord.create_guild_ban",
+    "category": "function",
+    "text": "create_guild_ban(c::Client, guild::Integer, user::Integer; kwargs...)\n\nBan a Member from a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.remove_guild_ban",
+    "page": "REST API",
+    "title": "Discord.remove_guild_ban",
+    "category": "function",
+    "text": "remove_guild_ban(c::Client, guild::Integer, user::Integer)\n\nUnban a User from a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_roles",
+    "page": "REST API",
+    "title": "Discord.get_guild_roles",
+    "category": "function",
+    "text": "get_guild_roles(c::Client, guild::Integer) -> Vector{Role}\n\nGet a Guild\'s Roles.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_guild_role",
+    "page": "REST API",
+    "title": "Discord.create_guild_role",
+    "category": "function",
+    "text": "create_guild_role(c::Client, guild::Integer; kwargs) -> Role\n\nCreate a Role in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_role_positions",
+    "page": "REST API",
+    "title": "Discord.modify_guild_role_positions",
+    "category": "function",
+    "text": "modify_guild_role_positions(c::Client, guild::Integer, positions...) -> Vector{Role}\n\nModify the positions of Roles in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_role",
+    "page": "REST API",
+    "title": "Discord.modify_guild_role",
+    "category": "function",
+    "text": "modify_guild_role(c::Client, guild::Integer, role::Integer; kwargs) -> Role\n\nModify a Role in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_guild_role",
+    "page": "REST API",
+    "title": "Discord.delete_guild_role",
+    "category": "function",
+    "text": "delete_guild_role(c::Client, guild::Integer, role::Integer)\n\nDelete a Role from a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_prune_count",
+    "page": "REST API",
+    "title": "Discord.get_guild_prune_count",
+    "category": "function",
+    "text": "get_guild_prune_count(c::Client, guild::Integer; kwargs...) -> Dict\n\nGet the number of Members that would be removed from a Guild in a prune. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.begin_guild_prune",
+    "page": "REST API",
+    "title": "Discord.begin_guild_prune",
+    "category": "function",
+    "text": "begin_guild_prune(c::Client, guild::Integer; kwargs...) -> Dict\n\nBegin pruning Members from a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_voice_regions",
+    "page": "REST API",
+    "title": "Discord.get_guild_voice_regions",
+    "category": "function",
+    "text": "get_guild_voice_regions(c::Client, guild::Integer) -> Vector{VoiceRegion}\n\nGet a list of VoiceRegions for the Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_invites",
+    "page": "REST API",
+    "title": "Discord.get_guild_invites",
+    "category": "function",
+    "text": "get_guild_invites(c::Client, guild::Integer) -> Vector{Invite}\n\nGet a list of Invites to a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_integrations",
+    "page": "REST API",
+    "title": "Discord.get_guild_integrations",
+    "category": "function",
+    "text": "get_guild_integrations(c::Client, guild::Integer) -> Vector{Integration}\n\nGet a list of Integrations for a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_guild_integration",
+    "page": "REST API",
+    "title": "Discord.create_guild_integration",
+    "category": "function",
+    "text": "create_guild_integration(c::Client, guild::Integer; kwargs...)\n\nCreate/attach an Integration to a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_integration",
+    "page": "REST API",
+    "title": "Discord.modify_guild_integration",
+    "category": "function",
+    "text": "modify_guild_integration(c::Client, guild::Integer, integration::Integer; kwargs...)\n\nModify an Integration in a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_guild_integration",
+    "page": "REST API",
+    "title": "Discord.delete_guild_integration",
+    "category": "function",
+    "text": "delete_guild_integration(c::Client, guild::Integer, integration::Integer)\n\nDelete an Integration from a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.sync_guild_integration",
+    "page": "REST API",
+    "title": "Discord.sync_guild_integration",
+    "category": "function",
+    "text": "sync_guild_integration(c::Client, guild::Integer, integration::Integer)\n\nSync an Integration in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_embed",
+    "page": "REST API",
+    "title": "Discord.get_guild_embed",
+    "category": "function",
+    "text": "get_guild_embed(c::Client, guild::Integer) -> GuildEmbed\n\nGet a Guild\'s GuildEmbed.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_guild_embed",
+    "page": "REST API",
+    "title": "Discord.modify_guild_embed",
+    "category": "function",
+    "text": "modify_guild_embed(c::Client, guild::Integer; kwargs...) -> GuildEmbed\n\nModify a Guild\'s GuildEmbed. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_vanity_url",
+    "page": "REST API",
+    "title": "Discord.get_vanity_url",
+    "category": "function",
+    "text": "get_vanity_url(c::Client, guild::Integer) -> Invite\n\nGet a Guild\'s vanity URL, if it supports that feature.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_widget_image",
+    "page": "REST API",
+    "title": "Discord.get_guild_widget_image",
+    "category": "function",
+    "text": "get_guild_widget_image(c::Client, guild::Integer; kwargs...) -> Vector{UInt8}\n\nGet a Guild\'s widget image in PNG format. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Guild-1",
+    "page": "REST API",
+    "title": "Guild",
+    "category": "section",
+    "text": "create_guild\nget_guild\nmodify_guild\ndelete_guild\nget_guild_channels\ncreate_guild_channel\nmodify_guild_channel_positions\nget_guild_member\nlist_guild_members\nadd_guild_member\nmodify_guild_member\nmodify_current_user_nick\nadd_guild_member_role\nremove_guild_member_role\nremove_guild_member\nget_guild_bans\nget_guild_ban\ncreate_guild_ban\nremove_guild_ban\nget_guild_roles\ncreate_guild_role\nmodify_guild_role_positions\nmodify_guild_role\ndelete_guild_role\nget_guild_prune_count\nbegin_guild_prune\nget_guild_voice_regions\nget_guild_invites\nget_guild_integrations\ncreate_guild_integration\nmodify_guild_integration\ndelete_guild_integration\nsync_guild_integration\nget_guild_embed\nmodify_guild_embed\nget_vanity_url\nget_guild_widget_image"
+},
+
+{
+    "location": "rest.html#Discord.get_invite",
+    "page": "REST API",
+    "title": "Discord.get_invite",
+    "category": "function",
+    "text": "get_invite(c::Client, invite::AbstractString; kwargs...} -> Invite\n\nGet an Invite to a Guild. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_invite",
+    "page": "REST API",
+    "title": "Discord.delete_invite",
+    "category": "function",
+    "text": "delete_invite(c::Client, invite::AbstractString) -> Invite\n\nDelete an Invite to a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Invite-1",
+    "page": "REST API",
+    "title": "Invite",
+    "category": "section",
+    "text": "get_invite\ndelete_invite"
+},
+
+{
+    "location": "rest.html#Discord.get_current_user",
+    "page": "REST API",
+    "title": "Discord.get_current_user",
+    "category": "function",
+    "text": "get_current_user(c::Client) -> User\n\nGet the Client User.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_user",
+    "page": "REST API",
+    "title": "Discord.get_user",
+    "category": "function",
+    "text": "get_user(c::Client, user::Integer) -> User\n\nGet a User.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_current_user",
+    "page": "REST API",
+    "title": "Discord.modify_current_user",
+    "category": "function",
+    "text": "modify_current_user(c::Client; kwargs...) -> User\n\nModify the Client User. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_current_user_guilds",
+    "page": "REST API",
+    "title": "Discord.get_current_user_guilds",
+    "category": "function",
+    "text": "get_user_guilds(c::Client; kwargs...) -> Vector{Guild}\n\nGet a list of Guilds the Client User is a member of. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.leave_guild",
+    "page": "REST API",
+    "title": "Discord.leave_guild",
+    "category": "function",
+    "text": "leave_guild(c::Client, guild::Integer)\n\nLeave a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_dm",
+    "page": "REST API",
+    "title": "Discord.create_dm",
+    "category": "function",
+    "text": "create_dm(c::Client; kwargs...) -> DiscordChannel\n\nCreate a DM DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.create_group_dm",
+    "page": "REST API",
+    "title": "Discord.create_group_dm",
+    "category": "function",
+    "text": "create_group_dm(c::Client; kwargs...) -> DiscordChannel\n\nCreate a group DM DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_user_connections",
+    "page": "REST API",
+    "title": "Discord.get_user_connections",
+    "category": "function",
+    "text": "get_user_connections(c::Client) -> Vector{Connection}\n\nGet the Client\'s Connections. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#User-1",
+    "page": "REST API",
+    "title": "User",
+    "category": "section",
+    "text": "get_current_user\nget_user\nmodify_current_user\nget_current_user_guilds\nleave_guild\ncreate_dm\ncreate_group_dm\nget_user_connections"
+},
+
+{
+    "location": "rest.html#Discord.list_voice_regions",
+    "page": "REST API",
+    "title": "Discord.list_voice_regions",
+    "category": "function",
+    "text": "list_voice_regions(c::Client) -> Vector{VoiceRegion}\n\nGet a list of the VoiceRegions that can be used when creating Guilds.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Voice-1",
+    "page": "REST API",
+    "title": "Voice",
+    "category": "section",
+    "text": "list_voice_regions"
+},
+
+{
+    "location": "rest.html#Discord.create_webhook",
+    "page": "REST API",
+    "title": "Discord.create_webhook",
+    "category": "function",
+    "text": "create_webhook(c::Client, channel::Integer; kwargs...) -> Webhook\n\nCreate a Webhook in a DiscordChannel. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_channel_webhooks",
+    "page": "REST API",
+    "title": "Discord.get_channel_webhooks",
+    "category": "function",
+    "text": "get_channel_webhooks(c::Client, channel::Integer) -> Vector{Webhook}\n\nGet a list of Webhooks in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_guild_webhooks",
+    "page": "REST API",
+    "title": "Discord.get_guild_webhooks",
+    "category": "function",
+    "text": "get_guild_webhooks(c::Client, guild::Integer) -> Vector{Webhook}\n\nGet a list of Webhooks in a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_webhook",
+    "page": "REST API",
+    "title": "Discord.get_webhook",
+    "category": "function",
+    "text": "get_webhook(c::Client, webhook::Integer) -> Webhook\n\nGet a Webhook.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.get_webhook_with_token",
+    "page": "REST API",
+    "title": "Discord.get_webhook_with_token",
+    "category": "function",
+    "text": "get_webhook_with_token(c::Client, webhook::Integer, token::AbstractString) -> Webhook\n\nGet a Webhook with a token.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_webhook",
+    "page": "REST API",
+    "title": "Discord.modify_webhook",
+    "category": "function",
+    "text": "modify_webhook(c::Client, webhook::Integer; kwargs...) -> Webhook\n\nModify a Webhook. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.modify_webhook_with_token",
+    "page": "REST API",
+    "title": "Discord.modify_webhook_with_token",
+    "category": "function",
+    "text": "modify_webhook_with_token(\n    c::Client,\n    webhook::Integer,\n    token::AbstractString;\n    kwargs...,\n) -> Webhook\n\nModify a Webhook with a token. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_webhook",
+    "page": "REST API",
+    "title": "Discord.delete_webhook",
+    "category": "function",
+    "text": "delete_webhook(c::Client, webhook::Integer)\n\nDelete a Webhook.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete_webhook_with_token",
+    "page": "REST API",
+    "title": "Discord.delete_webhook_with_token",
+    "category": "function",
+    "text": "delete_webhook_with_token(c::Client, webhook::Integer, token::AbstractString)\n\nDelete a Webhook with a token.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.execute_webhook",
+    "page": "REST API",
+    "title": "Discord.execute_webhook",
+    "category": "function",
+    "text": "execute_webhook(\n    c::Client,\n    webhook::Integer,\n    token::AbstractString;\n    wait::Bool=false,\n    kwargs...,\n) -> Message\n\nExecute a Webhook. If wait is not set, no Message is returned. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.execute_slack_compatible_webhook",
+    "page": "REST API",
+    "title": "Discord.execute_slack_compatible_webhook",
+    "category": "function",
+    "text": "execute_slack_compatible_webhook(\n    c::Client,\n    webhook::Integer,\n    token::AbstractString;\n    wait::Bool=true,\n    kwargs...,\n)\n\nExecute a Slack Webhook. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.execute_github_compatible_webhook",
+    "page": "REST API",
+    "title": "Discord.execute_github_compatible_webhook",
+    "category": "function",
+    "text": "execute_github_compatible_webhook(\n    c::Client,\n    webhook::Integer,\n    token::AbstractString;\n    wait::Bool=true,\n    kwargs...,\n)\n\nExecute a Github Webhook. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Webhook-1",
+    "page": "REST API",
+    "title": "Webhook",
+    "category": "section",
+    "text": "create_webhook\nget_channel_webhooks\nget_guild_webhooks\nget_webhook\nget_webhook_with_token\nmodify_webhook\nmodify_webhook_with_token\ndelete_webhook\ndelete_webhook_with_token\nexecute_webhook\nexecute_slack_compatible_webhook\nexecute_github_compatible_webhook"
 },
 
 {
@@ -605,7 +1413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivityTimestamps",
     "category": "type",
-    "text": "Indicates the start and stop of an Activity. More details here.\n\nFields\n\nstart :: Union{Missing, DateTime}\nstop  :: Union{Missing, DateTime}\n\n\n\n\n\n"
+    "text": "The start and stop times of an Activity. More details here.\n\nFields\n\nstart :: Union{Missing, DateTime}\nstop  :: Union{Missing, DateTime}\n\n\n\n\n\n"
 },
 
 {
@@ -637,7 +1445,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivityType",
     "category": "type",
-    "text": "The type of an Activity. More details here.\n\n\n\n\n\n"
+    "text": "An Activity\'s type. More details here.\n\n\n\n\n\n"
 },
 
 {
@@ -717,7 +1525,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ChannelType",
     "category": "type",
-    "text": "The type of a DiscordChannel.\n\n\n\n\n\n"
+    "text": "A DiscordChannel\'s type.\n\n\n\n\n\n"
 },
 
 {
@@ -813,7 +1621,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Guild",
     "category": "type",
-    "text": "A guild (server). More details here.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: UInt64\npermissions                   :: Union{Missing, Int64}\nregion                        :: String\nafk_channel_id                :: Union{Nothing, UInt64}\nafk_timeout                   :: Int64\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: MessageNotificationLevel\nexplicit_content_filter       :: ExplicitContentFilterLevel\nroles                         :: Array{Role,1}\nemojis                        :: Array{Emoji,1}\nfeatures                      :: Array{String,1}\nmfa_level                     :: MFALevel\napplication_id                :: Union{Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, UInt64}\nsystem_channel_id             :: Union{Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\n\n\n\n\n\n"
+    "text": "A guild (server). More details here.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: Union{Missing, UInt64}\npermissions                   :: Union{Missing, Int64}\nregion                        :: Union{Missing, String}\nafk_channel_id                :: Union{Missing, Nothing, UInt64}\nafk_timeout                   :: Union{Missing, Int64}\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, Nothing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Union{Missing, MessageNotificationLevel}\nexplicit_content_filter       :: Union{Missing, ExplicitContentFilterLevel}\nroles                         :: Union{Missing, Array{Role,1}}\nemojis                        :: Union{Missing, Array{Emoji,1}}\nfeatures                      :: Array{String,1}\nmfa_level                     :: Union{Missing, MFALevel}\napplication_id                :: Union{Missing, Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, Nothing, UInt64}\nsystem_channel_id             :: Union{Missing, Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\n\n\n\n\n\n"
 },
 
 {
@@ -869,7 +1677,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Integration",
     "category": "type",
-    "text": "A Guild integration. More details here.\n\nFields\n\nid                  :: UInt64\nname                :: String\n_type               :: String\nenabled             :: Bool\nsyncing             :: Bool\nrole_id             :: UInt64\nexpire_behaviour    :: Int64\nexpire_grace_period :: Int64\nuser                :: User\naccount             :: IntegrationAccount\nsynced_at           :: Dates.DateTime\n\n\n\n\n\n"
+    "text": "A Guild integration. More details here.\n\nFields\n\nid                  :: UInt64\nname                :: String\ntype                :: String\nenabled             :: Bool\nsyncing             :: Bool\nrole_id             :: UInt64\nexpire_behaviour    :: Int64\nexpire_grace_period :: Int64\nuser                :: User\naccount             :: IntegrationAccount\nsynced_at           :: Dates.DateTime\n\n\n\n\n\n"
 },
 
 {
@@ -933,7 +1741,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.MessageType",
     "category": "type",
-    "text": "The type of a Message. More details here.\n\n\n\n\n\n"
+    "text": "A Message\'s type. More details here.\n\n\n\n\n\n"
 },
 
 {
@@ -941,7 +1749,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.MessageActivityType",
     "category": "type",
-    "text": "The type of a Message activity. More details here.\n\n\n\n\n\n"
+    "text": "A Message\'s activity type. More details here.\n\n\n\n\n\n"
 },
 
 {
