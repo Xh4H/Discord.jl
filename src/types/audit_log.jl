@@ -1,14 +1,53 @@
 export AuditLog
 
 const AUDIT_LOG_CHANGE_TYPES = Dict(
-    "name" => (String, Guild),
-    "icon_hash" => (String, Guild) ,
-    "splash_hash" => (String, Guild),
-    "owner_id" => (Snowflake, Guild),
-    "mentionable" => (Bool, Role),
-    "permissions" => (Int, Role),
-    # TODO
+    "name"                          => (String, Guild),
+    "icon_hash"                     => (String, Guild) ,
+    "splash_hash"                   => (String, Guild),
+    "owner_id"                      => (Snowflake, Guild),
+    "region"                        => (String, Guild),
+    "afk_channel_id"                => (Snowflake, Guild),
+    "afk_timeout"                   => (Int, Guild),
+    "mfa_level"                     => (MFALevel, Guild),
+    "verification_level"            => (VerificationLevel, Guild),
+    "explicit_content_filter"       => (ExplicitContentFilterLevel, Guild),
+    "default_message_notifications" => (MessageNotificationLevel, Guild),
+    "vanity_url_code"               => (String, Guild),
+    "\$add"                         => (Vector{Role}, Guild),
+    "\$remove"                      => (Vector{Role}, Guild),
+    "prune_delete_days"             => (Int, Guild),
+    "widget_enabled"                => (Bool, Guild),
+    "widget_channel_id"             => (Snowflake, Guild),
+    "position"                      => (Int, DiscordChannel),
+    "topic"                         => (String, DiscordChannel),
+    "bitrate"                       => (Int, DiscordChannel),
+    "permission_overwrites"         => (Vector{Overwrite}, DiscordChannel),
+    "nsfw"                          => (Bool, DiscordChannel),
+    "application_id"                => (Snowflake, DiscordChannel),
+    "permissions"                   => (Int, Role),
+    "color"                         => (Int, Role),
+    "hoist"                         => (Bool, Role),
+    "mentionable"                   => (Bool, Role),
+    "allow"                         => (Int, Role),
+    "deny"                          => (Int, Role),
+    "code"                          => (String, Invite),
+    "channel_id"                    => (Snowflake, Invite),
+    "inviter_id"                    => (Snowflake, Invite),
+    "max_uses"                      => (Int, Invite),
+    "uses"                          => (Int, Invite),
+    "max_age"                       => (Int, Invite),
+    "temporary"                     => (Bool, Invite),
+    "deaf"                          => (Bool, User),
+    "mute"                          => (Bool, User),
+    "nick"                          => (String, User),
+    "avatar_hash"                   => (String, User),
+    "id"                            => (Snowflake, Any),
+    "type"                          => (Any, Any),
+    # Undocumented.
+    "rate_limit_per_user"           => (Int, DiscordChannel),
 )
+
+const OVERWRITE_TYPES = ["member", "role"]
 
 """
 [`AuditLog`](@ref) action types.
@@ -45,6 +84,20 @@ end
 @boilerplate ActionType :lower
 
 """
+An [`Overwrite`](@ref)'s type.
+More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info).
+"""
+@enum OverwriteType OT_MEMBER OT_ROLE OT_UNKNOWN
+
+function OverwriteType(x::AbstractString)
+    i = findfirst(s -> s == x, OVERWRITE_TYPES)
+    return i === nothing ? OT_UNKNOWN : OverwriteType(i - 1)
+end
+
+Base.string(x::OverwriteType) = OVERWRITE_TYPES[Int(x) + 1]
+JSON.lower(x::OverwriteType) = string(x)
+
+"""
 A change item in an [`AuditLogEntry`](@ref).
 
 The first type parameter is the type of `new_value` and `old_value`. The second is the type
@@ -63,12 +116,28 @@ end
 function AuditLogChange(d::Dict{String, Any})
     return if haskey(AUDIT_LOG_CHANGE_TYPES, d["key"])
         T, U = AUDIT_LOG_CHANGE_TYPES[d["key"]]
-        AuditLogChange{T, U}(
-            haskey(d, "new_value") ? T(d["new_value"]) : missing,
-            haskey(d, "old_value") ? T(d["old_value"]) : missing,
-            d["key"],
-            U,
-        )
+        func = if T === Any
+            identity
+        elseif T === Snowflake
+            snowflake
+        elseif T <: Vector
+            eltype(T)
+        else
+            T
+        end
+
+        new_value = if haskey(d, "new_value")
+            d["new_value"] isa Vector ? func.(d["new_value"]) : func(d["new_value"])
+        else
+            missing
+        end
+        old_value = if haskey(d, "old_value")
+            d["old_value"] isa Vector ? func.(d["old_value"]) : func(d["old_value"])
+        else
+            missing
+        end
+
+        AuditLogChange{T, U}(new_value, old_value, d["key"], U)
     else
         AuditLogChange{Any, Any}(
             get(d, "new_value", missing),
@@ -79,34 +148,70 @@ function AuditLogChange(d::Dict{String, Any})
     end
 end
 
-function JSON.lower(alc::AuditLogChange)
+function JSON.lower(x::AuditLogChange)
     d = Dict()
-    if !ismissing(alc.new_value)
-        d["new_value"] = alc.new_value
+    if !ismissing(x.new_value)
+        d["new_value"] = x.new_value
     end
-    if !ismissing(alc.old_value)
-        d["old_value"] = alc.new_value
+    if !ismissing(x.old_value)
+        d["old_value"] = x.new_value
     end
-    d["key"] = alc.key
+    d["key"] = x.key
     return d
 end
 
-# TODO: merge method?
-
 """
 Optional information in an [`AuditLogEntry`](@ref).
+More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info).
 """
 struct AuditLogOptions
-    # TODO: We should probably parse/lower this manually.
-    delete_member_days::Union{String, Missing}  # TODO: Int?
-    members_removed::Union{String, Missing}  # TODO: Int?
+    delete_member_days::Union{Int, Missing}
+    members_removed::Union{Int, Missing}
     channel_id::Union{Snowflake, Missing}
-    count::Union{String, Missing}  # TODO: Int?
+    count::Union{Int, Missing}
     id::Union{Snowflake, Missing}
-    type::Union{String, Missing}  # TODO: Enum?
+    type::Union{OverwriteType, Missing}
     role_name::Union{String, Missing}
 end
-@boilerplate AuditLogOptions :dict :docs :lower :merge
+@boilerplate AuditLogOptions :docs :merge
+
+function AuditLogOptions(d::Dict{String, Any})
+    return AuditLogOptions(
+        haskey(d, "delete_member_days") ? parse(Int, d["delete_member_days"]) : missing,
+        haskey(d, "members_removed") ? parse(Int, d["members_removed"]) : missing,
+        haskey(d, "channel_id") ? snowflake(d["channel_id"]) : missing,
+        haskey(d, "count") ? parse(Int, d["count"]) : missing,
+        haskey(d, "id") ? snowflake(d["id"]) : missing,
+        haskey(d, "type") ? OverwriteType(d["type"]) : missing,
+        get(d, "role_name", missing),
+    )
+end
+
+function JSON.lower(x::AuditLogOptions)
+    d = Dict()
+    if !ismissing(x.delete_member_days)
+        d["delete_member_days"] = string(d.delete_member_days)
+    end
+    if !ismissing(x.members_removed)
+        d["members_removed"] = string(d.members_removed)
+    end
+    if !ismissing(x.channel_id)
+        d["channel_id"] = string(d.members_removed)
+    end
+    if !ismissing(x.count)
+        d["count"] = string(x.count)
+    end
+    if !ismissing(x.id)
+        d["id"] = string(x.id)
+    end
+    if !ismissing(x.type)
+        d["type"] = string(x.type)
+    end
+    if !ismissing(x.role_name)
+        d["role_name"] = x.role_name
+    end
+    return d
+end
 
 """
 An entry in an [`AuditLog`](@ref).

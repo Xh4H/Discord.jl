@@ -9,7 +9,7 @@ function create(c::Client, ::Type{DiscordChannel}; kwargs...)
     end
 end
 
-retrieve(c::Client, ::Type{DiscordChannel}, channel::DiscordChannel) = get_channel(c, channel)
+retrieve(c::Client, ::Type{DiscordChannel}, channel::Integer) = get_channel(c, channel)
 retrieve(c::Client, ::Type{DiscordChannel}, g::AbstractGuild) = get_guild_channels(c, g.id)
 
 update(c::Client, ch::DiscordChannel; kwargs...) = modify_channel(c, ch.id; kwargs...)

@@ -6,13 +6,13 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
 """
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE PS_UNKNOWN
 
-function PresenceStatus(ps::AbstractString)
-    i = findfirst(s -> s == ps, PRESENCE_STATUSES)
+function PresenceStatus(x::AbstractString)
+    i = findfirst(s -> s == x, PRESENCE_STATUSES)
     return i === nothing ? PS_UNKNOWN : PresenceStatus(i - 1)
 end
 
-Base.string(ps::PresenceStatus) = PRESENCE_STATUSES[Int(ps) + 1]
-JSON.lower(ps::PresenceStatus) = string(ps)
+Base.string(x::PresenceStatus) = PRESENCE_STATUSES[Int(x) + 1]
+JSON.lower(x::PresenceStatus) = string(x)
 
 """
 A [`User`](@ref)'s presence.

@@ -23,6 +23,7 @@ AuditLogEntry
 AuditLogChange
 AuditLogOptions
 ActionType
+OverwriteType
 Ban
 DiscordChannel
 ChannelType
