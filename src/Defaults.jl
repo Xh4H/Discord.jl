@@ -3,10 +3,8 @@ module Defaults
 export handler
 
 using Discord
-using Discord: locked
+using Discord: insert_or_update!, locked
 using TimeToLive
-
-insert_or_update(d, k, v) = d[k] = haskey(d, k) ? merge(d[k], v) : v
 
 function handler(c::Client, e::Ready)
     c.state.v = e.v
@@ -15,7 +13,7 @@ function handler(c::Client, e::Ready)
     c.state.user = e.user
 
     for c in e.private_channels
-        insert_or_update(c.state.channels, e.id, c)
+        insert_or_update!(c.state.channels, e.id, c)
     end
     for g in e.guilds
         # Don't merge here because these guilds are unavailable.
@@ -38,20 +36,20 @@ function handler(c::Client, e::Union{ChannelCreate, ChannelUpdate})
             deleteat!(cs, idx)
         end
     end
-    insert_or_update(c.state.channels, e.channel.id, e.channel)
+    insert_or_update!(c.state.channels, e.channel.id, e.channel)
 end
 
 handler(c::Client, e::ChannelDelete) = delete!(c.state.channels, e.channel.id)
 
 function handler(c::Client, e::Union{GuildCreate, GuildUpdate})
     if get(c.state.guilds, e.guild.id, nothing) isa Guild
-        insert_or_update(c.state.guilds, e.guild.id, e.guild)
+        insert_or_update!(c.state.guilds, e.guild.id, e.guild)
     else
         c.state.guilds[e.guild.id] = e.guild
     end
     if !ismissing(e.guild.channels)
         for ch in e.guild.channels
-            insert_or_update(c.state.channels, ch.id, ch)
+            insert_or_update!(c.state.channels, ch.id, ch)
         end
     end
 
@@ -67,8 +65,8 @@ function handler(c::Client, e::Union{GuildCreate, GuildUpdate})
                 end
                 push!(ms[missing], m)
             else
-                insert_or_update(ms, m.user.id, m)
-                insert_or_update(c.state.users, m.user.id, m.user)
+                insert_or_update!(ms, m.user.id, m)
+                insert_or_update!(c.state.users, m.user.id, m.user)
             end
         end
     end
@@ -102,7 +100,7 @@ function handler(c::Client, e::GuildMemberAdd)
         push!(ms[missing], e.member)
     else
         ms[e.member.user.id] = e.member
-        insert_or_update(c.state.users, e.member.user.id, e.member.user)
+        insert_or_update!(c.state.users, e.member.user.id, e.member.user)
     end
 end
 
@@ -120,7 +118,7 @@ function handler(c::Client, e::GuildMemberUpdate)
         m.deaf,
         m.mute,
     )
-    insert_or_update(c.state.users, e.user.id, e.user)
+    insert_or_update!(c.state.users, e.user.id, e.user)
 end
 
 function handler(c::Client, e::GuildMemberRemove)
@@ -144,8 +142,8 @@ function handler(c::Client, e::GuildMembersChunk)
             touch(ms, missing)
             push!(ms[missing], m)
         else
-            insert_or_update(ms, m.user.id, m)
-            insert_or_update(c.state.users, m.user.id, m.user)
+            insert_or_update!(ms, m.user.id, m)
+            insert_or_update!(c.state.users, m.user.id, m.user)
         end
     end
 end
@@ -182,7 +180,7 @@ function handler(c::Client, e::GuildRoleDelete)
 end
 
 function handler(c::Client, e::Union{MessageCreate, MessageUpdate})
-    insert_or_update(c.state.messages, e.message.id, e.message)
+    insert_or_update!(c.state.messages, e.message.id, e.message)
 end
 
 handler(c::Client, e::MessageDelete) = delete!(c.state.messages, e.id)
@@ -197,7 +195,7 @@ function handler(c::Client, e::PresenceUpdate)
     if !haskey(c.state.presences, e.presence.guild_id)
         c.state.presences[e.presence.guild_id] = TTL(c.ttl)
     end
-    insert_or_update(c.state.presences[e.presence.guild_id], e.presence.user.id, e.presence)
+    insert_or_update!(c.state.presences[e.presence.guild_id], e.presence.user.id, e.presence)
 end
 
 function handler(c::Client, e::MessageReactionAdd)

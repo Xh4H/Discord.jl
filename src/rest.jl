@@ -5,16 +5,6 @@ const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
 const RATELIMITED = ErrorException("Rate limited")
 
 """
-    fetchval(f::Future{Response{T}}) -> Union{T, Nothing}
-
-Shortcut for `fetch(f).val`: Fetch a [`Response`](@ref) and return its value. Note that
-there are no guarantees about the response's success and the value being returned, and it
-discards context that can be useful for debugging, such as HTTP responses and caught
-exceptions.
-"""
-fetchval(f::Future) = fetch(f).val
-
-"""
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
 `Response` from the `Future`, use `fetch` or [`fetchval`](@ref).
@@ -47,8 +37,6 @@ struct Response{T}
     exception::Union{Exception, Nothing}
 end
 
-Base.eltype(r::Response{T}) where T = T
-
 # HTTP response with no body.
 function Response{Nothing}(r::HTTP.Messages.Response)
     return Response{Nothing}(nothing, r.status < 300, r, nothing)
@@ -67,6 +55,7 @@ function Response{T}(c::Client, r::HTTP.Messages.Response) where T
     end
 
     val, e = tryparse(c, T, data)
+    c.use_cache && val !== nothing && put!(c.state, val)
     return Response{T}(val, e === nothing, r, e)
 end
 
@@ -92,9 +81,16 @@ function Response{T}(
     f = Future()
 
     @async begin
-        if c.use_cache
-            # TODO: Check the cache.
-            # Have to be clever with T and parsing the endpoint string.
+        if c.use_cache && method === :GET
+            val = get(
+                c.state,
+                T,
+                channel=cap("channels", endpoint),
+                guild=cap("guilds", endpoint),
+                message=cap("messages", endpoint),
+                user=cap("users", endpoint),
+            )
+            val === nothing || return put!(f, Response{T}(val, true, nothing, nothing))
         end
 
         url = "$DISCORD_API/v$(c.version)$endpoint"
@@ -139,6 +135,23 @@ function Response{T}(
     end
 
     return f
+end
+
+Base.eltype(r::Response{T}) where T = T
+
+"""
+    fetchval(f::Future{Response{T}}) -> Union{T, Nothing}
+
+Shortcut for `fetch(f).val`: Fetch a [`Response`](@ref) and return its value. Note that
+there are no guarantees about the response's success and the value being returned, and it
+discards context that can be useful for debugging, such as HTTP responses and caught
+exceptions.
+"""
+fetchval(f::Future) = fetch(f).val
+
+function cap(path::AbstractString, s::AbstractString)
+    m = match(Regex("/$path/(\\d+)"), s)
+    return m === nothing ? nothing : parse(Snowflake, first(m.captures))
 end
 
 include(joinpath("rest", "audit_log.jl"))

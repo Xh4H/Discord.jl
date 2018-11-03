@@ -110,7 +110,15 @@ enable_cache!(c::Client) = c.use_cache = true
 function enable_cache!(f::Function, c::Client)
     old = c.use_cache
     c.use_cache = true
-    try f() finally c.use_cache = old end
+    try
+        f()
+    finally
+        # Usually the above function is going to be calling REST endpoints. The cache flag
+        # is checked asynchronously, so by the time it happens there's a good chance we've
+        # already returned and set the cache flag back to its original value.
+        sleep(Milliscond(1))
+        c.use_cache = old
+    end
 end
 
 """
@@ -123,7 +131,12 @@ disable_cache!(c::Client) = c.use_cache = false
 function disable_cache!(f::Function, c::Client)
     old = c.use_cache
     c.use_cache = false
-    try f() finally c.use_cache = old end
+    try
+        f()
+    finally
+        sleep(Millisecond(1))  # Same reason as above.
+        c.use_cache = old
+    end
 end
 
 """
