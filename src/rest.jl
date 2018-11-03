@@ -106,9 +106,6 @@ function Response{T}(
         args = [method, url, headers]
         get(SHOULD_SEND, method, false) && push!(args, json(body))
 
-        # TODO: Sometimes a request stalls and holds up the entire queue for minutes at a
-        # time. I'm not quite sure if it's the request hanging, or a synchronization bug.
-
         # Acquire the lock, then check if we're rate limited. If we are, then release the
         # lock and wait for the reset. Once we get the lock back and we're not rate
         # limited, we can go through with the request (at that point we know we're the only

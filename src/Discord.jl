@@ -6,7 +6,6 @@ using HTTP
 using JSON
 using OpenTrick
 using TimeToLive
-using WebSockets
 
 const API_VERSION = 6
 const DISCORD_API = "https://discordapp.com/api"
