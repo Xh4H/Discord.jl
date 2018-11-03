@@ -4,7 +4,7 @@ export Reaction
 A [`Message`](@ref) reaction.
 More details [here](https://discordapp.com/developers/docs/resources/channel#reaction-object).
 """
-mutable struct Reaction  # Mutable to update count and me.
+struct Reaction
     count::Int
     me::Bool
     emoji::Emoji

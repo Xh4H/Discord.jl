@@ -2,5 +2,5 @@ julia 1.0
 JSON
 HTTP
 OpenTrick
+Setfield
 TimeToLive
-WebSockets

@@ -50,7 +50,7 @@ end
 A message.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object).
 """
-mutable struct Message  # Mutable to add reactions.
+struct Message
     id::Snowflake
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}

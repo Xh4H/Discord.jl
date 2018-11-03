@@ -16,6 +16,7 @@ me
 ## Caching
 
 ```@docs
+set_ttl!
 enable_cache!
 disable_cache!
 ```

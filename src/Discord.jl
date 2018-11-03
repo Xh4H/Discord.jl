@@ -5,6 +5,7 @@ using Distributed
 using HTTP
 using JSON
 using OpenTrick
+using Setfield
 using TimeToLive
 
 const API_VERSION = 6

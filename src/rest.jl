@@ -55,7 +55,6 @@ function Response{T}(c::Client, r::HTTP.Messages.Response) where T
     end
 
     val, e = tryparse(c, T, data)
-    c.use_cache && val !== nothing && put!(c.state, val)
     return Response{T}(val, e === nothing, r, e)
 end
 
@@ -81,16 +80,19 @@ function Response{T}(
     f = Future()
 
     @async begin
+        kwargs = (
+            channel=cap("channels", endpoint),
+            guild=cap("guilds", endpoint),
+            message=cap("messages", endpoint),
+            user=cap("users", endpoint),
+        )
+
         if c.use_cache && method === :GET
-            val = get(
-                c.state,
-                T,
-                channel=cap("channels", endpoint),
-                guild=cap("guilds", endpoint),
-                message=cap("messages", endpoint),
-                user=cap("users", endpoint),
-            )
-            val === nothing || return put!(f, Response{T}(val, true, nothing, nothing))
+            val = get(c.state, T; kwargs...)
+            if val !== nothing
+                put!(f, Response{T}(val, true, nothing, nothing))
+                return
+            end
         end
 
         url = "$DISCORD_API/v$(c.version)$endpoint"
@@ -119,7 +121,9 @@ function Response{T}(
                 try
                     r = HTTP.request(args...; status_exception=false)
                     update!(c.limiter, b, r)
-                    put!(f, Response{T}(c, r))
+                    resp = Response{T}(c, r)
+                    resp.ok && resp.val !== nothing && put!(c.state, resp.val; kwargs...)
+                    put!(f, resp)
                 catch e
                     # If we're rate limited, then just go back to the top.
                     e == RATELIMITED && continue
