@@ -122,7 +122,7 @@ end
 """
     request_guild_members(
         c::Client,
-        guild_id::Union{Snowflake, Vector{Snowflake};
+        guild_id::Union{Integer, Vector{<:Integer};
         query::AbstractString="",
         limit::Int=0,
     ) -> Bool
@@ -134,7 +134,7 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#reques
 """
 function request_guild_members(
     c::Client,
-    guild_id::Snowflake;
+    guild_id::Integer;
     query::AbstractString="",
     limit::Int=0,
 )
@@ -143,7 +143,7 @@ end
 
 function request_guild_members(
     c::Client,
-    guild_id::Vector{Snowflake};
+    guild_id::Vector{<:Integer};
     query::AbstractString="",
     limit::Int=0,
 )
@@ -157,8 +157,8 @@ end
 """
     update_voice_state(
         c::Client,
-        guild_id::Snowflake,
-        channel_id::Union{Snowflake, Nothing},
+        guild_id::Integer,
+        channel_id::Union{Integer, Nothing},
         self_mute::Bool,
         self_deaf::Bool,
     ) -> Bool
@@ -170,8 +170,8 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#update
 """
 function update_voice_state(
     c::Client,
-    guild_id::Snowflake,
-    channel_id::Union{Snowflake, Nothing},
+    guild_id::Integer,
+    channel_id::Union{Integer, Nothing},
     self_mute::Bool,
     self_deaf::Bool,
 )

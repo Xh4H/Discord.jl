@@ -5,7 +5,7 @@ const DISCORD_EPOCH = 1420070400000
 const Snowflake = UInt64
 
 snowflake(s::Integer) = Snowflake(s)
-snowflake(s::AbstractString) = parse(UInt64, s)
+snowflake(s::AbstractString) = parse(Snowflake, s)
 
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
 worker_id(s::Snowflake) = (s & 0x3E0000) >> 17
