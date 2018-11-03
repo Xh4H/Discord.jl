@@ -26,7 +26,7 @@ function State(ttl::Period)
         Dict(),    # presences
         Dict(),    # members
         Threads.SpinLock(),  # lock
-        ttl,       # default_ttl
+        ttl,       # ttl
     )
 end
 
@@ -39,6 +39,10 @@ Base.get(s::State, ::Type{Message}; kwargs...) = get(s.messages, kwargs[:message
 function Base.get(s::State, ::Type{DiscordChannel}; kwargs...)
     return get(get(c.channels, kwargs[:guild], Dict()), kwargs[:channel], nothing)
 end
+function Base.get(s::State, ::Type{Vector{DiscordChannel}}; kwargs...)
+    guild = kwargs[:guild]
+    return haskey(s.guilds, guild) ? coalesce(s.guilds[guild].channels, nothing) : nothing
+end
 function Base.get(s::State, ::Type{Presence}; kwargs...)
     return get(get(s.presences, kwargs[:guild], Dict()), kwargs[:user], nothing)
 end
@@ -48,36 +52,45 @@ end
 
 Base.put!(s::State, val; kwargs...) = nothing
 
+Base.put!(s::State, m::Message; kwargs...) = insert_or_update!(s.messages, m)
+
+function Base.put!(s::State, ms::Vector{Message}; kwargs...)
+    for m in ms
+        put!(s, m; kwargs...)
+    end
+end
+
 function Base.put!(s::State, g::Guild; kwargs...)
     insert_or_update!(s.guilds, g)
 
-    for ch in coalesce(g.channels, [])
-        put!(c.state, ch)
-    end
+    put!(s, coalesce(g.channels, DiscordChannel[]); kwargs...)
 
     for m in coalesce(g.members, [])
-        put!(c.state, m; guild=g.id)
+        put!(s, m; kwargs..., guild=g.id)
     end
 
     for p in coalesce(g.presences, [])
-        put!(c.state, p)
+        put!(s, p; kwargs...)
     end
 end
 
 function Base.put!(s::State, ch::DiscordChannel; kwargs...)
+    insert_or_update!(s.channels, ch)
+
     if haskey(s.guilds, ch.guild_id)
         g = s.guilds[ch.guild_id]
         if ismissing(g.channels)
-            @set g.channels = [ch]
+            s.guilds[ch.guild_id] = @set g.channels = [ch]
         else
             insert_or_update!(g.channels, ch)
         end
     end
+end
 
-    if !haskey(s.channels, ch.guild_id)
-        s.channels[ch.guild_id] = TTL(s)
+function Base.put!(s::State, chs::Vector{DiscordChannel}; kwargs...)
+    for ch in chs
+        put!(s, ch; kwargs...)
     end
-    insert_or_update!(s.channels, ch)
 end
 
 function Base.put!(s::State, u::User; kwargs...)
@@ -99,7 +112,7 @@ function Base.put!(s::State, p::Presence; kwargs...)
     if haskey(s.guilds, p.guild_id)
         g = s.guilds[p.guild_id]
         if ismissing(g.presences)
-            @set g.presences = [p]
+            s.guilds[p.guild_id] = @set g.presences = [p]
         else
             insert_or_update!(g.presences, p; accessor=x -> x.user.id)
         end
@@ -110,7 +123,7 @@ function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
     guild = kwargs[:guild]
 
     if haskey(s.guilds, guild) && s.guilds[guild] isa Guild
-        @set s.guilds.emojis = es
+        s.guilds[guild] = @set s.guilds[guild].emojis = es
     end
 end
 
@@ -124,7 +137,7 @@ function Base.put!(s::State, m::Member; kwargs...)
     ms = s.members[guild]
     insert_or_update!(ms, m; accessor=x -> x.user.id)
 
-    insert_or_upate!(s.users, m.user.id, m.user)
+    insert_or_update!(s.users, m.user.id, m.user)
 end
 
 function Base.put!(s::State, r::Role; kwargs...)
@@ -133,7 +146,7 @@ function Base.put!(s::State, r::Role; kwargs...)
     g = s.guilds[guild]
 
     if ismissing(g.roles)
-        @set g.roles = [r]
+        s.guilds[guild] = @set g.roles = [r]
     else
         push!(g.roles, r)
     end
@@ -149,7 +162,7 @@ function Base.put!(s::State, e::Emoji; kwargs...)
         m = s.messages[message]
         isclient = !ismissing(s.user) && s.user.id == user
         if ismissing(m.reactions)
-            m = @set m.reactions = [Reaction(1, isclient, e)]
+            s.messages[message] = @set m.reactions = [Reaction(1, isclient, e)]
         else
             idx = findfirst(r -> r.emoji.name == e.name, m.reactions)
             if idx === nothing

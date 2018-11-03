@@ -86,3 +86,6 @@ struct Guild <: AbstractGuild
     presences::Union{Vector{Presence}, Missing}
 end
 @boilerplate Guild :dict :docs :lower :merge
+
+Base.merge(x::UnavailableGuild, y::Guild) = y
+Base.merge(x::Guild, y::UnavailableGuild) = x

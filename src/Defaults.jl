@@ -1,11 +1,10 @@
 module Defaults
 
-export handler
+export handler_cached
 
 using Discord
-using Discord: insert_or_update!, locked
+using Discord: locked
 using Setfield
-using TimeToLive
 
 function handler(c::Client, e::Ready)
     c.state.v = e.v
@@ -49,6 +48,7 @@ function handler(c::Client, e::GuildMemberUpdate)
     m = @set m.user = merge(m.user, e.user)
     m = @set m.nick = e.nick
     m = @set m.roles = e.roles
+    ms[e.user.id] = m
 
     put!(c.state, e.user)
 end
@@ -118,6 +118,10 @@ function handler(c::Client, e::MessageReactionRemoveAll)
         empty!(c.state.messages[e.message_id].reactions)
     end
     touch(c.state.messages, e.message_id)
+end
+
+for T in map(m -> m.sig.types[3], methods(handler).ms)
+    @eval handler_cached(c::Client, e::$T) = c.use_cache && handler(c, e)
 end
 
 end

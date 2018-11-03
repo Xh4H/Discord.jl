@@ -80,7 +80,7 @@ function Response{T}(
     f = Future()
 
     @async begin
-        kwargs = (
+        kws = (
             channel=cap("channels", endpoint),
             guild=cap("guilds", endpoint),
             message=cap("messages", endpoint),
@@ -88,7 +88,7 @@ function Response{T}(
         )
 
         if c.use_cache && method === :GET
-            val = get(c.state, T; kwargs...)
+            val = get(c.state, T; kws...)
             if val !== nothing
                 put!(f, Response{T}(val, true, nothing, nothing))
                 return
@@ -112,25 +112,27 @@ function Response{T}(
 
         b = bucket(c.limiter, method, endpoint)
         while true
-            Base.acquire(b)
+            lock(b)
 
             if islimited(c.limiter, b)
-                Base.release(b)
+                unlock(b)
                 wait(c.limiter, b)
             else
                 try
                     r = HTTP.request(args...; status_exception=false)
-                    update!(c.limiter, b, r)
                     resp = Response{T}(c, r)
-                    resp.ok && resp.val !== nothing && put!(c.state, resp.val; kwargs...)
                     put!(f, resp)
+                    update!(c.limiter, b, r)
+                    if c.use_cache && resp.ok && resp.val !== nothing
+                        put!(c.state, resp.val; kws...)
+                    end
                 catch e
                     # If we're rate limited, then just go back to the top.
                     e == RATELIMITED && continue
                     logmsg(c, ERROR, catchmsg(e))
                     put!(f, Response{T}(nothing, false, nothing, e))
                 finally
-                    Base.release(b)
+                    unlock(b)
                 end
 
                 break  # If we reached here, it means we got the request through.

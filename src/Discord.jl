@@ -11,9 +11,9 @@ using TimeToLive
 const API_VERSION = 6
 const DISCORD_API = "https://discordapp.com/api"
 
-function locked(f::Function, l::Threads.AbstractLock)
-    lock(l)
-    try f() finally unlock(l) end
+function locked(f::Function, x::Threads.AbstractLock)
+    lock(x)
+    try f() finally unlock(x) end
 end
 
 function catchmsg(e::Exception)

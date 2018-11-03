@@ -5,7 +5,7 @@ const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
 # TODO: Bucket code could definitely be full of race conditions.
 
-mutable struct Bucket
+mutable struct Bucket <: Threads.AbstractLock
     remaining::Union{Int, Nothing}
     reset::Union{DateTime, Nothing}  # UTC.
     sem::Base.Semaphore
@@ -14,8 +14,8 @@ mutable struct Bucket
     Bucket(remaining::Int, reset::DateTime) = new(remaining, reset, Base.Semaphore(1))
 end
 
-Base.acquire(b::Bucket) = Base.acquire(b.sem)
-Base.release(b::Bucket) = Base.release(b.sem)
+Base.lock(b::Bucket) = Base.acquire(b.sem)
+Base.unlock(b::Bucket) = Base.release(b.sem)
 
 function reset!(b::Bucket)
     b.remaining = nothing
