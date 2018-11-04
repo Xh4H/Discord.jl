@@ -70,7 +70,7 @@ mutable struct Client
             true,         # use_cache
             # conn left undef, it gets assigned in open.
         )
-        add_handler!(c, Defaults)
+        add_handler!(c, Defaults; tag=:DISCORD_JL_DEFAULT)
         return c
     end
 end
@@ -163,18 +163,28 @@ function add_handler!(
 end
 
 """
-    add_handler!(c::Client, m::Module)
+    add_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
 handler must be exported. Only functions with correct type signatures (see above) are used.
+
+!!! note
+    If you specify a `tag` and/or `expiry`, it's applied to all of the handlers in the
+    module. That means if you add two handlers for the same event type, one of them will be
+    immediately overwritten.
 """
-function add_handler!(c::Client, m::Module)
+function add_handler!(
+    c::Client,
+    m::Module;
+    tag::Symbol=gensym(),
+    expiry::Union{Int, Period}=-1,
+)
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f).ms
             ts = m.sig.types[2:end]
             length(m.sig.types) == 3 || continue
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
-                add_handler!(c, m.sig.types[3], f)
+                add_handler!(c, m.sig.types[3], f; tag=tag, expiry=expiry)
             end
         end
     end
@@ -186,7 +196,8 @@ end
 
 Delete event handlers. If no `tag` is supplied, all handlers for the event are deleted.
 Using the tagless method is generally not recommended because it also clears default
-handlers which maintain the client state.
+handlers which maintain the client state. If you want to disable a default handler, use the
+tag `:DISCORD_JL_DEFAULT`.
 """
 delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt)
 

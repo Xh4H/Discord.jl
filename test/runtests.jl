@@ -404,6 +404,13 @@ end
             @test length(get(c.handlers, WebhookUpdate, [])) == 1
             @test first(collect(c.handlers[WebhookUpdate])).f == Handlers.b
 
+            # Adding a module handler with a tag and/or expiry propogates to all handlers.
+            empty!(c.handlers)
+            add_handler!(c, Handlers; tag=:h, expiry=Millisecond(50))
+            @test all(hs -> all(h -> h.tag === :h, hs), values(c.handlers))
+            sleep(Millisecond(50))
+            @test all(hs -> all(isexpired, hs), values(c.handlers))
+
             # We can't add a handler without a valid method.
             @test_throws ArgumentError add_handler!(c, MessageCreate, badh)
 
