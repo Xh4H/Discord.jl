@@ -263,12 +263,10 @@ function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
 
     T = get(EVENT_TYPES, data["t"], UnknownEvent)
-    catchalls = collect(filter!(!isexpired, get(c.handlers, AbstractEvent, [])))
-    specifics = collect(filter!(!isexpired, get(c.handlers, T, [])))
-    fallbacks = collect(filter!(!isexpired, get(c.handlers, FallbackEvent, [])))
 
+    hs = handlers(c, T)
     # If there are no handlers to call, don't bother parsing the event.
-    isempty(catchalls) && isempty(specifics) && isempty(fallbacks) && return
+    isempty(hs) && return
 
     evt = begin
         if T === UnknownEvent
@@ -284,7 +282,6 @@ function dispatch(c::Client, data::Dict)
         end
     end
 
-    hs = isempty(catchalls) && isempty(specifics) ? fallbacks : [catchalls; specifics]
     for h in hs
         @async try
             h.f(c, evt)

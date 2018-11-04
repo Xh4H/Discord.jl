@@ -146,13 +146,15 @@ function add_handler!(
     end
 
     if !hasmethod(func, (Client, evt))
-        error("Handler function must accept (::Client, ::$evt)")
+        throw(ArgumentError("Handler function must accept (::Client, ::$evt)"))
     end
 
-    expiry == 0 && error("Can't add a handler that will never run")
-    delete_handler!(c, evt, tag)
-
     h = Handler(func, tag, expiry)
+    if isexpired(h)
+        throw(ArgumentError("Can't add a handler that will never run"))
+    end
+
+    delete_handler!(c, evt, tag)
     if haskey(c.handlers, evt)
         push!(c.handlers[evt], h)
     else
@@ -190,6 +192,18 @@ delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt
 
 function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
     filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
+end
+
+function handlers(c, T::Type{<:AbstractEvent})
+    catchalls = collect(filter!(!isexpired, get(c.handlers, AbstractEvent, Handler[])))
+    specifics = collect(filter!(!isexpired, get(c.handlers, T, Handler[])))
+    fallbacks = collect(filter!(!isexpired, get(c.handlers, FallbackEvent, Handler[])))
+
+    return if isempty(catchalls) && isempty(specifics)
+        fallbacks
+    else
+        [catchalls; specifics]
+    end
 end
 
 @enum LogLevel DEBUG INFO WARN ERROR

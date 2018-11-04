@@ -7,12 +7,15 @@ using Discord
 using Discord:
     EMPTY,
     Bucket,
+    Handler,
     Response,
     Limiter,Snowflake,
     datetime,
     get_channel_message,
+    handlers,
     increment,
     insert_or_update!,
+    isexpired,
     islimited,
     parse_endpoint,
     process_id,
@@ -364,10 +367,13 @@ end
     end
 
     @testset "Handlers" begin
+        c = Client("token")
         f(c, e) = nothing
         g(c, e) = nothing
+        badh(c, e::String) = nothing
+        badc(c, e::AbstractEvent) = nothing
 
-        @testset "Regular commands" begin
+        @testset "Adding/deleting regular handlers" begin
             # Deleting handlers without a tag clears all handlers for that type.
             delete_handler!(c, MessageCreate)
             @test !haskey(c.handlers, MessageCreate)
@@ -397,16 +403,88 @@ end
             # Only exported functions are considered.
             @test length(get(c.handlers, WebhookUpdate, [])) == 1
             @test first(collect(c.handlers[WebhookUpdate])).f == Handlers.b
+
+            # We can't add a handler without a valid method.
+            @test_throws ArgumentError add_handler!(c, MessageCreate, badh)
+
+            # We can't add a handler that's already expired.
+            @test_throws ArgumentError add_handler!(c, Ready, f; expiry=0)
+            @test_throws ArgumentError add_handler!(c, Ready, f; expiry=Day(-1))
         end
 
         @testset "Commands" begin
-            # Adding commands adds to the MessageCreate handlers.
             delete_handler!(c, MessageCreate)
             h(c, m) = nothing
+
+            # Adding commands adds to the MessageCreate handlers.
             add_command!(c, "!test", h)
             @test length(get(c.handlers, MessageCreate, [])) == 1
             # But the handler function is modified.
             @test first(collect(c.handlers[MessageCreate])).f != f
+
+            # We can't add a command without a valid method.
+            @test_throws Exception add_command!(c, "!test", badc)
+
+            # We can't add a command that's already expired.
+            @test_throws ArgumentError add_command!(c, "!test", h; expiry=0)
+            @test_throws ArgumentError add_handler!(c, Ready, f; expiry=Day(-1))
+        end
+
+        @testset "Handler expiry" begin
+            empty!(c.handlers[MessageCreate])
+
+            # By default, handlers don't expire.
+            add_handler!(c, MessageCreate, f)
+            @test !isexpired(first(c.handlers[MessageCreate]))
+
+            add_handler!(c, MessageCreate, f; expiry=Millisecond(100))
+            @test count(isexpired, c.handlers[MessageCreate]) == 0
+            sleep(Millisecond(100))
+            @test count(isexpired, c.handlers[MessageCreate]) == 1
+
+            # Counting handlers expire when they reach 0 (and never expire when negative).
+            @test !isexpired(Handler(f, gensym(), -11))
+            @test !isexpired(Handler(f, gensym(), 1))
+            @test isexpired(Handler(f, gensym(), 0))
+
+            # Timed handlers expire when their expiry time is reached.
+            @test !isexpired(Handler(f, gensym(), now() + Day(1)))
+            @test isexpired(Handler(f, gensym(), now() - Day(1)))
+        end
+
+        @testset "Handler collection" begin
+            # No handlers means no handlers.
+            empty!(c.handlers)
+            @test isempty(handlers(c, MessageCreate))
+            @test isempty(handlers(c, AbstractEvent))
+            @test isempty(handlers(c, FallbackEvent))
+
+            # Both the specific and catch-all handler should match.
+            add_handler!(c, MessageCreate, f)
+            add_handler!(c, AbstractEvent, f)
+            @test handlers(c, MessageCreate) == [
+                collect(c.handlers[AbstractEvent]);
+                collect(c.handlers[MessageCreate]);
+            ]
+
+            # The fallback handler should only match if there's nothing else.
+            add_handler!(c, FallbackEvent, f)
+            @test handlers(c, MessageCreate) == [
+                collect(c.handlers[AbstractEvent]);
+                collect(c.handlers[MessageCreate]);
+            ]
+            delete_handler!(c, MessageCreate)
+            @test handlers(c, MessageCreate) == collect(c.handlers[AbstractEvent])
+            add_handler!(c, MessageCreate, f)
+            delete_handler!(c, AbstractEvent)
+            @test handlers(c, MessageCreate) == collect(c.handlers[MessageCreate])
+            delete_handler!(c, MessageCreate)
+            @test handlers(c, MessageCreate) == collect(c.handlers[FallbackEvent])
+
+            # Expired handlers should be cleaned up.
+            first(c.handlers[FallbackEvent]).expiry = 0
+            @test isempty(handlers(c, MessageCreate))
+            @test isempty(c.handlers[FallbackEvent])
         end
     end
 
