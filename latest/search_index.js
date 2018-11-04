@@ -69,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(token::String; ttl::Period=Hour(1), version::Int=6) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nTo get a bot token, head here to create a new application. Once you\'ve created a bot user, you will have access to its token.\n\nKeywords\n\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nCaching\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (determined by the ttl keyword). Although it\'s not recommended, you can also disable caching of certain data by clearing default handlers for relevant event types with delete_handler!. For example, if you wanted to avoid caching any messages, you would delete handlers for MessageCreate and MessageUpdate events.\n\nSharding\n\nSharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
+    "text": "Client(token::String; ttl::Period=Hour(1), version::Int=6) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nKeywords\n\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\n\n\n\n\n"
 },
 
 {
@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Base.open",
     "category": "function",
-    "text": "open(c::Client; delay::Period=Second(7))\n\nConnect to the Discord gateway and begin responding to events.\n\nThe delay keyword is the number of seconds between shards connecting. It can be increased from its default if you are frequently experiencing invalid sessions upon connection.\n\n\n\n\n\n"
+    "text": "open(c::Client; delay::Period=Second(7))\n\nConnect to the Discord gateway and begin responding to events.\n\nThe delay keyword is the time between shards connecting. It can be increased from its default if you are frequently experiencing invalid sessions upon connection.\n\n\n\n\n\n"
 },
 
 {
@@ -121,30 +121,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.enable_cache!",
-    "page": "Client",
-    "title": "Discord.enable_cache!",
-    "category": "function",
-    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache for REST operations.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Discord.disable_cache!",
-    "page": "Client",
-    "title": "Discord.disable_cache!",
-    "category": "function",
-    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache for REST operations.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Caching-1",
-    "page": "Client",
-    "title": "Caching",
-    "category": "section",
-    "text": "enable_cache!\ndisable_cache!"
-},
-
-{
     "location": "client.html#Discord.add_handler!",
     "page": "Client",
     "title": "Discord.add_handler!",
@@ -165,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Event Handlers",
     "category": "section",
-    "text": "add_handler!\ndelete_handler!"
+    "text": "See Events for more details.add_handler!\ndelete_handler!"
 },
 
 {
@@ -189,7 +165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.request_guild_members",
     "category": "function",
-    "text": "request_guild_members(\n    c::Client,\n    guild_id::Union{Snowflake, Vector{Snowflake};\n    query::AbstractString=\"\",\n    limit::Int=0,\n) -> Bool\n\nRequest offline guild members of one or more guilds. GuildMembersChunk events are sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "request_guild_members(\n    c::Client,\n    guild_id::Union{Integer, Vector{<:Integer};\n    query::AbstractString=\"\",\n    limit::Int=0,\n) -> Bool\n\nRequest offline guild members of one or more guilds. GuildMembersChunk events are sent by the gateway in response. More details here.\n\n\n\n\n\n"
 },
 
 {
@@ -197,7 +173,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.update_voice_state",
     "category": "function",
-    "text": "update_voice_state(\n    c::Client,\n    guild_id::Snowflake,\n    channel_id::Union{Snowflake, Nothing},\n    self_mute::Bool,\n    self_deaf::Bool,\n) -> Bool\n\nJoin, move, or disconnect from a voice channel. A VoiceStateUpdate event is sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "update_voice_state(\n    c::Client,\n    guild_id::Integer,\n    channel_id::Union{Integer, Nothing},\n    self_mute::Bool,\n    self_deaf::Bool,\n) -> Bool\n\nJoin, move, or disconnect from a voice channel. A VoiceStateUpdate event is sent by the gateway in response. More details here.\n\n\n\n\n\n"
 },
 
 {
@@ -205,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.update_status",
     "category": "function",
-    "text": "update_status(\n    c::Client,\n    since::Union{Int, Nothing},\n    activity::Union{Activity, Nothing},\n    status::PresenceStatus,\n    afk::Bool,\n) -> Bool\n\nIndicate a presence or status update. A PresenceUpdate event is sent by the gateway in response.\n\nMore details here.\n\n\n\n\n\n"
+    "text": "update_status(\n    c::Client,\n    since::Union{Int, Nothing},\n    activity::Union{Activity, Nothing},\n    status::PresenceStatus,\n    afk::Bool,\n) -> Bool\n\nIndicate a presence or status update. A PresenceUpdate event is sent by the gateway in response. More details here.\n\n\n\n\n\n"
 },
 
 {
@@ -214,6 +190,46 @@ var documenterSearchIndex = {"docs": [
     "title": "Gateway Commands",
     "category": "section",
     "text": "request_guild_members\nupdate_voice_state\nupdate_status"
+},
+
+{
+    "location": "client.html#Discord.set_ttl!",
+    "page": "Client",
+    "title": "Discord.set_ttl!",
+    "category": "function",
+    "text": "set_ttl!(c::Client, ttl::Period)\n\nSet the Client\'s caching period.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.enable_cache!",
+    "page": "Client",
+    "title": "Discord.enable_cache!",
+    "category": "function",
+    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache for REST operations.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.disable_cache!",
+    "page": "Client",
+    "title": "Discord.disable_cache!",
+    "category": "function",
+    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache for REST operations.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Caching-1",
+    "page": "Client",
+    "title": "Caching",
+    "category": "section",
+    "text": "By default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (initially set by the ttl keyword to the Client constructor and updated with set_ttl!). Although it\'s not recommended, you can disable caching of certain data by clearing default handlers for relevant event types with delete_handler!. For example, if you wanted to avoid caching any messages, you would delete handlers for MessageCreate and MessageUpdate events. You can also enable and disable the cache with enable_cache! and disable_cache!.set_ttl!\nenable_cache!\ndisable_cache!"
+},
+
+{
+    "location": "client.html#Sharding-1",
+    "page": "Client",
+    "title": "Sharding",
+    "category": "section",
+    "text": "Sharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details."
 },
 
 {
@@ -233,6 +249,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "events.html#Discord.FallbackEvent",
+    "page": "Events",
+    "title": "Discord.FallbackEvent",
+    "category": "type",
+    "text": "A type for defining handlers on any events which would otherwise have no handler. Handlers for this type must accept an AbstractEvent.\n\n\n\n\n\n"
+},
+
+{
     "location": "events.html#Discord.UnknownEvent",
     "page": "Events",
     "title": "Discord.UnknownEvent",
@@ -245,7 +269,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Events",
     "category": "section",
-    "text": "Note that Snowflake === UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.AbstractEvent\nUnknownEvent"
+    "text": "Note that Snowflake === UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.AbstractEvent\nFallbackEvent\nUnknownEvent"
 },
 
 {
@@ -309,7 +333,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.GuildDelete",
     "category": "type",
-    "text": "Sent when a guild is deleted, and contains an UnavailableGuild.\n\nFields\n\nguild :: UnavailableGuild\n\n\n\n\n\n"
+    "text": "Sent when a Guild is deleted.\n\nFields\n\nguild :: AbstractGuild\n\n\n\n\n\n"
 },
 
 {
@@ -577,11 +601,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "rest.html#REST-API-1",
+    "page": "REST API",
+    "title": "REST API",
+    "category": "section",
+    "text": ""
+},
+
+{
     "location": "rest.html#Discord.Response",
     "page": "REST API",
     "title": "Discord.Response",
     "category": "type",
-    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nsuccess::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Discord.Message}\n\n\n\n\n\n"
+    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch or fetchval.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Message}\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.fetchval",
+    "page": "REST API",
+    "title": "Discord.fetchval",
+    "category": "function",
+    "text": "fetchval(f::Future{Response{T}}) -> Union{T, Nothing}\n\nShortcut for fetch(f).val: Fetch a Response and return its value. Note that there are no guarantees about the response\'s success and the value being returned, and it discards context that can be useful for debugging, such as HTTP responses and caught exceptions.\n\n\n\n\n\n"
 },
 
 {
@@ -589,7 +629,39 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Response",
     "category": "section",
-    "text": "Response"
+    "text": "Response\nfetchval"
+},
+
+{
+    "location": "rest.html#Discord.create",
+    "page": "REST API",
+    "title": "Discord.create",
+    "category": "function",
+    "text": "create(c::Client, ::Type{T}, args...; kwargs...)\n\nCreate, add, send, etc.\n\nExamples\n\n# Send a message.\njulia> create(c, Message, channel; content=\"foo\")\n\n# Create a new channel.\njulia> create(c, DiscordChannel, guild; name=\"bar\")\n\n# Ban a user.\njulia> create(c, Ban, guild, user; reason=\"baz\")\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.retrieve",
+    "page": "REST API",
+    "title": "Discord.retrieve",
+    "category": "function",
+    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...)\n\nRetreive, get, list, etc.\n\nExamples\n\n# Get the client user.\njulia> retrieve(c, User)\n\n# Get a guild\'s channels.\njulia> retrieve(c, DiscordChannel, guild)\n\n# Get an invite to a guild by code.\njulia> retrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.update",
+    "page": "REST API",
+    "title": "Discord.update",
+    "category": "function",
+    "text": "update(c::Client, x::T, args...; kwargs...)\n\nUpdate, edit, modify, etc.\n\nExamples\n\n# Edit a message.\njulia> update(c, message; content=\"foo2\")\n\n# Modify a webhook.\njulia> update(c, webhook; name=\"bar2\")\n\n# Update a role.\njulia> update(c, role, guild; permissions=8)\n\n\n\n\n\n"
+},
+
+{
+    "location": "rest.html#Discord.delete",
+    "page": "REST API",
+    "title": "Discord.delete",
+    "category": "function",
+    "text": "delete(c::Client, x::T, args...)\n\nDelete, remove, discard, etc.\n\nExamples\n\n# Kick a user from a guild.\njulia> delete(c, member)\n\n# Unban a user from a guild.\njulia> delete(c, ban, guild)\n\n# Delete all reactions on a message.\n# This is the only update/delete method which takes a type parameter.\ndelete(c, Reaction, message)\n\n\n\n\n\n"
 },
 
 {
@@ -597,7 +669,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "CRUD API",
     "category": "section",
-    "text": "TODO"
+    "text": "On top of functions for accessing individual endpoints such as get_channel_messages, Discord.jl also offers a unified API with just four functions. Named after the CRUD model, they cover most of the Discord REST API and allow you to write concise, expressive code, and forget about the subtleties of endpoint naming. The argument ordering convention is roughly as follows:A Client, always.\nFor cases when we don\'t yet have the entity to be manipulated (usually create and retrieve), the entity\'s type. If we do have the entity (update and delete), the entity itself.\nThe remaining positional arguments supply whatever context is needed to specify the entity. For example, sending a message requires a DiscordChannel parameter.\nKeyword arguments follow (usually for create and update).create\nretrieve\nupdate\ndelete"
 },
 
 {
@@ -605,7 +677,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Endpoints",
     "category": "section",
-    "text": "Functions which wrap REST API endpoints are named and sorted according to the Discord API documentation."
+    "text": "Functions which wrap REST API endpoints are named and sorted according to the Discord API documentation. Remember that the return types annotated below are not the actual return types, but the types of Response that the returned Futures will yield."
 },
 
 {
@@ -677,7 +749,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.create_reaction",
     "category": "function",
-    "text": "create_reaction(c::Client, channel::Integer, message::Integer, emoji::AbstractString)\n\nReact to a Message.\n\n\n\n\n\n"
+    "text": "create_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n)\n\nReact to a Message.\n\n\n\n\n\n"
 },
 
 {
@@ -685,7 +757,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.delete_own_reaction",
     "category": "function",
-    "text": "delete_own_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::AbstractString,\n)\n\nDelete the Client user\'s reaction to a Message.\n\n\n\n\n\n"
+    "text": "delete_own_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n)\n\nDelete the Client user\'s reaction to a Message.\n\n\n\n\n\n"
 },
 
 {
@@ -693,7 +765,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.delete_user_reaction",
     "category": "function",
-    "text": "delete_user_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::AbstractString,\n    user::Integer,\n)\n\nDelete a User\'s reaction to a Message.\n\n\n\n\n\n"
+    "text": "delete_user_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n    user::Integer,\n)\n\nDelete a User\'s reaction to a Message.\n\n\n\n\n\n"
 },
 
 {
@@ -701,7 +773,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.get_reactions",
     "category": "function",
-    "text": "get_reactions(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::AbstractString,\n) -> Vector{User}\n\nGet the Users who reacted to a Message with an Emoji.\n\n\n\n\n\n"
+    "text": "get_reactions(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n) -> Vector{User}\n\nGet the Users who reacted to a Message with an Emoji.\n\n\n\n\n\n"
 },
 
 {
@@ -1257,19 +1329,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_user_connections",
-    "page": "REST API",
-    "title": "Discord.get_user_connections",
-    "category": "function",
-    "text": "get_user_connections(c::Client) -> Vector{Connection}\n\nGet the Client\'s Connections. More details here.\n\n\n\n\n\n"
-},
-
-{
     "location": "rest.html#User-1",
     "page": "REST API",
     "title": "User",
     "category": "section",
-    "text": "get_current_user\nget_user\nmodify_current_user\nget_current_user_guilds\nleave_guild\ncreate_dm\ncreate_group_dm\nget_user_connections"
+    "text": "get_current_user\nget_user\nmodify_current_user\nget_current_user_guilds\nleave_guild\ncreate_dm\ncreate_group_dm"
 },
 
 {
@@ -1393,6 +1457,46 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "helpers.html#",
+    "page": "Helpers",
+    "title": "Helpers",
+    "category": "page",
+    "text": "CurrentModule = Discord"
+},
+
+{
+    "location": "helpers.html#Discord.reply",
+    "page": "Helpers",
+    "title": "Discord.reply",
+    "category": "function",
+    "text": "reply(c::Client, m::Message, content::AbstractString; at::Bool=false)\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.mention",
+    "page": "Helpers",
+    "title": "Discord.mention",
+    "category": "function",
+    "text": "mention(x::Union{DiscordChannel, Member, Role, User}) -> String\n\nGet the mention string for an entity.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.replace_mentions",
+    "page": "Helpers",
+    "title": "Discord.replace_mentions",
+    "category": "function",
+    "text": "replace_mentions(m::Message) -> String\n\nGet the Message contents with any User mentions replaced with their plaintext.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Helpers-1",
+    "page": "Helpers",
+    "title": "Helpers",
+    "category": "section",
+    "text": "reply\nmention\nreplace_mentions"
+},
+
+{
     "location": "types.html#",
     "page": "Types",
     "title": "Types",
@@ -1401,435 +1505,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Activity",
-    "page": "Types",
-    "title": "Discord.Activity",
-    "category": "type",
-    "text": "A User activity. More details here.\n\nFields\n\nname           :: String\ntype           :: ActivityType\nurl            :: Union{Missing, Nothing, String}\ntimestamps     :: Union{Missing, ActivityTimestamps}\napplication_id :: Union{Missing, UInt64}\ndetails        :: Union{Missing, Nothing, String}\nstate          :: Union{Missing, Nothing, String}\nparty          :: Union{Missing, ActivityParty}\nassets         :: Union{Missing, ActivityAssets}\nsecrets        :: Union{Missing, ActivitySecrets}\ninstance       :: Union{Missing, Bool}\nflags          :: Union{Missing, Int64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActivityTimestamps",
-    "page": "Types",
-    "title": "Discord.ActivityTimestamps",
-    "category": "type",
-    "text": "The start and stop times of an Activity. More details here.\n\nFields\n\nstart :: Union{Missing, DateTime}\nstop  :: Union{Missing, DateTime}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActivityParty",
-    "page": "Types",
-    "title": "Discord.ActivityParty",
-    "category": "type",
-    "text": "The current party of an Activity\'s player. More details here.\n\nFields\n\nid   :: Union{Missing, String}\nsize :: Union{Missing, Array{Int64,1}}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActivityAssets",
-    "page": "Types",
-    "title": "Discord.ActivityAssets",
-    "category": "type",
-    "text": "Images and hover text for an Activity. More details here.\n\nFields\n\nlarge_image :: Union{Missing, String}\nlarge_text  :: Union{Missing, String}\nsmall_image :: Union{Missing, String}\nsmall_text  :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActivitySecrets",
-    "page": "Types",
-    "title": "Discord.ActivitySecrets",
-    "category": "type",
-    "text": "Secrets for Rich Presence joining and spectating of an Activity. More details here.\n\nFields\n\njoin     :: Union{Missing, String}\nspectate :: Union{Missing, String}\nmatch    :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActivityType",
-    "page": "Types",
-    "title": "Discord.ActivityType",
-    "category": "type",
-    "text": "An Activity\'s type. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActivityFlags",
-    "page": "Types",
-    "title": "Discord.ActivityFlags",
-    "category": "type",
-    "text": "Flags which indicate what an Activity payload contains. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Attachment",
-    "page": "Types",
-    "title": "Discord.Attachment",
-    "category": "type",
-    "text": "A Message attachment. More details here.\n\nFields\n\nid        :: UInt64\nfilename  :: String\nsize      :: Int64\nurl       :: String\nproxy_url :: String\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.AuditLog",
-    "page": "Types",
-    "title": "Discord.AuditLog",
-    "category": "type",
-    "text": "An audit log. More details here.\n\nFields\n\nwebhooks          :: Array{Webhook,1}\nusers             :: Array{User,1}\naudit_log_entries :: Array{AuditLogEntry,1}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.AuditLogEntry",
-    "page": "Types",
-    "title": "Discord.AuditLogEntry",
-    "category": "type",
-    "text": "An entry in an AuditLog. More details here.\n\nFields\n\ntarget_id   :: Union{Nothing, UInt64}\nchanges     :: Union{Missing, Array{AuditLogChange,1}}\nuser_id     :: UInt64\nid          :: UInt64\naction_type :: ActionType\noptions     :: Union{Missing, AuditLogOptions}\nreason      :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.AuditLogChange",
-    "page": "Types",
-    "title": "Discord.AuditLogChange",
-    "category": "type",
-    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\nFields\n\nnew_value :: Union{Missing, T} where T\nold_value :: Union{Missing, T} where T\nkey       :: String\ntype      :: Type{U} where U\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.AuditLogOptions",
-    "page": "Types",
-    "title": "Discord.AuditLogOptions",
-    "category": "type",
-    "text": "Optional information in an AuditLogEntry.\n\nFields\n\ndelete_member_days :: Union{Missing, String}\nmembers_removed    :: Union{Missing, String}\nchannel_id         :: Union{Missing, UInt64}\ncount              :: Union{Missing, String}\nid                 :: Union{Missing, UInt64}\ntype               :: Union{Missing, String}\nrole_name          :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ActionType",
-    "page": "Types",
-    "title": "Discord.ActionType",
-    "category": "type",
-    "text": "AuditLog action types. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Ban",
-    "page": "Types",
-    "title": "Discord.Ban",
-    "category": "type",
-    "text": "A User ban. More details here.\n\nFields\n\nreason :: Union{Nothing, String}\nuser   :: User\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.DiscordChannel",
-    "page": "Types",
-    "title": "Discord.DiscordChannel",
-    "category": "type",
-    "text": "A Discord channel. More details here. Note: The name Channel is already used, hence the prefix.\n\nFields\n\nid                    :: UInt64\ntype                  :: ChannelType\nguild_id              :: Union{Missing, UInt64}\nposition              :: Union{Missing, Int64}\npermission_overwrites :: Union{Missing, Array{Overwrite,1}}\nname                  :: Union{Missing, String}\ntopic                 :: Union{Missing, Nothing, String}\nnsfw                  :: Union{Missing, Bool}\nlast_message_id       :: Union{Missing, Nothing, UInt64}\nbitrate               :: Union{Missing, Int64}\nuser_limit            :: Union{Missing, Int64}\nrate_limit_per_user   :: Union{Missing, Int64}\nrecipients            :: Union{Missing, Array{User,1}}\nicon                  :: Union{Missing, Nothing, String}\nowner_id              :: Union{Missing, UInt64}\napplication_id        :: Union{Missing, UInt64}\nparent_id             :: Union{Missing, Nothing, UInt64}\nlast_pin_timestamp    :: Union{Missing, Nothing, DateTime}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ChannelType",
-    "page": "Types",
-    "title": "Discord.ChannelType",
-    "category": "type",
-    "text": "A DiscordChannel\'s type.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Connection",
-    "page": "Types",
-    "title": "Discord.Connection",
-    "category": "type",
-    "text": "A User connection to an external service (Twitch, YouTube, etc.). More details here.\n\nFields\n\nid           :: String\nname         :: String\ntype         :: String\nrevoked      :: Bool\nintegrations :: Array{Integration,1}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Embed",
-    "page": "Types",
-    "title": "Discord.Embed",
-    "category": "type",
-    "text": "A Message embed. More details here.\n\nFields\n\ntitle       :: Union{Missing, String}\ntype        :: Union{Missing, String}\ndescription :: Union{Missing, String}\nurl         :: Union{Missing, String}\ntimestamp   :: Union{Missing, DateTime}\ncolor       :: Union{Missing, Int64}\nfooter      :: Union{Missing, EmbedFooter}\nimage       :: Union{Missing, EmbedImage}\nthumbnail   :: Union{Missing, EmbedThumbnail}\nvideo       :: Union{Missing, EmbedVideo}\nprovider    :: Union{Missing, EmbedProvider}\nauthor      :: Union{Missing, EmbedAuthor}\nfields      :: Union{Missing, Array{EmbedField,1}}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedThumbnail",
-    "page": "Types",
-    "title": "Discord.EmbedThumbnail",
-    "category": "type",
-    "text": "An Embed\'s thumbnail image information. More details here.\n\nFields\n\nurl       :: Union{Missing, String}\nproxy_url :: Union{Missing, String}\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedVideo",
-    "page": "Types",
-    "title": "Discord.EmbedVideo",
-    "category": "type",
-    "text": "An Embed\'s video information. More details here.\n\nFields\n\nurl    :: Union{Missing, String}\nheight :: Union{Missing, Int64}\nwidth  :: Union{Missing, Int64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedImage",
-    "page": "Types",
-    "title": "Discord.EmbedImage",
-    "category": "type",
-    "text": "An Embed\'s image information. More details here.\n\nFields\n\nurl       :: Union{Missing, String}\nproxy_url :: Union{Missing, String}\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedProvider",
-    "page": "Types",
-    "title": "Discord.EmbedProvider",
-    "category": "type",
-    "text": "An Embed\'s provider information. More details here.\n\nFields\n\nname :: Union{Missing, String}\nurl  :: Union{Missing, Nothing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedAuthor",
-    "page": "Types",
-    "title": "Discord.EmbedAuthor",
-    "category": "type",
-    "text": "An Embed\'s author information. More details here.\n\nFields\n\nname           :: Union{Missing, String}\nurl            :: Union{Missing, String}\nicon_url       :: Union{Missing, String}\nproxy_icon_url :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedFooter",
-    "page": "Types",
-    "title": "Discord.EmbedFooter",
-    "category": "type",
-    "text": "An Embed\'s footer information. More details here.\n\nFields\n\ntext           :: String\nicon_url       :: Union{Missing, String}\nproxy_icon_url :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.EmbedField",
-    "page": "Types",
-    "title": "Discord.EmbedField",
-    "category": "type",
-    "text": "An Embed field. More details here.\n\nFields\n\nname   :: String\nvalue  :: String\ninline :: Union{Missing, Bool}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Emoji",
-    "page": "Types",
-    "title": "Discord.Emoji",
-    "category": "type",
-    "text": "An emoji. More details here.\n\nFields\n\nid             :: Union{Nothing, UInt64}\nname           :: String\nroles          :: Union{Missing, Array{UInt64,1}}\nuser           :: Union{Missing, User}\nrequire_colons :: Union{Missing, Bool}\nmanaged        :: Union{Missing, Bool}\nanimated       :: Union{Missing, Bool}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.AbstractGuild",
-    "page": "Types",
-    "title": "Discord.AbstractGuild",
-    "category": "type",
-    "text": "A guild (server). Can either be an UnavailableGuild or a Guild.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Guild",
-    "page": "Types",
-    "title": "Discord.Guild",
-    "category": "type",
-    "text": "A guild (server). More details here.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: Union{Missing, UInt64}\npermissions                   :: Union{Missing, Int64}\nregion                        :: Union{Missing, String}\nafk_channel_id                :: Union{Missing, Nothing, UInt64}\nafk_timeout                   :: Union{Missing, Int64}\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, Nothing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Union{Missing, MessageNotificationLevel}\nexplicit_content_filter       :: Union{Missing, ExplicitContentFilterLevel}\nroles                         :: Union{Missing, Array{Role,1}}\nemojis                        :: Union{Missing, Array{Emoji,1}}\nfeatures                      :: Array{String,1}\nmfa_level                     :: Union{Missing, MFALevel}\napplication_id                :: Union{Missing, Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, Nothing, UInt64}\nsystem_channel_id             :: Union{Missing, Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.UnavailableGuild",
-    "page": "Types",
-    "title": "Discord.UnavailableGuild",
-    "category": "type",
-    "text": "An unavailable guild (server). More details here.\n\nFields\n\nid          :: UInt64\nunavailable :: Bool\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.VerificationLevel",
-    "page": "Types",
-    "title": "Discord.VerificationLevel",
-    "category": "type",
-    "text": "A Guild\'s verification level. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.MessageNotificationLevel",
-    "page": "Types",
-    "title": "Discord.MessageNotificationLevel",
-    "category": "type",
-    "text": "A Guild\'s default message notification level. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.ExplicitContentFilterLevel",
-    "page": "Types",
-    "title": "Discord.ExplicitContentFilterLevel",
-    "category": "type",
-    "text": "A Guild\'s explicit content filter level. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.MFALevel",
-    "page": "Types",
-    "title": "Discord.MFALevel",
-    "category": "type",
-    "text": "A Guild\'s MFA level. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.GuildEmbed",
-    "page": "Types",
-    "title": "Discord.GuildEmbed",
-    "category": "type",
-    "text": "A Guild embed. More details here.\n\nFields\n\nenabled    :: Bool\nchannel_id :: Union{Nothing, UInt64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Integration",
-    "page": "Types",
-    "title": "Discord.Integration",
-    "category": "type",
-    "text": "A Guild integration. More details here.\n\nFields\n\nid                  :: UInt64\nname                :: String\ntype                :: String\nenabled             :: Bool\nsyncing             :: Bool\nrole_id             :: UInt64\nexpire_behaviour    :: Int64\nexpire_grace_period :: Int64\nuser                :: User\naccount             :: IntegrationAccount\nsynced_at           :: Dates.DateTime\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.IntegrationAccount",
-    "page": "Types",
-    "title": "Discord.IntegrationAccount",
-    "category": "type",
-    "text": "An Integration account. More details here.\n\nFields\n\nid   :: String\nname :: String\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Invite",
-    "page": "Types",
-    "title": "Discord.Invite",
-    "category": "type",
-    "text": "An invite to a Guild. More details here.\n\nFields\n\ncode                       :: String\nguild                      :: Union{Missing, Guild}\nchannel                    :: DiscordChannel\napproximate_presence_cound :: Union{Missing, Int64}\napproximate_member_count   :: Union{Missing, Int64}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.InviteMetadata",
-    "page": "Types",
-    "title": "Discord.InviteMetadata",
-    "category": "type",
-    "text": "Metadata for an Invite. More details here.\n\nFields\n\ninviter    :: User\nuses       :: Int64\nmax_uses   :: Int64\nmax_age    :: Int64\ntemporary  :: Bool\ncreated_at :: Dates.DateTime\nrevoked    :: Bool\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Member",
-    "page": "Types",
-    "title": "Discord.Member",
-    "category": "type",
-    "text": "A Guild member. More details here.\n\nFields\n\nuser      :: Union{Missing, User}\nnick      :: Union{Missing, Nothing, String}\nroles     :: Array{UInt64,1}\njoined_at :: Dates.DateTime\ndeaf      :: Bool\nmute      :: Bool\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Message",
-    "page": "Types",
-    "title": "Discord.Message",
-    "category": "type",
-    "text": "A message. More details here.\n\nFields\n\nid               :: UInt64\nchannel_id       :: UInt64\nguild_id         :: Union{Missing, UInt64}\nauthor           :: Union{Missing, User}\nmember           :: Union{Missing, Member}\ncontent          :: Union{Missing, String}\ntimestamp        :: Union{Missing, DateTime}\nedited_timestamp :: Union{Missing, Nothing, DateTime}\ntts              :: Union{Missing, Bool}\nmention_everyone :: Union{Missing, Bool}\nmentions         :: Union{Missing, Array{User,1}}\nmention_roles    :: Union{Missing, Array{UInt64,1}}\nattachments      :: Union{Missing, Array{Attachment,1}}\nembeds           :: Union{Missing, Array{Embed,1}}\nreactions        :: Union{Missing, Array{Reaction,1}}\nnonce            :: Union{Missing, Nothing, UInt64}\npinned           :: Union{Missing, Bool}\nwebhook_id       :: Union{Missing, UInt64}\ntype             :: Union{Missing, MessageType}\nactivity         :: Union{Missing, MessageActivity}\napplication      :: Union{Missing, MessageApplication}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.MessageActivity",
-    "page": "Types",
-    "title": "Discord.MessageActivity",
-    "category": "type",
-    "text": "A Message activity. More details here.\n\nFields\n\ntype     :: MessageActivityType\nparty_id :: Union{Missing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.MessageApplication",
-    "page": "Types",
-    "title": "Discord.MessageApplication",
-    "category": "type",
-    "text": "A Rich Presence Message\'s application information. More details here.\n\nFields\n\nid          :: UInt64\ncover_image :: String\ndescription :: String\nicon        :: String\nname        :: String\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.MessageType",
-    "page": "Types",
-    "title": "Discord.MessageType",
-    "category": "type",
-    "text": "A Message\'s type. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.MessageActivityType",
-    "page": "Types",
-    "title": "Discord.MessageActivityType",
-    "category": "type",
-    "text": "A Message\'s activity type. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Overwrite",
-    "page": "Types",
-    "title": "Discord.Overwrite",
-    "category": "type",
-    "text": "A permission overwrite. More details here.\n\nFields\n\nid    :: UInt64\ntype  :: String\nallow :: Int64\ndeny  :: Int64\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Presence",
-    "page": "Types",
-    "title": "Discord.Presence",
-    "category": "type",
-    "text": "A User\'s presence. More details here.\n\nFields\n\nuser       :: User\nroles      :: Union{Missing, Array{UInt64,1}}\ngame       :: Union{Nothing, Activity}\nguild_id   :: Union{Missing, UInt64}\nstatus     :: PresenceStatus\nactivities :: Array{Activity,1}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.PresenceStatus",
-    "page": "Types",
-    "title": "Discord.PresenceStatus",
-    "category": "type",
-    "text": "A User\'s status sent in a Presence. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Reaction",
-    "page": "Types",
-    "title": "Discord.Reaction",
-    "category": "type",
-    "text": "A Message reaction. More details here.\n\nFields\n\ncount :: Int64\nme    :: Bool\nemoji :: Emoji\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Role",
-    "page": "Types",
-    "title": "Discord.Role",
-    "category": "type",
-    "text": "A User role. More details here.\n\nFields\n\nid          :: UInt64\nname        :: String\ncolor       :: Int64\nhoist       :: Bool\nposition    :: Int64\npermissions :: Int64\nmanaged     :: Bool\nmentionable :: Bool\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.User",
-    "page": "Types",
-    "title": "Discord.User",
-    "category": "type",
-    "text": "A Discord user. More details here.\n\nFields\n\nid            :: UInt64\nusername      :: Union{Missing, String}\ndiscriminator :: Union{Missing, String}\navatar        :: Union{Missing, Nothing, String}\nbot           :: Union{Missing, Bool}\nmfa_enabled   :: Union{Missing, Bool}\nlocale        :: Union{Missing, String}\nverified      :: Union{Missing, Bool}\nemail         :: Union{Missing, Nothing, String}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.VoiceRegion",
-    "page": "Types",
-    "title": "Discord.VoiceRegion",
-    "category": "type",
-    "text": "A region for a Guild\'s voice server. More details here.\n\nFields\n\nid         :: String\nname       :: String\nvip        :: Bool\noptimal    :: Bool\ndeprecated :: Bool\ncustom     :: Bool\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.VoiceState",
-    "page": "Types",
-    "title": "Discord.VoiceState",
-    "category": "type",
-    "text": "A User\'s voice connection status. More details here.\n\nFields\n\nguild_id   :: Union{Missing, UInt64}\nchannel_id :: Union{Nothing, UInt64}\nuser_id    :: UInt64\nmember     :: Union{Missing, Member}\nsession_id :: String\ndeaf       :: Bool\nmute       :: Bool\nself_deaf  :: Bool\nself_mute  :: Bool\nsuppress   :: Bool\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.Webhook",
-    "page": "Types",
-    "title": "Discord.Webhook",
-    "category": "type",
-    "text": "A Webhook. More details here.\n\nFields\n\nid         :: UInt64\nguild_id   :: Union{Missing, UInt64}\nchannel_id :: UInt64\nuser       :: Union{Missing, User}\nname       :: Union{Nothing, String}\navatar     :: Union{Nothing, String}\ntoken      :: String\n\n\n\n\n\n"
-},
-
-{
     "location": "types.html#Types-1",
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nOverwriteType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 ]}
