@@ -53,8 +53,13 @@ function Base.get(s::State, ::Type{Member}; kwargs...)
 end
 
 Base.put!(s::State, val; kwargs...) = nothing
-Base.put!(s::State, m::Message; kwargs...) = insert_or_update!(s.messages, m)
 Base.put!(s::State, g::UnavailableGuild; kwargs...) = insert_or_update!(s.guilds, g)
+
+function Base.put!(s::State, m::Message; kwargs...)
+    insert_or_update!(s.messages, m)
+    touch(s.channels, m.channel_id)
+    touch(s.guilds, m.guild_id)
+end
 
 function Base.put!(s::State, g::Guild; kwargs...)
     insert_or_update!(s.guilds, g)
@@ -78,6 +83,10 @@ end
 
 function Base.put!(s::State, ch::DiscordChannel; kwargs...)
     insert_or_update!(s.channels, ch)
+
+    for u in coalesce(ch.recipients, [])
+        put!(s, u)
+    end
 
     if haskey(s.guilds, ch.guild_id)
         g = s.guilds[ch.guild_id]
@@ -125,17 +134,9 @@ function Base.put!(s::State, p::Presence; kwargs...)
             insert_or_update!(g.presences, p; key=x -> x.user.id)
         end
     end
-end
 
-function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
-    guild = kwargs[:guild]
-
-    if haskey(s.guilds, guild)
-        g = s.guilds[guild]
-        g isa Guild || return
-        g = @set g.emojis = es
-        s.guilds[guild] = g
-    end
+    # TODO: Should we refresh the expiries or users/members/guilds here?
+    # Probably not, since that would effectively keep all guild loaded at all times.
 end
 
 function Base.put!(s::State, m::Member; kwargs...)
@@ -172,9 +173,21 @@ function Base.put!(s::State, r::Role; kwargs...)
     else
         insert_or_update!(g.roles, r)
     end
-    touch(s.guilds, guild)
 end
 
+# This handles emojis being added to a guild.
+function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
+    guild = kwargs[:guild]
+
+    if haskey(s.guilds, guild)
+        g = s.guilds[guild]
+        g isa Guild || return
+        g = @set g.emojis = es
+        s.guilds[guild] = g
+    end
+end
+
+# This handles a single emoji being added as a reaction.
 function Base.put!(s::State, e::Emoji; kwargs...)
     message = kwargs[:message]
     user = kwargs[:user]
@@ -198,7 +211,6 @@ function Base.put!(s::State, e::Emoji; kwargs...)
             end
         end
     end
-    touch(s.messages, message)
 end
 
 insert_or_update!(d, k, v; kwargs...) = d[k] = haskey(d, k) ? merge(d[k], v) : v

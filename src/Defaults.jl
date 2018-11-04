@@ -31,17 +31,47 @@ handler(c::Client, e::Union{GuildCreate, GuildUpdate}) = put!(c.state, e.guild)
 handler(c::Client, e::GuildEmojisUpdate) = put!(c.state, e.emojis; guild=e.guild_id)
 handler(c::Client, e::GuildMemberAdd) = put!(c.state, e.member; guild=e.guild_id)
 handler(c::Client, e::Union{MessageCreate, MessageUpdate}) = put!(c.state, e.message)
-handler(c::Client, e::MessageDelete) = delete!(c.state.messages, e.id)
 handler(c::Client, e::PresenceUpdate) = put!(c.state, e.presence)
+handler(c::Client, e::ChannelPinsUpdate) = touch(c.state.channels, e.channel_id)
+handler(c::Client, e::GuildIntegrationsUpdate) = touch(c.state.guilds, e.guild_id)
+
+function handler(c::Client, e::UserUpdate)
+    put!(c.state, e.user)
+
+    for ms in values(c.state.members)
+        if haskey(ms, e.user.id)
+            m = ms[e.user.id]
+            ms[e.user.id] = @set m.user = merge(m.user, e.user)
+        end
+    end
+
+    for g in values(c.state.guilds)
+        if g isa Guild && !ismissing(g.members)
+            idx = findfirst(m -> m.user.id == e.user.id)
+            if idx !== nothing
+                m = ms[idx]
+                ms[idx] = @set m.user = merge(m.user, e.user)
+            end
+        end
+    end
+end
+
+function handler(c::Client, e::MessageDelete)
+    delete!(c.state.messages, e.id)
+    touch(c.state.channels, e.channel_id)
+    touch(c.state.guilds, e.guild_id)
+end
 
 function handler(c::Client, e::ChannelDelete)
     channel = e.channel.id
     delete!(c.state.channels, channel)
 
-    if haskey(c.state.guilds, channel) && !ismissing(c.state.guilds[channel].guilds)
-        g = c.state.guilds[channel]
+    if !ismissing(e.channel.guild_id) && haskey(c.state.guilds, e.channel.guild_id)
+        chs = c.state.guilds[e.channel.guild_id].channels
+        ismissing(chs) && return
+        g = c.state.guilds[e.channel.guild_id]
         idx = findfirst(ch -> ch.id == channel, g.guilds)
-        idx === nothing || deleteat!(g.guilds, idx)
+        idx === nothing || deleteat!(g.channels, idx)
     end
 end
 
@@ -86,9 +116,14 @@ function handler(c::Client, e::GuildMemberUpdate)
 end
 
 function handler(c::Client, e::GuildMemberRemove)
-    haskey(c.state.members, e.guild_id) || return
     ismissing(e.user) && return
+    haskey(c.state.members, e.guild_id) || return
     delete!(c.state.members[e.guild_id], e.user.id)
+
+    haskey(c.state.guilds, e.guild_id) || return
+    ms = c.state.guild[e.guild_id].members
+    idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, ms)
+    idx === nothing || deleteat!(ms, idx)
 end
 
 function handler(c::Client, e::GuildMembersChunk)
@@ -115,10 +150,18 @@ function handler(c::Client, e::MessageDeleteBulk)
     for id in e.ids
         delete!(c.state.messages, id)
     end
+
+    touch(c.state.channels, e.channel_id)
+    touch(c.state.channels, e.guild_id)
 end
 
 function handler(c::Client, e::MessageReactionAdd)
     put!(c.state, e.emoji; message=e.message_id, user=e.user_id)
+
+    touch(c.state.channels, e.channel_id)
+    touch(c.state.guilds, e.guild_id)
+    touch(c.state.users, e.user_id)
+    haskey(c.state.members, e.guild_id) && touch(c.state.members[e.guild_id], e.user_id)
 end
 
 function handler(c::Client, e::MessageReactionRemove)
@@ -139,7 +182,11 @@ function handler(c::Client, e::MessageReactionRemove)
             end
         end
     end
-    touch(c.state.messages, e.message_id)
+
+    touch(c.state.channels, e.channel_id)
+    touch(c.state.guilds, e.guild_id)
+    touch(c.state.users, e.user_id)
+    haskey(c.state.members, e.guild_id) && touch(c.state.members[e.guild_id], e.user_id)
 end
 
 function handler(c::Client, e::MessageReactionRemoveAll)
@@ -149,7 +196,22 @@ function handler(c::Client, e::MessageReactionRemoveAll)
     locked(c.state.lock) do
         empty!(c.state.messages[e.message_id].reactions)
     end
-    touch(c.state.messages, e.message_id)
+
+    touch(c.state.channels, e.channel_id)
+    touch(c.state.guilds, e.guild_id)
+end
+
+function handler(c::Client, e::GuildBanAdd)
+    if haskey(c.state.members, e.guild_id)
+        delete!(c.state.members[e.guild_id], e.user.id)
+    end
+
+    if haskey(c.state.guilds, e.guild_id)
+        ms = c.state.guilds[e.guild_id].members
+        ismissing(ms) && return
+        idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, ms)
+        idx === nothing || deleteat!(ms, idx)
+    end
 end
 
 for T in map(m -> m.sig.types[3], methods(handler).ms)

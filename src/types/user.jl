@@ -6,8 +6,7 @@ More details [here](https://discordapp.com/developers/docs/resources/user#user-o
 """
 struct User
     id::Snowflake
-    # TODO: There's one case where everything but id is missing.
-    # Find it in the docs and refer to it here.
+    # The User inside of a Presence only needs its ID set.
     username::Union{String, Missing}
     discriminator::Union{String, Missing}
     avatar::Union{String, Nothing, Missing}
