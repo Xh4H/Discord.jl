@@ -18,7 +18,7 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
 - `exception::Union{Exception, Nothing}`: The caught exception, if one is thrown.
 
 # Example
-```jldoctest
+```julia-repl
 julia> using Discord; c = Client("token"); ch = 1234567890;
 
 julia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);

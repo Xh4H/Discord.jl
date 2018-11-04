@@ -32,8 +32,8 @@ const OPCODES = Dict(
 
 Connect to the Discord gateway and begin responding to events.
 
-The `delay` keyword is the number of seconds between shards connecting. It can be increased
-from its default if you are frequently experiencing invalid sessions upon connection.
+The `delay` keyword is the time between shards connecting. It can be increased from its
+default if you are frequently experiencing invalid sessions upon connection.
 """
 function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     isopen(c) && error("Client is already open")
@@ -129,7 +129,6 @@ end
 
 Request offline guild members of one or more guilds. [`GuildMembersChunk`](@ref) events are
 sent by the gateway in response.
-
 More details [here](https://discordapp.com/developers/docs/topics/gateway#request-guild-members).
 """
 function request_guild_members(
@@ -165,7 +164,6 @@ end
 
 Join, move, or disconnect from a voice channel. A [`VoiceStateUpdate`](@ref) event is sent
 by the gateway in response.
-
 More details [here](https://discordapp.com/developers/docs/topics/gateway#update-voice-state).
 """
 function update_voice_state(
@@ -194,7 +192,6 @@ end
 
 Indicate a presence or status update. A [`PresenceUpdate`](@ref) event is sent by the
 gateway in response.
-
 More details [here](https://discordapp.com/developers/docs/topics/gateway#update-status).
 """
 function update_status(

@@ -28,28 +28,11 @@ end
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
 
-To get a bot token, head [here](https://discordapp.com/developers/applications) to create a
-new application. Once you've created a bot user, you will have access to its token.
-
 # Keywords
 - `ttl::Period=Hour(1)` Amount of time that cache entries are kept (see "Caching" below for
   more details).
 - `version::Int=$API_VERSION`: Version of the Discord API to use. Using anything but
   $API_VERSION is not officially supported by the Discord.jl developers.
-
-# Caching
-By default, most data that comes from Discord is cached for later use. However, to avoid
-memory leakage, it's deleted after some time (determined by the `ttl` keyword). Although
-it's not recommended, you can also disable caching of certain data by clearing default
-handlers for relevant event types with [`delete_handler!`](@ref). For example, if you
-wanted to avoid caching any messages, you would delete handlers for [`MessageCreate`](@ref)
-and [`MessageUpdate`](@ref) events.
-
-# Sharding
-Sharding is handled automatically: The number of available processes is the number of
-shards that are created. See the
-[sharding example](https://github.com/PurgePJ/Discord.jl/blob/master/examples/sharding.jl)
-for more details.
 """
 mutable struct Client
     token::String               # Bot token, always with a leading "Bot ".
