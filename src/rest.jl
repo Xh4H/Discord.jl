@@ -4,6 +4,41 @@ const HEADERS = Dict("User-Agent" => "Discord.jl", "Content-Type" => "applicatio
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
 const RATELIMITED = ErrorException("Rate limited")
 
+const EVENTS_FIRED = Dict(
+    :DELETE => [
+        (r"^/channels/\d+$", ChannelDelete),
+        (r"^/channels/\d+/messages/\d+/reactions/.+/@me$", MessageReactionRemove),
+        (r"^/channels/\d+/messages/\d+/reactions/.+/\d+$", MessageReactionRemove),
+        (r"^/channels/\d+/messages/\d+/reactions$", MessageReactionRemoveAll),
+        (r"^/channels/\d+/messages/\d+$", MessageDelete),
+        (r"^/channels/\d+/messages/bulk-delete$", MessageDeleteBulk),
+        (r"^/channels/\d+/permissions/\d+$", ChannelUpdate),
+        (r"^/channels/\d+/pins/\d+$", ChannelPinsUpdate),
+        (r"^/channels/\d+/pins/\d+$", MessageUpdate),
+        (r"^/channels/\d+/recipients/\d+$", ChannelUpdate),  # Untested.
+        (r"^/guilds/\d+/emojis/\d+$", GuildEmojisUpdate),
+    ],
+    :GET => [],
+    :POST => [
+        (r"^/channels/\d+/messages$", MessageCreate),
+        (r"^/channels/\d+/typing$", TypingStart),
+        (r"^/guilds/\d+/emojis$", GuildEmojisUpdate),
+    ],
+    :PUT => [
+        (r"^/channels/\d+$", ChannelUpdate),
+        (r"^/channels/\d+/messages/\d+/reactions/.+/@me$", MessageReactionAdd),
+        (r"^/channels/\d+/permissions/\d+$", ChannelUpdate),
+        (r"^/channels/\d+/pins/\d+$", ChannelPinsUpdate),
+        (r"^/channels/\d+/pins/\d+$", MessageUpdate),
+        (r"^/channels/\d+/recipients/\d+$", ChannelUpdate),  # Untested.
+    ],
+    :PATCH => [
+        (r"^/channels/\d+$", ChannelUpdate),
+        (r"^/channels/\d+/messages/\d+$", MessageUpdate),
+        (r"^/guilds/\d+/emojis/\d+$", GuildEmojisUpdate),
+    ],
+)
+
 """
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
@@ -123,7 +158,7 @@ function Response{T}(
                     resp = Response{T}(c, r)
                     put!(f, resp)
                     update!(c.limiter, b, r)
-                    if c.use_cache && resp.ok && resp.val !== nothing
+                    if c.use_cache && resp.ok && should_put(c, T, method, endpoint)
                         put!(c.state, resp.val; kws...)
                     end
                 catch e
@@ -159,6 +194,18 @@ fetchval(f::Future) = fetch(f).val
 function cap(path::AbstractString, s::AbstractString)
     m = match(Regex("/$path/(\\d+)"), s)
     return m === nothing ? nothing : parse(Snowflake, first(m.captures))
+end
+
+function should_put(c::Client, ::Type{T}, method::Symbol, endpoint::AbstractString) where T
+    Ts = map(
+        t -> t[2],
+        filter(t -> match(t[1], endpoint !== nothing), get(EVENTS_FIRED, method, [])),
+    )
+
+    # TODO: We should probably store handlers in a Dict for performance here.
+    return c.enable_cache && isopen(c) && any(
+        T -> any(h -> h.tag === :DISCORD_JL_DEFAULT, get(c.handlers, T, [])),
+    )
 end
 
 include(joinpath("rest", "audit_log.jl"))
