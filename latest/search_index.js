@@ -1497,11 +1497,443 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "types.html#Discord.Activity",
+    "page": "Types",
+    "title": "Discord.Activity",
+    "category": "type",
+    "text": "A User activity. More details here.\n\nFields\n\nname           :: String\ntype           :: ActivityType\nurl            :: Union{Missing, Nothing, String}\ntimestamps     :: Union{Missing, ActivityTimestamps}\napplication_id :: Union{Missing, UInt64}\ndetails        :: Union{Missing, Nothing, String}\nstate          :: Union{Missing, Nothing, String}\nparty          :: Union{Missing, ActivityParty}\nassets         :: Union{Missing, ActivityAssets}\nsecrets        :: Union{Missing, ActivitySecrets}\ninstance       :: Union{Missing, Bool}\nflags          :: Union{Missing, Int64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActivityTimestamps",
+    "page": "Types",
+    "title": "Discord.ActivityTimestamps",
+    "category": "type",
+    "text": "The start and stop times of an Activity. More details here.\n\nFields\n\nstart :: Union{Missing, DateTime}\nstop  :: Union{Missing, DateTime}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActivityParty",
+    "page": "Types",
+    "title": "Discord.ActivityParty",
+    "category": "type",
+    "text": "The current party of an Activity\'s player. More details here.\n\nFields\n\nid   :: Union{Missing, String}\nsize :: Union{Missing, Array{Int64,1}}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActivityAssets",
+    "page": "Types",
+    "title": "Discord.ActivityAssets",
+    "category": "type",
+    "text": "Images and hover text for an Activity. More details here.\n\nFields\n\nlarge_image :: Union{Missing, String}\nlarge_text  :: Union{Missing, String}\nsmall_image :: Union{Missing, String}\nsmall_text  :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActivitySecrets",
+    "page": "Types",
+    "title": "Discord.ActivitySecrets",
+    "category": "type",
+    "text": "Secrets for Rich Presence joining and spectating of an Activity. More details here.\n\nFields\n\njoin     :: Union{Missing, String}\nspectate :: Union{Missing, String}\nmatch    :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActivityType",
+    "page": "Types",
+    "title": "Discord.ActivityType",
+    "category": "type",
+    "text": "An Activity\'s type. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActivityFlags",
+    "page": "Types",
+    "title": "Discord.ActivityFlags",
+    "category": "type",
+    "text": "Flags which indicate what an Activity payload contains. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Attachment",
+    "page": "Types",
+    "title": "Discord.Attachment",
+    "category": "type",
+    "text": "A Message attachment. More details here.\n\nFields\n\nid        :: UInt64\nfilename  :: String\nsize      :: Int64\nurl       :: String\nproxy_url :: String\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLog",
+    "page": "Types",
+    "title": "Discord.AuditLog",
+    "category": "type",
+    "text": "An audit log. More details here.\n\nFields\n\nwebhooks          :: Array{Webhook,1}\nusers             :: Array{User,1}\naudit_log_entries :: Array{AuditLogEntry,1}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLogEntry",
+    "page": "Types",
+    "title": "Discord.AuditLogEntry",
+    "category": "type",
+    "text": "An entry in an AuditLog. More details here.\n\nFields\n\ntarget_id   :: Union{Nothing, UInt64}\nchanges     :: Union{Missing, Array{AuditLogChange,1}}\nuser_id     :: UInt64\nid          :: UInt64\naction_type :: ActionType\noptions     :: Union{Missing, AuditLogOptions}\nreason      :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLogChange",
+    "page": "Types",
+    "title": "Discord.AuditLogChange",
+    "category": "type",
+    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\nFields\n\nnew_value :: Union{Missing, T} where T\nold_value :: Union{Missing, T} where T\nkey       :: String\ntype      :: Type{U} where U\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AuditLogOptions",
+    "page": "Types",
+    "title": "Discord.AuditLogOptions",
+    "category": "type",
+    "text": "Optional information in an AuditLogEntry. More details here.\n\nFields\n\ndelete_member_days :: Union{Missing, Int64}\nmembers_removed    :: Union{Missing, Int64}\nchannel_id         :: Union{Missing, UInt64}\ncount              :: Union{Missing, Int64}\nid                 :: Union{Missing, UInt64}\ntype               :: Union{Missing, OverwriteType}\nrole_name          :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ActionType",
+    "page": "Types",
+    "title": "Discord.ActionType",
+    "category": "type",
+    "text": "AuditLog action types. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Ban",
+    "page": "Types",
+    "title": "Discord.Ban",
+    "category": "type",
+    "text": "A User ban. More details here.\n\nFields\n\nreason :: Union{Nothing, String}\nuser   :: User\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.DiscordChannel",
+    "page": "Types",
+    "title": "Discord.DiscordChannel",
+    "category": "type",
+    "text": "A Discord channel. More details here. Note: The name Channel is already used, hence the prefix.\n\nFields\n\nid                    :: UInt64\ntype                  :: ChannelType\nguild_id              :: Union{Missing, UInt64}\nposition              :: Union{Missing, Int64}\npermission_overwrites :: Union{Missing, Array{Overwrite,1}}\nname                  :: Union{Missing, String}\ntopic                 :: Union{Missing, Nothing, String}\nnsfw                  :: Union{Missing, Bool}\nlast_message_id       :: Union{Missing, Nothing, UInt64}\nbitrate               :: Union{Missing, Int64}\nuser_limit            :: Union{Missing, Int64}\nrate_limit_per_user   :: Union{Missing, Int64}\nrecipients            :: Union{Missing, Array{User,1}}\nicon                  :: Union{Missing, Nothing, String}\nowner_id              :: Union{Missing, UInt64}\napplication_id        :: Union{Missing, UInt64}\nparent_id             :: Union{Missing, Nothing, UInt64}\nlast_pin_timestamp    :: Union{Missing, Nothing, DateTime}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ChannelType",
+    "page": "Types",
+    "title": "Discord.ChannelType",
+    "category": "type",
+    "text": "A DiscordChannel\'s type.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Connection",
+    "page": "Types",
+    "title": "Discord.Connection",
+    "category": "type",
+    "text": "A User connection to an external service (Twitch, YouTube, etc.). More details here.\n\nFields\n\nid           :: String\nname         :: String\ntype         :: String\nrevoked      :: Bool\nintegrations :: Array{Integration,1}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Embed",
+    "page": "Types",
+    "title": "Discord.Embed",
+    "category": "type",
+    "text": "A Message embed. More details here.\n\nFields\n\ntitle       :: Union{Missing, String}\ntype        :: Union{Missing, String}\ndescription :: Union{Missing, String}\nurl         :: Union{Missing, String}\ntimestamp   :: Union{Missing, DateTime}\ncolor       :: Union{Missing, Int64}\nfooter      :: Union{Missing, EmbedFooter}\nimage       :: Union{Missing, EmbedImage}\nthumbnail   :: Union{Missing, EmbedThumbnail}\nvideo       :: Union{Missing, EmbedVideo}\nprovider    :: Union{Missing, EmbedProvider}\nauthor      :: Union{Missing, EmbedAuthor}\nfields      :: Union{Missing, Array{EmbedField,1}}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedThumbnail",
+    "page": "Types",
+    "title": "Discord.EmbedThumbnail",
+    "category": "type",
+    "text": "An Embed\'s thumbnail image information. More details here.\n\nFields\n\nurl       :: Union{Missing, String}\nproxy_url :: Union{Missing, String}\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedVideo",
+    "page": "Types",
+    "title": "Discord.EmbedVideo",
+    "category": "type",
+    "text": "An Embed\'s video information. More details here.\n\nFields\n\nurl    :: Union{Missing, String}\nheight :: Union{Missing, Int64}\nwidth  :: Union{Missing, Int64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedImage",
+    "page": "Types",
+    "title": "Discord.EmbedImage",
+    "category": "type",
+    "text": "An Embed\'s image information. More details here.\n\nFields\n\nurl       :: Union{Missing, String}\nproxy_url :: Union{Missing, String}\nheight    :: Union{Missing, Int64}\nwidth     :: Union{Missing, Int64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedProvider",
+    "page": "Types",
+    "title": "Discord.EmbedProvider",
+    "category": "type",
+    "text": "An Embed\'s provider information. More details here.\n\nFields\n\nname :: Union{Missing, String}\nurl  :: Union{Missing, Nothing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedAuthor",
+    "page": "Types",
+    "title": "Discord.EmbedAuthor",
+    "category": "type",
+    "text": "An Embed\'s author information. More details here.\n\nFields\n\nname           :: Union{Missing, String}\nurl            :: Union{Missing, String}\nicon_url       :: Union{Missing, String}\nproxy_icon_url :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedFooter",
+    "page": "Types",
+    "title": "Discord.EmbedFooter",
+    "category": "type",
+    "text": "An Embed\'s footer information. More details here.\n\nFields\n\ntext           :: String\nicon_url       :: Union{Missing, String}\nproxy_icon_url :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.EmbedField",
+    "page": "Types",
+    "title": "Discord.EmbedField",
+    "category": "type",
+    "text": "An Embed field. More details here.\n\nFields\n\nname   :: String\nvalue  :: String\ninline :: Union{Missing, Bool}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Emoji",
+    "page": "Types",
+    "title": "Discord.Emoji",
+    "category": "type",
+    "text": "An emoji. More details here.\n\nFields\n\nid             :: Union{Nothing, UInt64}\nname           :: String\nroles          :: Union{Missing, Array{UInt64,1}}\nuser           :: Union{Missing, User}\nrequire_colons :: Union{Missing, Bool}\nmanaged        :: Union{Missing, Bool}\nanimated       :: Union{Missing, Bool}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.AbstractGuild",
+    "page": "Types",
+    "title": "Discord.AbstractGuild",
+    "category": "type",
+    "text": "A guild (server). Can either be an UnavailableGuild or a Guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Guild",
+    "page": "Types",
+    "title": "Discord.Guild",
+    "category": "type",
+    "text": "A guild (server). More details here.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: Union{Missing, UInt64}\npermissions                   :: Union{Missing, Int64}\nregion                        :: Union{Missing, String}\nafk_channel_id                :: Union{Missing, Nothing, UInt64}\nafk_timeout                   :: Union{Missing, Int64}\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, Nothing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Union{Missing, MessageNotificationLevel}\nexplicit_content_filter       :: Union{Missing, ExplicitContentFilterLevel}\nroles                         :: Union{Missing, Array{Role,1}}\nemojis                        :: Union{Missing, Array{Emoji,1}}\nfeatures                      :: Array{String,1}\nmfa_level                     :: Union{Missing, MFALevel}\napplication_id                :: Union{Missing, Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, Nothing, UInt64}\nsystem_channel_id             :: Union{Missing, Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.UnavailableGuild",
+    "page": "Types",
+    "title": "Discord.UnavailableGuild",
+    "category": "type",
+    "text": "An unavailable guild (server). More details here.\n\nFields\n\nid          :: UInt64\nunavailable :: Union{Missing, Bool}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.VerificationLevel",
+    "page": "Types",
+    "title": "Discord.VerificationLevel",
+    "category": "type",
+    "text": "A Guild\'s verification level. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.MessageNotificationLevel",
+    "page": "Types",
+    "title": "Discord.MessageNotificationLevel",
+    "category": "type",
+    "text": "A Guild\'s default message notification level. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.ExplicitContentFilterLevel",
+    "page": "Types",
+    "title": "Discord.ExplicitContentFilterLevel",
+    "category": "type",
+    "text": "A Guild\'s explicit content filter level. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.MFALevel",
+    "page": "Types",
+    "title": "Discord.MFALevel",
+    "category": "type",
+    "text": "A Guild\'s MFA level. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.GuildEmbed",
+    "page": "Types",
+    "title": "Discord.GuildEmbed",
+    "category": "type",
+    "text": "A Guild embed. More details here.\n\nFields\n\nenabled    :: Bool\nchannel_id :: Union{Nothing, UInt64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Integration",
+    "page": "Types",
+    "title": "Discord.Integration",
+    "category": "type",
+    "text": "A Guild integration. More details here.\n\nFields\n\nid                  :: UInt64\nname                :: String\ntype                :: String\nenabled             :: Bool\nsyncing             :: Bool\nrole_id             :: UInt64\nexpire_behaviour    :: Int64\nexpire_grace_period :: Int64\nuser                :: User\naccount             :: IntegrationAccount\nsynced_at           :: Dates.DateTime\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.IntegrationAccount",
+    "page": "Types",
+    "title": "Discord.IntegrationAccount",
+    "category": "type",
+    "text": "An Integration account. More details here.\n\nFields\n\nid   :: String\nname :: String\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Invite",
+    "page": "Types",
+    "title": "Discord.Invite",
+    "category": "type",
+    "text": "An invite to a Guild. More details here.\n\nFields\n\ncode                       :: String\nguild                      :: Union{Missing, Guild}\nchannel                    :: DiscordChannel\napproximate_presence_cound :: Union{Missing, Int64}\napproximate_member_count   :: Union{Missing, Int64}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.InviteMetadata",
+    "page": "Types",
+    "title": "Discord.InviteMetadata",
+    "category": "type",
+    "text": "Metadata for an Invite. More details here.\n\nFields\n\ninviter    :: User\nuses       :: Int64\nmax_uses   :: Int64\nmax_age    :: Int64\ntemporary  :: Bool\ncreated_at :: Dates.DateTime\nrevoked    :: Bool\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Member",
+    "page": "Types",
+    "title": "Discord.Member",
+    "category": "type",
+    "text": "A Guild member. More details here.\n\nFields\n\nuser      :: Union{Missing, User}\nnick      :: Union{Missing, Nothing, String}\nroles     :: Array{UInt64,1}\njoined_at :: Dates.DateTime\ndeaf      :: Bool\nmute      :: Bool\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Message",
+    "page": "Types",
+    "title": "Discord.Message",
+    "category": "type",
+    "text": "A message. More details here.\n\nFields\n\nid               :: UInt64\nchannel_id       :: UInt64\nguild_id         :: Union{Missing, UInt64}\nauthor           :: Union{Missing, User}\nmember           :: Union{Missing, Member}\ncontent          :: Union{Missing, String}\ntimestamp        :: Union{Missing, DateTime}\nedited_timestamp :: Union{Missing, Nothing, DateTime}\ntts              :: Union{Missing, Bool}\nmention_everyone :: Union{Missing, Bool}\nmentions         :: Union{Missing, Array{User,1}}\nmention_roles    :: Union{Missing, Array{UInt64,1}}\nattachments      :: Union{Missing, Array{Attachment,1}}\nembeds           :: Union{Missing, Array{Embed,1}}\nreactions        :: Union{Missing, Array{Reaction,1}}\nnonce            :: Union{Missing, Nothing, UInt64}\npinned           :: Union{Missing, Bool}\nwebhook_id       :: Union{Missing, UInt64}\ntype             :: Union{Missing, MessageType}\nactivity         :: Union{Missing, MessageActivity}\napplication      :: Union{Missing, MessageApplication}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.MessageActivity",
+    "page": "Types",
+    "title": "Discord.MessageActivity",
+    "category": "type",
+    "text": "A Message activity. More details here.\n\nFields\n\ntype     :: MessageActivityType\nparty_id :: Union{Missing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.MessageApplication",
+    "page": "Types",
+    "title": "Discord.MessageApplication",
+    "category": "type",
+    "text": "A Rich Presence Message\'s application information. More details here.\n\nFields\n\nid          :: UInt64\ncover_image :: String\ndescription :: String\nicon        :: String\nname        :: String\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.MessageType",
+    "page": "Types",
+    "title": "Discord.MessageType",
+    "category": "type",
+    "text": "A Message\'s type. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.MessageActivityType",
+    "page": "Types",
+    "title": "Discord.MessageActivityType",
+    "category": "type",
+    "text": "A Message\'s activity type. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Overwrite",
+    "page": "Types",
+    "title": "Discord.Overwrite",
+    "category": "type",
+    "text": "A permission overwrite. More details here.\n\nFields\n\nid    :: UInt64\ntype  :: OverwriteType\nallow :: Int64\ndeny  :: Int64\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.OverwriteType",
+    "page": "Types",
+    "title": "Discord.OverwriteType",
+    "category": "type",
+    "text": "An Overwrite\'s type. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Presence",
+    "page": "Types",
+    "title": "Discord.Presence",
+    "category": "type",
+    "text": "A User\'s presence. More details here.\n\nFields\n\nuser       :: User\nroles      :: Union{Missing, Array{UInt64,1}}\ngame       :: Union{Nothing, Activity}\nguild_id   :: Union{Missing, UInt64}\nstatus     :: PresenceStatus\nactivities :: Array{Activity,1}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.PresenceStatus",
+    "page": "Types",
+    "title": "Discord.PresenceStatus",
+    "category": "type",
+    "text": "A User\'s status sent in a Presence. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Reaction",
+    "page": "Types",
+    "title": "Discord.Reaction",
+    "category": "type",
+    "text": "A Message reaction. More details here.\n\nFields\n\ncount :: Int64\nme    :: Bool\nemoji :: Emoji\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Role",
+    "page": "Types",
+    "title": "Discord.Role",
+    "category": "type",
+    "text": "A User role. More details here.\n\nFields\n\nid          :: UInt64\nname        :: String\ncolor       :: Int64\nhoist       :: Bool\nposition    :: Int64\npermissions :: Int64\nmanaged     :: Bool\nmentionable :: Bool\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.User",
+    "page": "Types",
+    "title": "Discord.User",
+    "category": "type",
+    "text": "A Discord user. More details here.\n\nFields\n\nid            :: UInt64\nusername      :: Union{Missing, String}\ndiscriminator :: Union{Missing, String}\navatar        :: Union{Missing, Nothing, String}\nbot           :: Union{Missing, Bool}\nmfa_enabled   :: Union{Missing, Bool}\nlocale        :: Union{Missing, String}\nverified      :: Union{Missing, Bool}\nemail         :: Union{Missing, Nothing, String}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.VoiceRegion",
+    "page": "Types",
+    "title": "Discord.VoiceRegion",
+    "category": "type",
+    "text": "A region for a Guild\'s voice server. More details here.\n\nFields\n\nid         :: String\nname       :: String\nvip        :: Bool\noptimal    :: Bool\ndeprecated :: Bool\ncustom     :: Bool\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.VoiceState",
+    "page": "Types",
+    "title": "Discord.VoiceState",
+    "category": "type",
+    "text": "A User\'s voice connection status. More details here.\n\nFields\n\nguild_id   :: Union{Missing, UInt64}\nchannel_id :: Union{Nothing, UInt64}\nuser_id    :: UInt64\nmember     :: Union{Missing, Member}\nsession_id :: String\ndeaf       :: Bool\nmute       :: Bool\nself_deaf  :: Bool\nself_mute  :: Bool\nsuppress   :: Bool\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.Webhook",
+    "page": "Types",
+    "title": "Discord.Webhook",
+    "category": "type",
+    "text": "A Webhook. More details here.\n\nFields\n\nid         :: UInt64\nguild_id   :: Union{Missing, UInt64}\nchannel_id :: UInt64\nuser       :: Union{Missing, User}\nname       :: Union{Nothing, String}\navatar     :: Union{Nothing, String}\ntoken      :: String\n\n\n\n\n\n"
+},
+
+{
     "location": "types.html#Types-1",
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nOverwriteType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 ]}
