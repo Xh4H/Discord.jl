@@ -270,7 +270,12 @@ function dispatch(c::Client, data::Dict)
             UnknownEvent(data)
         else
             val, e = tryparse(c, T, data["d"])
-            e === nothing ? val : UnknownEvent(data)
+            if e === nothing
+                val
+            else
+                T = UnknownEvent
+                UnknownEvent(data)
+            end
         end
     end
 

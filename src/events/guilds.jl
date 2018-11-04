@@ -32,13 +32,13 @@ end
 GuildUpdate(d::Dict{String, Any}) = GuildUpdate(Guild(d))
 
 """
-Sent when a guild is deleted, and contains an [`UnavailableGuild`](@ref).
+Sent when a [`Guild`](@ref) is deleted.
 """
 struct GuildDelete <: AbstractEvent
-    guild::UnavailableGuild
+    guild::AbstractGuild  # Supposed to be an UnavailableGuild.
 end
 @boilerplate GuildDelete :docs
-GuildDelete(d::Dict{String, Any}) = GuildDelete(UnavailableGuild(d))
+GuildDelete(d::Dict{String, Any}) = GuildDelete(AbstractGuild(d))
 
 """
 Sent when a [`User`](@ref) is banned from a [`Guild`](@ref).

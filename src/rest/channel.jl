@@ -1,3 +1,6 @@
+encode_emoji(emoji::AbstractString) = HTTP.escapeuri(emoji)
+encode_emoji(emoji::AbstractChar) = encode_emoji(string(emoji))
+
 """
     get_channel(c::Client, channel::Integer) -> DiscordChannel
 
@@ -57,7 +60,12 @@ function create_message(c::Client, channel::Integer; kwargs...)
 end
 
 """
-    create_reaction(c::Client, channel::Integer, message::Integer, emoji::AbstractString)
+    create_reaction(
+        c::Client,
+        channel::Integer,
+        message::Integer,
+        emoji::Union{AbstractString, AbstractChar},
+    )
 
 React to a [`Message`](@ref).
 """
@@ -65,12 +73,12 @@ function create_reaction(
     c::Client,
     channel::Integer,
     message::Integer,
-    emoji::AbstractString,
+    emoji::Union{AbstractString, AbstractChar},
 )
     return Response(
         c,
         :PUT,
-        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/@me",
+        "/channels/$channel/messages/$message/reactions/$(encode_emoji(emoji))/@me",
     )
 end
 
@@ -79,7 +87,7 @@ end
         c::Client,
         channel::Integer,
         message::Integer,
-        emoji::AbstractString,
+        emoji::Union{AbstractString, AbstractChar},
     )
 
 Delete the [`Client`](@ref) user's reaction to a [`Message`](@ref).
@@ -88,12 +96,12 @@ function delete_own_reaction(
     c::Client,
     channel::Integer,
     message::Integer,
-    emoji::AbstractString,
+    emoji::Union{AbstractString, AbstractChar},
 )
     return Response(
         c,
         :DELETE,
-        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/@me",
+        "/channels/$channel/messages/$message/reactions/$(encode_emoji(emoji))/@me",
     )
 end
 
@@ -102,7 +110,7 @@ end
         c::Client,
         channel::Integer,
         message::Integer,
-        emoji::AbstractString,
+        emoji::Union{AbstractString, AbstractChar},
         user::Integer,
     )
 
@@ -112,13 +120,13 @@ function delete_user_reaction(
     c::Client,
     channel::Integer,
     message::Integer,
-    emoji::AbstractString,
+    emoji::Union{AbstractString, AbstractChar},
     user::Integer,
 )
     return Response(
         c,
         :DELETE,
-        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))/$user",
+        "/channels/$channel/messages/$message/reactions/$(encode_emoji(emoji))/$user",
     )
 end
 
@@ -127,16 +135,21 @@ end
         c::Client,
         channel::Integer,
         message::Integer,
-        emoji::AbstractString,
+        emoji::Union{AbstractString, AbstractChar},
     ) -> Vector{User}
 
 Get the [`User`](@ref)s who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
 """
-function get_reactions(c::Client, channel::Integer, message::Integer, emoji::AbstractString)
+function get_reactions(
+    c::Client,
+    channel::Integer,
+    message::Integer,
+    emoji::Union{AbstractString, AbstractChar},
+)
     return Response{Vector{User}}(
         c,
         :GET,
-        "/channels/$channel/messages/$message/reactions/$(HTTP.escapeuri(emoji))",
+        "/channels/$channel/messages/$message/reactions/$(encode_emoji(emoji))",
     )
 end
 

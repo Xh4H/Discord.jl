@@ -3,10 +3,12 @@ module Defaults
 export handler_cached
 
 using Discord
-using Discord: locked
+using Discord: INFO, locked, logmsg
 using Setfield
 
 function handler(c::Client, e::Ready)
+    logmsg(c, INFO, "Logged in as $(e.user.username)")
+
     c.state.v = e.v
     c.state.session_id = e.session_id
     c.state._trace = e._trace
@@ -44,9 +46,15 @@ function handler(c::Client, e::ChannelDelete)
 end
 
 function handler(c::Client, e::GuildDelete)
-    delete!(c.state.guilds, e.id)
-    delete!(c.state.members, e.id)
-    delete!(c.state.presences, e.id)
+    delete!(c.state.guilds, e.guild.id)
+    delete!(c.state.members, e.guild.id)
+    delete!(c.state.presences, e.guild.id)
+
+    if e.guild isa Guild && !ismissing(e.guild.channels)
+        for channel in map(ch -> ch.id, e.guild.channels)
+            delete!(c.state.channels, channel)
+        end
+    end
 end
 
 function handler(c::Client, e::GuildMemberUpdate)

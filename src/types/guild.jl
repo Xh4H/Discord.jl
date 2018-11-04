@@ -35,7 +35,7 @@ Can either be an [`UnavailableGuild`](@ref) or a [`Guild`](@ref).
 abstract type AbstractGuild end
 
 function AbstractGuild(d::Dict{String, Any})
-    return get(d, "unavailable", length(d) > 2) === true ? UnavailableGuild(d) : Guild(d)
+    return get(d, "unavailable", length(d) <= 2) === true ? UnavailableGuild(d) : Guild(d)
 end
 
 """
@@ -44,7 +44,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#unava
 """
 struct UnavailableGuild <: AbstractGuild
     id::Snowflake
-    unavailable::Bool
+    unavailable::Union{Bool, Missing}
 end
 @boilerplate UnavailableGuild :dict :docs :lower :merge
 
