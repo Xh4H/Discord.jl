@@ -280,6 +280,7 @@ function dispatch(c::Client, data::Dict)
             handler.f(c, evt)
         catch e
             logmsg(c, ERROR, catchmsg(e); event=T, handler=handler.tag)
+            push!(c.state.errors, evt)
         finally
             if handler.remaining != -1
                 handler.remaining -= 1

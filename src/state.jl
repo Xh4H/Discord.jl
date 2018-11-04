@@ -9,6 +9,7 @@ mutable struct State
     messages::TTL{Snowflake, Message}         # Message ID -> message.
     presences::Dict{Snowflake, TTL{Snowflake, Presence}}  # Guild ID -> user ID -> presence.
     members::Dict{Snowflake, TTL{Snowflake, Member}}      # Guild ID -> member ID -> member.
+    errors::Vector{Union{Dict, AbstractEvent}}            # Values which caused errors.
     lock::Threads.AbstractLock  # Internal lock.
     ttl::Period                 # TTL for creating caches without a Client.
 end
@@ -25,6 +26,7 @@ function State(ttl::Period)
         TTL(ttl),  # messages
         Dict(),    # presences
         Dict(),    # members
+        [],        # errors
         Threads.SpinLock(),  # lock
         ttl,       # ttl
     )
@@ -37,7 +39,7 @@ Base.get(s::State, ::Type{Guild}; kwargs...) = get(s.guilds, kwargs[:guild], not
 Base.get(s::State, ::Type{User}; kwargs...) = get(s.users, kwargs[:user], nothing)
 Base.get(s::State, ::Type{Message}; kwargs...) = get(s.messages, kwargs[:message], nothing)
 function Base.get(s::State, ::Type{DiscordChannel}; kwargs...)
-    return get(get(c.channels, kwargs[:guild], Dict()), kwargs[:channel], nothing)
+    return get(get(s.channels, kwargs[:guild], Dict()), kwargs[:channel], nothing)
 end
 function Base.get(s::State, ::Type{Vector{DiscordChannel}}; kwargs...)
     guild = kwargs[:guild]
@@ -51,14 +53,8 @@ function Base.get(s::State, ::Type{Member}; kwargs...)
 end
 
 Base.put!(s::State, val; kwargs...) = nothing
-
 Base.put!(s::State, m::Message; kwargs...) = insert_or_update!(s.messages, m)
-
-function Base.put!(s::State, ms::Vector{Message}; kwargs...)
-    for m in ms
-        put!(s, m; kwargs...)
-    end
-end
+Base.put!(s::State, g::UnavailableGuild; kwargs...) = insert_or_update!(s.guilds, g)
 
 function Base.put!(s::State, g::Guild; kwargs...)
     insert_or_update!(s.guilds, g)
@@ -74,11 +70,18 @@ function Base.put!(s::State, g::Guild; kwargs...)
     end
 end
 
+function Base.put!(s::State, ms::Vector{Message}; kwargs...)
+    for m in ms
+        put!(s, m; kwargs...)
+    end
+end
+
 function Base.put!(s::State, ch::DiscordChannel; kwargs...)
     insert_or_update!(s.channels, ch)
 
     if haskey(s.guilds, ch.guild_id)
         g = s.guilds[ch.guild_id]
+        g isa Guild || return
         if ismissing(g.channels)
             s.guilds[ch.guild_id] = @set g.channels = [ch]
         else
@@ -96,8 +99,12 @@ end
 function Base.put!(s::State, u::User; kwargs...)
     insert_or_update!(s.users, u)
 
-    for ms in filter(ms -> haskey(ms, u.id), s.members)
-        ms[u.id] = merge(ms[u.id], u)
+    for ms in values(s.members)
+        if haskey(ms, u.id)
+            m = ms[u.id]
+            m = @set m.user = merge(m.user, u)
+            ms[u.id] = m
+        end
     end
 end
 
@@ -111,6 +118,7 @@ function Base.put!(s::State, p::Presence; kwargs...)
 
     if haskey(s.guilds, p.guild_id)
         g = s.guilds[p.guild_id]
+        g isa Guild || return
         if ismissing(g.presences)
             s.guilds[p.guild_id] = @set g.presences = [p]
         else
@@ -122,8 +130,11 @@ end
 function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
     guild = kwargs[:guild]
 
-    if haskey(s.guilds, guild) && s.guilds[guild] isa Guild
-        s.guilds[guild] = @set s.guilds[guild].emojis = es
+    if haskey(s.guilds, guild)
+        g = s.guilds[guild]
+        g isa Guild || return
+        g = @set g.emojis = es
+        s.guilds[guild] = g
     end
 end
 
@@ -138,17 +149,28 @@ function Base.put!(s::State, m::Member; kwargs...)
     insert_or_update!(ms, m; accessor=x -> x.user.id)
 
     insert_or_update!(s.users, m.user.id, m.user)
+
+    if haskey(s.guilds, guild)
+        g = s.guilds[guild]
+        g isa Guild || return
+        if ismissing(g.members)
+            s.guilds[guild] = @set g.members = [m]
+        else
+            insert_or_update!(g.members, m; accessor=x -> x.user.id)
+        end
+    end
 end
 
 function Base.put!(s::State, r::Role; kwargs...)
     guild = kwargs[:guild]
     haskey(s.guilds, guild) || return
     g = s.guilds[guild]
+    g isa Guild || return
 
     if ismissing(g.roles)
         s.guilds[guild] = @set g.roles = [r]
     else
-        push!(g.roles, r)
+        insert_or_update!(g.roles, r)
     end
     touch(s.guilds, guild)
 end

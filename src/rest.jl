@@ -143,7 +143,8 @@ function Response{T}(
     return f
 end
 
-Base.eltype(r::Response{T}) where T = T
+Base.eltype(::Response{T}) where T = T
+Base.eltype(::Type{Response{T}}) where T = T
 
 """
     fetchval(f::Future{Response{T}}) -> Union{T, Nothing}

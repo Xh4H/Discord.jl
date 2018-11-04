@@ -25,13 +25,23 @@ end
 
 handler(c::Client, e::Resumed) = c.state._trace = e._trace
 handler(c::Client, e::Union{ChannelCreate, ChannelUpdate}) = put!(c.state, e.channel)
-handler(c::Client, e::ChannelDelete) = delete!(c.state.channels, e.channel.id)
 handler(c::Client, e::Union{GuildCreate, GuildUpdate}) = put!(c.state, e.guild)
 handler(c::Client, e::GuildEmojisUpdate) = put!(c.state, e.emojis; guild=e.guild_id)
 handler(c::Client, e::GuildMemberAdd) = put!(c.state, e.member; guild=e.guild_id)
 handler(c::Client, e::Union{MessageCreate, MessageUpdate}) = put!(c.state, e.message)
 handler(c::Client, e::MessageDelete) = delete!(c.state.messages, e.id)
 handler(c::Client, e::PresenceUpdate) = put!(c.state, e.presence)
+
+function handler(c::Client, e::ChannelDelete)
+    channel = e.channel.id
+    delete!(c.state.channels, channel)
+
+    if haskey(c.state.guilds, channel) && !ismissing(c.state.guilds[channel].guilds)
+        g = c.state.guilds[channel]
+        idx = findfirst(ch -> ch.id == channel, g.guilds)
+        idx === nothing || deleteat!(g.guilds, idx)
+    end
+end
 
 function handler(c::Client, e::GuildDelete)
     delete!(c.state.guilds, e.id)
@@ -40,6 +50,20 @@ function handler(c::Client, e::GuildDelete)
 end
 
 function handler(c::Client, e::GuildMemberUpdate)
+    if haskey(c.state.guilds, e.guild_id)
+        g = c.state.guilds[e.guild_id]
+        if g isa Guild && !ismissing(g.members)
+            idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, g.members)
+            if idx !== nothing
+                m = g.members[idx]
+                m = @set m.roles = e.roles
+                m = @set m.user = merge(m.user, e.user)
+                m = @set m.nick = e.nick
+                g.members[idx] = m
+            end
+        end
+    end
+
     haskey(c.state.members, e.guild_id) || return
     haskey(c.state.members[e.guild_id], e.user.id) || return
 

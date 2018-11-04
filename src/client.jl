@@ -66,7 +66,6 @@ mutable struct Client
     handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
     ready::Bool                 # Client is connected and authenticated.
     use_cache::Bool             # Whether or not to use the cache for REST ops.
-    errors::Vector{Dict}        # Values for which deserializing failed.
     conn::Conn                  # WebSocket connection.
 
     function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION)
@@ -86,7 +85,6 @@ mutable struct Client
             Dict(),       # handlers
             false,        # ready
             true,         # use_cache
-            [],           # errors
             # conn left undef, it gets assigned in open.
         )
         add_handler!(c, Defaults)
@@ -236,7 +234,7 @@ function Base.tryparse(c::Client, T::Type, data)
         T <: Vector ? eltype(T).(data) : T(data), nothing
     catch e
         logmsg(c, ERROR, catchmsg(e))
-        push!(c.errors, data)
+        push!(c.state.errors, data)
         nothing, e
     end
 end
