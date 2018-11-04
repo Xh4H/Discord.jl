@@ -99,8 +99,8 @@ Base.isopen(c::Client) = c.ready && isdefined(c, :conn) && isopen(c.conn.io)
 Disconnect from the Discord gateway.
 """
 function Base.close(c::Client; code::Int=1000)
-    c.ready = false  # TODO: Uncomment the keyword when HTTP#348 is merged.
-    isdefined(c, :conn) && close(c.conn.io#=; statuscode=code=#)
+    c.ready = false
+    isdefined(c, :conn) && close(c.conn.io; statuscode=code)
 end
 
 """
