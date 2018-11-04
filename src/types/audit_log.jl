@@ -47,8 +47,6 @@ const AUDIT_LOG_CHANGE_TYPES = Dict(
     "rate_limit_per_user"           => (Int, DiscordChannel),
 )
 
-const OVERWRITE_TYPES = ["member", "role"]
-
 """
 [`AuditLog`](@ref) action types.
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events).
@@ -82,20 +80,6 @@ More details [here](https://discordapp.com/developers/docs/resources/audit-log#a
     AT_MESSAGE_DELETE=72
 end
 @boilerplate ActionType :lower
-
-"""
-An [`Overwrite`](@ref)'s type.
-More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info).
-"""
-@enum OverwriteType OT_MEMBER OT_ROLE OT_UNKNOWN
-
-function OverwriteType(x::AbstractString)
-    i = findfirst(s -> s == x, OVERWRITE_TYPES)
-    return i === nothing ? OT_UNKNOWN : OverwriteType(i - 1)
-end
-
-Base.string(x::OverwriteType) = OVERWRITE_TYPES[Int(x) + 1]
-JSON.lower(x::OverwriteType) = string(x)
 
 """
 A change item in an [`AuditLogEntry`](@ref).

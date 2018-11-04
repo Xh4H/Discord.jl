@@ -188,7 +188,7 @@ Delete multiple [`Message`](@ref)s.
 More details [here](https://discordapp.com/developers/docs/resources/channel#bulk-delete-messages).
 """
 function bulk_delete_messages(c::Client, channel::Integer; kwargs...)
-    return Response(c, :DELETE, "/channels/$channel/messages"; body=kwargs...)
+    return Response(c, :POST, "/channels/$channel/messages/bulk-delete"; body=kwargs...)
 end
 
 """

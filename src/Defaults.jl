@@ -30,10 +30,21 @@ handler(c::Client, e::Union{ChannelCreate, ChannelUpdate}) = put!(c.state, e.cha
 handler(c::Client, e::Union{GuildCreate, GuildUpdate}) = put!(c.state, e.guild)
 handler(c::Client, e::GuildEmojisUpdate) = put!(c.state, e.emojis; guild=e.guild_id)
 handler(c::Client, e::GuildMemberAdd) = put!(c.state, e.member; guild=e.guild_id)
+handler(c::Client, e::GuildMembersChunk) = put!(c.state, e.members; guild=e.guild_id)
 handler(c::Client, e::Union{MessageCreate, MessageUpdate}) = put!(c.state, e.message)
 handler(c::Client, e::PresenceUpdate) = put!(c.state, e.presence)
-handler(c::Client, e::ChannelPinsUpdate) = touch(c.state.channels, e.channel_id)
-handler(c::Client, e::GuildIntegrationsUpdate) = touch(c.state.guilds, e.guild_id)
+
+function handler(c::Client, e::ChannelPinsUpdate)
+    haskey(c.state.channels, e.channel_id) || return
+    ch = c.state.channels[e.channel_id]
+    if !ismissing(e.last_pin_timestamp)
+        c.state.channels[ch.id] = @set ch.last_pin_timestamp =  e.last_pin_timestamp
+    end
+end
+
+function handler(c::Client, e::Union{GuildIntegrationsUpdate, GuildBanRemove})
+    touch(c.state.guilds, e.guild_id)
+end
 
 function handler(c::Client, e::UserUpdate)
     put!(c.state, e.user)
@@ -67,11 +78,11 @@ function handler(c::Client, e::ChannelDelete)
     delete!(c.state.channels, channel)
 
     if !ismissing(e.channel.guild_id) && haskey(c.state.guilds, e.channel.guild_id)
-        chs = c.state.guilds[e.channel.guild_id].channels
-        ismissing(chs) && return
         g = c.state.guilds[e.channel.guild_id]
-        idx = findfirst(ch -> ch.id == channel, g.guilds)
-        idx === nothing || deleteat!(g.channels, idx)
+        chs = g.channels
+        ismissing(chs) && return
+        idx = findfirst(ch -> ch.id == channel, chs)
+        idx === nothing || deleteat!(chs, idx)
     end
 end
 
@@ -121,15 +132,9 @@ function handler(c::Client, e::GuildMemberRemove)
     delete!(c.state.members[e.guild_id], e.user.id)
 
     haskey(c.state.guilds, e.guild_id) || return
-    ms = c.state.guild[e.guild_id].members
+    ms = c.state.guilds[e.guild_id].members
     idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, ms)
     idx === nothing || deleteat!(ms, idx)
-end
-
-function handler(c::Client, e::GuildMembersChunk)
-    for m in e.members
-        put!(c.state, m; guild=e.guild_id)
-    end
 end
 
 function handler(c::Client, e::Union{GuildRoleCreate, GuildRoleUpdate})

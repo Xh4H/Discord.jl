@@ -53,7 +53,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
 struct Message
     id::Snowflake
     channel_id::Snowflake
-    # TODO: Where does an only-ID message come from?
+    # MessageUpdate only requires the ID and channel ID.
     guild_id::Union{Snowflake, Missing}
     author::Union{User, Missing}  # TODO: Deal with note about non-standard user structure.
     member::Union{Member, Missing}

@@ -85,7 +85,7 @@ function Base.put!(s::State, ch::DiscordChannel; kwargs...)
     insert_or_update!(s.channels, ch)
 
     for u in coalesce(ch.recipients, [])
-        put!(s, u)
+        put!(s, u; kwargs...)
     end
 
     if haskey(s.guilds, ch.guild_id)
@@ -162,6 +162,12 @@ function Base.put!(s::State, m::Member; kwargs...)
     end
 end
 
+function Base.put!(s::State, ms::Vector{Member}; kwargs...)
+    for m in ms
+        put!(s, ms; kwargs...)
+    end
+end
+
 function Base.put!(s::State, r::Role; kwargs...)
     guild = kwargs[:guild]
     haskey(s.guilds, guild) || return
@@ -191,9 +197,9 @@ end
 function Base.put!(s::State, e::Emoji; kwargs...)
     message = kwargs[:message]
     user = kwargs[:user]
+    haskey(s.messages, message) || return
 
     locked(s.lock) do
-        haskey(s.messages, message) || return
         m = s.messages[message]
         isclient = !ismissing(s.user) && s.user.id == user
         if ismissing(m.reactions)

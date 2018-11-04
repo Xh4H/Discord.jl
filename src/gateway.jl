@@ -213,43 +213,48 @@ end
 
 function heartbeat_loop(c::Client)
     v = c.conn.v
-    sleep(rand(1:round(Int, c.heartbeat_interval / 1000)))
-    heartbeat(c) || logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
+    try
+        sleep(rand(1:round(Int, c.heartbeat_interval / 1000)))
+        heartbeat(c) || logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
 
-    while c.conn.v == v && isopen(c)
-        sleep(c.heartbeat_interval / 1000)
-        if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
-            logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
-            reconnect(c; resume=true)
-        elseif !heartbeat(c) && c.conn.v == v && isopen(c)
-            logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
+        while c.conn.v == v && isopen(c)
+            sleep(c.heartbeat_interval / 1000)
+            if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
+                logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
+                reconnect(c; resume=true)
+            elseif !heartbeat(c) && c.conn.v == v && isopen(c)
+                logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
+            end
         end
+        logmsg(c, DEBUG, "Heartbeat loop exited"; conn=v)
+    catch e
+        logmsg(c, ERROR, "Heartbeat loop exited unexpectedly:\n$(catchmsg(e))"; conn=v)
     end
-
-    logmsg(c, DEBUG, "Heartbeat loop exited"; conn=v)
 end
 
 function read_loop(c::Client)
     v = c.conn.v
-
-    while c.conn.v == v && isopen(c)
-        data, e = readjson(c.conn.io)
-        if e !== nothing
-            if e == EMPTY
-                continue
-            elseif c.conn.v == v
-                handle_read_error(c, e)
+    try
+        while c.conn.v == v && isopen(c)
+            data, e = readjson(c.conn.io)
+            if e !== nothing
+                if e == EMPTY
+                    continue
+                elseif c.conn.v == v
+                    handle_read_error(c, e)
+                else
+                    logmsg(c, DEBUG, "Read failed, but the connection is outdated"; conn=v, e=e)
+                end
+            elseif haskey(HANDLERS, data["op"])
+                HANDLERS[data["op"]](c, data)
             else
-                logmsg(c, DEBUG, "Read failed, but the connection is outdated"; conn=v, e=e)
+                logmsg(c, WARN, "Unkown opcode"; op=data["op"])
             end
-        elseif haskey(HANDLERS, data["op"])
-            HANDLERS[data["op"]](c, data)
-        else
-            logmsg(c, WARN, "Unkown opcode"; op=data["op"])
         end
+        logmsg(c, DEBUG, "Read loop exited"; conn=v)
+    catch e
+        logmsg(c, ERROR, "Read loop exited unexpectedly:\n$(catchmsg(e))"; conn=v)
     end
-
-    logmsg(c, DEBUG, "Read loop exited"; conn=v)
 end
 
 # Event handlers.

@@ -175,7 +175,7 @@ end
 Unban a [`User`](@ref) from a [`Guild`](@ref).
 """
 function remove_guild_ban(c::Client, guild::Integer, user::Integer)
-    return Response(c, :GET, "/guilds/$guild/bans/$user")
+    return Response(c, :DELETE, "/guilds/$guild/bans/$user")
 end
 
 """

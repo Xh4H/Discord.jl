@@ -11,7 +11,7 @@ function PresenceStatus(x::AbstractString)
     return i === nothing ? PS_UNKNOWN : PresenceStatus(i - 1)
 end
 
-Base.string(x::PresenceStatus) = PRESENCE_STATUSES[Int(x) + 1]
+Base.string(x::PresenceStatus) = x === PS_UNKNOWN ? "" : PRESENCE_STATUSES[Int(x) + 1]
 JSON.lower(x::PresenceStatus) = string(x)
 
 """

@@ -13,12 +13,12 @@ function update(c::Client, m::Member, g::AbstractGuild; kwargs...)
     return modify_guild_member(c, g.id, m.user.id; kwargs...)
 end
 function update(c::Client, m::Member, r::Role, g::AbstractGuild)
-    return add_guild_member_role(c, g.id, u.id, r.id)
+    return add_guild_member_role(c, g.id, m.user.id, r.id)
 end
 
 function delete(c::Client, m::Member, g::AbstractGuild)
     return remove_guild_member(c, g.id, m.user.id)
 end
 function delete(c::Client, m::Member, r::Role, g::AbstractGuild)
-    return remove_guild_member_role(c, g.id, u.id, r.id)
+    return remove_guild_member_role(c, g.id, m.user.id, r.id)
 end

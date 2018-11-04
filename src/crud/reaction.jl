@@ -23,14 +23,14 @@ function delete(c::Client, ::Type{Reaction}, m::Message)
 end
 function delete(
     c::Client,
-    m::Message,
     emoji::Union{AbstractString, AbstractChar},
+    m::Message,
     u::User,
 )
-    return if me(c) !== nothing && u.id == me(c).user.id
+    return if c.state.user !== nothing && u.id == c.state.user.id
         delete_own_reaction(c, m.channel_id, m.id, emoji)
     else
         delete_user_reaction(c, m.channel_id, m.id, emoji, u.id)
     end
 end
-delete(c::Client, m::Message, e::Emoji, u::User) = delete(c, m, e.name, u)
+delete(c::Client, e::Emoji, m::Message, u::User) = delete(c, m, e.name, u)

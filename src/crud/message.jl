@@ -29,5 +29,5 @@ function delete(c::Client, m::Message; pinned::Bool=false)
     end
 end
 function delete(c::Client, ms::Vector{Message})
-    return bulk_delete_messages(c, ms[1].channel_id, map(m -> m.id, ms))
+    return bulk_delete_messages(c, ms[1].channel_id; messages=map(m -> m.id, ms))
 end
