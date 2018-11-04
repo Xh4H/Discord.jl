@@ -122,7 +122,7 @@ function Base.put!(s::State, p::Presence; kwargs...)
         if ismissing(g.presences)
             s.guilds[p.guild_id] = @set g.presences = [p]
         else
-            insert_or_update!(g.presences, p; accessor=x -> x.user.id)
+            insert_or_update!(g.presences, p; key=x -> x.user.id)
         end
     end
 end
@@ -146,7 +146,7 @@ function Base.put!(s::State, m::Member; kwargs...)
         s.members[guild] = TTL(s)
     end
     ms = s.members[guild]
-    insert_or_update!(ms, m; accessor=x -> x.user.id)
+    insert_or_update!(ms, m; key=x -> x.user.id)
 
     insert_or_update!(s.users, m.user.id, m.user)
 
@@ -156,7 +156,7 @@ function Base.put!(s::State, m::Member; kwargs...)
         if ismissing(g.members)
             s.guilds[guild] = @set g.members = [m]
         else
-            insert_or_update!(g.members, m; accessor=x -> x.user.id)
+            insert_or_update!(g.members, m; key=x -> x.user.id)
         end
     end
 end
@@ -202,14 +202,14 @@ function Base.put!(s::State, e::Emoji; kwargs...)
 end
 
 insert_or_update!(d, k, v; kwargs...) = d[k] = haskey(d, k) ? merge(d[k], v) : v
-function insert_or_update!(d::Vector, k, v; accessor::Function=x -> x.id)
-    idx = findfirst(x -> accessor(x) == k, d)
+function insert_or_update!(d::Vector, k, v; key::Function=x -> x.id)
+    idx = findfirst(x -> key(x) == k, d)
     if idx === nothing
         push!(d, v)
     else
         d[idx] = merge(d[idx], v)
     end
 end
-function insert_or_update!(d, v; accessor::Function=x -> x.id)
-    insert_or_update!(d, accessor(v), v; accessor=accessor)
+function insert_or_update!(d, v; key::Function=x -> x.id)
+    insert_or_update!(d, key(v), v; key=key)
 end

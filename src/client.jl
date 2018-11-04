@@ -184,7 +184,6 @@ Add all of the event handlers defined in a module. Any function you wish to use 
 handler must be exported. Only functions with correct type signatures (see above) are used.
 """
 function add_handler!(c::Client, m::Module)
-    # TODO: This is super hacky and relies on internal struct fields which is ugly.
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f).ms
             ts = m.sig.types[2:end]
@@ -248,7 +247,7 @@ function setcache(f::Function, c::Client, use_cache::Bool)
         # Usually the above function is going to be calling REST endpoints. The cache flag
         # is checked asynchronously, so by the time it happens there's a good chance we've
         # already returned and set the cache flag back to its original value.
-        sleep(Milliscond(1))
+        sleep(Millisecond(1))
         c.use_cache = old
     end
 end

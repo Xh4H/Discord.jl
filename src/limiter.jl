@@ -3,8 +3,6 @@ const ENDS_MAJOR_ID_REGEX = r"(?:channels|guilds|webhooks)/\d+$"
 const ENDS_ID_REGEX = r"/\d+$"
 const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
-# TODO: Bucket code could definitely be full of race conditions.
-
 mutable struct Bucket <: Threads.AbstractLock
     remaining::Union{Int, Nothing}
     reset::Union{DateTime, Nothing}  # UTC.
@@ -12,6 +10,24 @@ mutable struct Bucket <: Threads.AbstractLock
 
     Bucket() = new(nothing, nothing, Base.Semaphore(1))
     Bucket(remaining::Int, reset::DateTime) = new(remaining, reset, Base.Semaphore(1))
+end
+
+mutable struct Limiter
+    reset::Union{DateTime, Nothing}  # API-wide limit.
+    buckets::Dict{AbstractString, Bucket}
+    lock::Threads.AbstractLock
+
+    Limiter() = new(nothing, Dict(), Threads.SpinLock())
+end
+
+function Bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
+    locked(l.lock) do
+        endpoint = parse_endpoint(endpoint, method)
+        if !haskey(l.buckets, endpoint)
+            l.buckets[endpoint] = Bucket()
+        end
+        return l.buckets[endpoint]
+    end
 end
 
 Base.lock(b::Bucket) = Base.acquire(b.sem)
@@ -22,24 +38,6 @@ function reset!(b::Bucket)
     b.reset = nothing
 end
 
-mutable struct Limiter
-    reset::Union{DateTime, Nothing}  # The global limit.
-    buckets::Dict{AbstractString, Bucket}
-    lock::Threads.AbstractLock
-
-    Limiter() = new(nothing, Dict(), Threads.SpinLock())
-end
-
-function bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
-    locked(l.lock) do
-        endpoint = parse_endpoint(endpoint, method)
-        if !haskey(l.buckets, endpoint)
-            l.buckets[endpoint] = Bucket()
-        end
-        return l.buckets[endpoint]
-    end
-end
-
 # Note: These DateTime operations only work if your system clock is accurate.
 
 function Base.wait(l::Limiter, b::Bucket)
@@ -48,7 +46,7 @@ function Base.wait(l::Limiter, b::Bucket)
         sleep(l.reset - n)
     end
 
-    if n < b.reset
+    if b.reset !== nothing && n < b.reset
         sleep(b.reset - n)
         reset!(b)
     end
@@ -83,7 +81,7 @@ function islimited(l::Limiter, b::Bucket)
         end
     end
 
-    b.remaining === nothing && return false
+    (b.remaining === nothing || b.reset === nothing) && return false
     if n > b.reset
         reset!(b)
         return false

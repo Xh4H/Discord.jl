@@ -36,7 +36,8 @@ function replace_mentions(m::Message)
     content = m.content
     for u in m.mentions
         name = "@$(u.username)"
-        replace!(content, "<@$(u.id)>" => name, "<@!$(u.id)>" => name)
+        content = replace(content, "<@$(u.id)>" => name)
+        content = replace(content, "<@!$(u.id)>" => name)
     end
     return content
 end

@@ -38,7 +38,7 @@ macro lower(T)
     else
         quote
             function JSON.lower(x::$T)
-                d = Dict()
+                d = Dict{String, Any}()
 
                 for f in fieldnames($T)
                     v = getfield(x, f)

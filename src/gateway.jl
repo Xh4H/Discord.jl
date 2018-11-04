@@ -77,7 +77,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
 
     op = resume ? :RESUME : :IDENTIFY
     logmsg(c, DEBUG, "Writing $op"; conn=c.conn.v)
-    writejson(c.conn.io, data) || error("$op failed")
+    writejson(c.conn.io, data) === nothing || error("Writing $op failed")
 
     logmsg(c, DEBUG, "Starting background maintenance tasks"; conn=c.conn.v)
     @async heartbeat_loop(c)
@@ -151,7 +151,7 @@ function request_guild_members(
         "guild_id" => guild_id,
         "query" => query,
         "limit" => limit,
-    )))
+    ))) === nothing
 end
 
 """
@@ -180,7 +180,7 @@ function update_voice_state(
         "channel_id" => channel_id,
         "self_mute" => self_mute,
         "self_deaf" => self_deaf,
-    )))
+    ))) === nothing
 end
 
 """
@@ -209,7 +209,7 @@ function update_status(
         "activity" => activity,
         "status" => status,
         "afk" => afk,
-    )))
+    ))) === nothing
 end
 
 # Client maintenance.
@@ -217,7 +217,7 @@ end
 function heartbeat_loop(c::Client)
     v = c.conn.v
     sleep(rand(1:round(Int, c.heartbeat_interval / 1000)))
-    heartbeat(c) || logmsg(c, ERROR, "HEARTBEAT failed"; conn=v)
+    heartbeat(c) || logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
 
     while c.conn.v == v && isopen(c)
         sleep(c.heartbeat_interval / 1000)
@@ -225,7 +225,7 @@ function heartbeat_loop(c::Client)
             logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
             reconnect(c; resume=true)
         elseif !heartbeat(c) && c.conn.v == v && isopen(c)
-            logmsg(c, ERROR, "HEARTBEAT failed"; conn=v)
+            logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
         end
     end
 
@@ -293,11 +293,11 @@ function dispatch(c::Client, data::Dict)
 end
 
 function heartbeat(c::Client, ::Dict=Dict())
-    ok = writejson(c.conn.io, Dict("op" => 1, "d" => c.heartbeat_seq))
-    if ok
+    e = writejson(c.conn.io, Dict("op" => 1, "d" => c.heartbeat_seq))
+    if e === nothing
         c.last_heartbeat = now()
     end
-    return ok
+    return e === nothing
 end
 
 function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true)
@@ -401,9 +401,8 @@ end
 function writejson(io, body)
     return try
         write(io, json(body))
-        true
+        nothing
     catch e
-        logmsg(c, ERROR, "Writing to WebSocket failed\n" * catchmsg(e))
-        false
+        e
     end
 end

@@ -110,7 +110,7 @@ function Response{T}(
         # task requesting from that endpoint). We update the bucket (we are still the only
         # task touching the bucket) and then release the lock.
 
-        b = bucket(c.limiter, method, endpoint)
+        b = Bucket(c.limiter, method, endpoint)
         while true
             lock(b)
 
