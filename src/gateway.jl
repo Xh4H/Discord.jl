@@ -261,7 +261,12 @@ function dispatch(c::Client, data::Dict)
     c.heartbeat_seq = data["s"]
 
     T = get(EVENT_TYPES, data["t"], UnknownEvent)
-    haskey(c.handlers, T) || return
+    catchalls = collect(filter!(!isexpired, get(c.handlers, AbstractEvent, [])))
+    specifics = collect(filter!(!isexpired, get(c.handlers, T, [])))
+    fallbacks = collect(filter!(!isexpired, get(c.handlers, FallbackEvent, [])))
+
+    # If there are no handlers to call, don't bother parsing the event.
+    isempty(catchalls) && isempty(specifics) && isempty(fallbacks) && return
 
     evt = begin
         if T === UnknownEvent
@@ -272,24 +277,19 @@ function dispatch(c::Client, data::Dict)
         end
     end
 
-    catchalls = collect(get(c.handlers, AbstractEvent, []))
-    specifics = collect(get(c.handlers, T, []))
-
-    for handler in [catchalls; specifics]
+    hs = isempty(catchalls) && isempty(specifics) ? fallbacks : [catchalls; specifics]
+    for h in hs
         @async try
-            handler.f(c, evt)
+            h.f(c, evt)
         catch e
-            logmsg(c, ERROR, catchmsg(e); event=T, handler=handler.tag)
+            logmsg(c, ERROR, catchmsg(e); event=T, handler=h.tag)
             push!(c.state.errors, evt)
         finally
-            if handler.remaining != -1
-                handler.remaining -= 1
+            if h.expiry isa Int && h.expiry != -1
+                h.expiry -= 1
             end
         end
     end
-
-    filter!(!isexpired, get(c.handlers, AbstractEvent, []))
-    filter!(!isexpired, get(c.handlers, T, []))
 end
 
 function heartbeat(c::Client, ::Dict=Dict())

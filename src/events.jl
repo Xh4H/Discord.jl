@@ -1,10 +1,18 @@
-export AbstractEvent, UnknownEvent
+export AbstractEvent,
+    FallbackEvent,
+    UnknownEvent
 
 """
 An incoming event sent over the gateway. Also a catch-all event: Handlers defined on this
 type will execute on all events, before the specific handlers run.
 """
 abstract type AbstractEvent end
+
+"""
+A type for defining handlers on any events which would otherwise have no handler.
+Handlers for this type must accept an [`AbstractEvent`](@ref).
+"""
+abstract type FallbackEvent <: AbstractEvent end
 
 """
 An unknown event. When an event can't be parsed, due to an unknown type or any other error,
@@ -60,5 +68,5 @@ const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "TYPING_START"                => TypingStart,
     "VOICE_STATE_UPDATE"          => VoiceStateUpdate,
     "VOICE_SERVER_UPDAT"          => VoiceServerUpdate,
-    "WEBHOOK_UPDATE"              => WebhookUpdate
+    "WEBHOOK_UPDATE"              => WebhookUpdate,
 )

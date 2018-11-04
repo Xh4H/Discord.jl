@@ -10,6 +10,7 @@ More details [here](https://discordapp.com/developers/docs/reference#nullable-an
 
 ```@docs
 AbstractEvent
+FallbackEvent
 UnknownEvent
 ```
 
