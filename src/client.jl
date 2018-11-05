@@ -4,16 +4,21 @@ export Client,
     enable_cache!,
     disable_cache!,
     add_handler!,
-    delete_handler!
+    delete_handler!,
+    DEFAULT_HANDLER_TAG
+
+"""
+Tag assigned to default handlers, which you can use to delete them.
+"""
+const DEFAULT_HANDLER_TAG = :DJL_DEFAULT
 
 mutable struct Handler
     f::Function
-    tag::Symbol
     expiry::Union{Int, DateTime}  # -1 for no expiry.
 end
 
-Handler(f::Function) = Handler(f, gensym(), -1)
-Handler(f::Function, tag::Symbol, expiry::Period) = Handler(f, tag, now(UTC) + expiry)
+Handler(f::Function) = Handler(f, -1)
+Handler(f::Function, expiry::Period) = Handler(f, now(UTC) + expiry)
 
 isexpired(h::Handler) = h.expiry isa Int ? h.expiry == 0 : now(UTC) > h.expiry
 
@@ -46,7 +51,7 @@ mutable struct Client
     shards::Int                 # Number of shards in use.
     shard::Int                  # Client's shard index.
     limiter::Limiter            # Rate limiter.
-    handlers::Dict{Type{<:AbstractEvent}, Set{Handler}}  # Event handlers.
+    handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
     ready::Bool                 # Client is connected and authenticated.
     use_cache::Bool             # Whether or not to use the cache for REST ops.
     conn::Conn                  # WebSocket connection.
@@ -70,7 +75,7 @@ mutable struct Client
             true,         # use_cache
             # conn left undef, it gets assigned in open.
         )
-        add_handler!(c, Defaults; tag=:DISCORD_JL_DEFAULT)
+        add_handler!(c, Defaults; tag=DEFAULT_HANDLER_TAG)
         return c
     end
 end
@@ -125,8 +130,8 @@ by using a `Union`.
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
   [`delete_handler!`](@ref).
 - `expiry::Union{Int, Period}=-1`: The handler's expiry. If an `Int` is given, the handler
-  will run a set number of times before expiring. If a `Period` is given, the handler will
-  expire after that amount of time has elapsed. The default of `-1` indicates no expiry.
+  will run that many times before expiring. If a `Period` is given, the handler will expire
+  after it elapsed. The default of `-1` indicates no expiry.
 
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
@@ -149,16 +154,15 @@ function add_handler!(
         throw(ArgumentError("Handler function must accept (::Client, ::$evt)"))
     end
 
-    h = Handler(func, tag, expiry)
+    h = Handler(func, expiry)
     if isexpired(h)
         throw(ArgumentError("Can't add a handler that will never run"))
     end
 
-    delete_handler!(c, evt, tag)
     if haskey(c.handlers, evt)
-        push!(c.handlers[evt], h)
+        c.handlers[evt][tag] = h
     else
-        c.handlers[evt] = Set([h])
+        c.handlers[evt] = Dict(tag => h)
     end
 end
 
@@ -196,25 +200,33 @@ end
 
 Delete event handlers. If no `tag` is supplied, all handlers for the event are deleted.
 Using the tagless method is generally not recommended because it also clears default
-handlers which maintain the client state. If you want to disable a default handler, use the
-tag `:DISCORD_JL_DEFAULT`.
+handlers which maintain the client state. If you do want to delete a default handler, use
+[`DEFAULT_HANDLER_TAG`](@ref).
 """
 delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt)
 
 function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
-    filter!(h -> h.tag !== tag, get(c.handlers, evt, []))
+    delete!(get(c.handlers, evt, Dict()), tag)
 end
 
-function handlers(c, T::Type{<:AbstractEvent})
-    catchalls = collect(filter!(!isexpired, get(c.handlers, AbstractEvent, Handler[])))
-    specifics = collect(filter!(!isexpired, get(c.handlers, T, Handler[])))
-    fallbacks = collect(filter!(!isexpired, get(c.handlers, FallbackEvent, Handler[])))
+function handlers(c::Client, T::Type{<:AbstractEvent})
+    return collect(values(filter!(p -> !isexpired(p.second), get(c.handlers, T, Dict()))))
+end
+
+function allhandlers(c::Client, T::Type{<:AbstractEvent})
+    catchalls = handlers(c, AbstractEvent)
+    specifics = T === AbstractEvent ? [] : handlers(c, T)
+    fallbacks = T === FallbackEvent ? [] : handlers(c, FallbackEvent)
 
     return if isempty(catchalls) && isempty(specifics)
         fallbacks
     else
         [catchalls; specifics]
     end
+end
+
+function hasdefault(c::Client, T::Type{<:AbstractEvent})
+    return haskey(get(c.handlers, T, Dict()), DEFAULT_HANDLER_TAG)
 end
 
 @enum LogLevel DEBUG INFO WARN ERROR

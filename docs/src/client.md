@@ -20,6 +20,7 @@ See [Events](@ref) for more details.
 ```@docs
 add_handler!
 delete_handler!
+DEFAULT_HANDLER_TAG
 ```
 
 ## Bot Commands

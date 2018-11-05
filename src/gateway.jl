@@ -264,7 +264,7 @@ function dispatch(c::Client, data::Dict)
 
     T = get(EVENT_TYPES, data["t"], UnknownEvent)
 
-    hs = handlers(c, T)
+    hs = allhandlers(c, T)
     # If there are no handlers to call, don't bother parsing the event.
     isempty(hs) && return
 
