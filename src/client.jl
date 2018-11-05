@@ -210,12 +210,12 @@ function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
 end
 
 function handlers(c::Client, T::Type{<:AbstractEvent})
-    return collect(values(filter!(p -> !isexpired(p.second), get(c.handlers, T, Dict()))))
+    return collect(filter!(p -> !isexpired(p.second), get(c.handlers, T, Dict())))
 end
 
 function allhandlers(c::Client, T::Type{<:AbstractEvent})
-    catchalls = handlers(c, AbstractEvent)
-    specifics = T === AbstractEvent ? [] : handlers(c, T)
+    catchalls = T == AbstractEvent ? [] : handlers(c, AbstractEvent)
+    specifics = handlers(c, T)
     fallbacks = T === FallbackEvent ? [] : handlers(c, FallbackEvent)
 
     return if isempty(catchalls) && isempty(specifics)

@@ -58,7 +58,8 @@ function handler(c::Client, e::UserUpdate)
 
     for g in values(c.state.guilds)
         if g isa Guild && !ismissing(g.members)
-            idx = findfirst(m -> m.user.id == e.user.id)
+            ms = g.members
+            idx = findfirst(m -> m.user.id == e.user.id, ms)
             if idx !== nothing
                 m = ms[idx]
                 ms[idx] = @set m.user = merge(m.user, e.user)

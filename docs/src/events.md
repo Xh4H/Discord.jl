@@ -72,7 +72,7 @@ VoiceServerUpdate
 ## Webhooks
 
 ```@docs
-WebhookUpdate
+WebhooksUpdate
 ```
 
 ## Connecting

@@ -1,10 +1,10 @@
-export WebhookUpdate
+export WebhooksUpdate
 
 """
 Sent when a [`DiscordChannel`](@ref)'s [`Webhook`](@ref)s are updated.
 """
-struct WebhookUpdate <: AbstractEvent
+struct WebhooksUpdate <: AbstractEvent
     guild_id::Snowflake
     channel_id::Snowflake
 end
-@boilerplate WebhookUpdate :dict :docs
+@boilerplate WebhooksUpdate :dict :docs

@@ -6,6 +6,7 @@ using Test
 using Discord
 using Discord:
     EMPTY,
+    EVENTS_FIRED,
     Bucket,
     Handler,
     Response,
@@ -22,6 +23,7 @@ using Discord:
     parse_endpoint,
     process_id,
     readjson,
+    should_put,
     snowflake,
     snowflake2datetime,
     worker_id,
@@ -64,8 +66,8 @@ using Discord
 
 a(::Client, ::AbstractEvent) = nothing
 a(::Client, ::TypingStart) = nothing
-b(::Client, ::WebhookUpdate) = nothing
-c(::Client, ::WebhookUpdate) = nothing
+b(::Client, ::WebhooksUpdate) = nothing
+c(::Client, ::WebhooksUpdate) = nothing
 
 end
 
@@ -201,7 +203,7 @@ end
         end
     end
 
-    @testset "High-level REST API" begin
+    @testset "REST API" begin
         @testset "Direct endpoint wrapper" begin
             # Direct endpoint wrappers should return a Future.
             f = get_channel_message(c, 123, 456)
@@ -235,6 +237,37 @@ end
             @test all(f -> f isa Future, fs)
             rs = fetch.(fs)
             @test all(r -> r isa Response{Guild}, rs)
+        end
+
+        @testset "Selective caching" begin
+            f(c, e) = nothing
+
+            # The regexes should be strict.
+            @test all(
+                p -> startswith(p, '^') && endswith(p, '$'),
+                map(t -> t[1].pattern, vcat(values(EVENTS_FIRED)...)),
+            )
+
+            # We don't need to worry about this fast path.
+            @eval Discord Base.isopen(::Client) = true
+
+            # GETs should always be cached, because they never fire events.
+            @test should_put(c, :GET, "foo")
+
+            # If we have the default handler in place, we shouldn't put.
+            add_handler!(c, MessageCreate, f; tag=DEFAULT_HANDLER_TAG)
+            @test !should_put(c, :POST, "/channels/1/messages")
+
+            # But if we delete it, then we should.
+            delete_handler!(c, MessageCreate, DEFAULT_HANDLER_TAG)
+            @test should_put(c, :POST, "/channels/1/messages")
+
+            # For endpoints which fire multiple events, put unless they all have a default.
+            add_handler!(c, GuildMemberRemove, f; tag=DEFAULT_HANDLER_TAG)
+            add_handler!(c, PresenceUpdate, f; tag=DEFAULT_HANDLER_TAG)
+            @test !should_put(c, :DELETE, "/users/@me/guilds/1")
+            delete_handler!(c, PresenceUpdate, DEFAULT_HANDLER_TAG)
+            @test should_put(c, :DELETE, "/users/@me/guilds/1")
         end
     end
 
@@ -404,8 +437,8 @@ end
             @test length(get(c.handlers, AbstractEvent, Dict())) == 1
             @test length(get(c.handlers, TypingStart, Dict())) == 1
             # Only exported functions are considered.
-            @test length(get(c.handlers, WebhookUpdate, Dict())) == 1
-            @test first(values(c.handlers[WebhookUpdate])).f == Handlers.b
+            @test length(get(c.handlers, WebhooksUpdate, Dict())) == 1
+            @test first(values(c.handlers[WebhooksUpdate])).f == Handlers.b
 
             # Adding a module handler with a tag and/or expiry propogates to all handlers.
             empty!(c.handlers) # XXX
@@ -480,23 +513,23 @@ end
             add_handler!(c, Ready, f)
             add_handler!(c, AbstractEvent, f)
             @test allhandlers(c, Ready) == [
-                collect(values(c.handlers[AbstractEvent]));
-                collect(values(c.handlers[Ready]));
+                collect(c.handlers[AbstractEvent]);
+                collect(c.handlers[Ready]);
             ]
 
             # The fallback handler should only match if there's nothing else.
             add_handler!(c, FallbackEvent, f)
             @test allhandlers(c, Ready) == [
-                collect(values(c.handlers[AbstractEvent]));
-                collect(values(c.handlers[Ready]));
+                collect(c.handlers[AbstractEvent]);
+                collect(c.handlers[Ready]);
             ]
             delete_handler!(c, Ready)
-            @test allhandlers(c, Ready) == collect(values(c.handlers[AbstractEvent]))
+            @test allhandlers(c, Ready) == collect(c.handlers[AbstractEvent])
             add_handler!(c, Ready, f)
             delete_handler!(c, AbstractEvent)
-            @test allhandlers(c, Ready) == collect(values(c.handlers[Ready]))
+            @test allhandlers(c, Ready) == collect(c.handlers[Ready])
             delete_handler!(c, Ready)
-            @test allhandlers(c, Ready) == collect(values(c.handlers[FallbackEvent]))
+            @test allhandlers(c, Ready) == collect(c.handlers[FallbackEvent])
 
             # Expired handlers should be cleaned up.
             first(values(c.handlers[FallbackEvent])).expiry = 0

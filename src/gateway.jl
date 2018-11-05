@@ -264,9 +264,9 @@ function dispatch(c::Client, data::Dict)
 
     T = get(EVENT_TYPES, data["t"], UnknownEvent)
 
-    hs = allhandlers(c, T)
+    handlers = allhandlers(c, T)
     # If there are no handlers to call, don't bother parsing the event.
-    isempty(hs) && return
+    isempty(handlers) && return
 
     evt = begin
         if T === UnknownEvent
@@ -282,15 +282,15 @@ function dispatch(c::Client, data::Dict)
         end
     end
 
-    for h in hs
+    for (tag, handler) in handlers
         @async try
-            h.f(c, evt)
+            handler.f(c, evt)
         catch e
-            logmsg(c, ERROR, catchmsg(e); event=T, handler=h.tag)
+            logmsg(c, ERROR, catchmsg(e); event=T, handler=tag)
             push!(c.state.errors, evt)
         finally
-            if h.expiry isa Int && h.expiry != -1
-                h.expiry -= 1
+            if handler.expiry isa Int && handler.expiry != -1
+                handler.expiry -= 1
             end
         end
     end

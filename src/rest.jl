@@ -7,6 +7,7 @@ const RATELIMITED = ErrorException("Rate limited")
 const EVENTS_FIRED = Dict(
     :DELETE => [
         (r"^/channels/\d+$", ChannelDelete),
+        (r"^/channels/\d+$", ChannelUpdate),
         (r"^/channels/\d+/messages/\d+/reactions/.+/@me$", MessageReactionRemove),
         (r"^/channels/\d+/messages/\d+/reactions/.+/\d+$", MessageReactionRemove),
         (r"^/channels/\d+/messages/\d+/reactions$", MessageReactionRemoveAll),
@@ -17,12 +18,28 @@ const EVENTS_FIRED = Dict(
         (r"^/channels/\d+/pins/\d+$", MessageUpdate),
         (r"^/channels/\d+/recipients/\d+$", ChannelUpdate),  # Untested.
         (r"^/guilds/\d+/emojis/\d+$", GuildEmojisUpdate),
+        (r"^/guilds/\d+$", GuildDelete),
+        (r"^/guilds/\d+/members/\d+/roles/\d+$", GuildMemberUpdate),
+        (r"^/guilds/\d+/members/\d+/$", GuildMemberRemove),
+        (r"^/guilds/\d+/bans/\d+$", GuildBanRemove),
+        (r"^/guilds/\d+/roles/\d+$", GuildRoleDelete),
+        (r"^/guilds/\d+/integrations$", GuildIntegrationsUpdate),
+        (r"^/users/@me/guilds/\d+$", GuildMemberRemove),
+        (r"^/users/@me/guilds/\d+$", PresenceUpdate),
+        (r"^/webhooks/\d+$", WebhooksUpdate),
+        (r"^/webhooks/\d+/.+$", WebhooksUpdate),
     ],
-    :GET => [],
     :POST => [
         (r"^/channels/\d+/messages$", MessageCreate),
         (r"^/channels/\d+/typing$", TypingStart),
         (r"^/guilds/\d+/emojis$", GuildEmojisUpdate),
+        (r"^/guilds$", GuildCreate),
+        (r"^/guilds/\d+/channels$", ChannelCreate),
+        (r"^/guilds/\d+/roles$", GuildRoleCreate),
+        (r"^/guilds/\d+/prune$", GuildMemberRemove),
+        (r"^/guilds/\d+/integrations$", GuildIntegrationsUpdate),
+        (r"^/users/@me/channels$", ChannelCreate),
+        (r"^/channels/\d+/webhooks$", WebhooksUpdate),
     ],
     :PUT => [
         (r"^/channels/\d+$", ChannelUpdate),
@@ -31,11 +48,24 @@ const EVENTS_FIRED = Dict(
         (r"^/channels/\d+/pins/\d+$", ChannelPinsUpdate),
         (r"^/channels/\d+/pins/\d+$", MessageUpdate),
         (r"^/channels/\d+/recipients/\d+$", ChannelUpdate),  # Untested.
+        (r"^/guilds/\d+/members/\d+$", GuildMemberAdd),
+        (r"^/guilds/\d+/members/\d+/roles/\d+$", GuildMemberUpdate),
+        (r"^/guilds/\d+/bans/\d+$", GuildBanAdd),
     ],
     :PATCH => [
         (r"^/channels/\d+$", ChannelUpdate),
         (r"^/channels/\d+/messages/\d+$", MessageUpdate),
         (r"^/guilds/\d+/emojis/\d+$", GuildEmojisUpdate),
+        (r"^/guilds/\d+$", GuildUpdate),
+        (r"^/guilds/\d+/channels$", ChannelUpdate),
+        (r"^/guilds/\d+/members/\d+$", GuildMemberUpdate),
+        (r"^/guilds/\d+/members/@me/nick$", GuildMemberUpdate),
+        (r"^/guilds/\d+/roles$", GuildRoleUpdate),
+        (r"^/guilds/\d+/roles/\d+$", GuildRoleUpdate),
+        (r"^/guilds/\d+/integrations$", GuildIntegrationsUpdate),
+        (r"^/users/@me$", UserUpdate),
+        (r"^/webhooks/\d+$", WebhooksUpdate),
+        (r"^/webhooks/\d+/.+$", WebhooksUpdate),
     ],
 )
 
@@ -158,10 +188,10 @@ function Response{T}(
                     resp = Response{T}(c, r)
                     put!(f, resp)
                     update!(c.limiter, b, r)
-                    if c.use_cache && resp.ok && should_put(c, T, method, endpoint)
+                    if resp.ok && resp.val !== nothing && should_put(c, method, endpoint)
                         put!(c.state, resp.val; kws...)
                     end
-                catch e
+               catch e
                     # If we're rate limited, then just go back to the top.
                     e == RATELIMITED && continue
                     logmsg(c, ERROR, catchmsg(e))
@@ -196,8 +226,13 @@ function cap(path::AbstractString, s::AbstractString)
     return m === nothing ? nothing : parse(Snowflake, first(m.captures))
 end
 
-function should_put(c::Client, ::Type{T}, method::Symbol, endpoint::AbstractString) where T
-    (c.enable_cache && isopen(c)) || return false
+function should_put(c::Client, method::Symbol, endpoint::AbstractString)
+    # TODO: Maybe we could use the type of the Response value to be more granular.
+    # e.g. if we got a Message, then only check handlers for types with a Message field.
+    c.use_cache || return false
+    isopen(c) || return true
+    method === :GET && return true
+
     Ts = map(last, filter(t -> match(t[1], endpoint) !== nothing, EVENTS_FIRED[method]))
     return !all(T -> hasdefault(c, T), Ts)
 end
