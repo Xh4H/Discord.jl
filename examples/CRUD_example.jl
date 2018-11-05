@@ -37,6 +37,9 @@ function main()
     channel_name = channel_val.name
     # Or a synonim of the above
     channel_name = fetchval(test_channel).name
+    # Or REST way
+    rest_channel = fetchval(get_channel(c, 508717799405781003))
+    rest_channel_name = rest_channel.name
 
     # Deleting a guild
     guild_to_delete = get_guild(c, 81384788765712384)
