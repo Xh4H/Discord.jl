@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Why Julia/Discord.jl?",
     "category": "section",
-    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nTODO: More reasonsFor usage examples, see the examples/ directory."
+    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nMemory friendly: The usage of cache is very optimized and has the option to enable TTL (Time To Live).\nGateway independent: Possibility to interact with Discord\'s API without stablishing a Gateway connection.\nEasy sharding: The library manages the sharding of the clients.\nTODO: More reasonsFor usage examples, see the examples/ directory."
 },
 
 {
