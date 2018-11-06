@@ -2,9 +2,9 @@ module Commands
 
 using Discord
 
-function echo(c::Client, m::Message)
-    content = lstrip(m.content[6:end])  # Trim off the command part.
-    reply(c, m, content)
+function echo(c::Client, msg::Message)
+    content = lstrip(msg.content[6:end])  # Trim off the command part.
+    reply(c, msg, content)
 end
 
 function main()
