@@ -51,8 +51,8 @@ function eval_codeblock(c::Client, msg::Discord.Message)
         end
 
         Sandbox.set_message(msg)
-        Sandbox.set_channel(fetch(retrieve(c, DiscordChannel, msg.channel_id)).val)
-        Sandbox.set_guild(fetch(retrieve(c, Guild, msg.guild_id)).val)
+        Sandbox.set_channel(fetchval(retrieve(c, DiscordChannel, msg.channel_id)))
+        Sandbox.set_guild(fetchval(retrieve(c, Guild, msg.guild_id)))
         Sandbox.set_author(msg.author)
         Sandbox.set_member(msg.member)
         Sandbox.set_client(c)
