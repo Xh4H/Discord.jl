@@ -22,8 +22,9 @@ function codeblock(val; jl::Bool)
     return "```$(jl ? "julia" : "")\n$(String(take!(io)))\n```"
 end
 
+your_id = 12345678901928273
 function eval_codeblock(c::Client, msg::Discord.Message)
-    if msg.author.id == 191442101135867906
+    if msg.author.id == 12345678901928273
         m = match(CODE_BLOCK, msg.content)
 
         if m === nothing
