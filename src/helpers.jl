@@ -1,7 +1,8 @@
 export reply,
     mention,
     replace_mentions,
-    upload_file
+    upload_file,
+    set_game
 
 """
     reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
@@ -51,4 +52,30 @@ Send a [`Message`](@ref) with a file [`Attachment`](@ref). Any keywords are pass
 """
 function upload_file(c::Client, ch::DiscordChannel, path::AbstractString; kwargs...)
     return create_message(c, ch.id; kwargs..., file=open(path))
+end
+
+"""
+    set_game(
+        c::Client,
+        name::AbstractString,
+        type::Union{ActivityType, Int}=AT_GAME,
+        since::Union{Int, Nothing}=nothing,
+        status::Union{PresenceStatus, AbstractString}=PS_ONLINE,
+        afk::Bool=false,
+        kwargs...,
+    ) -> Bool
+
+Shortcut for [`update_status`](@ref) to set the client's [`Activity`](@ref).
+"""
+function set_game(
+    c::Client,
+    game::AbstractString;
+    type::Union{ActivityType, Int}=AT_GAME,
+    since::Union{Int, Nothing}=nothing,
+    status::Union{PresenceStatus, AbstractString}=PS_ONLINE,
+    afk::Bool=false,
+    kwargs...,
+)
+    activity = merge(Dict("name" => game, "type" => type), kwargs)
+    return update_status(c, since, activity, status, afk)
 end

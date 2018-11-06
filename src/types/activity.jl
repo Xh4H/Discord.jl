@@ -1,3 +1,8 @@
+export Activity,
+    AT_GAME,
+    AT_STREAMING,
+    AT_LISTENING
+
 """
 An [`Activity`](@ref)'s type.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).

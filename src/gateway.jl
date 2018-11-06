@@ -3,7 +3,6 @@ export request_guild_members,
     update_status,
     update_presence
 
-
 const conn_properties = Dict(
     "\$os"      => string(Sys.KERNEL),
     "\$browser" => "Discord.jl",
@@ -68,9 +67,10 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
             "token" => c.token,
             "properties" => conn_properties,
-            "presence" => c.initial_presence,
         ))
-
+        if !isempty(c.state.login_presence)
+            d["d"]["presence"] = c.state.login_presence
+        end
         if c.shards > 1
             d["d"]["shard"] = [c.shard, c.shards]
         end
@@ -199,20 +199,16 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#update
 function update_status(
     c::Client,
     since::Union{Int, Nothing},
-    activity::Union{Activity, Nothing},
-    status::PresenceStatus,
+    game::Union{Dict, NamedTuple, Activity, Nothing},
+    status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
     return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
-        "activity" => activity,
+        "game" => game,
         "status" => status,
         "afk" => afk,
     ))) === nothing
-end
-
-function update_presence(c::Client)
-    return writejson(c.conn.io, Dict("op" => 3, "d" => c.initial_presence)) === nothing
 end
 
 # Client maintenance.

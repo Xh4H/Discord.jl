@@ -20,7 +20,7 @@ lowered(x::DateTime) = round(Int, datetime2unix(x))
 lowered(x::Union{Integer, Bool}) = x
 lowered(x::Vector) = lowered.(x)
 lowered(x::Nothing) = nothing
-lowered(x::Any) = JSON.lower(x)
+lowered(x) = JSON.lower(x)
 
 macro lower(T)
     if supertype(eval(T)) <: Enum{<:Integer}

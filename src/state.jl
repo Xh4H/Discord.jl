@@ -3,6 +3,7 @@ mutable struct State
     session_id::String                  # Gateway session ID.
     _trace::Vector{String}              # Guilds the user is in.
     user::Union{User, Nothing}          # Bot user.
+    login_presence::Dict                # Bot user's presence upon connection.
     guilds::TTL{Snowflake, AbstractGuild}     # Guild ID -> guild.
     channels::TTL{Snowflake, DiscordChannel}  # Channel ID -> channel.
     users::TTL{Snowflake, User}               # User ID -> user.
@@ -14,12 +15,14 @@ mutable struct State
     ttl::Period                 # TTL for creating caches without a Client.
 end
 
-function State(ttl::Period)
+State(presence::NamedTuple, ttl::Period) = State(Dict(pairs(presence)), ttl)
+function State(presence::Dict, ttl::Period)
     return State(
         0,         # v
         "",        # session_id
         [],        # _trace
         nothing,   # user
+        presence,  # login_presence
         TTL(ttl),  # guilds
         TTL(ttl),  # channels
         TTL(ttl),  # users

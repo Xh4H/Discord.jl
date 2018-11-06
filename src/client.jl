@@ -1,6 +1,5 @@
 export Client,
     me,
-    set_game,
     set_ttl!,
     enable_cache!,
     disable_cache!,
@@ -29,14 +28,21 @@ struct Conn
 end
 
 """
-    Client(token::String; ttl::Period=Hour(1), version::Int=$API_VERSION) -> Client
+    Client(
+        token::String;
+        presence::Union{Dict, NamedTuple}=Dict(),
+        ttl::Period=Hour(1),
+        version::Int=$API_VERSION,
+    ) -> Client
 
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
 
 # Keywords
-- `ttl::Period=Hour(1)` Amount of time that cache entries are kept (see "Caching" below for
-  more details).
+- `presence::Union{Dict, NamedTuple}=Dict()`: Bot user's presence set upon connection.
+  The schema [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
+  must be followed.
+- `ttl::Period=Hour(1)` Amount of time that cache entries are kept.
 - `version::Int=$API_VERSION`: Version of the Discord API to use. Using anything but
   $API_VERSION is not officially supported by the Discord.jl developers.
 """
@@ -55,31 +61,31 @@ mutable struct Client
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
     ready::Bool                         # Client is connected and authenticated.
     use_cache::Bool                     # Whether or not to use the cache for REST ops.
-    initial_presence::Dict              # Initial CLient presence
     conn::Conn                          # WebSocket connection.
 
-    function Client(token::String;
+    function Client(
+        token::String;
+        presence::Union{Dict, NamedTuple}=Dict(),
         ttl::Period=Hour(1),
         version::Int=API_VERSION,
-        initial_presence::Dict=Dict()
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
+        state = State(presence, ttl)
         c = new(
-            token,              # token
-            0,                  # heartbeat_interval
-            nothing,            # heartbeat_seq
-            DateTime(0),        # last_heartbeat
-            DateTime(0),        # last_ack
-            ttl,                # ttl
-            version,            # version
-            State(ttl),         # state
-            nprocs(),           # shards
-            myid() - 1,         # shard
-            Limiter(),          # limiter
-            Dict(),             # handlers
-            false,              # ready
-            true,               # use_cache
-            initial_presence,   # presence
+            token,        # token
+            0,            # heartbeat_interval
+            nothing,      # heartbeat_seq
+            DateTime(0),  # last_heartbeat
+            DateTime(0),  # last_ack
+            ttl,          # ttl
+            version,      # version
+            state,        # state
+            nprocs(),     # shards
+            myid() - 1,   # shard
+            Limiter(),    # limiter
+            Dict(),       # handlers
+            false,        # ready
+            true,         # use_cache
             # conn left undef, it gets assigned in open.
         )
 
@@ -278,12 +284,4 @@ function set_cache(f::Function, c::Client, use_cache::Bool)
         sleep(Millisecond(1))
         c.use_cache = old
     end
-end
-
-function set_game(c::Client, name::AbstractString, t::Integer)
-    c.initial_presence["afk"] = haskey(c.initial_presence, "afk") && c.initial_presence["afk"] || nothing
-    c.initial_presence["game"] = Dict("name" => name, "type" => t)
-    c.initial_presence["since"] = haskey(c.initial_presence, "since") && c.initial_presence["since"] || nothing
-    c.initial_presence["status"] = haskey(c.initial_presence, "status") && c.initial_presence["status"] || nothing
-    return update_presence(c)
 end

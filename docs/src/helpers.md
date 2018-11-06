@@ -9,4 +9,5 @@ reply
 mention
 replace_mentions
 upload_file
+set_game
 ```
