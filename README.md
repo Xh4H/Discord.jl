@@ -42,6 +42,35 @@ open(c)
 wait(c)
 ```
 
+## CRUD API
+Discord.jl counts with a CRUD API, which eases the process of executing basic operations.
+
+Functions are:
+* Create
+* Retrieve
+* Update
+* Delete
+
+And the supported types are:
+* Ban
+* DiscordChannel
+* Emoji
+* GuildEmbed
+* Guild
+* Integration
+* Invite
+* Member
+* Message
+* Overwrite
+* Reaction
+* Role
+* User
+* VoiceRegion
+* Webhook
+  
+Have a look at this [CRUD Example](https://github.com/PurgePJ/Discord.jl/blob/master/examples/CRUD_example.jl) to learn more about it.
+
+
 For further examples, guides, and reference, please refer to the documentation linked above.
 
 ## Contributing
