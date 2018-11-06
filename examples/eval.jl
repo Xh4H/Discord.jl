@@ -7,7 +7,25 @@ using Discord
 
 const CODE_BLOCK = r"```(?:julia)?\n(.*)\n```"s
 
-module Sandbox end
+module Sandbox
+export set_message
+
+using Discord
+
+message = ""
+channel = ""
+guild = ""
+author = ""
+member = ""
+client = ""
+
+set_message(m) = (global message = m)
+set_channel(c) = (global channel = c)
+set_guild(g) = (global guild = g)
+set_author(a) = (global author = a)
+set_member(m) = (global member = m)
+set_client(c) = (global client = c)
+end
 
 function codeblock(val; jl::Bool)
     io = IOBuffer()
@@ -16,35 +34,39 @@ function codeblock(val; jl::Bool)
 end
 
 function eval_codeblock(c::Client, msg::Discord.Message)
-    m = match(CODE_BLOCK, msg.content)
-    m === nothing && return reply(c, msg, "That's not a code block.")
-    code = replace(first(m.captures), '\n' => ';')
+    if msg.author.id == 191442101135867906
+        m = match(CODE_BLOCK, msg.content)
 
-    ex = try
-        Meta.parse(code)
-    catch e
-        return reply(c, msg, codeblock(sprint(showerror, e); jl=true))
+        if m === nothing
+            m = msg.content[(firstindex(msg.content) + 4):lastindex(msg.content)]
+        else
+            m = first(m.captures)
+        end
+
+        code = replace(m, '\n' => ';')
+        ex = try
+            Meta.parse(code)
+        catch e
+            return reply(c, msg, codeblock(sprint(showerror, e); jl=true))
+        end
+
+        Sandbox.set_message(msg)
+        Sandbox.set_channel(fetch(retrieve(c, DiscordChannel, msg.channel_id)).val)
+        Sandbox.set_guild(fetch(retrieve(c, Guild, msg.guild_id)).val)
+        Sandbox.set_author(msg.author)
+        Sandbox.set_member(msg.member)
+        Sandbox.set_client(c)
+
+        result = try
+            @eval Sandbox $ex
+        catch e
+            sprint(showerror, e)
+        end
+        content = """
+        $(codeblock(result; jl=true))
+        """
+        reply(c, msg, content)
     end
-
-    # TODO: This doesn't work. Why?
-    old_stdout = stdout
-    r, w = redirect_stdout()
-    result = try
-        @eval Sandbox $ex
-    catch e
-        sprint(showerror, e)
-    end
-
-    output = bytesavailable(r) > 0 ? readavailable(r) : "No output"
-    redirect_stdout(old_stdout)
-
-    content = """
-    Output:
-    $(codeblock(output; jl=false))
-    Result:
-    $(codeblock(result; jl=true))
-    """
-    reply(c, msg, content)
 end
 
 function main()
