@@ -23,8 +23,9 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 ```julia
 # Import Discord.jl.
 using Discord
-# Create a client.
-c = Client("token")
+# Create a client with a status.
+presence = initial_presence=Dict("game" => Dict("name" => "With Discord.jl", "type" => 0), "status" => "dnd")
+c = Client("token"; initial_presence=presence)
 
 # Create a handler for the MessageCreate event.
 function handler(c::Client, e::MessageCreate)
