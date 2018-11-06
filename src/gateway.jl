@@ -1,6 +1,7 @@
 export request_guild_members,
     update_voice_status,
-    update_status
+    update_status,
+    update_presence
 
 
 const conn_properties = Dict(
@@ -208,6 +209,10 @@ function update_status(
         "status" => status,
         "afk" => afk,
     ))) === nothing
+end
+
+function update_presence(c::Client)
+    return writejson(c.conn.io, Dict("op" => 3, "d" => c.initial_presence)) === nothing
 end
 
 # Client maintenance.

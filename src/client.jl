@@ -1,5 +1,6 @@
 export Client,
     me,
+    set_game,
     set_ttl!,
     enable_cache!,
     disable_cache!,
@@ -40,24 +41,28 @@ calls to perform actions such as sending/deleting messages, kicking/banning user
   $API_VERSION is not officially supported by the Discord.jl developers.
 """
 mutable struct Client
-    token::String               # Bot token, always with a leading "Bot ".
-    heartbeat_interval::Int     # Milliseconds between heartbeats.
+    token::String                       # Bot token, always with a leading "Bot ".
+    heartbeat_interval::Int             # Milliseconds between heartbeats.
     heartbeat_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
-    last_heartbeat::DateTime    # Last heartbeat send.
-    last_ack::DateTime          # Last heartbeat ack.
-    ttl::Period                 # Cache lifetime.
-    version::Int                # Discord API version.
-    state::State                # Client state, cached data, etc.
-    shards::Int                 # Number of shards in use.
-    shard::Int                  # Client's shard index.
-    limiter::Limiter            # Rate limiter.
+    last_heartbeat::DateTime            # Last heartbeat send.
+    last_ack::DateTime                  # Last heartbeat ack.
+    ttl::Period                         # Cache lifetime.
+    version::Int                        # Discord API version.
+    state::State                        # Client state, cached data, etc.
+    shards::Int                         # Number of shards in use.
+    shard::Int                          # Client's shard index.
+    limiter::Limiter                    # Rate limiter.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
-    ready::Bool                 # Client is connected and authenticated.
-    use_cache::Bool             # Whether or not to use the cache for REST ops.
-    initial_presence::Dict      # Initial CLient presence
-    conn::Conn                  # WebSocket connection.
+    ready::Bool                         # Client is connected and authenticated.
+    use_cache::Bool                     # Whether or not to use the cache for REST ops.
+    initial_presence::Dict              # Initial CLient presence
+    conn::Conn                          # WebSocket connection.
 
-    function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION, initial_presence::Dict=Dict())
+    function Client(token::String;
+        ttl::Period=Hour(1),
+        version::Int=API_VERSION,
+        initial_presence::Dict=Dict()
+    )
         token = startswith(token, "Bot ") ? token : "Bot $token"
         c = new(
             token,              # token
@@ -77,6 +82,7 @@ mutable struct Client
             initial_presence,   # presence
             # conn left undef, it gets assigned in open.
         )
+
         add_handler!(c, Defaults; tag=DEFAULT_HANDLER_TAG)
         return c
     end
@@ -103,7 +109,7 @@ set_ttl!(c::Client, ttl::Period) = c.ttl = c.state.ttl = ttl
 Enable the cache for REST operations.
 """
 enable_cache!(c::Client) = c.use_cache = true
-enable_cache!(f::Function, c::Client) = setcache(f, c, true)
+enable_cache!(f::Function, c::Client) = set_cache(f, c, true)
 
 """
     disable_cache!(c::Client)
@@ -112,7 +118,7 @@ enable_cache!(f::Function, c::Client) = setcache(f, c, true)
 Disable the cache for REST operations.
 """
 disable_cache!(c::Client) = c.use_cache = false
-disable_cache!(f::Function, c::Client) = setcache(f, c, false)
+disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
 
 """
     add_handler!(
@@ -260,7 +266,7 @@ function Base.tryparse(c::Client, T::Type, data)
     end
 end
 
-function setcache(f::Function, c::Client, use_cache::Bool)
+function set_cache(f::Function, c::Client, use_cache::Bool)
     old = c.use_cache
     c.use_cache = use_cache
     try
@@ -272,4 +278,12 @@ function setcache(f::Function, c::Client, use_cache::Bool)
         sleep(Millisecond(1))
         c.use_cache = old
     end
+end
+
+function set_game(c::Client, name::AbstractString, t::Integer)
+    c.initial_presence["afk"] = haskey(c.initial_presence, "afk") && c.initial_presence["afk"] || nothing
+    c.initial_presence["game"] = Dict("name" => name, "type" => t)
+    c.initial_presence["since"] = haskey(c.initial_presence, "since") && c.initial_presence["since"] || nothing
+    c.initial_presence["status"] = haskey(c.initial_presence, "status") && c.initial_presence["status"] || nothing
+    return update_presence(c)
 end
