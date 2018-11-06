@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multuple event types by using a Union.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run a set number of times before expiring. If a Period is given, the handler will expire after that amount of time has elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multuple event types by using a Union.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run that many times before expiring. If a Period is given, the handler will expire after it elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
 },
 
 {
@@ -125,7 +125,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.delete_handler!",
     "category": "function",
-    "text": "delete_handler!(c::Client, evt::Type{<:AbstractEvent})\ndelete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state. If you want to disable a default handler, use the tag :DISCORD_JL_DEFAULT.\n\n\n\n\n\n"
+    "text": "delete_handler!(c::Client, evt::Type{<:AbstractEvent})\ndelete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state. If you do want to delete a default handler, use DEFAULT_HANDLER_TAG.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.DEFAULT_HANDLER_TAG",
+    "page": "Client",
+    "title": "Discord.DEFAULT_HANDLER_TAG",
+    "category": "constant",
+    "text": "Tag assigned to default handlers, which you can use to delete them.\n\n\n\n\n\n"
 },
 
 {
@@ -133,7 +141,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Event Handlers",
     "category": "section",
-    "text": "See Events for more details.add_handler!\ndelete_handler!"
+    "text": "See Events for more details.add_handler!\ndelete_handler!\nDEFAULT_HANDLER_TAG"
 },
 
 {
@@ -545,9 +553,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.WebhookUpdate",
+    "location": "events.html#Discord.WebhooksUpdate",
     "page": "Events",
-    "title": "Discord.WebhookUpdate",
+    "title": "Discord.WebhooksUpdate",
     "category": "type",
     "text": "Sent when a DiscordChannel\'s Webhooks are updated.\n\nFields\n\nguild_id   :: UInt64\nchannel_id :: UInt64\n\n\n\n\n\n"
 },
@@ -557,7 +565,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Webhooks",
     "category": "section",
-    "text": "WebhookUpdate"
+    "text": "WebhooksUpdate"
 },
 
 {
@@ -1481,11 +1489,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "helpers.html#Discord.upload_file",
+    "page": "Helpers",
+    "title": "Discord.upload_file",
+    "category": "function",
+    "text": "upload_file(c::Client, ch::DiscordChanne, path::AbstractString; kwargs...) -> Message\n\nSend a Message with a file Attachment. Any keywords are passed on to create_message.\n\n\n\n\n\n"
+},
+
+{
     "location": "helpers.html#Helpers-1",
     "page": "Helpers",
     "title": "Helpers",
     "category": "section",
-    "text": "reply\nmention\nreplace_mentions"
+    "text": "reply\nmention\nreplace_mentions\nupload_file"
 },
 
 {
