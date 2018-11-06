@@ -138,9 +138,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[TimeToLive]]
 deps = ["Dates", "Test"]
-git-tree-sha1 = "be2b7b62d135dfb493f13d4c11fbbe42d2890a44"
+git-tree-sha1 = "fc1848baea555973214a5ee146fd059e4fa097c8"
 uuid = "37f0c46e-897f-50ef-b453-b26c3eed3d6c"
-version = "0.1.1"
+version = "0.1.2"
 
 [[UUIDs]]
 deps = ["Random"]
