@@ -16,19 +16,11 @@ increment(s::Snowflake) = s & 0xFFF
 datetime(s::Int) = unix2datetime(s / 1000)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
 
-function lowered(x)
-    return if x === nothing
-        nothing
-    elseif x isa Integer || x isa Bool
-        x
-    elseif x isa DateTime
-        round(Int, datetime2unix(x))
-    elseif x isa Vector
-        lowered.(x)
-    else
-        JSON.lower(x)
-    end
-end
+lowered(x::DateTime) = round(Int, datetime2unix(x))
+lowered(x::Union{Intenger, Bool}) = x
+lowered(x::Vector) = lowered.(x)
+lowered(x::Nothing) = nothing
+lowered(x::Any) = JSON.lower(x)
 
 macro lower(T)
     if supertype(eval(T)) <: Enum{<:Integer}
