@@ -129,16 +129,23 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
 """
     add_handler!(
         c::Client,
-        evt::Type{<:AbstractEvent},
+        T::Type{<:AbstractEvent},
         func::Function;
+        tag::Symbol=gensym(),
+        expiry::Union{Int, Period}=-1,
+    )
+    add_handler!(
+        func::Function;
+        c::Client,
+        T::Type{<:AbstractEvent},
         tag::Symbol=gensym(),
         expiry::Union{Int, Period}=-1,
     )
 
 Add an event handler. The handler should be a function which takes two arguments: A
 [`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). The handler is appended to
-the event's current handlers. You can also define a single handler for multuple event types
-by using a `Union`.
+the event's current handlers. You can also define a single handler for multiple event types
+by using a `Union`. `do` syntax is also accepted.
 
 # Keywords
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
@@ -153,19 +160,19 @@ by using a `Union`.
 """
 function add_handler!(
     c::Client,
-    evt::Type{<:AbstractEvent},
+    T::Type{<:AbstractEvent},
     func::Function;
     tag::Symbol=gensym(),
     expiry::Union{Int, Period}=-1,
 )
-    if evt isa Union
-        add_handler!(c, evt.a, func; tag=tag, expiry=expiry)
-        add_handler!(c, evt.b, func; tag=tag, expiry=expiry)
+    if T isa Union
+        add_handler!(c, T.a, func; tag=tag, expiry=expiry)
+        add_handler!(c, T.b, func; tag=tag, expiry=expiry)
         return
     end
 
-    if !hasmethod(func, (Client, evt))
-        throw(ArgumentError("Handler function must accept (::Client, ::$evt)"))
+    if !hasmethod(func, (Client, T))
+        throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
     end
 
     h = Handler(func, expiry)
@@ -173,11 +180,21 @@ function add_handler!(
         throw(ArgumentError("Can't add a handler that will never run"))
     end
 
-    if haskey(c.handlers, evt)
-        c.handlers[evt][tag] = h
+    if haskey(c.handlers, T)
+        c.handlers[T][tag] = h
     else
-        c.handlers[evt] = Dict(tag => h)
+        c.handlers[T] = Dict(tag => h)
     end
+end
+
+function add_handler!(
+    func::Function,
+    c::Client,
+    T::Type{<:AbstractEvent};
+    tag::Symbol=gensym(),
+    expiry::Union{Int, Period}=-1,
+)
+    return add_handler!(c, T, func; tag=tag, expiry=expiry)
 end
 
 """
