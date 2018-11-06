@@ -24,7 +24,7 @@ end
 
 your_id = 12345678901928273
 function eval_codeblock(c::Client, msg::Discord.Message)
-    if msg.author.id == 12345678901928273
+    if msg.author.id == your_id
         m = match(CODE_BLOCK, msg.content)
 
         if m === nothing
