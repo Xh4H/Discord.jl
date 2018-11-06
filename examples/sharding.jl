@@ -6,11 +6,10 @@ nprocs() == 1 && addprocs(1)
 
 using Discord
 
-handler(c::Client, e::AbstractEvent) = println("shard $(c.shard) received $(typeof(e))")
-
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
-    add_handler!(c, AbstractEvent, handler)
+    add_handler!(c, AbstractEvent) do c, e
+        println("shard $(c.shard) received $(typeof(e))")
     open(c)
     return c
 end
