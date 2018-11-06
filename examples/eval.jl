@@ -51,9 +51,8 @@ function eval_codeblock(c::Client, msg::Discord.Message)
         catch e
             sprint(showerror, e)
         end
-        content = """
-        $(codeblock(result; jl=true))
-        """
+        
+        content = "$(codeblock(result; jl=true))"
         reply(c, msg, content)
     end
 end
