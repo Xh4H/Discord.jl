@@ -8,17 +8,6 @@ using Discord
 const CODE_BLOCK = r"```(?:julia)?\n(.*)\n```"s
 
 module Sandbox
-export set_message
-
-using Discord
-
-message = ""
-channel = ""
-guild = ""
-author = ""
-member = ""
-client = ""
-
 set_message(m) = (global message = m)
 set_channel(c) = (global channel = c)
 set_guild(g) = (global guild = g)
