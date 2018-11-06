@@ -54,25 +54,27 @@ mutable struct Client
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
     ready::Bool                 # Client is connected and authenticated.
     use_cache::Bool             # Whether or not to use the cache for REST ops.
+    initial_presence::Dict      # Initial CLient presence
     conn::Conn                  # WebSocket connection.
 
-    function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION)
+    function Client(token::String; ttl::Period=Hour(1), version::Int=API_VERSION, initial_presence::Dict=Dict())
         token = startswith(token, "Bot ") ? token : "Bot $token"
         c = new(
-            token,        # token
-            0,            # heartbeat_interval
-            nothing,      # heartbeat_seq
-            DateTime(0),  # last_heartbeat
-            DateTime(0),  # last_ack
-            ttl,          # ttl
-            version,      # version
-            State(ttl),   # state
-            nprocs(),     # shards
-            myid() - 1,   # shard
-            Limiter(),    # limiter
-            Dict(),       # handlers
-            false,        # ready
-            true,         # use_cache
+            token,              # token
+            0,                  # heartbeat_interval
+            nothing,            # heartbeat_seq
+            DateTime(0),        # last_heartbeat
+            DateTime(0),        # last_ack
+            ttl,                # ttl
+            version,            # version
+            State(ttl),         # state
+            nprocs(),           # shards
+            myid() - 1,         # shard
+            Limiter(),          # limiter
+            Dict(),             # handlers
+            false,              # ready
+            true,               # use_cache
+            initial_presence,   # presence
             # conn left undef, it gets assigned in open.
         )
         add_handler!(c, Defaults; tag=DEFAULT_HANDLER_TAG)

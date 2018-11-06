@@ -67,6 +67,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
             "token" => c.token,
             "properties" => conn_properties,
+            "presence" => c.initial_presence,
         ))
 
         if c.shards > 1
