@@ -54,7 +54,7 @@ end
 Send a [`Message`](@ref) to a [`DiscordChannel`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/channel#create-message).
 """
-function create_message(c::Client, channel::Integer; filename::AbstractString="", kwargs...)
+function create_message(c::Client, channel::Integer; kwargs...)
     endpoint = "/channels/$channel/messages"
     return if haskey(kwargs, :file)  # We have to use multipart/form-data for file uploads.
         d = Dict(pairs(kwargs))
