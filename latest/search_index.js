@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Why Julia/Discord.jl?",
     "category": "section",
-    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nMemory friendly: The usage of cache is very optimized and has the option to enable TTL (Time To Live).\nGateway independent: Possibility to interact with Discord\'s API without establishing a Gateway connection.\nEasy sharding: The library manages the sharding of the clients.\nTODO: More reasonsFor usage examples, see the examples/ directory."
+    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nLightweight: Cache what\'s important but shed dead weight with TTL.\nGateway independent: Interact with Discord\'s API without establishing a gateway connection.\nEasy sharding: Process-based sharding requires next to no intervention and you can even run shards on separate machines.For usage examples, see the examples/ directory."
 },
 
 {
@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(token::String; ttl::Period=Hour(1), version::Int=6) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nKeywords\n\nttl::Period=Hour(1) Amount of time that cache entries are kept (see \"Caching\" below for more details).\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\n\n\n\n\n"
+    "text": "Client(\n    token::String;\n    presence::Union{Dict, NamedTuple}=Dict(),\n    ttl::Period=Hour(1),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nKeywords\n\npresence::Union{Dict, NamedTuple}=Dict(): Bot user\'s presence set upon connection. The schema here must be followed.\nttl::Period=Hour(1) Amount of time that cache entries are kept.\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\n\n\n\n\n"
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    evt::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multuple event types by using a Union.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run that many times before expiring. If a Period is given, the handler will expire after it elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\nadd_handler!(\n    func::Function;\n    c::Client,\n    T::Type{<:AbstractEvent},\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multiple event types by using a Union. do syntax is also accepted.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run that many times before expiring. If a Period is given, the handler will expire after it elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
 },
 
 {
@@ -669,7 +669,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "CRUD API",
     "category": "section",
-    "text": "On top of functions for accessing individual endpoints such as get_channel_messages, Discord.jl also offers a unified API with just four functions. Named after the CRUD model, they cover most of the Discord REST API and allow you to write concise, expressive code, and forget about the subtleties of endpoint naming. The argument ordering convention is roughly as follows:A Client, always.\nFor cases when we don\'t yet have the entity to be manipulated (usually create and retrieve), the entity\'s type. If we do have the entity (update and delete), the entity itself.\nThe remaining positional arguments supply whatever context is needed to specify the entity. For example, sending a message requires a DiscordChannel parameter.\nKeyword arguments follow (usually for create and update).create\nretrieve\nupdate\ndelete"
+    "text": "On top of functions for accessing individual endpoints such as get_channel_messages, Discord.jl also offers a unified API with just four functions. Named after the CRUD model, they cover most of the Discord REST API and allow you to write concise, expressive code, and forget about the subtleties of endpoint naming. The argument ordering convention is roughly as follows:A Client, always.\nFor cases when we don\'t yet have the entity to be manipulated (usually create and retrieve), the entity\'s type. If we do have the entity (update and delete), the entity itself.\nThe remaining positional arguments supply whatever context is needed to specify the entity. For example, sending a message requires a DiscordChannel parameter.\nKeyword arguments follow (usually for create and update).create\nretrieve\nupdate\ndeleteThe full list of types available to be manipulated is:AuditLog\nBan\nDiscordChannel\nEmoji\nGuildEmbed\nGuild\nIntegration\nInvite\nMember\nMessage\nOverwrite\nReaction\nRole\nUser\nVoiceRegion\nWebhook"
 },
 
 {
@@ -1497,11 +1497,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "helpers.html#Discord.set_game",
+    "page": "Helpers",
+    "title": "Discord.set_game",
+    "category": "function",
+    "text": "set_game(\n    c::Client,\n    name::AbstractString,\n    type::Union{ActivityType, Int}=AT_GAME,\n    since::Union{Int, Nothing}=nothing,\n    status::Union{PresenceStatus, AbstractString}=PS_ONLINE,\n    afk::Bool=false,\n    kwargs...,\n) -> Bool\n\nShortcut for update_status to set the client\'s Activity.\n\n\n\n\n\n"
+},
+
+{
     "location": "helpers.html#Helpers-1",
     "page": "Helpers",
     "title": "Helpers",
     "category": "section",
-    "text": "reply\nmention\nreplace_mentions\nupload_file"
+    "text": "reply\nmention\nreplace_mentions\nupload_file\nset_game"
 },
 
 {
