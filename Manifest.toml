@@ -27,8 +27,8 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[HTTP]]
 deps = ["Base64", "Dates", "Distributed", "IniFile", "JSON", "MbedTLS", "Sockets", "Test"]
-git-tree-sha1 = "3ee8fdb2f9ccbb9047618ff0a8c47f6db9203b7a"
-repo-rev = "cdg/statuscode"
+git-tree-sha1 = "36ea15cb207944f456a6e35a9da8695d75138c59"
+repo-rev = "cdg/discord"
 repo-url = "https://github.com/christopher-dG/HTTP.jl"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 version = "0.7.0"

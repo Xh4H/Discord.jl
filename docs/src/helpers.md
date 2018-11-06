@@ -8,4 +8,5 @@ CurrentModule = Discord
 reply
 mention
 replace_mentions
+upload_file
 ```

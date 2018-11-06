@@ -1,6 +1,7 @@
 export reply,
     mention,
-    replace_mentions
+    replace_mentions,
+    upload_file
 
 """
     reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
@@ -40,4 +41,14 @@ function replace_mentions(m::Message)
         content = replace(content, "<@!$(u.id)>" => name)
     end
     return content
+end
+
+"""
+    upload_file(c::Client, ch::DiscordChanne, path::AbstractString; kwargs...) -> Message
+
+Send a [`Message`](@ref) with a file [`Attachment`](@ref). Any keywords are passed on to
+[`create_message`](@ref).
+"""
+function upload_file(c::Client, ch::DiscordChannel, path::AbstractString; kwargs...)
+    return create_message(c, ch.id; kwargs..., file=open(path))
 end

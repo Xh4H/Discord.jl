@@ -1,8 +1,7 @@
 export fetchval
 
-const HEADERS = Dict("User-Agent" => "Discord.jl", "Content-Type" => "application/json")
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
-const RATELIMITED = ErrorException("Rate limited")
+const RATE_LIMITED = ErrorException("Rate limited")
 
 const EVENTS_FIRED = Dict(
     :DELETE => [
@@ -109,7 +108,7 @@ end
 
 # HTTP response with body (maybe).
 function Response{T}(c::Client, r::HTTP.Messages.Response) where T
-    r.status == 429 && throw(RATELIMITED)
+    r.status == 429 && throw(RATE_LIMITED)
     r.status == 204 && return Response{T}(nothing, true, r, nothing)
     r.status >= 300 && return Response{T}(nothing, false, r, nothing)
 
@@ -139,7 +138,8 @@ function Response{T}(
     c::Client,
     method::Symbol,
     endpoint::AbstractString;
-    body="",
+    headers=Dict(),
+    body=HTTP.nobody,
     kwargs...
 ) where T
     f = Future()
@@ -161,13 +161,16 @@ function Response{T}(
         end
 
         url = "$DISCORD_API/v$(c.version)$endpoint"
-        if !isempty(kwargs)
-            url *= "?" * HTTP.escapeuri(kwargs)
-        end
-        headers = copy(HEADERS)
-        headers["Authorization"] = c.token
+        isempty(kwargs) || (url *= "?" * HTTP.escapeuri(kwargs))
+        headers = merge(Dict(
+            "User-Agent" => "Discord.jl $DISCORD_JL_VERSION",
+            "Content-Type" => "application/json",
+            "Authorization" => c.token,
+        ), Dict(headers))
         args = [method, url, headers]
-        get(SHOULD_SEND, method, false) && push!(args, json(body))
+        if get(SHOULD_SEND, method, false)
+            push!(args, headers["Content-Type"] == "application/json" ? json(body) : body)
+        end
 
         # Acquire the lock, then check if we're rate limited. If we are, then release the
         # lock and wait for the reset. Once we get the lock back and we're not rate
@@ -183,19 +186,20 @@ function Response{T}(
                 unlock(b)
                 wait(c.limiter, b)
             else
+                local http_r = nothing
                 try
-                    r = HTTP.request(args...; status_exception=false)
-                    resp = Response{T}(c, r)
-                    put!(f, resp)
-                    update!(c.limiter, b, r)
-                    if resp.ok && resp.val !== nothing && should_put(c, method, endpoint)
-                        put!(c.state, resp.val; kws...)
+                    http_r = HTTP.request(args...; status_exception=false)
+                    r = Response{T}(c, http_r)
+                    put!(f, r)
+                    update!(c.limiter, b, http_r)
+                    if r.ok && r.val !== nothing && should_put(c, method, endpoint)
+                        put!(c.state, r.val; kws...)
                     end
                catch e
                     # If we're rate limited, then just go back to the top.
-                    e == RATELIMITED && continue
+                    e == RATE_LIMITED && continue
                     logmsg(c, ERROR, catchmsg(e))
-                    put!(f, Response{T}(nothing, false, nothing, e))
+                    put!(f, Response{T}(nothing, false, http_r, e))
                 finally
                     unlock(b)
                 end
