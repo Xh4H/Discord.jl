@@ -31,6 +31,25 @@ update
 delete
 ```
 
+The full list of types available to be manipulated is:
+
+* [`AuditLog`](@ref)
+* [`Ban`](@ref)
+* [`DiscordChannel`](@ref)
+* [`Emoji`](@ref)
+* [`GuildEmbed`](@ref)
+* [`Guild`](@ref)
+* [`Integration`](@ref)
+* [`Invite`](@ref)
+* [`Member`](@ref)
+* [`Message`](@ref)
+* [`Overwrite`](@ref)
+* [`Reaction`](@ref)
+* [`Role`](@ref)
+* [`User`](@ref)
+* [`VoiceRegion`](@ref)
+* [`Webhook`](@ref)
+
 ## Endpoints
 
 Functions which wrap REST API endpoints are named and sorted according to the [Discord API documentation](https://discordapp.com/developers/docs/resources/audit-log).
