@@ -134,9 +134,6 @@ function Base.put!(s::State, p::Presence; kwargs...)
             insert_or_update!(g.presences, p; key=x -> x.user.id)
         end
     end
-
-    # TODO: Should we refresh the expiries or users/members/guilds here?
-    # Probably not, since that would effectively keep all guild loaded at all times.
 end
 
 function Base.put!(s::State, m::Member; kwargs...)
