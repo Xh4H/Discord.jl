@@ -1,5 +1,4 @@
 # This example mirrors crud.jl, but via the REST API.
-
 module REST
 
 using Discord
@@ -10,7 +9,7 @@ function main()
     c = Client(ENV["DISCORD_TOKEN"])
 
     # Send a request.
-    future = Discord.get_guild(c, GUILD)
+    future = get_guild(c, GUILD)
     # Then await it.
     resp = fetch(future)
     # Check for success.
@@ -34,19 +33,19 @@ function main()
     println("Guild name: $(guild.name)")
 
     # Create a channel.
-    channel = fetchval(Discord.create_guild_channel(c, guild.id; name="foo"))
+    channel = fetchval(create_guild_channel(c, guild.id; name="foo"))
 
     # Send a message to the channel.
-    message = fetchval(Discord.create_message(c, channel.id; content="Hello, world!"))
+    message = fetchval(create_message(c, channel.id; content="Hello, world!"))
     # React to it.
-    Discord.create_reaction(c, channel.id, message.id, '👍')
+    create_reaction(c, channel.id, message.id, '👍')
     # Edit it
-    Discord.edit_message(c, channel.id, message.id; content="Goodbye, world!")
+    edit_message(c, channel.id, message.id; content="Goodbye, world!")
     # Delete it.
-    Discord.delete_message(c, channel.id, message.id)
+    delete_message(c, channel.id, message.id)
 
     # Delete the channel.
-    Discord.delete_channel(c, channel.id)
+    delete_channel(c, channel.id)
 end
 
 end
