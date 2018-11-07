@@ -1,3 +1,5 @@
+export list_voice_regions
+
 """
     list_voice_regions(c::Client) -> Vector{VoiceRegion}
 

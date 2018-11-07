@@ -1,3 +1,16 @@
+export create_webhook,
+        get_channel_webhooks,
+        get_guild_webhooks,
+        get_webhook,
+        get_webhook_with_token,
+        modify_webhook,
+        modify_webhook_with_token,
+        delete_webhook,
+        delete_webhook_with_token,
+        execute_webhook,
+        execute_slack_compatible_webhook,
+        execute_github_compatible_webhook
+
 """
     create_webhook(c::Client, channel::Integer; kwargs...) -> Webhook
 

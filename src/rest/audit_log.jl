@@ -1,3 +1,5 @@
+export get_guild_audit_log
+
 """
     get_guild_audit_log(c::Client, guild::Integer; kwargs...) -> AuditLog
 
