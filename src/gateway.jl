@@ -291,6 +291,7 @@ function dispatch(c::Client, data::Dict)
             logmsg(c, ERROR, catchmsg(e); event=T, handler=tag)
             push!(c.state.errors, evt)
         finally
+            # TODO: There are race conditions here.
             if handler.expiry isa Int && handler.expiry != -1
                 handler.expiry -= 1
             end

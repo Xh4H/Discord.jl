@@ -452,19 +452,18 @@ end
 
         @testset "Commands" begin
             delete_handler!(c, MessageCreate)
-            h(c, m) = nothing
 
             # Adding commands adds to the MessageCreate handlers.
-            add_command!(c, "!test", h)
+            add_command!(c, "!test", f)
             @test length(get(c.handlers, MessageCreate, Dict())) == 1
             # But the handler function is modified.
             @test first(values(c.handlers[MessageCreate])).f != f
 
             # We can't add a command without a valid method.
-            @test_throws Exception add_command!(c, "!test", badc)
+            @test_throws ArgumentError add_command!(c, "!test", badc)
 
             # We can't add a command that's already expired.
-            @test_throws ArgumentError add_command!(c, "!test", h; expiry=0)
+            @test_throws ArgumentError add_command!(c, "!test", f; expiry=0)
             @test_throws ArgumentError add_handler!(c, Ready, f; expiry=Day(-1))
         end
 
@@ -480,10 +479,10 @@ end
             sleep(Millisecond(100))
             @test count(isexpired, values(c.handlers[MessageCreate])) == 1
 
-            # Counting handlers expire when they reach 0 (and never expire when negative).
-            @test !isexpired(Handler(f, -1))
+            # Counting handlers expire when they reach <= 0.
             @test !isexpired(Handler(f, 1))
             @test isexpired(Handler(f, 0))
+            @test isexpired(Handler(f, -1))
 
             # Timed handlers expire when their expiry time is reached.
             @test !isexpired(Handler(f, now() + Day(1)))

@@ -23,13 +23,19 @@ const DEFAULT_TTLS = TTLDict(
 
 mutable struct Handler
     f::Function
-    expiry::Union{Int, DateTime}  # -1 for no expiry.
+    expiry::Union{Int, DateTime, Nothing}
 end
-
-Handler(f::Function) = Handler(f, -1)
 Handler(f::Function, expiry::Period) = Handler(f, now(UTC) + expiry)
 
-isexpired(h::Handler) = h.expiry isa Int ? h.expiry == 0 : now(UTC) > h.expiry
+function isexpired(h::Handler)
+    return if h.expiry === nothing
+        false
+    elseif h.expiry isa Int
+        h.expiry <= 0
+    else
+        now(UTC) > h.expiry
+    end
+end
 
 struct Conn
     io
@@ -139,14 +145,14 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         T::Type{<:AbstractEvent},
         func::Function;
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period}=-1,
+        expiry::Union{Int, Period, Nothing}=nothing,
     )
     add_handler!(
         func::Function;
         c::Client,
         T::Type{<:AbstractEvent},
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period}=-1,
+        expiry::Union{Int, Period, Nothing}=nothing,
     )
 
 Add an event handler. The handler should be a function which takes two arguments: A
@@ -157,9 +163,9 @@ by using a `Union`. `do` syntax is also accepted.
 # Keywords
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
   [`delete_handler!`](@ref).
-- `expiry::Union{Int, Period}=-1`: The handler's expiry. If an `Int` is given, the handler
-  will run that many times before expiring. If a `Period` is given, the handler will expire
-  after it elapsed. The default of `-1` indicates no expiry.
+- `expiry::Union{Int, Period, Nothing}=nothing`: The handler's expiry. If an `Int` is given,
+  the handler will run that many times before expiring. If a `Period` is given, the handler
+  will expire after it elapsed. The default of `nothing` indicates no expiry.
 
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
@@ -170,7 +176,7 @@ function add_handler!(
     T::Type{<:AbstractEvent},
     func::Function;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1,
+    expiry::Union{Int, Period, Nothing}=nothing,
 )
     if T isa Union
         add_handler!(c, T.a, func; tag=tag, expiry=expiry)
@@ -199,13 +205,18 @@ function add_handler!(
     c::Client,
     T::Type{<:AbstractEvent};
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1,
+    expiry::Union{Int, Period, Nothing}=nothing,
 )
     return add_handler!(c, T, func; tag=tag, expiry=expiry)
 end
 
 """
-    add_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)
+    add_handler!(
+        c::Client,
+        m::Module;
+        tag::Symbol=gensym(),
+        expiry::Union{Int, Period, Nothing}=nothing,
+    )
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
 handler must be exported. Only functions with correct type signatures (see above) are used.
@@ -219,7 +230,7 @@ function add_handler!(
     c::Client,
     m::Module;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period}=-1,
+    expiry::Union{Int, Period, Nothing}=nothing,
 )
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f).ms
