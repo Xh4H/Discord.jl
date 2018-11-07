@@ -1,6 +1,5 @@
 export Client,
     me,
-    set_ttl!,
     enable_cache!,
     disable_cache!,
     add_handler!,
@@ -11,6 +10,16 @@ export Client,
 Tag assigned to default handlers, which you can use to delete them.
 """
 const DEFAULT_HANDLER_TAG = :DJL_DEFAULT
+
+# Messages are created regularly, and lose relevance quickly.
+const DEFAULT_TTLS = TTLDict(
+    Guild          => nothing,
+    DiscordChannel => nothing,
+    User           => nothing,
+    Member         => nothing,
+    Presence       => nothing,
+    Message        => Hour(6),
+)
 
 mutable struct Handler
     f::Function
@@ -31,7 +40,7 @@ end
     Client(
         token::String;
         presence::Union{Dict, NamedTuple}=Dict(),
-        ttl::Period=Hour(1),
+        ttls::$TTLDict=Dict(),
         version::Int=$API_VERSION,
     ) -> Client
 
@@ -42,42 +51,46 @@ calls to perform actions such as sending/deleting messages, kicking/banning user
 - `presence::Union{Dict, NamedTuple}=Dict()`: Bot user's presence set upon connection.
   The schema [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
   must be followed.
-- `ttl::Period=Hour(1)` Amount of time that cache entries are kept.
+- `ttls::$TTLDict=Dict()`: Cache lifetime overrides. Values of `nothing` indicate no
+  expiry. Keys can be any of the following: [`Guild`](@ref), [`DiscordChannel`](@ref),
+  [`Message`](@ref), [`User`](@ref), [`Member`](@ref), or [`Presence`](@ref). For most
+  workloads, the defaults are sufficient.
 - `version::Int=$API_VERSION`: Version of the Discord API to use. Using anything but
   $API_VERSION is not officially supported by the Discord.jl developers.
 """
 mutable struct Client
-    token::String                       # Bot token, always with a leading "Bot ".
-    heartbeat_interval::Int             # Milliseconds between heartbeats.
+    token::String             # Bot token, always with a leading "Bot ".
+    heartbeat_interval::Int   # Milliseconds between heartbeats.
     heartbeat_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
-    last_heartbeat::DateTime            # Last heartbeat send.
-    last_ack::DateTime                  # Last heartbeat ack.
-    ttl::Period                         # Cache lifetime.
-    version::Int                        # Discord API version.
-    state::State                        # Client state, cached data, etc.
-    shards::Int                         # Number of shards in use.
-    shard::Int                          # Client's shard index.
-    limiter::Limiter                    # Rate limiter.
+    last_heartbeat::DateTime  # Last heartbeat send.
+    last_ack::DateTime        # Last heartbeat ack.
+    ttls::TTLDict             # Cache lifetimes.
+    version::Int              # Discord API version.
+    state::State              # Client state, cached data, etc.
+    shards::Int               # Number of shards in use.
+    shard::Int                # Client's shard index.
+    limiter::Limiter          # Rate limiter.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
-    ready::Bool                         # Client is connected and authenticated.
-    use_cache::Bool                     # Whether or not to use the cache for REST ops.
-    conn::Conn                          # WebSocket connection.
+    ready::Bool               # Client is connected and authenticated.
+    use_cache::Bool           # Whether or not to use the cache for REST ops.
+    conn::Conn                # WebSocket connection.
 
     function Client(
         token::String;
         presence::Union{Dict, NamedTuple}=Dict(),
-        ttl::Period=Hour(1),
+        ttls::TTLDict=TTLDict(),
         version::Int=API_VERSION,
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
-        state = State(presence, ttl)
+        ttls = merge(DEFAULT_TTLS, ttls)
+        state = State(presence, ttls)
         c = new(
             token,        # token
             0,            # heartbeat_interval
             nothing,      # heartbeat_seq
             DateTime(0),  # last_heartbeat
             DateTime(0),  # last_ack
-            ttl,          # ttl
+            ttls,         # ttls
             version,      # version
             state,        # state
             nprocs(),     # shards
@@ -100,13 +113,6 @@ end
 Get the [`Client`](@ref)'s bot user.
 """
 me(c::Client) = c.state.user
-
-"""
-    set_ttl!(c::Client, ttl::Period)
-
-Set the [`Client`](@ref)'s caching period.
-"""
-set_ttl!(c::Client, ttl::Period) = c.ttl = c.state.ttl = ttl
 
 """
     enable_cache!(c::Client)

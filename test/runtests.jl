@@ -100,11 +100,6 @@ end
                 @test !c.use_cache
             end
             @test c.use_cache
-
-            # TTL choice should propagate to the State.
-            set_ttl!(c, Minute(1))
-            @test c.ttl == Minute(1)
-            @test c.state.ttl == Minute(1)
         end
     end
 

@@ -11,31 +11,31 @@ mutable struct State
     presences::Dict{Snowflake, TTL{Snowflake, Presence}}  # Guild ID -> user ID -> presence.
     members::Dict{Snowflake, TTL{Snowflake, Member}}      # Guild ID -> member ID -> member.
     errors::Vector{Union{Dict, AbstractEvent}}            # Values which caused errors.
-    lock::Threads.AbstractLock  # Internal lock.
-    ttl::Period                 # TTL for creating caches without a Client.
+    lock::Threads.AbstractLock    # Internal lock.
+    ttls::TTLDict                 # TTLs for creating caches without a Client.
 end
 
-State(presence::NamedTuple, ttl::Period) = State(Dict(pairs(presence)), ttl)
-function State(presence::Dict, ttl::Period)
+State(presence::NamedTuple, ttls::TTLDict) = State(Dict(pairs(presence)), ttls)
+function State(presence::Dict, ttls::TTLDict)
     return State(
-        0,         # v
-        "",        # session_id
-        [],        # _trace
-        nothing,   # user
-        presence,  # login_presence
-        TTL(ttl),  # guilds
-        TTL(ttl),  # channels
-        TTL(ttl),  # users
-        TTL(ttl),  # messages
-        Dict(),    # presences
-        Dict(),    # members
-        [],        # errors
-        Threads.SpinLock(),  # lock
-        ttl,       # ttl
+        0,                          # v
+        "",                         # session_id
+        [],                         # _trace
+        nothing,                    # user
+        presence,                   # login_presence
+        TTL(ttls[Guild]),           # guilds
+        TTL(ttls[DiscordChannel]),  # channels
+        TTL(ttls[User]),            # users
+        TTL(ttls[Message]),         # messages
+        Dict(),                     # presences
+        Dict(),                     # members
+        [],                         # errors
+        Threads.SpinLock(),         # lock
+        ttls,                       # ttls
     )
 end
 
-TimeToLive.TTL(s::State) = TTL(s.ttl)
+TimeToLive.TTL(s::State, ::Type{T}) where T = TTL(get(s.ttls, T, nothing))
 
 Base.get(s::State, ::Type; kwargs...) = nothing
 Base.get(s::State, ::Type{Guild}; kwargs...) = get(s.guilds, kwargs[:guild], nothing)
@@ -124,7 +124,7 @@ function Base.put!(s::State, p::Presence; kwargs...)
     ismissing(p.guild_id) && return
 
     if !haskey(s.presences, p.guild_id)
-        s.presences[p.guild_id] = TTL(s)
+        s.presences[p.guild_id] = TTL(s, Presence)
     end
     insert_or_update!(s.presences[p.guild_id], p.user.id, p)
 
@@ -144,7 +144,7 @@ function Base.put!(s::State, m::Member; kwargs...)
     guild = kwargs[:guild]
 
     if !haskey(s.members, guild)
-        s.members[guild] = TTL(s)
+        s.members[guild] = TTL(s, Member)
     end
     ms = s.members[guild]
     insert_or_update!(ms, m; key=x -> x.user.id)
