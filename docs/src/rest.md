@@ -53,6 +53,7 @@ The full list of types available to be manipulated is:
 ## Endpoints
 
 Functions which wrap REST API endpoints are named and sorted according to the [Discord API documentation](https://discordapp.com/developers/docs/resources/audit-log).
+When a function accepts keyword arguments, the docstring will include a link to the Discord documentation which indicates the expected keys and values.
 Remember that the return types annotated below are not the actual return types, but the types of [`Response`](@ref) that the returned `Future`s will yield.
 
 ## Audit Log
