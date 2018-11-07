@@ -38,27 +38,53 @@ end
 TimeToLive.TTL(s::State, ::Type{T}) where T = TTL(get(s.ttls, T, nothing))
 
 Base.get(s::State, ::Type; kwargs...) = nothing
-Base.get(s::State, ::Type{Guild}; kwargs...) = get(s.guilds, kwargs[:guild], nothing)
 Base.get(s::State, ::Type{User}; kwargs...) = get(s.users, kwargs[:user], nothing)
 Base.get(s::State, ::Type{Message}; kwargs...) = get(s.messages, kwargs[:message], nothing)
+
 function Base.get(s::State, ::Type{DiscordChannel}; kwargs...)
     return get(get(s.channels, kwargs[:guild], Dict()), kwargs[:channel], nothing)
 end
+
 function Base.get(s::State, ::Type{Vector{DiscordChannel}}; kwargs...)
     guild = kwargs[:guild]
     return haskey(s.guilds, guild) ? coalesce(s.guilds[guild].channels, nothing) : nothing
 end
+
 function Base.get(s::State, ::Type{Presence}; kwargs...)
     return get(get(s.presences, kwargs[:guild], Dict()), kwargs[:user], nothing)
 end
+
+function Base.get(s::State, ::Type{Guild}; kwargs...)
+    # Guilds are stored with missing members and presences fields to save memory.
+    haskey(s.guilds, kwargs[:guild]) || return nothing
+    g = s.guilds[kwargs[:guild]]
+
+    ms = get(s.members, g.id, Dict())
+    g = @set g.members = map(
+        i -> get(s, Member; guild=g.id, user=i),
+        filter(i -> haskey(ms, i), collect(coalesce(g.djl_users, Member[]))),
+    )
+    ps = get(s.presences, g.id, Dict())
+    g = @set g.presences = map(
+        i -> get(s, Presence; guild=g.id, user=i),
+        filter(i -> haskey(ps, i), collect(coalesce(g.djl_users, Presence[]))),
+    )
+    g = @set g.djl_users = missing
+
+    return g
+end
+
 function Base.get(s::State, ::Type{Member}; kwargs...)
     # Members are stored with a missing user field to save memory.
     haskey(s.members, kwargs[:guild]) || return nothing
     guild = s.members[kwargs[:guild]]
+
     haskey(guild, kwargs[:user]) || return nothing
     member = guild[kwargs[:user]]
+
     haskey(s.users, kwargs[:user]) || return member  # With a missing user field.
     user = s.users[kwargs[:user]]
+
     return @set member.user = user
 end
 
@@ -72,18 +98,25 @@ function Base.put!(s::State, m::Message; kwargs...)
 end
 
 function Base.put!(s::State, g::Guild; kwargs...)
-    # TODO: Guilds in the cache have complete member and presence lists,
-    # which accounts for 99% of their memory use.
+    # Replace members and presences with IDs that can be looked up later.
+    ms = coalesce(g.members, Member[])
+    ps = coalesce(g.presences, Presence[])
+    ids = map(m -> m.user.id, filter(m -> m.user !== nothing, ms))
+    unique!(append!(ids, map(p -> p.user.id, ps)))
+    g = @set g.members = missing
+    g = @set g.presences = missing
+    g = @set g.djl_users = Set(ids)
+
     insert_or_update!(s.guilds, g)
 
     put!(s, coalesce(g.channels, DiscordChannel[]); kwargs...)
 
-    for m in coalesce(g.members, [])
+    for m in ms
         put!(s, m; kwargs..., guild=g.id)
     end
 
-    for p in coalesce(g.presences, [])
-        put!(s, p; kwargs...)
+    for p in ps
+        put!(s, p; kwargs..., guild=g.id)
     end
 end
 
@@ -130,49 +163,37 @@ function Base.put!(s::State, u::User; kwargs...)
 end
 
 function Base.put!(s::State, p::Presence; kwargs...)
-    ismissing(p.guild_id) && return
+    guild = coalesce(get(kwargs, :guild, missing), p.guild_id)
+    ismissing(guild) && return
 
-    if !haskey(s.presences, p.guild_id)
-        s.presences[p.guild_id] = TTL(s, Presence)
-    end
-    insert_or_update!(s.presences[p.guild_id], p.user.id, p)
+    haskey(s.presences, guild) || (s.presences[guild] = TTL(s, Presence))
+    insert_or_update!(s.presences[guild], p.user.id, p)
 
-    if haskey(s.guilds, p.guild_id)
-        g = s.guilds[p.guild_id]
+    if haskey(s.guilds, guild)
+        g = s.guilds[guild]
         g isa Guild || return
-        if ismissing(g.presences)
-            s.guilds[p.guild_id] = @set g.presences = [p]
-        else
-            insert_or_update!(g.presences, p; key=x -> x.user.id)
-        end
-    end
+        push!(g.djl_users, p.user.id)
+   end
 end
 
 function Base.put!(s::State, m::Member; kwargs...)
     ismissing(m.user) && return
     guild = kwargs[:guild]
 
-    if !haskey(s.members, guild)
-        s.members[guild] = TTL(s, Member)
-    end
-
     # Members are stored with a missing user field to save memory.
     user = m.user
-    smallm = @set m.user = missing
+    m = @set m.user = missing
 
+    haskey(s.members, guild) || (s.members[guild] = TTL(s, Member))
     ms = s.members[guild]
-    insert_or_update!(ms, user.id, smallm)
+    insert_or_update!(ms, user.id, m)
 
     insert_or_update!(s.users, user)
 
     if haskey(s.guilds, guild)
         g = s.guilds[guild]
         g isa Guild || return
-        if ismissing(g.members)
-            s.guilds[guild] = @set g.members = [m]
-        else
-            insert_or_update!(g.members, user.id, m; key=x -> x.user.id)
-        end
+        push!(g.djl_users, user.id)
     end
 end
 

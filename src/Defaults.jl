@@ -33,12 +33,13 @@ handler(c::Client, e::GuildMemberAdd) = put!(c.state, e.member; guild=e.guild_id
 handler(c::Client, e::GuildMembersChunk) = put!(c.state, e.members; guild=e.guild_id)
 handler(c::Client, e::Union{MessageCreate, MessageUpdate}) = put!(c.state, e.message)
 handler(c::Client, e::PresenceUpdate) = put!(c.state, e.presence)
+handler(c::Client, e::UserUpdate) = put!(c.state, e.user)
 
 function handler(c::Client, e::ChannelPinsUpdate)
     haskey(c.state.channels, e.channel_id) || return
     ch = c.state.channels[e.channel_id]
     if !ismissing(e.last_pin_timestamp)
-        c.state.channels[ch.id] = @set ch.last_pin_timestamp =  e.last_pin_timestamp
+        c.state.channels[ch.id] = @set ch.last_pin_timestamp = e.last_pin_timestamp
     end
 end
 
@@ -46,27 +47,7 @@ function handler(c::Client, e::Union{GuildIntegrationsUpdate, GuildBanRemove})
     touch(c.state.guilds, e.guild_id)
 end
 
-function handler(c::Client, e::UserUpdate)
-    put!(c.state, e.user)
 
-    for ms in values(c.state.members)
-        if haskey(ms, e.user.id)
-            m = ms[e.user.id]
-            ms[e.user.id] = @set m.user = merge(m.user, e.user)
-        end
-    end
-
-    for g in values(c.state.guilds)
-        if g isa Guild && !ismissing(g.members)
-            ms = g.members
-            idx = findfirst(m -> m.user.id == e.user.id, ms)
-            if idx !== nothing
-                m = ms[idx]
-                ms[idx] = @set m.user = merge(m.user, e.user)
-            end
-        end
-    end
-end
 
 function handler(c::Client, e::MessageDelete)
     delete!(c.state.messages, e.id)
@@ -102,16 +83,7 @@ end
 function handler(c::Client, e::GuildMemberUpdate)
     if haskey(c.state.guilds, e.guild_id)
         g = c.state.guilds[e.guild_id]
-        if g isa Guild && !ismissing(g.members)
-            idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, g.members)
-            if idx !== nothing
-                m = g.members[idx]
-                m = @set m.roles = e.roles
-                m = @set m.user = merge(m.user, e.user)
-                m = @set m.nick = e.nick
-                g.members[idx] = m
-            end
-        end
+        g isa Guild && push!(g.djl_users, e.user.id)
     end
 
     haskey(c.state.members, e.guild_id) || return
@@ -119,7 +91,6 @@ function handler(c::Client, e::GuildMemberUpdate)
 
     ms = c.state.members[e.guild_id]
     m = ms[e.user.id]
-    m = @set m.user = merge(m.user, e.user)
     m = @set m.nick = e.nick
     m = @set m.roles = e.roles
     ms[e.user.id] = m
@@ -129,13 +100,13 @@ end
 
 function handler(c::Client, e::GuildMemberRemove)
     ismissing(e.user) && return
-    haskey(c.state.members, e.guild_id) || return
-    delete!(c.state.members[e.guild_id], e.user.id)
+    if haskey(c.state.members, e.guild_id)
+        delete!(c.state.members[e.guild_id], e.user.id)
+    end
 
-    haskey(c.state.guilds, e.guild_id) || return
-    ms = c.state.guilds[e.guild_id].members
-    idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, ms)
-    idx === nothing || deleteat!(ms, idx)
+    if haskey(c.state.guilds, e.guild_id)
+        delete!(c.state.guilds[e.guild_id].djl_users, e.user.id)
+    end
 end
 
 function handler(c::Client, e::Union{GuildRoleCreate, GuildRoleUpdate})
@@ -144,7 +115,7 @@ end
 
 function handler(c::Client, e::GuildRoleDelete)
     haskey(c.state.guilds, e.guild_id) || return
-    isa(c.state.guilds[e.guild_id], Guild) || return
+    c.state.guilds[e.guild_id] isa Guild || return
     rs = c.state.guilds[e.guild_id].roles
     ismissing(rs) && return
 
@@ -213,10 +184,7 @@ function handler(c::Client, e::GuildBanAdd)
     end
 
     if haskey(c.state.guilds, e.guild_id)
-        ms = c.state.guilds[e.guild_id].members
-        ismissing(ms) && return
-        idx = findfirst(m -> !ismissing(m.user) && m.user.id == e.user.id, ms)
-        idx === nothing || deleteat!(ms, idx)
+        delete!(c.state.djl_users, e.user.id)
     end
 end
 

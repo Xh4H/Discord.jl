@@ -58,6 +58,8 @@ macro merge(T)
 
             return $T(vals...)
         end
+        Base.merge(::Missing, x::$T) = x
+        Base.merge(x::$T, ::Missing) = x
     end
 end
 
