@@ -9,8 +9,8 @@ type will execute on all events, before the specific handlers run.
 abstract type AbstractEvent end
 
 """
-A type for defining handlers on any events which would otherwise have no handler.
-Handlers for this type must accept an [`AbstractEvent`](@ref).
+A type for defining handlers on any events which would otherwise have no non-default
+handler. Handlers for this type must accept an [`AbstractEvent`](@ref).
 """
 abstract type FallbackEvent <: AbstractEvent end
 

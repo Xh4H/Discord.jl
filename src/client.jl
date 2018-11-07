@@ -84,6 +84,7 @@ mutable struct Client
         token = startswith(token, "Bot ") ? token : "Bot $token"
         ttls = merge(DEFAULT_TTLS, ttls)
         state = State(presence, ttls)
+
         c = new(
             token,        # token
             0,            # hb_interval
@@ -232,18 +233,18 @@ function add_handler!(
 end
 
 """
-    delete_handler!(c::Client, evt::Type{<:AbstractEvent})
-    delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
+    delete_handler!(c::Client, T::Type{<:AbstractEvent})
+    delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
 
 Delete event handlers. If no `tag` is supplied, all handlers for the event are deleted.
 Using the tagless method is generally not recommended because it also clears default
 handlers which maintain the client state. If you do want to delete a default handler, use
 [`DEFAULT_HANDLER_TAG`](@ref).
 """
-delete_handler!(c::Client, evt::Type{<:AbstractEvent}) = delete!(c.handlers, evt)
+delete_handler!(c::Client, T::Type{<:AbstractEvent}) = delete!(c.handlers, T)
 
-function delete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)
-    delete!(get(c.handlers, evt, Dict()), tag)
+function delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
+    delete!(get(c.handlers, T, Dict()), tag)
 end
 
 function handlers(c::Client, T::Type{<:AbstractEvent})
@@ -251,12 +252,14 @@ function handlers(c::Client, T::Type{<:AbstractEvent})
 end
 
 function allhandlers(c::Client, T::Type{<:AbstractEvent})
-    catchalls = T == AbstractEvent ? [] : handlers(c, AbstractEvent)
+    catchalls = T === AbstractEvent ? Handler[] : handlers(c, AbstractEvent)
     specifics = handlers(c, T)
-    fallbacks = T === FallbackEvent ? [] : handlers(c, FallbackEvent)
+    fallbacks = T === FallbackEvent ? Handler[] : handlers(c, FallbackEvent)
 
     return if isempty(catchalls) && isempty(specifics)
         fallbacks
+    elseif isempty(catchalls) && all(h -> h.first === DEFAULT_HANDLER_TAG, specifics)
+        [specifics; fallbacks]
     else
         [catchalls; specifics]
     end
@@ -278,7 +281,7 @@ function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
         @info msg kwargs...
     elseif level === WARN
         @warn msg kwargs...
-    elseif level == ERROR
+    elseif level === ERROR
         @error msg kwargs...
     else
         error("Unknown log level $level")

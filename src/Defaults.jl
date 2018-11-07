@@ -45,8 +45,6 @@ function handler(c::Client, e::Union{GuildIntegrationsUpdate, GuildBanRemove})
     touch(c.state.guilds, e.guild_id)
 end
 
-
-
 function handler(c::Client, e::MessageDelete)
     delete!(c.state.messages, e.id)
     touch(c.state.channels, e.channel_id)
@@ -95,7 +93,6 @@ function handler(c::Client, e::GuildMemberRemove)
     if haskey(c.state.members, e.guild_id)
         delete!(c.state.members[e.guild_id], e.user.id)
     end
-
     if haskey(c.state.guilds, e.guild_id)
         delete!(c.state.guilds[e.guild_id].djl_users, e.user.id)
     end

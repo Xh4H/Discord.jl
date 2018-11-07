@@ -512,7 +512,7 @@ end
                 collect(c.handlers[Ready]);
             ]
 
-            # The fallback handler should only match if there's nothing else.
+            # The fallback handler should only match if there are non non-default handlers.
             add_handler!(c, FallbackEvent, f)
             @test allhandlers(c, Ready) == [
                 collect(c.handlers[AbstractEvent]);
@@ -523,6 +523,12 @@ end
             add_handler!(c, Ready, f)
             delete_handler!(c, AbstractEvent)
             @test allhandlers(c, Ready) == collect(c.handlers[Ready])
+            delete_handler!(c, Ready)
+            add_handler!(c, Ready, f; tag=DEFAULT_HANDLER_TAG)
+            @test allhandlers(c, Ready) == [
+                collect(c.handlers[Ready]);
+                collect(c.handlers[FallbackEvent]);
+            ]
             delete_handler!(c, Ready)
             @test allhandlers(c, Ready) == collect(c.handlers[FallbackEvent])
 

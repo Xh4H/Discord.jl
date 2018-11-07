@@ -17,6 +17,12 @@ end
 
 State(presence::NamedTuple, ttls::TTLDict) = State(Dict(pairs(presence)), ttls)
 function State(presence::Dict, ttls::TTLDict)
+    presence = merge(Dict(
+        "since" => nothing,
+        "game" => nothing,
+        "status" => PS_ONLINE,
+        "afk" => false,
+    ), Dict(string(k) => v for (k, v) in presence))
     return State(
         0,                          # v
         "",                         # session_id

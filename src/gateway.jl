@@ -300,9 +300,7 @@ end
 
 function heartbeat(c::Client, ::Dict=Dict())
     e = writejson(c.conn.io, Dict("op" => 1, "d" => c.hb_seq))
-    if e === nothing
-        c.last_hb = now()
-    end
+    e === nothing && (c.last_hb = now())
     return e === nothing
 end
 
@@ -346,7 +344,7 @@ const CLOSE_CODES = Dict(
     4008 => :RATE_LIMITED,
     4009 => :SESSION_TIMEOUT,
     4010 => :INVALID_SHARD,
-    4011 => :SHARDING_REQUIRED
+    4011 => :SHARDING_REQUIRED,
 )
 
 function handle_read_error(c::Client, e::Exception)
@@ -373,6 +371,7 @@ function handle_close(c::Client, status::Integer)
     elseif err === :NOT_AUTHENTICATED  # Probably a library bug.
         reconnect(c)
     elseif err === :AUTHENTICATION_FAILED
+        logmsg(c, ERROR, "Authentication failed")
         close(c)
     elseif err === :ALREADY_AUTHENTICATED  # Probably a library bug.
         reconnect(c)
@@ -383,8 +382,10 @@ function handle_close(c::Client, status::Integer)
     elseif err === :SESSION_TIMEOUT
         reconnect(c)
     elseif err === :INVALID_SHARD
+        logmsg(c, ERROR, "Invalid shard")
         close(c)
     elseif err === :SHARDING_REQUIRED
+        logmsg(c, ERROR, "Sharding required")
         close(c)
     end
 end
