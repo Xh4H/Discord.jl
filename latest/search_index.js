@@ -653,7 +653,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Endpoints",
     "category": "section",
-    "text": "Functions which wrap REST API endpoints are named and sorted according to the Discord API documentation. Remember that the return types annotated below are not the actual return types, but the types of Response that the returned Futures will yield."
+    "text": "Functions which wrap REST API endpoints are named and sorted according to the Discord API documentation. When a function accepts keyword arguments, the docstring will include a link to the Discord documentation which indicates the expected keys and values. Remember that the return types annotated below are not the actual return types, but the types of Response that the returned Futures will yield."
 },
 
 {
