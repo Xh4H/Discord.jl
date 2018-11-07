@@ -1,8 +1,8 @@
 export list_guild_emojis,
-        get_guild_emoji,
-        create_guild_emoji,
-        modify_guild_emoji,
-        delete_guild_emoji
+    get_guild_emoji,
+    create_guild_emoji,
+    modify_guild_emoji,
+    delete_guild_emoji
 
 """
     list_guild_emojis(c::Client, guild::Integer) -> Vector{Emoji}

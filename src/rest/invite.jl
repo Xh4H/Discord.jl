@@ -1,5 +1,5 @@
 export get_invite,
-        delete_invite
+    delete_invite
 
 """
     get_invite(c::Client, invite::AbstractString; kwargs...} -> Invite

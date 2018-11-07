@@ -1,10 +1,10 @@
 export get_current_user,
-        get_user,
-        modify_current_user,
-        get_current_user_guilds,
-        leave_guild,
-        create_dm,
-        create_group_dm
+    get_user,
+    modify_current_user,
+    get_current_user_guilds,
+    leave_guild,
+    create_dm,
+    create_group_dm
 
 """
     get_current_user(c::Client) -> User
