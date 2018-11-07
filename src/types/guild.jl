@@ -52,7 +52,7 @@ end
 A guild (server).
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object).
 
-The `djl_ids` field is an internal field, only used for cache performance.
+The `djl_*` fields are internal fields used for cache performance.
 """
 struct Guild <: AbstractGuild
     id::Snowflake
@@ -86,7 +86,8 @@ struct Guild <: AbstractGuild
     members::Union{Vector{Member}, Missing}
     channels::Union{Vector{DiscordChannel}, Missing}
     presences::Union{Vector{Presence}, Missing}
-    djl_users::Union{Set{Snowflake}, Missing}  # For internal use.
+    djl_users::Union{Set{Snowflake}, Missing}
+    djl_channels::Union{Set{Snowflake}, Missing}
 end
 @boilerplate Guild :dict :docs :lower :merge
 

@@ -14,10 +14,8 @@ function handler(c::Client, e::Ready)
     c.state._trace = e._trace
     c.state.user = e.user
 
-    for ch in e.private_channels
-        put!(c.state, ch)
-    end
-    for g in e.guilds
+    foreach(ch -> put!(c.state, ch), e.private_channels)
+    for  g in e.guilds
         # Don't use put! normally here because these guilds are unavailable.
         if !haskey(c.state.guilds, g.id)
             c.state.guilds[g.id] = g
@@ -56,15 +54,9 @@ function handler(c::Client, e::MessageDelete)
 end
 
 function handler(c::Client, e::ChannelDelete)
-    channel = e.channel.id
-    delete!(c.state.channels, channel)
-
+    delete!(c.state.channels, e.channel.id)
     if !ismissing(e.channel.guild_id) && haskey(c.state.guilds, e.channel.guild_id)
-        g = c.state.guilds[e.channel.guild_id]
-        chs = g.channels
-        ismissing(chs) && return
-        idx = findfirst(ch -> ch.id == channel, chs)
-        idx === nothing || deleteat!(chs, idx)
+        delete!(c.state.guilds[e.channel.guild_id], e.channel.id)
     end
 end
 
@@ -124,17 +116,13 @@ function handler(c::Client, e::GuildRoleDelete)
 end
 
 function handler(c::Client, e::MessageDeleteBulk)
-    for id in e.ids
-        delete!(c.state.messages, id)
-    end
-
+    foreach(id -> delete!(c.state.messages, id), e.ids)
     touch(c.state.channels, e.channel_id)
     touch(c.state.channels, e.guild_id)
 end
 
 function handler(c::Client, e::MessageReactionAdd)
     put!(c.state, e.emoji; message=e.message_id, user=e.user_id)
-
     touch(c.state.channels, e.channel_id)
     touch(c.state.guilds, e.guild_id)
     touch(c.state.users, e.user_id)
@@ -179,13 +167,8 @@ function handler(c::Client, e::MessageReactionRemoveAll)
 end
 
 function handler(c::Client, e::GuildBanAdd)
-    if haskey(c.state.members, e.guild_id)
-        delete!(c.state.members[e.guild_id], e.user.id)
-    end
-
-    if haskey(c.state.guilds, e.guild_id)
-        delete!(c.state.djl_users, e.user.id)
-    end
+    haskey(c.state.members, e.guild_id) && delete!(c.state.members[e.guild_id], e.user.id)
+    haskey(c.state.guilds, e.guild_id) && delete!(c.state.djl_users, e.user.id)
 end
 
 for T in map(m -> m.sig.types[3], methods(handler).ms)
