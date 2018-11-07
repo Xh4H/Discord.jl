@@ -111,11 +111,9 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
 [[Setfield]]
 deps = ["InteractiveUtils", "MacroTools", "Test"]
-git-tree-sha1 = "0e47c9b8b30d8517043486957474f8257b359898"
-repo-rev = "cdg/operators"
-repo-url = "https://github.com/christopher-dG/Setfield.jl"
+git-tree-sha1 = "e6beffe4fa1ce8200a04993ab76fcc19886e4672"
 uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
-version = "0.3.0+"
+version = "0.3.0"
 
 [[SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
