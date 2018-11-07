@@ -61,10 +61,10 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         Dict("op" => 6, "d" => Dict(
             "token" => c.token,
             "session_id" => c.state.session_id,
-            "seq" => c.heartbeat_seq,
+            "seq" => c.hb_seq,
         ))
     else
-        d = Dict("op" => 2, "s" => c.heartbeat_seq, "d" => Dict(
+        d = Dict("op" => 2, "s" => c.hb_seq, "d" => Dict(
             "token" => c.token,
             "properties" => conn_properties,
         ))
@@ -216,12 +216,12 @@ end
 function heartbeat_loop(c::Client)
     v = c.conn.v
     try
-        sleep(rand(1:round(Int, c.heartbeat_interval / 1000)))
+        sleep(rand(1:round(Int, c.hb_interval / 1000)))
         heartbeat(c) || logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
 
         while c.conn.v == v && isopen(c)
-            sleep(c.heartbeat_interval / 1000)
-            if c.last_heartbeat > c.last_ack && isopen(c) && c.conn.v == v
+            sleep(c.hb_interval / 1000)
+            if c.last_hb > c.last_ack && isopen(c) && c.conn.v == v
                 logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
                 reconnect(c; resume=true)
             elseif !heartbeat(c) && c.conn.v == v && isopen(c)
@@ -262,7 +262,7 @@ end
 # Event handlers.
 
 function dispatch(c::Client, data::Dict)
-    c.heartbeat_seq = data["s"]
+    c.hb_seq = data["s"]
 
     T = get(EVENT_TYPES, data["t"], UnknownEvent)
 
@@ -299,9 +299,9 @@ function dispatch(c::Client, data::Dict)
 end
 
 function heartbeat(c::Client, ::Dict=Dict())
-    e = writejson(c.conn.io, Dict("op" => 1, "d" => c.heartbeat_seq))
+    e = writejson(c.conn.io, Dict("op" => 1, "d" => c.hb_seq))
     if e === nothing
-        c.last_heartbeat = now()
+        c.last_hb = now()
     end
     return e === nothing
 end
@@ -318,7 +318,7 @@ function invalid_session(c::Client, data::Dict)
     reconnect(c; resume=data["d"])
 end
 
-hello(c::Client, data::Dict) = c.heartbeat_interval = data["d"]["heartbeat_interval"]
+hello(c::Client, data::Dict) = c.hb_interval = data["d"]["heartbeat_interval"]
 
 heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
 

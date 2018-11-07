@@ -59,21 +59,21 @@ calls to perform actions such as sending/deleting messages, kicking/banning user
   $API_VERSION is not officially supported by the Discord.jl developers.
 """
 mutable struct Client
-    token::String             # Bot token, always with a leading "Bot ".
-    heartbeat_interval::Int   # Milliseconds between heartbeats.
-    heartbeat_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
-    last_heartbeat::DateTime  # Last heartbeat send.
-    last_ack::DateTime        # Last heartbeat ack.
-    ttls::TTLDict             # Cache lifetimes.
-    version::Int              # Discord API version.
-    state::State              # Client state, cached data, etc.
-    shards::Int               # Number of shards in use.
-    shard::Int                # Client's shard index.
-    limiter::Limiter          # Rate limiter.
+    token::String       # Bot token, always with a leading "Bot ".
+    hb_interval::Int    # Milliseconds between heartbeats.
+    hb_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
+    last_hb::DateTime   # Last heartbeat send.
+    last_ack::DateTime  # Last heartbeat ack.
+    ttls::TTLDict       # Cache lifetimes.
+    version::Int        # Discord API version.
+    state::State        # Client state, cached data, etc.
+    shards::Int         # Number of shards in use.
+    shard::Int          # Client's shard index.
+    limiter::Limiter    # Rate limiter.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
-    ready::Bool               # Client is connected and authenticated.
-    use_cache::Bool           # Whether or not to use the cache for REST ops.
-    conn::Conn                # WebSocket connection.
+    ready::Bool         # Client is connected and authenticated.
+    use_cache::Bool     # Whether or not to use the cache for REST ops.
+    conn::Conn          # WebSocket connection.
 
     function Client(
         token::String;
@@ -86,9 +86,9 @@ mutable struct Client
         state = State(presence, ttls)
         c = new(
             token,        # token
-            0,            # heartbeat_interval
-            nothing,      # heartbeat_seq
-            DateTime(0),  # last_heartbeat
+            0,            # hb_interval
+            nothing,      # hb_seq
+            DateTime(0),  # last_hb
             DateTime(0),  # last_ack
             ttls,         # ttls
             version,      # version
