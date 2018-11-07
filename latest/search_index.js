@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Why Julia/Discord.jl?",
     "category": "section",
-    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nRobust: You can\'t crash your bot with a bad event handler or request, and errors are visible to you for debugging.\nLightweight: Cache what\'s important but shed dead weight with TTL.\nGateway independent: Interact with Discord\'s API without establishing a gateway connection.\nEasy sharding: Process-based sharding requires next to no intervention and you can even run shards on separate machines.For usage examples, see the examples/ directory."
+    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nRobust: You can\'t crash your bot with a bad event handler or request, and errors are introspectible for debugging.\nLightweight: Cache what\'s important but shed dead weight with TTL.\nGateway independent: Interact with Discord\'s API without establishing a gateway connection.\nDistributed: Process-based sharding requires next to no intervention and you can even run shards on separate machines.For usage examples, see the examples/ directory."
 },
 
 {
@@ -61,7 +61,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(\n    token::String;\n    presence::Union{Dict, NamedTuple}=Dict(),\n    ttl::Period=Hour(1),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nKeywords\n\npresence::Union{Dict, NamedTuple}=Dict(): Bot user\'s presence set upon connection. The schema here must be followed.\nttl::Period=Hour(1) Amount of time that cache entries are kept.\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\n\n\n\n\n"
+    "text": "Client(\n    token::String;\n    presence::Union{Dict, NamedTuple}=Dict(),\n    ttls::Dict{DataType,Union{Nothing, Period}}=Dict(),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nKeywords\n\npresence::Union{Dict, NamedTuple}=Dict(): Bot user\'s presence set upon connection. The schema here must be followed.\nttls::Dict{DataType,Union{Nothing, Period}}=Dict(): Cache lifetime overrides. Values of nothing indicate no expiry. Keys can be any of the following: Guild, DiscordChannel, Message, User, Member, or Presence. For most workloads, the defaults are sufficient.\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\n\n\n\n\n"
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\nadd_handler!(\n    func::Function;\n    c::Client,\n    T::Type{<:AbstractEvent},\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multiple event types by using a Union. do syntax is also accepted.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period}=-1: The handler\'s expiry. If an Int is given, the handler will run that many times before expiring. If a Period is given, the handler will expire after it elapsed. The default of -1 indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(c::Client, m::Module; tag::Symbol=gensym(), expiry::Union{Int, Period}=-1)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\nadd_handler!(\n    func::Function;\n    c::Client,\n    T::Type{<:AbstractEvent},\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multiple event types by using a Union. do syntax is also accepted.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period, Nothing}=nothing: The handler\'s expiry. If an Int is given, the handler will run that many times before expiring. If a Period is given, the handler will expire after it elapsed. The default of nothing indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(\n    c::Client,\n    m::Module;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
 },
 
 {
@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.delete_handler!",
     "category": "function",
-    "text": "delete_handler!(c::Client, evt::Type{<:AbstractEvent})\ndelete_handler!(c::Client, evt::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state. If you do want to delete a default handler, use DEFAULT_HANDLER_TAG.\n\n\n\n\n\n"
+    "text": "delete_handler!(c::Client, T::Type{<:AbstractEvent})\ndelete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state. If you do want to delete a default handler, use DEFAULT_HANDLER_TAG.\n\n\n\n\n\n"
 },
 
 {
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_command!",
     "category": "function",
-    "text": "add_command!(\n    c::Client,\n    prefix::AbstractString,\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period}=-1,\n)\n\nAdd a text command handler. The handler function should take two arguments: A Client and a Message. The keyword arguments are identical to add_handler!.\n\n\n\n\n\n"
+    "text": "add_command!(\n    c::Client,\n    prefix::AbstractString,\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\nadd_command!(\n    func::Function;\n    c::Client,\n    prefix::AbstractString,\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\n\nAdd a text command handler. The handler function should take two arguments: A Client and a Message. The keyword arguments are identical to add_handler!. do syntax is also accepted.\n\n\n\n\n\n"
 },
 
 {
@@ -193,30 +193,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.set_ttl!",
-    "page": "Client",
-    "title": "Discord.set_ttl!",
-    "category": "function",
-    "text": "set_ttl!(c::Client, ttl::Period)\n\nSet the Client\'s caching period.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Discord.enable_cache!",
-    "page": "Client",
-    "title": "Discord.enable_cache!",
-    "category": "function",
-    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache for REST operations.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Discord.disable_cache!",
-    "page": "Client",
-    "title": "Discord.disable_cache!",
-    "category": "function",
-    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache for REST operations.\n\n\n\n\n\n"
-},
-
-{
     "location": "client.html#Caching-1",
     "page": "Client",
     "title": "Caching",
@@ -253,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.FallbackEvent",
     "category": "type",
-    "text": "A type for defining handlers on any events which would otherwise have no handler. Handlers for this type must accept an AbstractEvent.\n\n\n\n\n\n"
+    "text": "A type for defining handlers on any events which would otherwise have no non-default handler. Handlers for this type must accept an AbstractEvent.\n\n\n\n\n\n"
 },
 
 {
@@ -1741,7 +1717,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Guild",
     "category": "type",
-    "text": "A guild (server). More details here.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: Union{Missing, UInt64}\npermissions                   :: Union{Missing, Int64}\nregion                        :: Union{Missing, String}\nafk_channel_id                :: Union{Missing, Nothing, UInt64}\nafk_timeout                   :: Union{Missing, Int64}\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, Nothing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Union{Missing, MessageNotificationLevel}\nexplicit_content_filter       :: Union{Missing, ExplicitContentFilterLevel}\nroles                         :: Union{Missing, Array{Role,1}}\nemojis                        :: Union{Missing, Array{Emoji,1}}\nfeatures                      :: Array{String,1}\nmfa_level                     :: Union{Missing, MFALevel}\napplication_id                :: Union{Missing, Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, Nothing, UInt64}\nsystem_channel_id             :: Union{Missing, Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\n\n\n\n\n\n"
+    "text": "A guild (server). More details here.\n\nThe djl_* fields are internal fields used for cache performance.\n\nFields\n\nid                            :: UInt64\nname                          :: String\nicon                          :: Union{Nothing, String}\nsplash                        :: Union{Nothing, String}\nowner                         :: Union{Missing, Bool}\nowner_id                      :: Union{Missing, UInt64}\npermissions                   :: Union{Missing, Int64}\nregion                        :: Union{Missing, String}\nafk_channel_id                :: Union{Missing, Nothing, UInt64}\nafk_timeout                   :: Union{Missing, Int64}\nembed_enabled                 :: Union{Missing, Bool}\nembed_channel_id              :: Union{Missing, Nothing, UInt64}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Union{Missing, MessageNotificationLevel}\nexplicit_content_filter       :: Union{Missing, ExplicitContentFilterLevel}\nroles                         :: Union{Missing, Array{Role,1}}\nemojis                        :: Union{Missing, Array{Emoji,1}}\nfeatures                      :: Array{String,1}\nmfa_level                     :: Union{Missing, MFALevel}\napplication_id                :: Union{Missing, Nothing, UInt64}\nwidget_enabled                :: Union{Missing, Bool}\nwidget_channel_id             :: Union{Missing, Nothing, UInt64}\nsystem_channel_id             :: Union{Missing, Nothing, UInt64}\njoined_at                     :: Union{Missing, DateTime}\nlarge                         :: Union{Missing, Bool}\nunavailable                   :: Union{Missing, Bool}\nmember_count                  :: Union{Missing, Int64}\nvoice_states                  :: Union{Missing, Array{VoiceState,1}}\nmembers                       :: Union{Missing, Array{Member,1}}\nchannels                      :: Union{Missing, Array{DiscordChannel,1}}\npresences                     :: Union{Missing, Array{Presence,1}}\ndjl_users                     :: Union{Missing, Set{UInt64}}\ndjl_channels                  :: Union{Missing, Set{UInt64}}\n\n\n\n\n\n"
 },
 
 {
