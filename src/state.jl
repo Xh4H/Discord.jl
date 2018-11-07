@@ -52,7 +52,14 @@ function Base.get(s::State, ::Type{Presence}; kwargs...)
     return get(get(s.presences, kwargs[:guild], Dict()), kwargs[:user], nothing)
 end
 function Base.get(s::State, ::Type{Member}; kwargs...)
-    return get(get(s.members, kwargs[:guild], Dict()), kwargs[:user], nothing)
+    # Members are stored with a missing user field to save memory.
+    haskey(s.members, kwargs[:guild]) || return nothing
+    guild = s.members[kwargs[:guild]]
+    haskey(guild, kwargs[:user]) || return nothing
+    member = guild[kwargs[:user]]
+    haskey(s.users, kwargs[:user]) || return member  # With a missing user field.
+    user = s.users[kwargs[:user]]
+    return @set member.user = user
 end
 
 Base.put!(s::State, val; kwargs...) = nothing
@@ -65,6 +72,8 @@ function Base.put!(s::State, m::Message; kwargs...)
 end
 
 function Base.put!(s::State, g::Guild; kwargs...)
+    # TODO: Guilds in the cache have complete member and presence lists,
+    # which accounts for 99% of their memory use.
     insert_or_update!(s.guilds, g)
 
     put!(s, coalesce(g.channels, DiscordChannel[]); kwargs...)
@@ -146,10 +155,15 @@ function Base.put!(s::State, m::Member; kwargs...)
     if !haskey(s.members, guild)
         s.members[guild] = TTL(s, Member)
     end
-    ms = s.members[guild]
-    insert_or_update!(ms, m; key=x -> x.user.id)
 
-    insert_or_update!(s.users, m.user.id, m.user)
+    # Members are stored with a missing user field to save memory.
+    user = m.user
+    smallm = @set m.user = missing
+
+    ms = s.members[guild]
+    insert_or_update!(ms, user.id, smallm)
+
+    insert_or_update!(s.users, user)
 
     if haskey(s.guilds, guild)
         g = s.guilds[guild]
@@ -157,14 +171,14 @@ function Base.put!(s::State, m::Member; kwargs...)
         if ismissing(g.members)
             s.guilds[guild] = @set g.members = [m]
         else
-            insert_or_update!(g.members, m; key=x -> x.user.id)
+            insert_or_update!(g.members, user.id, m; key=x -> x.user.id)
         end
     end
 end
 
 function Base.put!(s::State, ms::Vector{Member}; kwargs...)
     for m in ms
-        put!(s, ms; kwargs...)
+        put!(s, m; kwargs...)
     end
 end
 
