@@ -40,13 +40,13 @@ update_status
 ## Caching
 
 By default, most data that comes from Discord is cached for later use.
-However, to avoid memory leakage, it's deleted after some time (initially set by the `ttl` keyword to the [`Client`](@ref) constructor and updated with [`set_ttl!`](@ref)).
-Although it's not recommended, you can disable caching of certain data by clearing default handlers for relevant event types with [`delete_handler!`](@ref).
-For example, if you wanted to avoid caching any messages, you would delete handlers for [`MessageCreate`](@ref) and [`MessageUpdate`](@ref) events.
-You can also enable and disable the cache with [`enable_cache!`](@ref) and [`disable_cache!`](@ref).
+However, to avoid memory leakage, some of it is deleted after some time.
+The default settings are to keep everything but [`Message`](@ref)s forever, but they can be overridden in the [`Client`](@ref) constructor.
+Although it's not recommended, you can disable caching of certain data by clearing default handlers for relevant event types with [`delete_handler!`](@ref) and [`DEFAULT_HANDLER_TAG`](@ref).
+For example, if you wanted to avoid caching any messages at all, you would delete handlers for [`MessageCreate`](@ref) and [`MessageUpdate`](@ref) events.
+You can also enable and disable the cache with [`enable_cache!`](@ref) and [`disable_cache!`](@ref), which both support `do` syntax for temporarily altering behaviour.
 
 ```@docs
-set_ttl!
 enable_cache!
 disable_cache!
 ```
