@@ -193,11 +193,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "client.html#Discord.enable_cache!",
+    "page": "Client",
+    "title": "Discord.enable_cache!",
+    "category": "function",
+    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache for REST operations.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.disable_cache!",
+    "page": "Client",
+    "title": "Discord.disable_cache!",
+    "category": "function",
+    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache for REST operations.\n\n\n\n\n\n"
+},
+
+{
     "location": "client.html#Caching-1",
     "page": "Client",
     "title": "Caching",
     "category": "section",
-    "text": "By default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, it\'s deleted after some time (initially set by the ttl keyword to the Client constructor and updated with set_ttl!). Although it\'s not recommended, you can disable caching of certain data by clearing default handlers for relevant event types with delete_handler!. For example, if you wanted to avoid caching any messages, you would delete handlers for MessageCreate and MessageUpdate events. You can also enable and disable the cache with enable_cache! and disable_cache!.set_ttl!\nenable_cache!\ndisable_cache!"
+    "text": "By default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, some of it is deleted after some time. The default settings are to keep everything but Messages forever, but they can be overridden in the Client constructor. Although it\'s not recommended, you can disable caching of certain data by clearing default handlers for relevant event types with delete_handler! and DEFAULT_HANDLER_TAG. For example, if you wanted to avoid caching any messages at all, you would delete handlers for MessageCreate and MessageUpdate events. You can also enable and disable the cache with enable_cache! and disable_cache!, which both support do syntax for temporarily altering behaviour.enable_cache!\ndisable_cache!"
 },
 
 {
