@@ -92,13 +92,29 @@ macro dict(T)
     end
 end
 
+function doctype(s::String)
+    s = replace(s, "UInt64" => "Snowflake")
+    s = replace(s, "Int64" => "Int")
+    s = replace(s, "Discord." => "")
+    s = replace(s, "Dates." => "")
+    m = match(r"Array{([^{}]+),1}", s)
+    m === nothing || (s = replace(s, m.match => "Vector{$(m.captures[1])}"))
+    m = match(r"Union{Missing, Nothing, (.+)}", s)
+    m === nothing || return replace(s, m.match => "Union{$(m.captures[1]), Missing, Nothing}")
+    m = match(r"Union{Missing, (.+)}", s)
+    m === nothing || return replace(s, m.match => "Union{$(m.captures[1]), Missing}")
+    m = match(r"Union{Nothing, (.+)}", s)
+    m === nothing || return replace(s, m.match => "Union{$(m.captures[1]), Nothing}")
+    return s
+end
+
 macro fielddoc(T)
     TT = eval(T)
     ns = collect(string.(fieldnames(TT)))
     width = maximum(length, ns)
     map!(n -> rpad(n, width), ns, ns)
     ts = collect(map(f -> string(fieldtype(TT, f)), fieldnames(TT)))
-    map!(s -> replace(s, "Discord." => ""), ts, ts)
+    map!(doctype, ts, ts)
     docs = join(map(t -> "$(t[1]) :: $(t[2])", zip(ns, ts)), "\n")
 
     quote

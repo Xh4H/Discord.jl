@@ -32,8 +32,9 @@ end
     plaintext(c::Client, m::Message) -> String
 
 Get the [`Message`](@ref) contents with any [`User`](@ref) mentions replaced with their
-plaintext. If a [`Client`](@ref) is provided, channels and roles are also replaced.
-However, only channels and roles stored in state are replaced; no API requests are made.
+plaintext. If a [`Client`](@ref) is provided, [`DiscordChannel`](@ref)s [`Role`](@ref) are
+also replaced. However, only channels and roles stored in state are replaced; no API
+requests are made.
 """
 function plaintext(m::Message)
     content = m.content
@@ -80,7 +81,7 @@ function plaintext(c::Client, m::Message)
 end
 
 """
-    upload_file(c::Client, ch::DiscordChanne, path::AbstractString; kwargs...) -> Message
+    upload_file(c::Client, ch::DiscordChannel, path::AbstractString; kwargs...) -> Message
 
 Send a [`Message`](@ref) with a file [`Attachment`](@ref). Any keywords are passed on to
 [`create_message`](@ref).

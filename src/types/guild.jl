@@ -29,7 +29,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
 @boilerplate MFALevel :lower
 
 """
-A guild (server).
+A Discord guild (server).
 Can either be an [`UnavailableGuild`](@ref) or a [`Guild`](@ref).
 """
 abstract type AbstractGuild end
@@ -39,7 +39,7 @@ function AbstractGuild(d::Dict{String, Any})
 end
 
 """
-An unavailable guild (server).
+An unavailable Discord guild (server).
 More details [here](https://discordapp.com/developers/docs/resources/guild#unavailable-guild-object).
 """
 struct UnavailableGuild <: AbstractGuild
@@ -49,7 +49,7 @@ end
 @boilerplate UnavailableGuild :dict :docs :lower :merge
 
 """
-A guild (server).
+A Discord guild (server).
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object).
 
 The `djl_*` fields are internal fields used for cache performance.

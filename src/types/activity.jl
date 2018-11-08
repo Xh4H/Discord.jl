@@ -4,7 +4,8 @@ export Activity,
     AT_LISTENING
 
 """
-An [`Activity`](@ref)'s type.
+An [`Activity`](@ref)'s type. Available values are `AT_GAME`, `AT_STREAMING`, and
+`AT_LISTENING`.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).
 """
 @enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_UNKNOWN  # Supposed to only go to 2.

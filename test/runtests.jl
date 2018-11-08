@@ -366,8 +366,17 @@ end
         end
 
         @testset "@docs" begin
+            docs = string(@doc Foo)
             # Variable names get padded to the longest one.
-            @test occursin("$(rpad("a", 10)) :: String", string(@doc Foo))
+            @test occursin("$(rpad("a", 10)) :: String", docs)
+            # Array{T,1} is replaced with Vector{T}.
+            @test occursin("Vector{String}", docs)
+            # Union{Missing, Nothing, T} is replaced with Union{T, Missing, Nothing}.
+            @test occursin("Union{Vector{String}, Missing, Nothing}", docs)
+            # Union{Missing, T} is replaced with Union{T, Missing}.
+            @test occursin("Union{Int, Missing}", docs)
+            # Union{ Nothing, T} is replaced with Union{T, Missing}.
+            @test occursin("Union{Int, Nothing}", docs)
         end
 
         @testset "@lower" begin

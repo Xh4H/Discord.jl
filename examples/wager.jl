@@ -43,7 +43,7 @@ end
 """
 Insert a guild and/or user from a message into the token cache if they don't exist.
 """
-function ensure_updated(m::Discord.Message)
+function ensure_updated(m::Message)
     if !haskey(TOKENS, m.guild_id)
         TOKENS[m.guild_id] = Dict()
     end
@@ -55,12 +55,12 @@ end
 """
 Get the token count for the user who sent a message.
 """
-token_count(m::Discord.Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)
+token_count(m::Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)
 
 """
 Reply to a message with the author's token count via a `MessageCreate` event.
 """
-function reply_token_count(c::Client, m::Discord.Message)
+function reply_token_count(c::Client, m::Message)
     ensure_updated(m)
     reply(c, m, "You have $(token_count(m)) tokens.")
 end
@@ -68,7 +68,7 @@ end
 """
 Reply to a message with the guild's token leaderboard via a `MessageCreate` event.
 """
-function reply_token_leaderboard(c::Client, m::Discord.Message)
+function reply_token_leaderboard(c::Client, m::Message)
     ensure_updated(m)
 
     # Get user => token count pairs by token count in descending order.
@@ -86,7 +86,7 @@ end
 """
 Transfer tokens from one user to another via a `MessageCreate` event.
 """
-function send_tokens(c::Client, m::Discord.Message)
+function send_tokens(c::Client, m::Message)
     ensure_updated(m)
 
     words = split(m.content)
@@ -94,11 +94,9 @@ function send_tokens(c::Client, m::Discord.Message)
         return reply(c, m, "Invalid !send command.")
     end
 
-    tokens = try
-        parse(UInt, words[2])
-    catch
-        return reply(c, m, "'$(words[2])' is not a valid number of tokens.")
-    end
+    tokens = tryparse(UInt, words[2])
+    tokens === nothing && return reply(c, m, "'$(words[2])' is not a valid number.")
+
     recipient = words[3]
     if !haskey(TOKENS[m.guild_id], recipient)
         return reply(c, m, "Couldn't find user '$recipient' in this guild.")
@@ -116,8 +114,7 @@ end
 Wager a user's tokens via a `MessageCreate` event. The user either doubles their bet or
 loses it.
 """
-
-function wager_tokens(c::Client, m::Discord.Message)
+function wager_tokens(c::Client, m::Message)
     ensure_updated(m)
 
     words = split(m.content)

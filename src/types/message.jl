@@ -47,7 +47,7 @@ end
 @boilerplate MessageApplication :dict :docs :lower :merge
 
 """
-A message.
+A message sent to a [`DiscordChannel`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object).
 """
 struct Message
@@ -55,7 +55,7 @@ struct Message
     channel_id::Snowflake
     # MessageUpdate only requires the ID and channel ID.
     guild_id::Union{Snowflake, Missing}
-    author::Union{User, Missing}  # TODO: Deal with note about non-standard user structure.
+    author::Union{User, Missing}
     member::Union{Member, Missing}
     content::Union{String, Missing}
     timestamp::Union{DateTime, Missing}

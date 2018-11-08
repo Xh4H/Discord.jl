@@ -106,7 +106,7 @@ We can do this by adding a few helpers, and a *command* via [`add_command!`](@re
 
 ```julia
 # Insert a guild and/or user from a message into the token cache if they don't exist.
-function ensure_updated(m::Discord.Message)
+function ensure_updated(m::Message)
     if !haskey(TOKENS, m.guild_id)
         TOKENS[m.guild_id] = Dict()
     end
@@ -116,9 +116,9 @@ function ensure_updated(m::Discord.Message)
 end
 
 # Get the token count for the user who sent a message.
-token_count(m::Discord.Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)
+token_count(m::Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)
 
-function reply_token_count(c::Client, m::Discord.Message)
+function reply_token_count(c::Client, m::Message)
     ensure_updated(m)
     reply(c, m, "You have $(token_count(m)) tokens.")
 end
@@ -133,7 +133,7 @@ When a user types "!count", the bot will reply with their token count.
 Next, we can easily implement the guild leaderboard for the "!leaderboard" command.
 
 ```julia
-function reply_token_leaderboard(c::Client, m::Discord.Message)
+function reply_token_leaderboard(c::Client, m::Message)
     ensure_updated(m)
 
     # Get user => token count pairs by token count in descending order.
@@ -162,7 +162,7 @@ We need to do a few new things:
 * Check that both users are in the same guild
 
 ```julia
-function send_tokens(c::Client, m::Discord.Message)
+function send_tokens(c::Client, m::Message)
     ensure_updated(m)
 
     words = split(m.content)
@@ -170,11 +170,9 @@ function send_tokens(c::Client, m::Discord.Message)
         return reply(c, m, "Invalid !send command.")
     end
 
-    tokens = try
-        parse(UInt, words[2])
-    catch
-        return reply(c, m, "'$(words[2])' is not a valid number of tokens.")
-    end
+    tokens = tryparse(UInt, words[2])
+    tokens === nothing && return reply(c, m, "'$(words[2])' is not a valid number.")
+
     recipient = words[3]
     if !haskey(TOKENS[m.guild_id], recipient)
         return reply(c, m, "Couldn't find user '$recipient' in this guild.")
@@ -198,7 +196,7 @@ Easy!
 And last but not least, we'll add the wagering command.
 
 ```julia
-function wager_tokens(c::Client, m::Discord.Message)
+function wager_tokens(c::Client, m::Message)
     ensure_updated(m)
 
     words = split(m.content)

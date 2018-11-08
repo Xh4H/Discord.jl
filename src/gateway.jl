@@ -124,32 +124,32 @@ end
 """
     request_guild_members(
         c::Client,
-        guild_id::Union{Integer, Vector{<:Integer};
+        guilds::Union{Integer, Vector{<:Integer};
         query::AbstractString="",
         limit::Int=0,
     ) -> Bool
 
-Request offline guild members of one or more guilds. [`GuildMembersChunk`](@ref) events are
-sent by the gateway in response.
+Request offline guild members of one or more [`Guild`](@ref)s. [`GuildMembersChunk`](@ref)
+events are sent by the gateway in response.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#request-guild-members).
 """
 function request_guild_members(
     c::Client,
-    guild_id::Integer;
+    guild::Integer;
     query::AbstractString="",
     limit::Int=0,
 )
-    return request_guild_members(c, [guild_id]; query=query, limit=limit)
+    return request_guild_members(c, [guild]; query=query, limit=limit)
 end
 
 function request_guild_members(
     c::Client,
-    guild_id::Vector{<:Integer};
+    guilds::Vector{<:Integer};
     query::AbstractString="",
     limit::Int=0,
 )
     return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
-        "guild_id" => guild_id,
+        "guild_id" => guilds,
         "query" => query,
         "limit" => limit,
     ))) === nothing
@@ -188,7 +188,7 @@ end
         c::Client,
         since::Union{Int, Nothing},
         activity::Union{Activity, Nothing},
-        status::PresenceStatus,
+        status::Union{PresenceStatus, AbstractString},
         afk::Bool,
     ) -> Bool
 

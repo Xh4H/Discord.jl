@@ -6,7 +6,8 @@ export PS_IDLE,
 const PRESENCE_STATUSES = ["idle", "dnd", "online", "offline"]
 
 """
-A [`User`](@ref)'s status sent in a [`Presence`](@ref).
+A [`User`](@ref)'s status sent in a [`Presence`](@ref). Available values are `PS_IDLE`,
+`PS_DND`, `PS_ONLINE`, and `PS_OFFLINE`.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-application-structure).
 """
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE PS_UNKNOWN
