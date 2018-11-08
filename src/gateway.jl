@@ -30,7 +30,7 @@ const OPCODES = Dict(
 """
     open(c::Client; delay::Period=Second(7))
 
-Connect to the Discord gateway and begin responding to events.
+Connect a [`Client`](@ref) to the Discord gateway.
 
 The `delay` keyword is the time between shards connecting. It can be increased from its
 default if you are frequently experiencing invalid sessions upon connection.
@@ -91,14 +91,14 @@ end
 """
     isopen(c::Client) -> Bool
 
-Determine whether the client is connected to the gateway.
+Determine whether the [`Client`](@ref) is connected to the gateway.
 """
 Base.isopen(c::Client) = c.ready && isdefined(c, :conn) && isopen(c.conn.io)
 
 """
     close(c::Client)
 
-Disconnect from the Discord gateway.
+Disconnect the [`Client`](@ref) from the Discord gateway.
 """
 function Base.close(c::Client; code::Int=1000)
     c.ready = false
@@ -108,7 +108,7 @@ end
 """
     wait(c::Client)
 
-Wait for an open client to close.
+Wait for an open [`Client`](@ref) to close.
 """
 function Base.wait(c::Client)
     while isopen(c)
@@ -158,10 +158,10 @@ end
 """
     update_voice_state(
         c::Client,
-        guild_id::Integer,
-        channel_id::Union{Integer, Nothing},
-        self_mute::Bool,
-        self_deaf::Bool,
+        guild::Integer,
+        channel::Union{Integer, Nothing},
+        mute::Bool,
+        deaf::Bool,
     ) -> Bool
 
 Join, move, or disconnect from a voice channel. A [`VoiceStateUpdate`](@ref) event is sent
@@ -170,16 +170,16 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#update
 """
 function update_voice_state(
     c::Client,
-    guild_id::Integer,
-    channel_id::Union{Integer, Nothing},
-    self_mute::Bool,
-    self_deaf::Bool,
+    guild::Integer,
+    channel::Union{Integer, Nothing},
+    mute::Bool,
+    deaf::Bool,
 )
     return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
-        "guild_id" => guild_id,
-        "channel_id" => channel_id,
-        "self_mute" => self_mute,
-        "self_deaf" => self_deaf,
+        "guild_id" => guild,
+        "channel_id" => channel,
+        "self_mute" => mute,
+        "self_deaf" => deaf,
     ))) === nothing
 end
 

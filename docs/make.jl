@@ -5,7 +5,7 @@ makedocs(;
     modules=[Discord],
     format=:html,
     pages=[
-        "Home"     => "index.md",        
+        "Home"     => "index.md",
         "Client"   => "client.md",
         "Events"   => "events.md",
         "REST API" => "rest.md",
