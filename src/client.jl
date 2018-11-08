@@ -131,7 +131,7 @@ me(c::Client) = c.state.user
     enable_cache!(c::Client)
     enable_cache!(f::Function c::Client)
 
-Enable the cache for REST operations.
+Enable the cache. `do` syntax is also supported.
 """
 enable_cache!(c::Client) = c.use_cache = true
 enable_cache!(f::Function, c::Client) = set_cache(f, c, true)
@@ -140,7 +140,7 @@ enable_cache!(f::Function, c::Client) = set_cache(f, c, true)
     disable_cache!(c::Client)
     disable_cache!(f::Function, c::Client)
 
-Disable the cache for REST operations.
+Disable the cache. `do` syntax is also supported.
 """
 disable_cache!(c::Client) = c.use_cache = false
 disable_cache!(f::Function, c::Client) = set_cache(f, c, false)

@@ -36,7 +36,7 @@ The `delay` keyword is the time between shards connecting. It can be increased f
 default if you are frequently experiencing invalid sessions upon connection.
 """
 function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
-    isopen(c) && error("Client is already open")
+    isopen(c) && throw(ArgumentError("Client is already connected"))
     c.ready = false
 
     # Clients can only identify once per 5 seconds.
@@ -148,6 +148,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
+    isopen(c) || throw(ArgumentError("Client is not connected"))
     return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guilds,
         "query" => query,
@@ -175,6 +176,7 @@ function update_voice_state(
     mute::Bool,
     deaf::Bool,
 )
+    isopen(c) || throw(ArgumentError("Client is not connected"))
     return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild,
         "channel_id" => channel,
@@ -203,6 +205,7 @@ function update_status(
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
+    isopen(c) || throw(ArgumentError("Client is not connected"))
     return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
