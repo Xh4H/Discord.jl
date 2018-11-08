@@ -171,30 +171,30 @@ end
     end
 
     @testset "Helpers" begin
+        ch = DiscordChannel(Dict("id" => "255", "type" => 0, "guild_id" => "1"))
+        r = Role(0xff, "", 0, true, 0, 0, false, false)
+        u = User(Dict{String, Any}("id" => "255", "username" => "foo"))
+
         @testset "mention" begin
-            ch = DiscordChannel(Dict("id" => "255", "type" => 0, "guild_id" => "1"))
             @test mention(ch) == "<#255>"
-
-            r = Role(0xff, "", 0, true, 0, 0, false, false)
             @test mention(r) == "<@&255>"
-
-            u = User(Dict{String, Any}("id" => "255", "username" => "foo"))
             @test mention(u) == "<@255>"
-
             m = Member(u, "foo", [], now(), true, true)
             @test mention(m) == "<@!255>"
             m = Member(u, nothing, [], now(), true, true)
             @test mention(m) == mention(u)
             m = Member(u, missing, [], now(), true, true)
             @test mention(m) == mention(u)
+        end
 
+        @testset "plaintext" begin
             msg = Message(Dict(
                 "id" => "1",
                 "channel_id" => "1",
                 "content" => "<@255> <@!255>",
                 "mentions" => [JSON.lower(u)],
             ))
-            @test replace_mentions(msg) == "@foo @foo"
+            @test plaintext(msg) == "@foo @foo"
         end
     end
 
@@ -593,6 +593,16 @@ end
             # We updated the value with y == b.y.
             insert_or_update!(v, b; key=x -> x.y)
             @test length(v) == 2 && last(v) == b
+
+            # The updated value is returned.
+            empty!(d)
+            empty!(v)
+            b = Bar(1, 2, 3)
+            @test insert_or_update!(d, b) == b
+            @test insert_or_update!(v, b) == b
+            b = Bar(1, 3, missing)
+            @test insert_or_update!(d, b) == Bar(1, 3, 3)
+            @test insert_or_update!(v, b) == Bar(1, 3, 3)
         end
     end
 end

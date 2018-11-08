@@ -190,11 +190,11 @@ function Response{T}(
                 try
                     http_r = HTTP.request(args...; status_exception=false)
                     r = Response{T}(c, http_r)
+                    if r.ok && r.val !== nothing && should_put(c, method, endpoint)
+                        r = @set r.val = put!(c.state, r.val; kws...)
+                    end
                     put!(f, r)
                     update!(c.limiter, b, http_r)
-                    if r.ok && r.val !== nothing && should_put(c, method, endpoint)
-                        put!(c.state, r.val; kws...)
-                    end
                catch e
                     # If we're rate limited, then just go back to the top.
                     e == RATE_LIMITED && continue

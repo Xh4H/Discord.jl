@@ -106,14 +106,26 @@ function Base.get(s::State, ::Type{Member}; kwargs...)
     return @set member.user = user
 end
 
-Base.put!(s::State, val; kwargs...) = nothing
+function Base.get(s::State, ::Type{Role}; kwargs...)
+    haskey(s.guilds, kwargs[:guild]) || return nothing
+    roles = coalesce(s.guilds[kwargs[:guild]].roles, Role[])
+    idx = findfirst(r -> r.id == kwargs[:role], roles)
+    return idx === nothing ? nothing : roles[idx]
+end
+
+Base.put!(s::State, val; kwargs...) = val
 Base.put!(s::State, g::UnavailableGuild; kwargs...) = insert_or_update!(s.guilds, g)
-Base.put!(s::State, ms::Vector{Member}; kwargs...) = foreach(m -> put!(s, m; kwargs...), ms)
+Base.put!(s::State, ms::Vector{Member}; kwargs...) = map(m -> put!(s, m; kwargs...), ms)
+Base.put!(s::State, u::User; kwargs...) = insert_or_update!(s.users, u)
 
 function Base.put!(s::State, m::Message; kwargs...)
+    if ismissing(m.guild_id) && haskey(s.channels, m.channel_id)
+        m = @set m.guild_id = s.channels[m.channel_id].guild_id
+    end
     insert_or_update!(s.messages, m)
     touch(s.channels, m.channel_id)
     touch(s.guilds, m.guild_id)
+    return m
 end
 
 function Base.put!(s::State, g::Guild; kwargs...)
@@ -131,80 +143,74 @@ function Base.put!(s::State, g::Guild; kwargs...)
     g = @set g.channels = missing
 
     insert_or_update!(s.guilds, g)
-    put!(s, chs; kwargs...)
+    put!(s, chs; kwargs..., guild=g.id)
     foreach(m -> put!(s, m; kwargs..., guild=g.id), ms)
     foreach(p -> put!(s, p; kwargs..., guild=g.id), ps)
+
+    return get(s, Guild; guild=g.id)
 end
 
 function Base.put!(s::State, ms::Vector{Message}; kwargs...)
-    foreach(m -> put!(s, m; kwargs...), ms)
+    return map(m -> put!(s, m; kwargs...), ms)
 end
 
 function Base.put!(s::State, ch::DiscordChannel; kwargs...)
-    insert_or_update!(s.channels, ch)
+    if ismissing(ch.guild_id) && haskey(kwargs, :guild)
+        ch = @set ch.guild_id = kwargs[:guild]
+    end
     foreach(u -> put!(s, u; kwargs...), coalesce(ch.recipients, User[]))
     haskey(s.guilds, ch.guild_id) && push!(s.guilds[ch.guild_id].djl_channels, ch.id)
+    return insert_or_update!(s.channels, ch)
 end
 
 function Base.put!(s::State, chs::Vector{DiscordChannel}; kwargs...)
-    foreach(ch -> put!(s, ch; kwargs...), chs)
-end
-
-function Base.put!(s::State, u::User; kwargs...)
-    insert_or_update!(s.users, u)
-
-    for ms in values(s.members)
-        if haskey(ms, u.id)
-            m = ms[u.id]
-            m = @set m.user = merge(m.user, u)
-            ms[u.id] = m
-        end
-    end
+    return map(ch -> put!(s, ch; kwargs...), chs)
 end
 
 function Base.put!(s::State, p::Presence; kwargs...)
     guild = coalesce(get(kwargs, :guild, missing), p.guild_id)
-    ismissing(guild) && return
-
-    haskey(s.presences, guild) || (s.presences[guild] = TTL(s, Presence))
-    insert_or_update!(s.presences[guild], p.user.id, p)
+    ismissing(guild) && return p
 
     if haskey(s.guilds, guild)
         g = s.guilds[guild]
-        g isa Guild || return
-        push!(g.djl_users, p.user.id)
-   end
+        g isa Guild && push!(g.djl_users, p.user.id)
+    end
+
+    haskey(s.presences, guild) || (s.presences[guild] = TTL(s, Presence))
+    return insert_or_update!(s.presences[guild], p.user.id, p)
 end
 
 function Base.put!(s::State, m::Member; kwargs...)
-    ismissing(m.user) && return
+    ismissing(m.user) && return m
     guild = kwargs[:guild]
 
     # Members are stored with a missing user field to save memory.
     user = m.user
     m = @set m.user = missing
 
+    # This is a bit ugly, but basically we're updating the member as usual but then
+    # filling in its user field at the same time as the user sync.
     haskey(s.members, guild) || (s.members[guild] = TTL(s, Member))
-    ms = s.members[guild]
-    insert_or_update!(ms, user.id, m)
-
-    insert_or_update!(s.users, user)
+    m = insert_or_update!(s.members[guild], user.id, m)
+    m = @set m.user = insert_or_update!(s.users, user)
 
     if haskey(s.guilds, guild)
         g = s.guilds[guild]
-        g isa Guild || return
-        push!(g.djl_users, user.id)
+        g isa Guild && push!(g.djl_users, user.id)
     end
+
+    return m
 end
 
 function Base.put!(s::State, r::Role; kwargs...)
     guild = kwargs[:guild]
-    haskey(s.guilds, guild) || return
+    haskey(s.guilds, guild) || return r
     g = s.guilds[guild]
-    g isa Guild || return
+    g isa Guild || return r
 
-    if ismissing(g.roles)
+    return if ismissing(g.roles)
         s.guilds[guild] = @set g.roles = [r]
+        r
     else
         insert_or_update!(g.roles, r)
     end
@@ -213,20 +219,17 @@ end
 # This handles emojis being added to a guild.
 function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
     guild = kwargs[:guild]
-
-    if haskey(s.guilds, guild)
-        g = s.guilds[guild]
-        g isa Guild || return
-        g = @set g.emojis = es
-        s.guilds[guild] = g
+    if haskey(s.guilds, guild) && s.guilds[guild] isa Guild
+        s.guilds[guild] = @set g.emojis = es
     end
+    return es
 end
 
 # This handles a single emoji being added as a reaction.
 function Base.put!(s::State, e::Emoji; kwargs...)
     message = kwargs[:message]
     user = kwargs[:user]
-    haskey(s.messages, message) || return
+    haskey(s.messages, message) || return e
 
     locked(s.lock) do
         m = s.messages[message]
@@ -246,13 +249,16 @@ function Base.put!(s::State, e::Emoji; kwargs...)
             end
         end
     end
+
+    return e
 end
 
 insert_or_update!(d, k, v; kwargs...) = d[k] = haskey(d, k) ? merge(d[k], v) : v
 function insert_or_update!(d::Vector, k, v; key::Function=x -> x.id)
     idx = findfirst(x -> key(x) == k, d)
-    if idx === nothing
+    return if idx === nothing
         push!(d, v)
+        v
     else
         d[idx] = merge(d[idx], v)
     end
