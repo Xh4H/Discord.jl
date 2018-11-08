@@ -164,8 +164,12 @@ function handler(c::Client, e::MessageReactionRemoveAll)
 end
 
 function handler(c::Client, e::GuildBanAdd)
-    haskey(c.state.members, e.guild_id) && delete!(c.state.members[e.guild_id], e.user.id)
-    haskey(c.state.guilds, e.guild_id) && delete!(c.state.djl_users, e.user.id)
+    if haskey(c.state.members, e.guild_id)
+        delete!(c.state.members[e.guild_id], e.user.id)
+    end
+    if haskey(c.state.guilds, e.guild_id)
+        delete!(c.state.guilds[e.guild_id].djl_users, e.user.id)
+    end
 end
 
 for T in map(m -> m.sig.types[3], methods(handler).ms)
