@@ -375,7 +375,7 @@ end
             @test occursin("Union{Vector{String}, Missing, Nothing}", docs)
             # Union{Missing, T} is replaced with Union{T, Missing}.
             @test occursin("Union{Int, Missing}", docs)
-            # Union{ Nothing, T} is replaced with Union{T, Missing}.
+            # Union{Nothing, T} is replaced with Union{T, Nothing}.
             @test occursin("Union{Int, Nothing}", docs)
         end
 
