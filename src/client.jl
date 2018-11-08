@@ -114,6 +114,12 @@ mutable struct Client
     end
 end
 
+function Base.show(io::IO, c::Client)
+    print(io, "Discord.Client(shard=$(c.shard + 1)/$(c.shards), api=$(c.version), ")
+    isopen(c) || print(io, "not ")
+    print(io, "logged in)")
+end
+
 """
     me(c::Client) -> Union{User, Nothing}
 
