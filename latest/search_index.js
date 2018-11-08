@@ -181,7 +181,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.enable_cache!",
     "category": "function",
-    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache for REST operations.\n\n\n\n\n\n"
+    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache. do syntax is also supported.\n\n\n\n\n\n"
 },
 
 {
@@ -189,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.disable_cache!",
     "category": "function",
-    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache for REST operations.\n\n\n\n\n\n"
+    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache. do syntax is also supported.\n\n\n\n\n\n"
 },
 
 {
