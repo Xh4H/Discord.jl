@@ -1,6 +1,6 @@
 export reply,
     mention,
-    replace_mentions,
+    plaintext,
     upload_file,
     set_game
 
@@ -28,19 +28,54 @@ function mention(m::Member)
 end
 
 """
-    replace_mentions(m::Message) -> String
+    plaintext(m::Message) -> String
+    plaintext(c::Client, m::Message) -> String
 
 Get the [`Message`](@ref) contents with any [`User`](@ref) mentions replaced with their
-plaintext.
+plaintext. If a [`Client`](@ref) is provided, channels and roles are also replaced.
+However, only channels and roles stored in state are replaced; no API requests are made.
 """
-function replace_mentions(m::Message)
-    ismissing(m.mentions) && return m.content
+function plaintext(m::Message)
     content = m.content
-    for u in m.mentions
+    for u in coalesce(m.mentions, User[])
         name = "@$(u.username)"
         content = replace(content, "<@$(u.id)>" => name)
         content = replace(content, "<@!$(u.id)>" => name)
     end
+    return content
+end
+
+function plaintext(c::Client, m::Message)
+    content = m.content
+
+    for u in coalesce(m.mentions, User[])
+        member = get(c.state, Member; guild=m.guild_id, user=u.id)
+        nick = if member !== nothing && member.nick isa String
+            "@$(member.nick)"
+        else
+            "@$(u.username)"
+        end
+        content = replace(content, "<@$(u.id)>" => "@$(u.username)")
+        content = replace(content, "<@!$(u.id)>" => "@$nick")
+    end
+
+    guild = get(c.state, Guild; guild=m.guild_id)
+    if guild !== nothing
+        for r in coalesce(m.mention_roles, Snowflake[])
+            role = get(c.state, Role; guild=m.guild_id, role=r)
+            if role !== nothing
+                content = replace(content, "<@&$r>" => "@$(role.name)")
+            end
+        end
+
+        for cap in unique(eachmatch(r"<#(\d+?)>", content))
+            ch = get(c.state, DiscordChannel; channel=parse(Snowflake, first(cap.captures)))
+            if ch !== nothing
+                content = replace(content, cap.match => "#$(ch.name)")
+            end
+        end
+    end
+
     return content
 end
 

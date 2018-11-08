@@ -7,7 +7,7 @@ CurrentModule = Discord
 ```@docs
 reply
 mention
-replace_mentions
+plaintext
 upload_file
 set_game
 ```

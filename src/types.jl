@@ -7,6 +7,7 @@ const Snowflake = UInt64
 snowflake(s::Integer) = Snowflake(s)
 snowflake(s::AbstractString) = parse(Snowflake, s)
 
+# TODO: Put these in helpers?
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
 worker_id(s::Snowflake) = (s & 0x3E0000) >> 17
 process_id(s::Snowflake) = (s & 0x1F000) >> 12
