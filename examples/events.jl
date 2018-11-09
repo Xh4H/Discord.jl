@@ -17,6 +17,12 @@ function main()
     add_handler!(c, MessageCreate, on_message_create; tag=:ping, expiry=Minute(1))
     # This handler will run on the first ten events which have no non-default handler.
     add_handler!(c, FallbackEvent, on_no_handler; tag=:fallback, expiry=10)
+
+    # There is also the possibility to use `do` syntax with events
+    add_handler!(c, Ready) do c, client_data
+        println("Logged in as $(client.user.username).")
+    end
+
     open(c)
     return c
 end
