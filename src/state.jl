@@ -227,10 +227,11 @@ end
 # This handles emojis being added to a guild.
 function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
     guild = kwargs[:guild]
+    haskey(s.guilds, guild) || return es
+    g = s.guilds[guild]
+    g isa Guild || return es
     
-    if haskey(s.guilds, guild) && s.guilds[guild] isa Guild
-        s.guilds[guild] = @set g.emojis = es
-    end
+    s.guilds[guild] = @set g.emojis = es
     
     return es
 end
