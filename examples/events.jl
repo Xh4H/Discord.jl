@@ -13,14 +13,14 @@ end
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
+
     # This handler will remain valid for one minute.
     add_handler!(c, MessageCreate, on_message_create; tag=:ping, expiry=Minute(1))
     # This handler will run on the first ten events which have no non-default handler.
     add_handler!(c, FallbackEvent, on_no_handler; tag=:fallback, expiry=10)
-
-    # There is also the possibility to use `do` syntax with events
-    add_handler!(c, Ready) do c, client_data
-        println("Logged in as $(client.user.username).")
+    # You can also use do syntax.
+    add_handler!(c, MessageReactionAdd) do c, e
+        println("User $(e.user_id) reacted to message $(e.message_id)")
     end
 
     open(c)

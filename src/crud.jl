@@ -10,13 +10,13 @@ Create, add, send, etc.
 
 # Examples
 ```julia-repl
-# Send a [`Message`](@ref).
+# Send a message.
 julia> create(c, Message, channel; content="foo")
 
-# Create a new [`DiscordChannel`](@ref).
+# Create a new channel.
 julia> create(c, DiscordChannel, guild; name="bar")
 
-# Ban a [`Member`](@ref).
+# Ban a member.
 julia> create(c, Ban, guild, member; reason="baz")
 ```
 """
@@ -29,13 +29,13 @@ Retrieve, get, list, etc.
 
 # Examples
 ```julia-repl
-# Get the Client user.
+# Get the client user.
 julia> retrieve(c, User)
 
-# Get a [`Guild`](@ref)'s channels.
+# Get a guild's channels.
 julia> retrieve(c, DiscordChannel, guild)
 
-# Get an [`Invite`](@ref) to a [`Guild`](@ref) by code.
+# Get an Invite to a guild  by code.
 julia> retrieve(c, Invite, "abcdef")
 ```
 """
@@ -48,13 +48,13 @@ Update, edit, modify, etc.
 
 # Examples
 ```julia-repl
-# Edit a [`Message`](@ref).
+# Edit a message.
 julia> update(c, message; content="foo2")
 
-# Modify a [`Webhook`](@ref).
+# Modify a webhook.
 julia> update(c, webhook; name="bar2")
 
-# Update a [`Role`](@ref).
+# Update a role.
 julia> update(c, role, guild; permissions=8)
 ```
 """
@@ -67,13 +67,13 @@ Delete, remove, discard, etc.
 
 # Examples
 ```julia-repl
-# Kick a [`Member`](@ref).
+# Kick a member.
 julia> delete(c, member)
 
-# Unban a [`Member`](@ref).
+# Unban a member.
 julia> delete(c, ban, guild)
 
-# Delete all [`Reaction`](@ref)s from a [`Message`](@ref).
+# Delete all reactions from a message.
 # This is the only update/delete method which takes a type parameter.
 delete(c, Reaction, message)
 ```

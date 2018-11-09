@@ -9,7 +9,7 @@ const conn_properties = Dict(
     "\$device"  => "Discord.jl",
 )
 
-const EMPTY = ErrorException("Discord answered with an empty response")
+const EMPTY = ErrorException("Empty")
 
 const OPCODES = Dict(
     0 =>  :DISPATCH,
@@ -24,34 +24,6 @@ const OPCODES = Dict(
     10 => :HELLO,
     11 => :HEARTBEAT_ACK,
 )
-
-# Helpers.
-
-function readjson(io)
-    return try
-        data = readavailable(io)
-        if isempty(data)
-            nothing, EMPTY
-        else
-            JSON.parse(String(data)), nothing
-        end
-    catch e
-        nothing, e
-    end
-end
-
-function writejson(io, body)
-    return try
-        write(io, json(body))
-        nothing
-    catch e
-        e
-    end
-end
-
-function throw_if_closed(c::Client)
-    isopen(c) || throw(ArgumentError("Client is not connected"))
-end
 
 # Connection.
 
@@ -421,4 +393,32 @@ function handle_close(c::Client, status::Integer)
         logmsg(c, ERROR, "Sharding required")
         close(c)
     end
+end
+
+# Helpers.
+
+function readjson(io)
+    return try
+        data = readavailable(io)
+        if isempty(data)
+            nothing, EMPTY
+        else
+            JSON.parse(String(data)), nothing
+        end
+    catch e
+        nothing, e
+    end
+end
+
+function writejson(io, body)
+    return try
+        write(io, json(body))
+        nothing
+    catch e
+        e
+    end
+end
+
+function throw_if_closed(c::Client)
+    isopen(c) || throw(ArgumentError("Client is not connected"))
 end
