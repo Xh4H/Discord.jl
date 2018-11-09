@@ -23,6 +23,7 @@ function State(presence::Dict, ttls::TTLDict)
         "status" => PS_ONLINE,
         "afk" => false,
     ), Dict(string(k) => v for (k, v) in presence))
+    
     return State(
         0,                          # v
         "",                         # session_id
@@ -56,6 +57,7 @@ end
 function Base.get(s::State, ::Type{Vector{DiscordChannel}}; kwargs...)
     guild = kwargs[:guild]
     haskey(s.guilds, guild) || return nothing
+    
     return map(
         i -> s.channels[i],
         filter(i -> haskey(s.channels, i), s.guilds[guild].djl_channels),
@@ -65,6 +67,7 @@ end
 function Base.get(s::State, ::Type{Presence}; kwargs...)
     guild = kwargs[:guild]
     haskey(s.presences, guild) || return nothing
+    
     return get(s.presences[guild], kwargs[:user], nothing)
 end
 
@@ -122,9 +125,11 @@ function Base.put!(s::State, m::Message; kwargs...)
     if ismissing(m.guild_id) && haskey(s.channels, m.channel_id)
         m = @set m.guild_id = s.channels[m.channel_id].guild_id
     end
+    
     insert_or_update!(s.messages, m)
     touch(s.channels, m.channel_id)
     touch(s.guilds, m.guild_id)
+    
     return m
 end
 
@@ -158,8 +163,10 @@ function Base.put!(s::State, ch::DiscordChannel; kwargs...)
     if ismissing(ch.guild_id) && haskey(kwargs, :guild)
         ch = @set ch.guild_id = kwargs[:guild]
     end
+    
     foreach(u -> put!(s, u; kwargs...), coalesce(ch.recipients, User[]))
     haskey(s.guilds, ch.guild_id) && push!(s.guilds[ch.guild_id].djl_channels, ch.id)
+    
     return insert_or_update!(s.channels, ch)
 end
 
@@ -177,6 +184,7 @@ function Base.put!(s::State, p::Presence; kwargs...)
     end
 
     haskey(s.presences, guild) || (s.presences[guild] = TTL(s, Presence))
+    
     return insert_or_update!(s.presences[guild], p.user.id, p)
 end
 
@@ -219,9 +227,11 @@ end
 # This handles emojis being added to a guild.
 function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
     guild = kwargs[:guild]
+    
     if haskey(s.guilds, guild) && s.guilds[guild] isa Guild
         s.guilds[guild] = @set g.emojis = es
     end
+    
     return es
 end
 
