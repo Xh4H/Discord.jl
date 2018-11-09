@@ -6,6 +6,9 @@ export Client,
     delete_handler!,
     DEFAULT_HANDLER_TAG
 
+include("limiter.jl")
+include("state.jl")
+
 """
 Tag assigned to default handlers, which you can use to delete them.
 """

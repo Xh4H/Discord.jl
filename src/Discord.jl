@@ -23,16 +23,13 @@ function catchmsg(e::Exception)
     return sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
 end
 
-include("types/types.jl")
-include("gateway/events.jl")
-include("client/state.jl")
-include("utils/limiter.jl")
-include("client/client.jl")
-include("gateway/gateway.jl")
-include("rest/endpoints/rest.jl")
-include("rest/crud/crud.jl")
-include("utils/commands.jl")
-include("utils/helpers.jl")
+include(joinpath("types", "types.jl"))
+include(joinpath("gateway", "events.jl"))
+include(joinpath("client", "client.jl"))
+include(joinpath("gateway", "gateway.jl"))
+include(joinpath("rest", "rest.jl"))
+include(joinpath("utils", "commands.jl"))
+include(joinpath("utils", "helpers.jl"))
 include("Defaults.jl")
 
 end

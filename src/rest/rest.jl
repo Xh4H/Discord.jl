@@ -241,11 +241,5 @@ function should_put(c::Client, method::Symbol, endpoint::AbstractString)
     return !all(T -> hasdefault(c, T), Ts)
 end
 
-include("audit_log.jl")
-include("channel.jl")
-include("emoji.jl")
-include("guild.jl")
-include("invite.jl")
-include("user.jl")
-include("voice.jl")
-include("webhook.jl")
+include(joinpath("endpoints", "endpoints.jl"))
+include(joinpath("crud", "crud.jl"))
