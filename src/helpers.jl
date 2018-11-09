@@ -1,19 +1,8 @@
-export reply,
-    mention,
+export mention,
+    reply,
     plaintext,
     upload_file,
     set_game
-
-"""
-    reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
-
-Reply (send a message to the same [`DiscordChannel`](@ref)) to a [`Message`](@ref).
-If `at` is set, then the message is prefixed with the sender's mention.
-"""
-function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
-    content = at ? mention(m.author) * " " * content : content
-    return create_message(c, m.channel_id; content=content)
-end
 
 """
     mention(x::Union{DiscordChannel, Member, Role, User}) -> String
@@ -28,6 +17,22 @@ function mention(m::Member)
 end
 
 """
+    reply(c::Client, m::Message, content::Union{AbstractString, AbstractDict}; at::Bool=false)
+
+Reply (send a message to the same [`DiscordChannel`](@ref)) to a [`Message`](@ref).
+If `at` is set, then the message is prefixed with the sender's mention.
+"""
+function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
+    content = at ? mention(m.author) * " " * content : content
+    return create_message(c, m.channel_id; content=content)
+end
+
+function reply(c::Client, m::Message, embed::AbstractDict; at::Bool=false)
+    content = at ? mention(m.author)
+    return create_message(c, m.channel_id; content=content, embed=embed)
+end
+
+"""
     plaintext(m::Message) -> String
     plaintext(c::Client, m::Message) -> String
 
@@ -38,11 +43,13 @@ requests are made.
 """
 function plaintext(m::Message)
     content = m.content
+    
     for u in coalesce(m.mentions, User[])
         name = "@$(u.username)"
         content = replace(content, "<@$(u.id)>" => name)
         content = replace(content, "<@!$(u.id)>" => name)
     end
+    
     return content
 end
 
@@ -113,5 +120,6 @@ function set_game(
     kwargs...,
 )
     activity = merge(Dict("name" => game, "type" => type), kwargs)
+
     return update_status(c, since, activity, status, afk)
 end
