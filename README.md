@@ -4,7 +4,7 @@
 
 | **Documentation** | **Build Status** | **Information** |
 |:-:|:-:|:-:|
-| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable) [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Discord.jl/latest) | [![Build Status](https://travis-ci.com/PurgePJ/Discord.jl.svg?branch=master)](https://travis-ci.com/PurgePJ/Discord.jl)| [![GitHub license](https://img.shields.io/badge/Discord-join-blue.svg)](https://discord.gg/pjNUzy9) [![GitHub license](https://img.shields.io/github/license/PurgePJ/Discord.jl.svg)](https://github.com/PurgePJ/Discord.jl/blob/master/LICENSE) |
+| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://purgepj.github.io/Discord.jl/stable) [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://purgepj.github.io/Discord.jl/latest) | [![Build Status](https://travis-ci.com/PurgePJ/Discord.jl.svg?branch=master)](https://travis-ci.com/PurgePJ/Discord.jl) | [![Discord](https://img.shields.io/badge/discord-join-7289da.svg)](https://discord.gg/pjNUzy9) [![License](https://img.shields.io/github/license/PurgePJ/Discord.jl.svg)](https://github.com/PurgePJ/Discord.jl/blob/master/LICENSE) |
 
 Discord.jl is the solution for creating [Discord](https://discordapp.com) bots with the [Julia programming language](https://julialang.org).
 
@@ -46,4 +46,4 @@ For further examples, guides, and reference, please refer to the documentation l
 ## Contributing
 
 Pull requests are welcome!
-In most cases, it will be helpful to discuss the change you'd like to make on [Discord](https://discord.gg/pjNUzy9) before diving in too deep.
+In most cases, it will be helpful to discuss the change you'd like to make on Discord before diving in too deep.
