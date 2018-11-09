@@ -289,7 +289,7 @@ end
 @enum LogLevel DEBUG INFO WARN ERROR
 
 function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
-    msg = "Discord.jl " * (c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg)
+    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
     msg = "$(now()) $msg"
 
     if level === DEBUG
