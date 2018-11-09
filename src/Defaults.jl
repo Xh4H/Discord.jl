@@ -35,9 +35,9 @@ handler(c::Client, e::UserUpdate) = put!(c.state, e.user)
 
 function handler(c::Client, e::ChannelPinsUpdate)
     haskey(c.state.channels, e.channel_id) || return
-    
+
     ch = c.state.channels[e.channel_id]
-    
+
     if !ismissing(e.last_pin_timestamp)
         c.state.channels[ch.id] = @set ch.last_pin_timestamp = e.last_pin_timestamp
     end
@@ -55,7 +55,7 @@ end
 
 function handler(c::Client, e::ChannelDelete)
     delete!(c.state.channels, e.channel.id)
-    
+
     if !ismissing(e.channel.guild_id) && haskey(c.state.guilds, e.channel.guild_id)
         delete!(c.state.guilds[e.channel.guild_id], e.channel.id)
     end
@@ -93,11 +93,11 @@ end
 
 function handler(c::Client, e::GuildMemberRemove)
     ismissing(e.user) && return
-    
+
     if haskey(c.state.members, e.guild_id)
         delete!(c.state.members[e.guild_id], e.user.id)
     end
-    
+
     if haskey(c.state.guilds, e.guild_id)
         delete!(c.state.guilds[e.guild_id].djl_users, e.user.id)
     end
@@ -110,7 +110,7 @@ end
 function handler(c::Client, e::GuildRoleDelete)
     haskey(c.state.guilds, e.guild_id) || return
     c.state.guilds[e.guild_id] isa Guild || return
-    
+
     rs = c.state.guilds[e.guild_id].roles
     ismissing(rs) && return
 
@@ -139,7 +139,7 @@ function handler(c::Client, e::MessageReactionRemove)
 
         rs = c.state.messages[e.message_id].reactions
         idx = findfirst(r -> r.emoji.name == e.emoji.name, rs)
-        
+
         if idx !== nothing
             if rs[idx].count == 1
                 deleteat!(rs, idx)
@@ -174,7 +174,7 @@ function handler(c::Client, e::GuildBanAdd)
     if haskey(c.state.members, e.guild_id)
         delete!(c.state.members[e.guild_id], e.user.id)
     end
-    
+
     if haskey(c.state.guilds, e.guild_id)
         delete!(c.state.guilds[e.guild_id].djl_users, e.user.id)
     end
