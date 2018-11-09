@@ -54,7 +54,7 @@ A Discord bot. `Client`s can connect to the gateway, respond to events, and make
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
 
 # Keywords
-- `presence::Union{Dict, NamedTuple}=Dict()`: Bot user's presence set upon connection.
+- `presence::Union{Dict, NamedTuple}=Dict()`: Client's presence set upon connection.
   The schema [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
   must be followed.
 - `ttls::$TTLDict=Dict()`: Cache lifetime overrides. Values of `nothing` indicate no
