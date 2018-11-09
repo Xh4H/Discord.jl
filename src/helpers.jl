@@ -28,7 +28,7 @@ function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
 end
 
 function reply(c::Client, m::Message, embed::AbstractDict; at::Bool=false)
-    content = at ? mention(m.author)
+    content = at ? mention(m.author) : ""
     return create_message(c, m.channel_id; content=content, embed=embed)
 end
 
