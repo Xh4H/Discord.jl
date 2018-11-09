@@ -25,6 +25,30 @@ const OPCODES = Dict(
     11 => :HEARTBEAT_ACK,
 )
 
+# Helpers.
+
+function readjson(io)
+    return try
+        data = readavailable(io)
+        if isempty(data)
+            nothing, EMPTY
+        else
+            JSON.parse(String(data)), nothing
+        end
+    catch e
+        nothing, e
+    end
+end
+
+function writejson(io, body)
+    return try
+        write(io, json(body))
+        nothing
+    catch e
+        e
+    end
+end
+
 # Connection.
 
 """
@@ -391,29 +415,5 @@ function handle_close(c::Client, status::Integer)
     elseif err === :SHARDING_REQUIRED
         logmsg(c, ERROR, "Sharding required")
         close(c)
-    end
-end
-
-# Helpers.
-
-function readjson(io)
-    return try
-        data = readavailable(io)
-        if isempty(data)
-            nothing, EMPTY
-        else
-            JSON.parse(String(data)), nothing
-        end
-    catch e
-        nothing, e
-    end
-end
-
-function writejson(io, body)
-    return try
-        write(io, json(body))
-        nothing
-    catch e
-        e
     end
 end
