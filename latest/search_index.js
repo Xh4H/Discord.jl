@@ -613,7 +613,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.create",
     "category": "function",
-    "text": "create(c::Client, ::Type{T}, args...; kwargs...)\n\nCreate, add, send, etc.\n\nExamples\n\n# Send a [`Message`](@ref).\njulia> create(c, Message, channel; content=\"foo\")\n\n# Create a new [`DiscordChannel`](@ref).\njulia> create(c, DiscordChannel, guild; name=\"bar\")\n\n# Ban a [`Member`](@ref).\njulia> create(c, Ban, guild, member; reason=\"baz\")\n\n\n\n\n\n"
+    "text": "create(c::Client, ::Type{T}, args...; kwargs...)\n\nCreate, add, send, etc.\n\nExamples\n\n# Send a message.\njulia> create(c, Message, channel; content=\"foo\")\n\n# Create a new channel.\njulia> create(c, DiscordChannel, guild; name=\"bar\")\n\n# Ban a member.\njulia> create(c, Ban, guild, member; reason=\"baz\")\n\n\n\n\n\n"
 },
 
 {
@@ -621,7 +621,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.retrieve",
     "category": "function",
-    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...)\n\nRetrieve, get, list, etc.\n\nExamples\n\n# Get the Client user.\njulia> retrieve(c, User)\n\n# Get a [`Guild`](@ref)\'s channels.\njulia> retrieve(c, DiscordChannel, guild)\n\n# Get an [`Invite`](@ref) to a [`Guild`](@ref) by code.\njulia> retrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
+    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...)\n\nRetrieve, get, list, etc.\n\nExamples\n\n# Get the client user.\njulia> retrieve(c, User)\n\n# Get a guild\'s channels.\njulia> retrieve(c, DiscordChannel, guild)\n\n# Get an Invite to a guild  by code.\njulia> retrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
 },
 
 {
@@ -629,7 +629,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.update",
     "category": "function",
-    "text": "update(c::Client, x::T, args...; kwargs...)\n\nUpdate, edit, modify, etc.\n\nExamples\n\n# Edit a [`Message`](@ref).\njulia> update(c, message; content=\"foo2\")\n\n# Modify a [`Webhook`](@ref).\njulia> update(c, webhook; name=\"bar2\")\n\n# Update a [`Role`](@ref).\njulia> update(c, role, guild; permissions=8)\n\n\n\n\n\n"
+    "text": "update(c::Client, x::T, args...; kwargs...)\n\nUpdate, edit, modify, etc.\n\nExamples\n\n# Edit a message.\njulia> update(c, message; content=\"foo2\")\n\n# Modify a webhook.\njulia> update(c, webhook; name=\"bar2\")\n\n# Update a role.\njulia> update(c, role, guild; permissions=8)\n\n\n\n\n\n"
 },
 
 {
@@ -637,7 +637,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.delete",
     "category": "function",
-    "text": "delete(c::Client, x::T, args...)\n\nDelete, remove, discard, etc.\n\nExamples\n\n# Kick a [`Member`](@ref).\njulia> delete(c, member)\n\n# Unban a [`Member`](@ref).\njulia> delete(c, ban, guild)\n\n# Delete all [`Reaction`](@ref)s from a [`Message`](@ref).\n# This is the only update/delete method which takes a type parameter.\ndelete(c, Reaction, message)\n\n\n\n\n\n"
+    "text": "delete(c::Client, x::T, args...)\n\nDelete, remove, discard, etc.\n\nExamples\n\n# Kick a member.\njulia> delete(c, member)\n\n# Unban a member.\njulia> delete(c, ban, guild)\n\n# Delete all reactions from a message.\n# This is the only update/delete method which takes a type parameter.\ndelete(c, Reaction, message)\n\n\n\n\n\n"
 },
 
 {
@@ -1445,7 +1445,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.reply",
     "category": "function",
-    "text": "reply(c::Client, m::Message, content::Union{AbstractString, AbstractDict}; at::Bool=false)\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
+    "text": "reply(\n    c::Client,\n    m::Message,\n    content::Union{AbstractString. AbstractDict, NamedTuple};\n    at::Bool=false,\n)\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
 },
 
 {
