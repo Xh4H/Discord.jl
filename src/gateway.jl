@@ -9,7 +9,7 @@ const conn_properties = Dict(
     "\$device"  => "Discord.jl",
 )
 
-const EMPTY = ErrorException("Empty")
+const EMPTY = ErrorException("Discord answered with an empty response")
 
 const OPCODES = Dict(
     0 =>  :DISPATCH,
@@ -47,6 +47,10 @@ function writejson(io, body)
     catch e
         e
     end
+end
+
+function throw_if_closed(c::Client)
+    isopen(c) || throw(ArgumentError("Client is not connected"))
 end
 
 # Connection.
@@ -172,7 +176,8 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    isopen(c) || throw(ArgumentError("Client is not connected"))
+    throw_if_closed(c)
+
     return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guilds,
         "query" => query,
@@ -200,7 +205,8 @@ function update_voice_state(
     mute::Bool,
     deaf::Bool,
 )
-    isopen(c) || throw(ArgumentError("Client is not connected"))
+    throw_if_closed(c)
+
     return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild,
         "channel_id" => channel,
@@ -229,7 +235,8 @@ function update_status(
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
-    isopen(c) || throw(ArgumentError("Client is not connected"))
+    throw_if_closed(c)
+
     return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
@@ -297,17 +304,15 @@ function dispatch(c::Client, data::Dict)
     # If there are no handlers to call, don't bother parsing the event.
     isempty(handlers) && return
 
-    evt = begin
-        if T === UnknownEvent
-            UnknownEvent(data)
+    evt = if T === UnknownEvent
+        UnknownEvent(data)
+    else
+        val, e = tryparse(c, T, data["d"])
+        if e === nothing
+            val
         else
-            val, e = tryparse(c, T, data["d"])
-            if e === nothing
-                val
-            else
-                T = UnknownEvent
-                UnknownEvent(data)
-            end
+            T = UnknownEvent
+            UnknownEvent(data)
         end
     end
 
