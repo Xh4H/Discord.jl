@@ -368,13 +368,13 @@ const HANDLERS = Dict(
 const CLOSE_CODES = Dict(
     1000 => :NORMAL,
     4000 => :UNKNOWN_ERROR,
-    4001 => :UNKNOWN_OPCODE,
-    4002 => :DECODE_ERROR,
-    4003 => :NOT_AUTHENTICATED,
+    4001 => :UNKNOWN_OPCODE,        # Probably a library bug.
+    4002 => :DECODE_ERROR,          # Probably a library bug.
+    4003 => :NOT_AUTHENTICATED,     # Probably a library bug.
     4004 => :AUTHENTICATION_FAILED,
-    4005 => :ALREADY_AUTHENTICATED,
-    4007 => :INVALID_SEQ,
-    4008 => :RATE_LIMITED,
+    4005 => :ALREADY_AUTHENTICATED, # Probably a library bug.
+    4007 => :INVALID_SEQ,           # Probably a library bug.
+    4008 => :RATE_LIMITED,          # Probably a library bug.
     4009 => :SESSION_TIMEOUT,
     4010 => :INVALID_SHARD,
     4011 => :SHARDING_REQUIRED,
@@ -395,30 +395,17 @@ function handle_close(c::Client, status::Integer)
     err = get(CLOSE_CODES, status, :UNKNOWN_ERROR)
     if err === :NORMAL
         close(c)
-    elseif err === :UNKNOWN_ERROR
-        reconnect(c)
-    elseif err === :UNKNOWN_OPCODE  # Probably a library bug.
-        reconnect(c)
-    elseif err === :DECODE_ERROR  # Probably a library bug.
-        reconnect(c)
-    elseif err === :NOT_AUTHENTICATED  # Probably a library bug.
-        reconnect(c)
     elseif err === :AUTHENTICATION_FAILED
         logmsg(c, ERROR, "Authentication failed")
         close(c)
-    elseif err === :ALREADY_AUTHENTICATED  # Probably a library bug.
-        reconnect(c)
-    elseif err === :INVALID_SEQ  # Probably a library bug.
-        reconnect(c)
-    elseif err === :RATE_LIMITED  # Probably a library bug.
-        reconnect(c)
-    elseif err === :SESSION_TIMEOUT
-        reconnect(c)
     elseif err === :INVALID_SHARD
         logmsg(c, ERROR, "Invalid shard")
         close(c)
     elseif err === :SHARDING_REQUIRED
         logmsg(c, ERROR, "Sharding required")
         close(c)
+    else
+        logmsg(c, DEBUG, "Gateway connection was closed"; code=status, error=err)
+        reconnect(c)
     end
 end
