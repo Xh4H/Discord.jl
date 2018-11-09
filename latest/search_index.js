@@ -1445,7 +1445,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.reply",
     "category": "function",
-    "text": "reply(c::Client, m::Message, content::AbstractString; at::Bool=false)\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
+    "text": "reply(c::Client, m::Message, content::Union{AbstractString, AbstractDict}; at::Bool=false)\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
 },
 
 {
