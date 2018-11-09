@@ -68,6 +68,6 @@ const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "TYPING_START"                => TypingStart,
     "USER_UPDATE"                 => UserUpdate,
     "VOICE_STATE_UPDATE"          => VoiceStateUpdate,
-    "VOICE_SERVER_UPDAT"          => VoiceServerUpdate,
+    "VOICE_SERVER_UPDATE"         => VoiceServerUpdate,
     "WEBHOOKS_UPDATE"             => WebhooksUpdate,
 )
