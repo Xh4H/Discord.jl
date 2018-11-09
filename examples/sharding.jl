@@ -8,6 +8,7 @@ using Discord
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
+
     add_handler!(c, AbstractEvent) do c, e
         println("shard $(c.shard) received $(typeof(e))")
     open(c)
