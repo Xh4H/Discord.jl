@@ -4,7 +4,7 @@ export create,
     delete
 
 """
-    create(c::Client, ::Type{T}, args...; kwargs...)
+    create(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}
 
 Create, add, send, etc.
 
@@ -23,7 +23,7 @@ julia> create(c, Ban, guild, member; reason="baz")
 function create end
 
 """
-    retrieve(c::Client, ::Type{T}, args...; kwargs...)
+    retrieve(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}
 
 Retrieve, get, list, etc.
 
@@ -35,14 +35,14 @@ julia> retrieve(c, User)
 # Get a guild's channels.
 julia> retrieve(c, DiscordChannel, guild)
 
-# Get an Invite to a guild  by code.
+# Get an invite to a guild by code.
 julia> retrieve(c, Invite, "abcdef")
 ```
 """
 function retrieve end
 
 """
-    update(c::Client, x::T, args...; kwargs...)
+    update(c::Client, x::T, args...; kwargs...) -> Future{Response}
 
 Update, edit, modify, etc.
 
@@ -61,7 +61,7 @@ julia> update(c, role, guild; permissions=8)
 function update end
 
 """
-    delete(c::Client, x::T, args...)
+    delete(c::Client, x::T, args...) -> Future{Response}
 
 Delete, remove, discard, etc.
 
@@ -75,7 +75,7 @@ julia> delete(c, ban, guild)
 
 # Delete all reactions from a message.
 # This is the only update/delete method which takes a type parameter.
-delete(c, Reaction, message)
+julia> delete(c, Reaction, message)
 ```
 """
 function delete end

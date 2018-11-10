@@ -72,7 +72,7 @@ struct RateLimited <: Exception end
 """
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
-`Response` from the `Future`, use `fetch` or [`fetchval`](@ref).
+`Response` from the `Future`, use `fetch`. See also: [`fetchval`](@ref).
 
 # Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, for a

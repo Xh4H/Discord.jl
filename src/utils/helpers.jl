@@ -20,9 +20,9 @@ end
     reply(
         c::Client,
         m::Message,
-        content::Union{AbstractString. AbstractDict, NamedTuple};
+        content::Union{AbstractString, AbstractDict, NamedTuple, Embed};
         at::Bool=false,
-    )
+    ) -> Future{Response}
 
 Reply (send a message to the same [`DiscordChannel`](@ref)) to a [`Message`](@ref).
 If `at` is set, then the message is prefixed with the sender's mention.
@@ -32,9 +32,17 @@ function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
     return create_message(c, m.channel_id; content=content)
 end
 
-function reply(c::Client, m::Message, embed::Union{AbstractDict, NamedTuple}; at::Bool=false)
-    content = at ? mention(m.author) : ""
-    return create_message(c, m.channel_id; content=content, embed=embed)
+function reply(
+    c::Client,
+    m::Message,
+    embed::Union{AbstractDict, NamedTuple, Embed};
+    at::Bool=false,
+)
+    return if at
+        create_message(c, m.channel_id; content=mention(m.author), embed=embed)
+    else
+        create_message(c, m.channel_id; embed=embed)
+    end
 end
 
 """
@@ -113,7 +121,7 @@ end
         kwargs...,
     ) -> Bool
 
-Shortcut for [`update_status`](@ref) to set the client's [`Activity`](@ref).
+Shortcut for [`update_status`](@ref) to set the [`Client`](@ref)'s [`Activity`](@ref).
 """
 function set_game(
     c::Client,
