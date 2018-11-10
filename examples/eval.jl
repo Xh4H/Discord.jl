@@ -5,15 +5,14 @@ module Eval
 using Discord
 
 # Set this environment variable or replace with your own user ID.
-const USER = parse(Discord.Snowflake, get(ENV, "DISCORD_USER_ID", 1234567890))
+const USER = parse(Discord.Snowflake, get(ENV, "DISCORD_USER_ID", "1234567890"))
 const CODE_BLOCK = r"```(?:julia)?\n(.*)\n```"s
 
 module Sandbox end
 
 function codeblock(val)
-    io = IOBuffer()
-    print(io, val === nothing ? "nothing" : val)
-    return "```julia\n" * String(take!(io)) * "\n```"
+    s = val === nothing ? "nothing" : string(val)
+    return "```julia\n$s\n```"
 end
 
 function eval_codeblock(c::Client, msg::Discord.Message)
@@ -23,7 +22,6 @@ function eval_codeblock(c::Client, msg::Discord.Message)
     end
 
     m = match(CODE_BLOCK, msg.content)
-
     m = if m === nothing
         reply(c, msg, "That's not a code block.")
         return

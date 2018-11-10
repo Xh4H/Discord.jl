@@ -149,7 +149,6 @@ function request_guild_members(
     limit::Int=0,
 )
     throw_if_closed(c)
-
     return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guilds,
         "query" => query,
@@ -178,7 +177,6 @@ function update_voice_state(
     deaf::Bool,
 )
     throw_if_closed(c)
-
     return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild,
         "channel_id" => channel,
@@ -208,7 +206,6 @@ function update_status(
     afk::Bool,
 )
     throw_if_closed(c)
-
     return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
@@ -223,7 +220,7 @@ function heartbeat_loop(c::Client)
     v = c.conn.v
     try
         sleep(rand(1:round(Int, c.hb_interval / 1000)))
-        heartbeat(c) || logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
+        heartbeat(c) || (isopen(c) && logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v))
 
         while c.conn.v == v && isopen(c)
             sleep(c.hb_interval / 1000)

@@ -125,6 +125,5 @@ function set_game(
     kwargs...,
 )
     activity = merge(Dict("name" => game, "type" => type), kwargs)
-
     return update_status(c, since, activity, status, afk)
 end
