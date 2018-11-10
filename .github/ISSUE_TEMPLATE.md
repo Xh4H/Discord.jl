@@ -1,4 +1,4 @@
-If you have a general question, please ask on [Discord](https://discord.gg/pjNUzy9) for a faster response.
+If you have a general question, please ask on [Discord](https://discord.gg/ng9TjYd) for a faster response.
 
 If you've run into a bug, please supply the following information:
 
