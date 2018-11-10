@@ -51,8 +51,6 @@ end
 """
 A Discord guild (server).
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object).
-
-The `djl_*` fields are internal fields used for cache performance.
 """
 struct Guild <: AbstractGuild
     id::Snowflake

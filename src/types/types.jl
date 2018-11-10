@@ -110,10 +110,11 @@ end
 
 macro fielddoc(T)
     TT = eval(T)
-    ns = collect(string.(fieldnames(TT)))
+    fields = filter(n -> !startswith(string(n), "djl_"), collect(fieldnames(TT)))
+    ns = collect(string.(fields))
     width = maximum(length, ns)
     map!(n -> rpad(n, width), ns, ns)
-    ts = collect(map(f -> string(fieldtype(TT, f)), fieldnames(TT)))
+    ts = collect(map(f -> string(fieldtype(TT, f)), fields))
     map!(doctype, ts, ts)
     docs = join(map(t -> "$(t[1]) :: $(t[2])", zip(ns, ts)), "\n")
 

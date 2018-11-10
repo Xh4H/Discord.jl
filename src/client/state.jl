@@ -80,6 +80,7 @@ function Base.get(s::State, ::Type{Guild}; kwargs...)
         ch -> s.channels[ch],
         filter(ch -> haskey(s.channels, ch), collect(g.djl_channels)),
     )
+    g = @set g.djl_channels = missing
     ms = get(s.members, g.id, Dict())
     g = @set g.members = map(
         i -> get(s, Member; guild=g.id, user=i),
