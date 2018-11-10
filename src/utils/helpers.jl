@@ -1,8 +1,90 @@
-export mention,
+export PERM_CREATE_INSTANT_INVITE,
+    PERM_KICK_MEMBERS,
+    PERM_BAN_MEMBERS,
+    PERM_ADMINISTRATOR,
+    PERM_MANAGE_CHANNELS,
+    PERM_MANAGE_GUILD,
+    PERM_ADD_REACIONS,
+    PERM_VIEW_AUDIT_LOG,
+    PERM_VIEW_CHANNEL,
+    PERM_SEND_MESSAGES,
+    PERM_SEND_TTS_MESSAGES,
+    PERM_MANAGE_MESSAGES,
+    PERM_EMBED_LINKS,
+    PERM_ATTACH_FILES,
+    PERM_READ_MESSAGE_HISTORY,
+    PERM_MENTION_EVERYONE,
+    PERM_USE_EXTERNAL_EMOJIS,
+    PERM_CONNECT,
+    PERM_SPEAK,
+    PERM_MUTE_MEMBERS,
+    PERM_DEAFEN_MEMBERS,
+    PERM_MOVE_MEMBERS,
+    PERM_USE_VAD,
+    PERM_PRIORITY_SPEAKER,
+    PERM_CHANGE_NICKNAME,
+    PERM_MANAGE_NICKNAMES,
+    PERM_MANAGE_ROLES,
+    PERM_MANAGE_WEBHOOKS,
+    PERM_MANAGE_EMOJIS,
+    has_permission,
+    mention,
     reply,
     plaintext,
     upload_file,
     set_game
+
+"""
+Bitwise permission flags.
+More details [here](https://discordapp.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags).
+"""
+@enum Permission begin
+    PERM_CREATE_INSTANT_INVITE=1<<0
+    PERM_KICK_MEMBERS=1<<1
+    PERM_BAN_MEMBERS=1<<2
+    PERM_ADMINISTRATOR=1<<3
+    PERM_MANAGE_CHANNELS=1<<4
+    PERM_MANAGE_GUILD=1<<5
+    PERM_ADD_REACIONS=1<<6
+    PERM_VIEW_AUDIT_LOG=1<<7
+    PERM_VIEW_CHANNEL=1<<10
+    PERM_SEND_MESSAGES=1<<11
+    PERM_SEND_TTS_MESSAGES=1<<12
+    PERM_MANAGE_MESSAGES=1<<13
+    PERM_EMBED_LINKS=1<<14
+    PERM_ATTACH_FILES=1<<15
+    PERM_READ_MESSAGE_HISTORY=1<<16
+    PERM_MENTION_EVERYONE=1<<17
+    PERM_USE_EXTERNAL_EMOJIS=1<<18
+    PERM_CONNECT=1<<20
+    PERM_SPEAK=1<<21
+    PERM_MUTE_MEMBERS=1<<22
+    PERM_DEAFEN_MEMBERS=1<<23
+    PERM_MOVE_MEMBERS=1<<24
+    PERM_USE_VAD=1<<25
+    PERM_PRIORITY_SPEAKER=1<<8
+    PERM_CHANGE_NICKNAME=1<<26
+    PERM_MANAGE_NICKNAMES=1<<27
+    PERM_MANAGE_ROLES=1<<28
+    PERM_MANAGE_WEBHOOKS=1<<29
+    PERM_MANAGE_EMOJIS=1<<30
+end
+
+"""
+    has_permission(perms::Integer, perm::Permission) -> Bool
+
+Determine whether a bitwise OR of permissions contains one [`Permission`](@ref).
+
+# Example
+```jldoctest; setup=:(using Discord)
+julia> has_permission(0x0420, PERM_VIEW_CHANNEL)
+true
+
+julia> has_permission(0x0420, PERM_ADMINISTRATOR)
+false
+```
+"""
+has_permission(perms::Integer, perm::Permission) = perms & Int(perm) == Int(perm)
 
 """
     mention(x::Union{DiscordChannel, Member, Role, User}) -> String
