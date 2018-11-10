@@ -9,8 +9,6 @@ const conn_properties = Dict(
     "\$device"  => "Discord.jl",
 )
 
-const EMPTY = ErrorException("Empty")
-
 const OPCODES = Dict(
     0 =>  :DISPATCH,
     1 =>  :HEARTBEAT,
@@ -24,6 +22,8 @@ const OPCODES = Dict(
     10 => :HELLO,
     11 => :HEARTBEAT_ACK,
 )
+
+struct Empty <: Exception end
 
 # Connection.
 
@@ -246,7 +246,7 @@ function read_loop(c::Client)
         while c.conn.v == v && isopen(c)
             data, e = readjson(c.conn.io)
             if e !== nothing
-                if e == EMPTY
+                if e isa Empty
                     continue
                 elseif c.conn.v == v
                     handle_read_error(c, e)
@@ -388,7 +388,7 @@ function readjson(io)
     return try
         data = readavailable(io)
         if isempty(data)
-            nothing, EMPTY
+            nothing, Empty()
         else
             JSON.parse(String(data)), nothing
         end

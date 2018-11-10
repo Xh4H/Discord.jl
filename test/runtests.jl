@@ -5,9 +5,9 @@ using Test
 
 using Discord
 using Discord:
-    EMPTY,
     EVENTS_FIRED,
     Bucket,
+    Empty,
     Handler,
     Response,
     Limiter,Snowflake,
@@ -145,7 +145,7 @@ end
         io = IOBuffer()
         val, e = readjson(io)
         @test val === nothing
-        @test e == EMPTY
+        @test e isa Empty
 
         io = IOBuffer("{bad]")
         val, e = readjson(io)

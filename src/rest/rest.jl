@@ -1,7 +1,6 @@
 export fetchval
 
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
-const RATE_LIMITED = ErrorException("Rate limited")
 
 const EVENTS_FIRED = Dict(
     :DELETE => [
@@ -68,6 +67,8 @@ const EVENTS_FIRED = Dict(
     ],
 )
 
+struct RateLimited <: Exception end
+
 """
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
@@ -108,7 +109,7 @@ end
 
 # HTTP response with body (maybe).
 function Response{T}(c::Client, r::HTTP.Messages.Response) where T
-    r.status == 429 && throw(RATE_LIMITED)
+    r.status == 429 && throw(RateLimited())
     r.status == 204 && return Response{T}(nothing, true, r, nothing)
     r.status >= 300 && return Response{T}(nothing, false, r, nothing)
 
@@ -197,7 +198,7 @@ function Response{T}(
                     update!(c.limiter, b, http_r)
                catch e
                     # If we're rate limited, then just go back to the top.
-                    e == RATE_LIMITED && continue
+                    e isa RateLimited && continue
                     logmsg(c, ERROR, catchmsg(e))
                     put!(f, Response{T}(nothing, false, http_r, e))
                 finally
