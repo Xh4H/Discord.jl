@@ -589,7 +589,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.Response",
     "category": "type",
-    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch or fetchval.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Message}\n\n\n\n\n\n"
+    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch. See also: fetchval.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Message}\n\n\n\n\n\n"
 },
 
 {
@@ -613,7 +613,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.create",
     "category": "function",
-    "text": "create(c::Client, ::Type{T}, args...; kwargs...)\n\nCreate, add, send, etc.\n\nExamples\n\n# Send a message.\njulia> create(c, Message, channel; content=\"foo\")\n\n# Create a new channel.\njulia> create(c, DiscordChannel, guild; name=\"bar\")\n\n# Ban a member.\njulia> create(c, Ban, guild, member; reason=\"baz\")\n\n\n\n\n\n"
+    "text": "create(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}\n\nCreate, add, send, etc.\n\nExamples\n\n# Send a message.\njulia> create(c, Message, channel; content=\"foo\")\n\n# Create a new channel.\njulia> create(c, DiscordChannel, guild; name=\"bar\")\n\n# Ban a member.\njulia> create(c, Ban, guild, member; reason=\"baz\")\n\n\n\n\n\n"
 },
 
 {
@@ -621,7 +621,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.retrieve",
     "category": "function",
-    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...)\n\nRetrieve, get, list, etc.\n\nExamples\n\n# Get the client user.\njulia> retrieve(c, User)\n\n# Get a guild\'s channels.\njulia> retrieve(c, DiscordChannel, guild)\n\n# Get an Invite to a guild  by code.\njulia> retrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
+    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}\n\nRetrieve, get, list, etc.\n\nExamples\n\n# Get the client user.\njulia> retrieve(c, User)\n\n# Get a guild\'s channels.\njulia> retrieve(c, DiscordChannel, guild)\n\n# Get an invite to a guild by code.\njulia> retrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
 },
 
 {
@@ -629,7 +629,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.update",
     "category": "function",
-    "text": "update(c::Client, x::T, args...; kwargs...)\n\nUpdate, edit, modify, etc.\n\nExamples\n\n# Edit a message.\njulia> update(c, message; content=\"foo2\")\n\n# Modify a webhook.\njulia> update(c, webhook; name=\"bar2\")\n\n# Update a role.\njulia> update(c, role, guild; permissions=8)\n\n\n\n\n\n"
+    "text": "update(c::Client, x::T, args...; kwargs...) -> Future{Response}\n\nUpdate, edit, modify, etc.\n\nExamples\n\n# Edit a message.\njulia> update(c, message; content=\"foo2\")\n\n# Modify a webhook.\njulia> update(c, webhook; name=\"bar2\")\n\n# Update a role.\njulia> update(c, role, guild; permissions=8)\n\n\n\n\n\n"
 },
 
 {
@@ -637,7 +637,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.delete",
     "category": "function",
-    "text": "delete(c::Client, x::T, args...)\n\nDelete, remove, discard, etc.\n\nExamples\n\n# Kick a member.\njulia> delete(c, member)\n\n# Unban a member.\njulia> delete(c, ban, guild)\n\n# Delete all reactions from a message.\n# This is the only update/delete method which takes a type parameter.\ndelete(c, Reaction, message)\n\n\n\n\n\n"
+    "text": "delete(c::Client, x::T, args...) -> Future{Response}\n\nDelete, remove, discard, etc.\n\nExamples\n\n# Kick a member.\njulia> delete(c, member)\n\n# Unban a member.\njulia> delete(c, ban, guild)\n\n# Delete all reactions from a message.\n# This is the only update/delete method which takes a type parameter.\njulia> delete(c, Reaction, message)\n\n\n\n\n\n"
 },
 
 {
@@ -1441,11 +1441,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "helpers.html#Discord.reply",
+    "location": "helpers.html#Discord.Permission",
     "page": "Helpers",
-    "title": "Discord.reply",
+    "title": "Discord.Permission",
+    "category": "type",
+    "text": "Bitwise permission flags. More details here.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.has_permission",
+    "page": "Helpers",
+    "title": "Discord.has_permission",
     "category": "function",
-    "text": "reply(\n    c::Client,\n    m::Message,\n    content::Union{AbstractString. AbstractDict, NamedTuple};\n    at::Bool=false,\n)\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
+    "text": "has_permission(perms::Integer, perm::Permission) -> Bool\n\nDetermine whether a bitwise OR of permissions contains one Permission.\n\nExample\n\njulia> has_permission(0x0420, PERM_VIEW_CHANNEL)\ntrue\n\njulia> has_permission(0x0420, PERM_ADMINISTRATOR)\nfalse\n\n\n\n\n\n"
 },
 
 {
@@ -1454,6 +1462,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Discord.mention",
     "category": "function",
     "text": "mention(x::Union{DiscordChannel, Member, Role, User}) -> String\n\nGet the mention string for an entity.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.reply",
+    "page": "Helpers",
+    "title": "Discord.reply",
+    "category": "function",
+    "text": "reply(\n    c::Client,\n    m::Message,\n    content::Union{AbstractString, AbstractDict, NamedTuple, Embed};\n    at::Bool=false,\n) -> Future{Response}\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
 },
 
 {
@@ -1477,7 +1493,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.set_game",
     "category": "function",
-    "text": "set_game(\n    c::Client,\n    name::AbstractString,\n    type::Union{ActivityType, Int}=AT_GAME,\n    since::Union{Int, Nothing}=nothing,\n    status::Union{PresenceStatus, AbstractString}=PS_ONLINE,\n    afk::Bool=false,\n    kwargs...,\n) -> Bool\n\nShortcut for update_status to set the client\'s Activity.\n\n\n\n\n\n"
+    "text": "set_game(\n    c::Client,\n    name::AbstractString,\n    type::Union{ActivityType, Int}=AT_GAME,\n    since::Union{Int, Nothing}=nothing,\n    status::Union{PresenceStatus, AbstractString}=PS_ONLINE,\n    afk::Bool=false,\n    kwargs...,\n) -> Bool\n\nShortcut for update_status to set the Client\'s Activity.\n\n\n\n\n\n"
 },
 
 {
@@ -1485,7 +1501,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Helpers",
     "category": "section",
-    "text": "reply\nmention\nplaintext\nupload_file\nset_game"
+    "text": "Permission\nhas_permission\nmention\nreply\nplaintext\nupload_file\nset_game"
 },
 
 {
