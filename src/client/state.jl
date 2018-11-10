@@ -58,16 +58,16 @@ function Base.get(s::State, ::Type{Vector{DiscordChannel}}; kwargs...)
     guild = kwargs[:guild]
     haskey(s.guilds, guild) || return nothing
 
-    return map(
+    channels = map(
         i -> s.channels[i],
         filter(i -> haskey(s.channels, i), collect(s.guilds[guild].djl_channels)),
     )
+    return isempty(channels) ? nothing : channels
 end
 
 function Base.get(s::State, ::Type{Presence}; kwargs...)
     guild = kwargs[:guild]
     haskey(s.presences, guild) || return nothing
-
     return get(s.presences[guild], kwargs[:user], nothing)
 end
 
@@ -105,7 +105,6 @@ function Base.get(s::State, ::Type{Member}; kwargs...)
 
     haskey(s.users, kwargs[:user]) || return member  # With a missing user field.
     user = s.users[kwargs[:user]]
-
     return @set member.user = user
 end
 
@@ -184,7 +183,6 @@ function Base.put!(s::State, p::Presence; kwargs...)
     end
 
     haskey(s.presences, guild) || (s.presences[guild] = TTL(s, Presence))
-
     return insert_or_update!(s.presences[guild], p.user.id, p)
 end
 
@@ -232,7 +230,6 @@ function Base.put!(s::State, es::Vector{Emoji}; kwargs...)
     g isa Guild || return es
 
     s.guilds[guild] = @set g.emojis = es
-
     return es
 end
 
