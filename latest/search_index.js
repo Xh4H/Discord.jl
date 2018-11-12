@@ -1453,7 +1453,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.has_permission",
     "category": "function",
-    "text": "has_permission(perms::Integer, perm::Permission) -> Bool\n\nDetermine whether a bitwise OR of permissions contains one Permission.\n\nExample\n\njulia> has_permission(0x0420, PERM_VIEW_CHANNEL)\ntrue\n\njulia> has_permission(0x0420, PERM_ADMINISTRATOR)\nfalse\n\n\n\n\n\n"
+    "text": "has_permission(perms::Integer, perm::Permission) -> Bool\n\nDetermine whether a bitwise OR of permissions contains one Permission.\n\nExample\n\njulia> has_permission(0x0420, PERM_VIEW_CHANNEL)\ntrue\n\njulia> has_permission(0x0420, PERM_ADMINISTRATOR)\nfalse\n\njulia> has_permission(0x0008, PERM_MANAGE_ROLES)\ntrue\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.permissions_in",
+    "page": "Helpers",
+    "title": "Discord.permissions_in",
+    "category": "function",
+    "text": "permissions_in(m::Member, g::Guild, ch::DiscordChannel) -> Int\n\nCompute a Member\'s Permissions in a DiscordChannel.\n\n\n\n\n\n"
 },
 
 {
@@ -1501,7 +1509,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Helpers",
     "category": "section",
-    "text": "Permission\nhas_permission\nmention\nreply\nplaintext\nupload_file\nset_game"
+    "text": "Permission\nhas_permission\npermissions_in\nmention\nreply\nplaintext\nupload_file\nset_game"
 },
 
 {
