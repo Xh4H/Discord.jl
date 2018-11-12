@@ -17,6 +17,16 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 * Gateway independent: Interact with Discord's API without establishing a gateway connection.
 * Distributed: [Process-based sharding](https://purgepj.github.io/Discord.jl/stable/client.html#Sharding-1) requires next to no intervention and you can even run shards on separate machines.
 
+## Installation
+
+Discord.jl is not yet released, so add it from the Git repository with the following commands.
+
+```julia
+# Enter ']' from the REPL to enter Pkg mode.
+pkg> add https://github.com/PurgePJ/Discord.jl
+pkg> add https://github.com/JuliaWeb/HTTP.jl#master
+```
+
 ## Example
 
 ```julia
