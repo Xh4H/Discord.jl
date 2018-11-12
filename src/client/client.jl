@@ -24,12 +24,14 @@ const DEFAULT_TTLS = TTLDict(
     Message        => Hour(6),
 )
 
+# A gateway event handler.
 mutable struct Handler
     f::Function
     expiry::Union{Int, DateTime, Nothing}
 end
 Handler(f::Function, expiry::Period) = Handler(f, now(UTC) + expiry)
 
+# Determine whether a handler is expired or not.
 function isexpired(h::Handler)
     return if h.expiry === nothing
         false
@@ -40,6 +42,7 @@ function isexpired(h::Handler)
     end
 end
 
+# A versioned WebSocket connection.
 struct Conn
     io
     v::Int
@@ -267,10 +270,12 @@ function delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
     delete!(get(c.handlers, T, Dict()), tag)
 end
 
+# Get all handlers for a specific event, and delete expired ones.
 function handlers(c::Client, T::Type{<:AbstractEvent})
     return collect(filter!(p -> !isexpired(p.second), get(c.handlers, T, Dict())))
 end
 
+# Get all handlers that should be run for an event, including catch-alls and fallbacks.
 function allhandlers(c::Client, T::Type{<:AbstractEvent})
     catchalls = T === AbstractEvent ? Handler[] : handlers(c, AbstractEvent)
     specifics = handlers(c, T)
@@ -285,15 +290,17 @@ function allhandlers(c::Client, T::Type{<:AbstractEvent})
     end
 end
 
+# Determine whether a default handler exists for an event.
 function hasdefault(c::Client, T::Type{<:AbstractEvent})
     return haskey(get(c.handlers, T, Dict()), DEFAULT_HANDLER_TAG)
 end
 
 @enum LogLevel DEBUG INFO WARN ERROR
 
+# Log a message with some extra context info.
 function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
     msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
-    msg = "$(now()) $msg"
+    msg = "[$(now())] $msg"
 
     if level === DEBUG
         @debug msg kwargs...
@@ -318,6 +325,7 @@ function Base.tryparse(c::Client, T::Type, data)
     end
 end
 
+# Run some function with the cache enabled or disabled.
 function set_cache(f::Function, c::Client, use_cache::Bool)
     old = c.use_cache
     c.use_cache = use_cache

@@ -3,6 +3,7 @@ const ENDS_MAJOR_ID_REGEX = r"(?:channels|guilds|webhooks)/\d+$"
 const ENDS_ID_REGEX = r"/\d+$"
 const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
+# A rate limit bucket for a single endpoint.
 mutable struct Bucket <: Threads.AbstractLock
     remaining::Union{Int, Nothing}
     reset::Union{DateTime, Nothing}  # UTC.
@@ -12,6 +13,7 @@ mutable struct Bucket <: Threads.AbstractLock
     Bucket(remaining::Int, reset::DateTime) = new(remaining, reset, Base.Semaphore(1))
 end
 
+# A rate limiter for all endpoints.
 mutable struct Limiter
     reset::Union{DateTime, Nothing}  # API-wide limit.
     buckets::Dict{AbstractString, Bucket}
@@ -20,6 +22,7 @@ mutable struct Limiter
     Limiter() = new(nothing, Dict(), Threads.SpinLock())
 end
 
+# Retrieve an existing bucket or create a new one.
 function Bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
     locked(l.lock) do
         endpoint = parse_endpoint(endpoint, method)
@@ -30,9 +33,11 @@ function Bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
     end
 end
 
+# Acquire/release the bucket lock.
 Base.lock(b::Bucket) = Base.acquire(b.sem)
 Base.unlock(b::Bucket) = Base.release(b.sem)
 
+# Reset the rate limit on a bucket.
 function reset!(b::Bucket)
     b.remaining = nothing
     b.reset = nothing
@@ -40,6 +45,7 @@ end
 
 # Note: These DateTime operations only work if your system clock is accurate.
 
+# Wait for a bucket's rate limit to expire.
 function Base.wait(l::Limiter, b::Bucket)
     n = now(UTC)
     if l.reset !== nothing && l.reset > n
@@ -52,6 +58,7 @@ function Base.wait(l::Limiter, b::Bucket)
     end
 end
 
+# Update a bucket's count and expiry.
 function update!(l::Limiter, b::Bucket, r::HTTP.Messages.Response)
     if r.status == 429
         d = JSON.parse(String(copy(r.body)))
@@ -70,6 +77,7 @@ function update!(l::Limiter, b::Bucket, r::HTTP.Messages.Response)
     b.reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
 end
 
+# Determine whether a bucket has an exceeded rate limit.
 function islimited(l::Limiter, b::Bucket)
     n = now(UTC)
 
@@ -90,6 +98,7 @@ function islimited(l::Limiter, b::Bucket)
     return b.remaining == 0
 end
 
+# Get the endpoint which corresponds to its own rate limit.
 function parse_endpoint(endpoint::AbstractString, method::Symbol)
     return if method === :DELETE && match(MESSAGES_REGEX, endpoint) !== nothing
         # Special case 1: Deleting messages has its own rate limit.

@@ -2,6 +2,7 @@ export fetchval
 
 const SHOULD_SEND = Dict(:PATCH => true, :POST => true, :PUT => true)
 
+# Lists of events fired by sending a request to each endpoint.
 const EVENTS_FIRED = Dict(
     :DELETE => [
         (r"^/channels/\d+$", ChannelDelete),
@@ -226,11 +227,13 @@ exceptions.
 """
 fetchval(f::Future) = fetch(f).val
 
+# Capture an ID from a string.
 function cap(path::AbstractString, s::AbstractString)
     m = match(Regex("/$path/(\\d+)"), s)
     return m === nothing ? nothing : parse(Snowflake, first(m.captures))
 end
 
+# Determine whether we should cache something for the request.
 function should_put(c::Client, method::Symbol, endpoint::AbstractString)
     # TODO: Maybe we could use the type of the Response value to be more granular.
     # e.g. if we got a Message, then only check handlers for types with a Message field.

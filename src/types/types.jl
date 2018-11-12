@@ -17,12 +17,14 @@ increment(s::Snowflake) = s & 0xFFF
 datetime(s::Int) = unix2datetime(s / 1000)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
 
+# Lower to something JSON-compatible.
 lowered(x::DateTime) = round(Int, datetime2unix(x))
 lowered(x::Union{Integer, Bool}) = x
 lowered(x::Vector) = lowered.(x)
 lowered(x::Nothing) = nothing
 lowered(x) = JSON.lower(x)
 
+# Define JSON.lower for a type.
 macro lower(T)
     if supertype(eval(T)) <: Enum{<:Integer}
         quote
@@ -46,6 +48,7 @@ macro lower(T)
     end
 end
 
+# Define Base.merge for a type.
 macro merge(T)
     quote
         function Base.merge(a::$T, b::$T)
@@ -64,6 +67,7 @@ macro merge(T)
     end
 end
 
+# Compute the expression needed to extract field k from a Dict.
 field(k::String, ::Type{Any}) = :(d[$k])
 field(k::String, ::Type{Snowflake}) = :(snowflake(d[$k]))
 field(k::String, ::Type{DateTime}) = :(datetime(d[$k]))
@@ -81,6 +85,7 @@ function field(k::String, ::Type{Union{T, Nothing, Missing}}) where T
     return :(haskey(d, $k) ? $(field(k, Union{T, Nothing})) : missing)
 end
 
+# Define a constructor from a Dict for a type.
 macro dict(T)
     TT = eval(T)
     args = map(f -> field(string(f), fieldtype(TT, f)), fieldnames(TT))
@@ -92,6 +97,7 @@ macro dict(T)
     end
 end
 
+# Format a type for a docstring.
 function doctype(s::String)
     s = replace(s, "UInt64" => "Snowflake")
     s = replace(s, "Int64" => "Int")
@@ -108,6 +114,7 @@ function doctype(s::String)
     return s
 end
 
+# Update a type's docstring with field names and types.
 macro fielddoc(T)
     TT = eval(T)
     fields = filter(n -> !startswith(string(n), "djl_"), collect(fieldnames(TT)))
@@ -128,6 +135,7 @@ macro fielddoc(T)
     end
 end
 
+# Apply the above macros to a type.
 macro boilerplate(T, exs...)
     macros = map(e -> e.value, exs)
 

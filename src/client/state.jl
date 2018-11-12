@@ -1,3 +1,4 @@
+# Container for all client state.
 mutable struct State
     v::Int                              # Discord API version.
     session_id::String                  # Gateway session ID.
@@ -43,6 +44,8 @@ function State(presence::Dict, ttls::TTLDict)
 end
 
 TimeToLive.TTL(s::State, ::Type{T}) where T = TTL(get(s.ttls, T, nothing))
+
+# Base.get retrieves a value of a given type from the cache, or returns nothing.
 
 Base.get(s::State, ::Type; kwargs...) = nothing
 Base.get(s::State, ::Type{User}; kwargs...) = get(s.users, kwargs[:user], nothing)
@@ -115,6 +118,8 @@ function Base.get(s::State, ::Type{Role}; kwargs...)
     idx = findfirst(r -> r.id == kwargs[:role], roles)
     return idx === nothing ? nothing : roles[idx]
 end
+
+# Base.put! inserts a value into the cache, and returns the updated value.
 
 Base.put!(s::State, val; kwargs...) = val
 Base.put!(s::State, g::UnavailableGuild; kwargs...) = insert_or_update!(s.guilds, g)
@@ -262,6 +267,7 @@ function Base.put!(s::State, e::Emoji; kwargs...)
     return e
 end
 
+# Insert or update a value in the cache.
 insert_or_update!(d, k, v; kwargs...) = d[k] = haskey(d, k) ? merge(d[k], v) : v
 function insert_or_update!(d::Vector, k, v; key::Function=x -> x.id)
     idx = findfirst(x -> key(x) == k, d)

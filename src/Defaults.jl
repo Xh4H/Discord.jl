@@ -180,6 +180,8 @@ function handler(c::Client, e::GuildBanAdd)
     end
 end
 
+# For each handler, define an identical method for handler_cached
+# which only runs when the client has its cache enabled.
 for T in map(m -> m.sig.types[3], methods(handler).ms)
     @eval handler_cached(c::Client, e::$T) = c.use_cache && handler(c, e)
 end

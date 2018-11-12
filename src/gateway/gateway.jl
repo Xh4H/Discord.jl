@@ -50,7 +50,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     v = isdefined(c, :conn) ? c.conn.v + 1 : 1
     c.conn = Conn(opentrick(HTTP.WebSockets.open, url), v)
 
-    logmsg(c, DEBUG, "receiving HELLO"; conn=c.conn.v)
+    logmsg(c, DEBUG, "Receiving HELLO"; conn=c.conn.v)
     data, e = readjson(c.conn.io)
     e === nothing || throw(e)
     op = get(OPCODES, data["op"], data["op"])
@@ -216,6 +216,7 @@ end
 
 # Client maintenance.
 
+# Continuously send the heartbeat.
 function heartbeat_loop(c::Client)
     v = c.conn.v
     try
@@ -237,6 +238,7 @@ function heartbeat_loop(c::Client)
     end
 end
 
+# Continuously read and respond to messages.
 function read_loop(c::Client)
     v = c.conn.v
     try
@@ -264,6 +266,7 @@ end
 
 # Event handlers.
 
+# Dispatch an event to its handlers.
 function dispatch(c::Client, data::Dict)
     c.hb_seq = data["s"]
 
@@ -300,26 +303,31 @@ function dispatch(c::Client, data::Dict)
     end
 end
 
+# Send a heartbeat.
 function heartbeat(c::Client, ::Dict=Dict())
     e = writejson(c.conn.io, Dict("op" => 1, "d" => c.hb_seq))
     e === nothing && (c.last_hb = now())
     return e === nothing
 end
 
+# Reconnect to the gateway.
 function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true)
     logmsg(c, INFO, "Reconnecting"; resume=resume)
     close(c; statuscode=resume ? 4000 : 1000)
     open(c; resume=resume)
 end
 
+# React to an invalid session.
 function invalid_session(c::Client, data::Dict)
     logmsg(c, WARN, "Received INVALID_SESSION"; resumable=data["d"])
     sleep(rand(1:5))
     reconnect(c; resume=data["d"])
 end
 
+# React to a hello message.
 hello(c::Client, data::Dict) = c.hb_interval = data["d"]["heartbeat_interval"]
 
+# React to a heartbeack ack.
 heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
 
 # Gateway opcodes => handler function.
@@ -349,6 +357,7 @@ const CLOSE_CODES = Dict(
     4011 => :SHARDING_REQUIRED,
 )
 
+# Deal with an error from reading a message.
 function handle_read_error(c::Client, e::Exception)
     logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e, conn=c.conn.v)
     c.ready || return
@@ -360,6 +369,7 @@ function handle_read_error(c::Client, e::Exception)
     end
 end
 
+# Deal with the gateway connection being closed.
 function handle_close(c::Client, status::Integer)
     err = get(CLOSE_CODES, status, :UNKNOWN_ERROR)
     if err === :NORMAL
@@ -381,6 +391,7 @@ end
 
 # Helpers.
 
+# Read a JSON message.
 function readjson(io)
     return try
         data = readavailable(io)
@@ -394,6 +405,7 @@ function readjson(io)
     end
 end
 
+# Write a JSON message.
 function writejson(io, body)
     return try
         write(io, json(body))
@@ -403,6 +415,7 @@ function writejson(io, body)
     end
 end
 
+# Ensure that the client is connected.
 function throw_if_closed(c::Client)
     isopen(c) || throw(ArgumentError("Client is not connected"))
 end
