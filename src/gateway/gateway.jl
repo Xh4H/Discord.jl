@@ -43,7 +43,13 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     resume || sleep(c.shard * delay)
 
     logmsg(c, DEBUG, "Requesting gateway URL")
-    resp = HTTP.get("$DISCORD_API/v$(c.version)/gateway")
+    resp = try
+        HTTP.get("$DISCORD_API/v$(c.version)/gateway")
+    catch e
+        logmsg(c, ERROR, catchmsg(e))
+        rethrow(e)
+    end
+
     data = JSON.parse(String(resp.body))
     url = "$(data["url"])?v=$(c.version)&encoding=json"
     logmsg(c, DEBUG, "Connecting to gateway"; url=url)
@@ -157,8 +163,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    throw_if_closed(c)
-    return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
+    return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guilds,
         "query" => query,
         "limit" => limit,
@@ -185,8 +190,7 @@ function update_voice_state(
     mute::Bool,
     deaf::Bool,
 )
-    throw_if_closed(c)
-    return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
+    return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild,
         "channel_id" => channel,
         "self_mute" => mute,
@@ -214,8 +218,7 @@ function update_status(
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
-    throw_if_closed(c)
-    return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
+    return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
         "status" => status,
@@ -254,10 +257,8 @@ function read_loop(c::Client)
         while c.conn.v == v && isopen(c)
             data, e = readjson(c.conn.io)
             if e !== nothing
-                if e isa Empty
-                    continue
-                elseif c.conn.v == v
-                    handle_read_error(c, e)
+                if c.conn.v == v
+                    handle_read_exception(c, e)
                 else
                     logmsg(c, DEBUG, "Read failed, but the connection is outdated"; conn=v, e=e)
                 end
@@ -367,19 +368,14 @@ const CLOSE_CODES = Dict(
 )
 
 # Deal with an error from reading a message.
-function handle_read_error(c::Client, e::Exception)
+function handle_read_exception(c::Client, e::Exception)
     logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e, conn=c.conn.v)
-    c.ready || return
-    if e isa HTTP.WebSockets.WebSocketError
-        handle_close(c, e.status)
-    else
-        logmsg(c, ERROR, sprint(showerror, e))
-        isopen(c) || reconnect(c)
-    end
+    c.ready && handle_specific_exception(c, e)
 end
 
-# Deal with the gateway connection being closed.
-function handle_close(c::Client, status::Integer)
+handle_specific_exception(::Client, ::Empty) = nothing
+handle_specific_exception(c::Client, ::EOFError) = reconnect(c)
+function handle_specific_exception(c::Client, e::HTTP.WebSockets.WebSocketError)
     err = get(CLOSE_CODES, status, :UNKNOWN_ERROR)
     if err === :NORMAL
         close(c)
@@ -396,6 +392,10 @@ function handle_close(c::Client, status::Integer)
         logmsg(c, DEBUG, "Gateway connection was closed"; code=status, error=err)
         reconnect(c)
     end
+end
+function handle_specific_exception(c::Client, e::Exception)
+    logmsg(c, ERROR, sprint(showerror, e))
+    isopen(c) || reconnect(c)
 end
 
 # Helpers.
@@ -422,9 +422,4 @@ function writejson(io, body)
     catch e
         e
     end
-end
-
-# Ensure that the client is connected.
-function throw_if_closed(c::Client)
-    isopen(c) || throw(ArgumentError("Client is not connected"))
 end
