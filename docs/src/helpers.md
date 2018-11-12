@@ -7,6 +7,7 @@ CurrentModule = Discord
 ```@docs
 Permission
 has_permission
+permissions_in
 mention
 reply
 plaintext

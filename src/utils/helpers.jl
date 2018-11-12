@@ -27,7 +27,9 @@ export PERM_CREATE_INSTANT_INVITE,
     PERM_MANAGE_ROLES,
     PERM_MANAGE_WEBHOOKS,
     PERM_MANAGE_EMOJIS,
+    PERM_ALL,
     has_permission,
+    permissions_in,
     mention,
     reply,
     plaintext,
@@ -70,6 +72,8 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#pe
     PERM_MANAGE_EMOJIS=1<<30
 end
 
+const PERM_ALL = |(Int.(instances(Permission))...)
+
 """
     has_permission(perms::Integer, perm::Permission) -> Bool
 
@@ -82,9 +86,59 @@ true
 
 julia> has_permission(0x0420, PERM_ADMINISTRATOR)
 false
+
+julia> has_permission(0x0008, PERM_MANAGE_ROLES)
+true
 ```
 """
-has_permission(perms::Integer, perm::Permission) = perms & Int(perm) == Int(perm)
+function has_permission(perms::Integer, perm::Permission)
+    admin = perms & Int(PERM_ADMINISTRATOR) == Int(PERM_ADMINISTRATOR)
+    has = perms & Int(perm) == Int(perm)
+    return admin || has
+end
+
+"""
+    permissions_in(m::Member, g::Guild, ch::DiscordChannel) -> Int
+
+Compute a [`Member`](@ref)'s [`Permission`](@ref)s in a [`DiscordChannel`](@ref).
+"""
+function permissions_in(m::Member, g::Guild, ch::DiscordChannel)
+    !ismissing(m.user) && m.user.id == g.owner_id && return PERM_ALL
+
+    # Get permissions for @everyone.
+    idx = findfirst(r -> r.name == "@everyone", g.roles)
+    everyone = idx === nothing ? nothing : g.roles[idx]
+    perms = idx === nothing ? 0 : everyone.permissions
+    perms & Int(PERM_ADMINISTRATOR) == Int(PERM_ADMINISTRATOR) && return PERM_ALL
+
+    # Apply role overwrites.
+    for role in [everyone.id; m.roles]
+        idx = findfirst(
+            o -> o.type === OT_ROLE && o.id == role,
+            coalesce(ch.permission_overwrites, Overwrite[]),
+        )
+        if idx !== nothing
+            o = ch.permission_overwrites[idx]
+            perms &= ~o.deny
+            perms |= o.allow
+        end
+    end
+
+    # Apply user-specific overwrite.
+    if !ismissing(m.user)
+        idx = findfirst(
+            o -> o.type === OT_MEMBER && o.id == m.user.id,
+            coalesce(ch.permission_overwrites, Overwrite[]),
+        )
+        if idx !== nothing
+            o = ch.permission_overwrites[idx]
+            perms &= ~o.deny
+            perms |= o.allow
+        end
+    end
+
+    return perms
+end
 
 """
     mention(x::Union{DiscordChannel, Member, Role, User}) -> String
