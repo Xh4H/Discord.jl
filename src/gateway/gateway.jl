@@ -100,9 +100,18 @@ Base.isopen(c::Client) = c.ready && isdefined(c, :conn) && isopen(c.conn.io)
 
 Disconnect the [`Client`](@ref) from the Discord gateway.
 """
-function Base.close(c::Client; statuscode::Int=1000)
+function Base.close(c::Client; statuscode::Int=1000, zombie::Bool=false)
     c.ready = false
-    isdefined(c, :conn) && close(c.conn.io; statuscode=statuscode)
+    if isdefined(c, :conn)
+        if zombie
+            # It seems that Discord doesn't send a closing frame for zombie connections
+            # (which makes sense). However, close waits for one forever (see HTTP.jl#350).
+            @async close(c.conn.io; statuscode=statuscode)
+            sleep(1)
+        else
+            close(c.conn.io; statuscode=statuscode)
+        end
+    end
 end
 
 """
@@ -227,7 +236,7 @@ function heartbeat_loop(c::Client)
             sleep(c.hb_interval / 1000)
             if c.last_hb > c.last_ack && isopen(c) && c.conn.v == v
                 logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
-                reconnect(c)
+                reconnect(c; zombie=true)
             elseif !heartbeat(c) && c.conn.v == v && isopen(c)
                 logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
             end
@@ -311,9 +320,9 @@ function heartbeat(c::Client, ::Dict=Dict())
 end
 
 # Reconnect to the gateway.
-function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true)
-    logmsg(c, INFO, "Reconnecting"; resume=resume)
-    close(c; statuscode=resume ? 4000 : 1000)
+function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true, zombie::Bool=false)
+    logmsg(c, INFO, "Reconnecting"; resume=resume, zombie=zombie)
+    close(c; zombie=zombie, statuscode=resume ? 4000 : 1000)
     open(c; resume=resume)
 end
 
