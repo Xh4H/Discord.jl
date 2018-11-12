@@ -42,21 +42,21 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     # Clients can only identify once per 5 seconds.
     resume || sleep(c.shard * delay)
 
-    logmsg(c, DEBUG, "Requesting gateway URL")
+    @debug "Requesting gateway URL" logkws(c; conn=undef)...
     resp = try
         HTTP.get("$DISCORD_API/v$(c.version)/gateway")
     catch e
-        logmsg(c, ERROR, catchmsg(e))
+        @error catchmsg(e) logkws(c; conn=undef)...
         rethrow(e)
     end
 
     data = JSON.parse(String(resp.body))
     url = "$(data["url"])?v=$(c.version)&encoding=json"
-    logmsg(c, DEBUG, "Connecting to gateway"; url=url)
     v = isdefined(c, :conn) ? c.conn.v + 1 : 1
+    @debug "Connecting to gateway" logkws(c; conn=v, url=url)...
     c.conn = Conn(opentrick(HTTP.WebSockets.open, url), v)
 
-    logmsg(c, DEBUG, "Receiving HELLO"; conn=c.conn.v)
+    @debug "Receiving HELLO" logkws(c)...
     data, e = readjson(c.conn.io)
     e === nothing || throw(e)
     op = get(OPCODES, data["op"], data["op"])
@@ -84,10 +84,10 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     end
 
     op = resume ? :RESUME : :IDENTIFY
-    logmsg(c, DEBUG, "Writing $op"; conn=c.conn.v)
+    @debug "Writing $op" logkws(c)...
     writejson(c.conn.io, data) === nothing || error("Writing $op failed")
 
-    logmsg(c, DEBUG, "Starting background maintenance tasks"; conn=c.conn.v)
+    @debug "Starting background maintenance tasks" logkws(c)...
     @async heartbeat_loop(c)
     @async read_loop(c)
 
@@ -233,20 +233,20 @@ function heartbeat_loop(c::Client)
     v = c.conn.v
     try
         sleep(rand(1:round(Int, c.hb_interval / 1000)))
-        heartbeat(c) || (isopen(c) && logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v))
+        heartbeat(c) || (isopen(c) && @error "Writing HEARTBEAT failed" logkws(c)...)
 
         while c.conn.v == v && isopen(c)
             sleep(c.hb_interval / 1000)
             if c.last_hb > c.last_ack && isopen(c) && c.conn.v == v
-                logmsg(c, DEBUG, "Encountered zombie connection"; conn=v)
+                @debug "Encountered zombie connection" logkws(c)...
                 reconnect(c; zombie=true)
             elseif !heartbeat(c) && c.conn.v == v && isopen(c)
-                logmsg(c, ERROR, "Writing HEARTBEAT failed"; conn=v)
+                @error "Writing HEARTBEAT failed" logkws(c)...
             end
         end
-        logmsg(c, DEBUG, "Heartbeat loop exited"; conn=v)
+        @debug "Heartbeat loop exited" logkws(c; conn=v)...
     catch e
-        logmsg(c, ERROR, "Heartbeat loop exited unexpectedly:\n$(catchmsg(e))"; conn=v)
+        @error "Heartbeat loop exited unexpectedly:\n$(catchmsg(e))" logkws(c; conn=v)...
     end
 end
 
@@ -260,17 +260,17 @@ function read_loop(c::Client)
                 if c.conn.v == v
                     handle_read_exception(c, e)
                 else
-                    logmsg(c, DEBUG, "Read failed, but the connection is outdated"; conn=v, e=e)
+                    @debug "Read failed, but the connection is outdated" logkws(c; error=e)...
                 end
             elseif haskey(HANDLERS, data["op"])
                 HANDLERS[data["op"]](c, data)
             else
-                logmsg(c, WARN, "Unkown opcode"; op=data["op"])
+                @warn "Unkown opcode" logkws(c; op=data["op"])...
             end
         end
-        logmsg(c, DEBUG, "Read loop exited"; conn=v)
+        @debug "Read loop exited" logkws(c; conn=v)...
     catch e
-        logmsg(c, ERROR, "Read loop exited unexpectedly:\n$(catchmsg(e))"; conn=v)
+        @error "Read loop exited unexpectedly:\n$(catchmsg(e))" logkws(c; conn=v)...
     end
 end
 
@@ -302,7 +302,7 @@ function dispatch(c::Client, data::Dict)
         @async try
             handler.f(c, evt)
         catch e
-            logmsg(c, ERROR, catchmsg(e); event=T, handler=tag)
+            @error catchmsg(e) logkws(c; event=T, handler=tag)...
             push!(c.state.errors, evt)
         finally
             # TODO: There are race conditions here.
@@ -322,14 +322,14 @@ end
 
 # Reconnect to the gateway.
 function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true, zombie::Bool=false)
-    logmsg(c, INFO, "Reconnecting"; resume=resume, zombie=zombie)
+    @info "Reconnecting" logkws(c; resume=resume, zombie=zombie)...
     close(c; zombie=zombie, statuscode=resume ? 4000 : 1000)
     open(c; resume=resume)
 end
 
 # React to an invalid session.
 function invalid_session(c::Client, data::Dict)
-    logmsg(c, WARN, "Received INVALID_SESSION"; resumable=data["d"])
+    @warn "Received INVALID_SESSION" logkws(c; resumable=data["d"])...
     sleep(rand(1:5))
     reconnect(c; resume=data["d"])
 end
@@ -369,7 +369,7 @@ const CLOSE_CODES = Dict(
 
 # Deal with an error from reading a message.
 function handle_read_exception(c::Client, e::Exception)
-    logmsg(c, DEBUG, "Handling a $(typeof(e))"; e=e, conn=c.conn.v)
+    @debug "Handling a $(typeof(e))" logkws(c; error=e)...
     c.ready && handle_specific_exception(c, e)
 end
 
@@ -380,21 +380,21 @@ function handle_specific_exception(c::Client, e::HTTP.WebSockets.WebSocketError)
     if err === :NORMAL
         close(c)
     elseif err === :AUTHENTICATION_FAILED
-        logmsg(c, ERROR, "Authentication failed")
+        @error "Authentication failed" logkws(c)...
         close(c)
     elseif err === :INVALID_SHARD
-        logmsg(c, ERROR, "Invalid shard")
+        @error "Invalid shard" logkws(c)...
         close(c)
     elseif err === :SHARDING_REQUIRED
-        logmsg(c, ERROR, "Sharding required")
+        @error "Sharding required" logkws(c)...
         close(c)
     else
-        logmsg(c, DEBUG, "Gateway connection was closed"; code=status, error=err)
+        @debug "Gateway connection was closed" logkws(c; code=status, error=err)...
         reconnect(c)
     end
 end
 function handle_specific_exception(c::Client, e::Exception)
-    logmsg(c, ERROR, sprint(showerror, e))
+    @error sprint(showerror, e) logkws(c)...
     isopen(c) || reconnect(c)
 end
 

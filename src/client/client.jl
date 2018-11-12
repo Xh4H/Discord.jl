@@ -295,31 +295,34 @@ function hasdefault(c::Client, T::Type{<:AbstractEvent})
     return haskey(get(c.handlers, T, Dict()), DEFAULT_HANDLER_TAG)
 end
 
-@enum LogLevel DEBUG INFO WARN ERROR
+# Compute some contextual keywords for log messages.
+function logkws(c::Client; kwargs...)
+    kws = Pair[:time => now()]
+    c.shards > 1 && push!(kws, :shard => c.shard)
+    isdefined(c, :conn) && push!(kws, :conn => c.conn.v)
 
-# Log a message with some extra context info.
-function logmsg(c::Client, level::LogLevel, msg::AbstractString; kwargs...)
-    msg = c.shards > 1 ? "[Shard $(c.shard)] $msg" : msg
-    msg = "[$(now())] $msg"
-
-    if level === DEBUG
-        @debug msg kwargs...
-    elseif level === INFO
-        @info msg kwargs...
-    elseif level === WARN
-        @warn msg kwargs...
-    elseif level === ERROR
-        @error msg kwargs...
-    else
-        error("Unknown log level $level")
+    for kw in kwargs
+        if kw.second === undef  # Delete any keys overridden with undef.
+            filter!(p -> p.first !== kw.first, kws)
+        else
+            # Replace any overridden keys.
+            idx = findfirst(p -> p.first === kw.first, kws)
+            if idx === nothing
+                push!(kws, kw)
+            else
+                kws[idx] = kw
+            end
+        end
     end
+
+    return kws
 end
 
 function Base.tryparse(c::Client, T::Type, data)
     return try
         T <: Vector ? eltype(T).(data) : T(data), nothing
     catch e
-        logmsg(c, ERROR, catchmsg(e))
+        @error catchmsg(e) logkws(c)...
         push!(c.state.errors, data)
         nothing, e
     end
