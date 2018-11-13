@@ -29,16 +29,24 @@ mutable struct Handler
     f::Function
     expiry::Union{Int, DateTime, Nothing}
 end
-Handler(f::Function, expiry::Period) = Handler(f, now(UTC) + expiry)
+Handler(f::Function, expiry::Period) = Handler(f, now() + expiry)
 
-# Determine whether a handler is expired or not.
-function isexpired(h::Handler)
-    return if h.expiry === nothing
+# A mechanism for waiting for specific events.
+struct Waiter{T}
+    f::Function
+    pred::Function
+    expiry::Union{Int, DateTime, Nothing}
+end
+Waiter{T<:AbstractEvent}(f, pred, expiry::Period) = Waiter{T}(f, pred, now() + expiry)
+
+# Determine whether a handler/waiter is expired or not.
+function isexpired(x::Union{Handler, Waiter})
+    return if x.expiry === nothing
         false
-    elseif h.expiry isa Int
-        h.expiry <= 0
+    elseif x.expiry isa Int
+        x.expiry <= 0
     else
-        now(UTC) > h.expiry
+        now() > x.expiry
     end
 end
 
@@ -82,9 +90,10 @@ mutable struct Client
     shards::Int         # Number of shards in use.
     shard::Int          # Client's shard index.
     limiter::Limiter    # Rate limiter.
-    handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}  # Event handlers.
     ready::Bool         # Client is connected and authenticated.
     use_cache::Bool     # Whether or not to use the cache for REST ops.
+    handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}    # Event handlers.
+    waiters::Dict{Type{<:AbstractEvent}, Dict{Symbol, Waiter}}      # Event waiters.
     conn::Conn          # WebSocket connection.
 
     function Client(
@@ -109,9 +118,10 @@ mutable struct Client
             nprocs(),     # shards
             myid() - 1,   # shard
             Limiter(),    # limiter
-            Dict(),       # handlers
             false,        # ready
             true,         # use_cache
+            Dict(),       # handlers
+            Dict(),       # waiters
             # conn left undef, it gets assigned in open.
         )
 
@@ -268,6 +278,33 @@ delete_handler!(c::Client, T::Type{<:AbstractEvent}) = delete!(c.handlers, T)
 
 function delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
     delete!(get(c.handlers, T, Dict()), tag)
+end
+
+function add_waiter!(
+    c::Client,
+    func::Function,
+    T::Type{<:AbstractEvent};
+    pred::Function=e -> true,
+    tag::Symbol=gensym(),
+    expiry::Union{Int, Period, Nothing}=1,
+)
+    if !hasmethod(func, (T,))
+        throw(ArgumentError("Predicate function must accept (::$T)"))
+    end
+    if !hasmethod(func, (Client, T))
+        throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
+    end
+
+    w = Waiter(func, pred, expiry)
+    if isexpired(w)
+        throw(ArgumentError("Can't add a waiter that will never run"))
+    end
+
+    if haskey(c.waiters, T)
+        c.waiters[T][tag] = w
+    else
+        c.waiters[T] = Dict(tag => w)
+    end
 end
 
 # Get all handlers for a specific event, and delete expired ones.
