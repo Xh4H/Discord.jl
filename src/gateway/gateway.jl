@@ -218,6 +218,11 @@ function update_status(
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
+    since != Nothing && (c.state.login_presence["since"] = since)
+    game != Nothing && (c.state.login_presence["game"] = game)
+    c.state.login_presence["status"] = since
+    c.state.login_presence["afk"] = since
+
     return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
