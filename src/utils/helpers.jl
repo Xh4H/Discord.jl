@@ -265,7 +265,7 @@ function set_game(
     type::Union{ActivityType, Int}=AT_GAME,
     since::Union{Int, Nothing}=c.state.login_presence["since"],
     status::Union{PresenceStatus, AbstractString}=c.state.login_presence["status"],
-    afk::Bool=(c.state.login_presence["afk"] || false),
+    afk::Bool=get(c.state.login_presence, "afk", false),
     kwargs...,
 )
     activity = merge(Dict("name" => game, "type" => type), kwargs)
