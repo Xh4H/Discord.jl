@@ -253,7 +253,7 @@ Add all of the event handlers defined in a module. Any function you wish to use 
 handler must be exported. Only functions with correct type signatures (see above) are used.
 
 !!! note
-    If you specify keywords they are applied to all of the handlers in the module. For
+    If you specify keywords, they are applied to all of the handlers in the module. For
     example, if you add two handlers for the same event type with the same tag, one of them
     will be immediately overwritten.
 """

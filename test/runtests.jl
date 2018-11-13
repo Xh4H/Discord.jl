@@ -13,18 +13,22 @@ using Discord:
     Response,
     Limiter,Snowflake,
     allhandlers,
+    alwaystrue,
     datetime,
+    dec!,
     get_channel_message,
     handlers,
     hasdefault,
     increment,
     insert_or_update!,
     isexpired,
+    iscollecting,
     islimited,
     logkws,
     parse_endpoint,
     process_id,
     readjson,
+    results,
     should_put,
     snowflake,
     snowflake2datetime,
@@ -60,6 +64,11 @@ end
 @eval Discord @boilerplate Bar :merge
 
 using Discord: Foo, Bar
+
+# An easy-to-construct AbstractEvent.
+struct TestEvent <: AbstractEvent
+    x
+end
 
 # A module with event handlers.
 module Handlers
@@ -468,16 +477,17 @@ end
         badh(c, e::String) = nothing
         badc(c, e::AbstractEvent) = nothing
 
-        @testset "Adding/deleting regular handlers" begin
-            # Deleting handlers without a tag clears all handlers for that type.
-            delete_handler!(c, MessageCreate)
-            @test !haskey(c.handlers, MessageCreate)
+        @testset "Basics" begin
+            empty!(c.handlers)
 
             # Adding handlers without a tag means we can have duplicates.
             add_handler!(c, MessageCreate, f)
             add_handler!(c, MessageCreate, f)
             @test length(get(c.handlers, MessageCreate, Dict())) == 2
+
+            # Deleting handlers without a tag clears all handlers for that type.
             delete_handler!(c, MessageCreate)
+            @test !haskey(c.handlers, MessageCreate)
 
             # Using tags prevents duplicates.
             add_handler!(c, MessageCreate, f; tag=:f)
@@ -490,68 +500,123 @@ end
             @test length(get(c.handlers, MessageCreate, Dict())) == 2
             delete_handler!(c, MessageCreate, :g)
             @test length(get(c.handlers, MessageCreate, Dict())) == 1
-            @test first(values(c.handlers[MessageCreate])).f == f
+            @test c.handlers[MessageCreate][:f].func == f
 
-            # We can also add handlers from a module.
+            # We can also use do syntax.
+            add_handler!(c, TypingStart) do c, e
+                f(c, e)
+            end
+            @test length(get(c.handlers, TypingStart, Dict())) == 1
+        end
+
+        @testset "Adding from module" begin
+            empty!(c.handlers)
+
+            # We can add handlers from a module.
             add_handler!(c, Handlers)
             @test length(get(c.handlers, AbstractEvent, Dict())) == 1
             @test length(get(c.handlers, TypingStart, Dict())) == 1
             # Only exported functions are considered.
             @test length(get(c.handlers, WebhooksUpdate, Dict())) == 1
-            @test first(values(c.handlers[WebhooksUpdate])).f == Handlers.b
+            @test first(values(c.handlers[WebhooksUpdate])).func == Handlers.b
 
-            # Adding a module handler with a tag and/or expiry propogates to all handlers.
-            empty!(c.handlers) # XXX
-            add_handler!(c, Handlers; tag=:h, expiry=Millisecond(50))
+            # Adding a module handler with keywords propogates to all handlers.
+            empty!(c.handlers)
+            add_handler!(c, Handlers; tag=:h)
             @test all(hs -> all(p -> p.first === :h, hs), values(c.handlers))
-            sleep(Millisecond(50))
-            @test all(hs -> all(p -> isexpired(p.second), hs), values(c.handlers))
+        end
 
+        @testset "Invalid handlers" begin
             # We can't add a handler without a valid method.
             @test_throws ArgumentError add_handler!(c, MessageCreate, badh)
 
             # We can't add a handler that's already expired.
-            @test_throws ArgumentError add_handler!(c, Ready, f; expiry=0)
-            @test_throws ArgumentError add_handler!(c, Ready, f; expiry=Day(-1))
+            @test_throws ArgumentError add_handler!(c, Ready, f; n=0)
+            @test_throws ArgumentError add_handler!(c, Ready, f; timeout=Day(-1))
+        end
+
+        @testset "Predicate functions" begin
+            empty!(c.handlers)
+
+            # By default, the predicate always returns true.
+            add_handler!(c, TestEvent, f; tag=:f)
+            @test c.handlers[TestEvent][:f].pred == alwaystrue
+            @test c.handlers[TestEvent][:f].pred(c, TestEvent(1))
+
+            # But we can also specify our own.
+            add_handler!(c, TestEvent, g; tag=:g, pred=(c, e) -> e.x == 1)
+            @test c.handlers[TestEvent][:g].pred(c, TestEvent(1))
+            @test !c.handlers[TestEvent][:g].pred(c, TestEvent(2))
+        end
+
+        @testset "Expiries" begin
+            empty!(c.handlers)
+
+            # We can pass a number for a counting expiry.
+            add_handler!(c, TestEvent, f; tag=:f, n=1)
+            @test !isexpired(c.handlers[TestEvent][:f])
+            dec!(c.handlers[TestEvent][:f])
+            @test isexpired(c.handlers[TestEvent][:f])
+
+            # Or we can use a timed expiry.
+            add_handler!(c, TestEvent, g; tag=:g, timeout=Millisecond(100))
+            @test !isexpired(c.handlers[TestEvent][:g])
+            sleep(Millisecond(101))
+            @test isexpired(c.handlers[TestEvent][:g])
+        end
+
+        @testset "Waiting" begin
+            empty!(c.handlers)
+
+            # Blocking handler with count should return when the count reaches 0.
+            t = @async add_handler!(c, TestEvent, f; tag=:f, n=5, wait=true)
+            sleep(Millisecond(1))
+            h = c.handlers[TestEvent][:f]
+            @test iscollecting(h)
+            push!(h.results, 1)
+            put!(h, results(h))
+            h.remaining = 0
+            sleep(Millisecond(150))
+            @test istaskdone(t)
+            @test fetch(t) == Any[1]
+
+            # Blocking handler with timeout should return when the timeout elapses.
+            t = @async add_handler!(c, TestEvent, f; tag=:g, timeout=Second(1), wait=true)
+            sleep(Millisecond(1))
+            h = c.handlers[TestEvent][:g]
+            @test iscollecting(h)
+            push!(h.results, 2)
+            put!(h, results(h))
+            sleep(1.1)
+            @test istaskdone(t)
+            @test fetch(t) == Any[2]
+
+            # Blocking handler with both expiries should return when either is done.
+            t = @async add_handler!(c, TestEvent, f; tag=:i, n=1, timeout=Day(1), wait=true)
+            sleep(Millisecond(1))
+            h = c.handlers[TestEvent][:i]
+            @test iscollecting(h)
+            push!(h.results, 3)
+            push!(h.results, 4)
+            put!(h, results(h))
+            h.remaining = -1
+            sleep(Millisecond(150))
+            @test istaskdone(t)
+            @test fetch(t) == Any[3, 4]
         end
 
         @testset "Commands" begin
             delete_handler!(c, MessageCreate)
 
             # Adding commands adds to the MessageCreate handlers.
-            add_command!(c, "!test", f)
+            add_command!(c, "!test", f; tag=:f)
             @test length(get(c.handlers, MessageCreate, Dict())) == 1
-            # But the handler function is modified.
-            @test first(values(c.handlers[MessageCreate])).f != f
+            # But the handler and predicate functions are modified.
+            @test c.handlers[MessageCreate][:f].func != f
+            @test c.handlers[MessageCreate][:f].pred != alwaystrue
 
             # We can't add a command without a valid method.
             @test_throws ArgumentError add_command!(c, "!test", badc)
-
-            # We can't add a command that's already expired.
-            @test_throws ArgumentError add_command!(c, "!test", f; expiry=0)
-            @test_throws ArgumentError add_handler!(c, Ready, f; expiry=Day(-1))
-        end
-
-        @testset "Handler expiry" begin
-            empty!(c.handlers[MessageCreate])
-
-            # By default, handlers don't expire.
-            add_handler!(c, MessageCreate, f)
-            @test !isexpired(first(values(c.handlers[MessageCreate])))
-
-            add_handler!(c, MessageCreate, f; expiry=Millisecond(100))
-            @test count(isexpired, values(c.handlers[MessageCreate])) == 0
-            sleep(Millisecond(100))
-            @test count(isexpired, values(c.handlers[MessageCreate])) == 1
-
-            # Counting handlers expire when they reach <= 0.
-            @test !isexpired(Handler(f, 1))
-            @test isexpired(Handler(f, 0))
-            @test isexpired(Handler(f, -1))
-
-            # Timed handlers expire when their expiry time is reached.
-            @test !isexpired(Handler(f, now() + Day(1)))
-            @test isexpired(Handler(f, now() - Day(1)))
         end
 
         @testset "Handler collection" begin
@@ -595,11 +660,6 @@ end
             ]
             delete_handler!(c, Ready)
             @test allhandlers(c, Ready) == collect(c.handlers[FallbackEvent])
-
-            # Expired handlers should be cleaned up.
-            first(values(c.handlers[FallbackEvent])).expiry = 0
-            allhandlers(c, Ready)  # This triggers the cleanup.
-            @test isempty(c.handlers[FallbackEvent])
         end
 
         @testset "Default handler lookup" begin

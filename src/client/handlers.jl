@@ -86,10 +86,11 @@ end
 function Base.take!(h::Handler)
     iscollecting(h) || return []
 
-    if h.remaining isa Int && h.remaining > 0
-        wait(h.chan)
-    elseif h.expiry isa DateTime && h.expiry > now()
-        sleep(h.expiry - now())
+    # Only wait for one condition.
+    while true
+        h.remaining === nothing || h.remaining > 0 || break
+        h.expiry === nothing || h.expiry > now() || break
+        sleep(Millisecond(100))
     end
 
     # Expired handlers don't always get cleaned up immediately.
