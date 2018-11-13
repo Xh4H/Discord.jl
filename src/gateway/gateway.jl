@@ -80,6 +80,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
         if c.shards > 1
             d["d"]["shard"] = [c.shard, c.shards]
         end
+
         d
     end
 
@@ -218,8 +219,8 @@ function update_status(
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
-    since != Nothing && (c.state.login_presence["since"] = since)
-    game != Nothing && (c.state.login_presence["game"] = game)
+    since !== nothing && (c.state.login_presence["since"] = since)
+    game !== nothing && (c.state.login_presence["game"] = game)
     c.state.login_presence["status"] = status
     c.state.login_presence["afk"] = afk
 
