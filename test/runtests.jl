@@ -202,7 +202,7 @@ end
 
     @testset "Helpers" begin
         ch = DiscordChannel(; id="255", type=0, guild_id="1")
-        r = Role(0xff, "", 0, true, 0, 0, false, false)
+        r = Role(; id=0xff, name="foo")
         u = User(; id="255", username="foo")
 
         @testset "mention" begin

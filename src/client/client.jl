@@ -24,30 +24,67 @@ const DEFAULT_TTLS = TTLDict(
     Message        => Hour(6),
 )
 
-# A gateway event handler.
-mutable struct Handler
-    f::Function
-    expiry::Union{Int, DateTime, Nothing}
-end
-Handler(f::Function, expiry::Period) = Handler(f, now() + expiry)
+# An event handler.
+abstract type AbstractHandler{T<:AbstractEvent} end
 
-# A mechanism for waiting for specific events.
-struct Waiter{T}
-    f::Function
+donothing(args...; kwargs...) = nothing
+alwaystrue(args...; kwargs...) = true
+Base.eltype(::AbstractHandler{T}) where T = T
+Base.notify(::AbstractHandler) = nothing
+Base.wait(::AbstractHandler) = nothing
+func(::AbstractHandler) = donothing
+pred(::AbstractHandler) = alwaystrue
+expiry(::AbstractHandler) = nothing
+dec!(::AbstractHandler) = nothing
+isexpired(h::AbstractHandler) = false
+
+mutable struct Handler{T} <: AbstractHandler{T}
+    func::Function
     pred::Function
-    expiry::Union{Int, DateTime, Nothing}
-end
-Waiter{T<:AbstractEvent}(f, pred, expiry::Period) = Waiter{T}(f, pred, now() + expiry)
+    remaining::Union{Int, Nothing}
+    expiry::Union{DateTime, Nothing}
+    cond::Condition
 
-# Determine whether a handler/waiter is expired or not.
-function isexpired(x::Union{Handler, Waiter})
-    return if x.expiry === nothing
-        false
-    elseif x.expiry isa Int
-        x.expiry <= 0
-    else
-        now() > x.expiry
+    function Handler{T}(
+        func::Function,
+        pred::Function,
+        remaining::Union{Int, Nothing},
+        expiry::Union{DateTime, Nothing},
+    ) where T <: AbstractEvent
+        return new{T}(func, pred, remaining, expiry, Condition())
     end
+    function Handler{T}(
+        func::Function,
+        pred::Function,
+        remaining::Union{Int, Nothing},
+        expiry::Period,
+    ) where T <: AbstractEvent
+        return new{T}(func, pred, remaining, now() + expiry, Condition())
+    end
+end
+
+func(h::Handler) = h.func
+pred(h::Handler) = h.pred
+expiry(h::Handler) = h.expiry
+Base.notify(h::Handler) = notify(h.cond)
+dec!(h::Handler) = h.remaining isa Int && (h.remaining -= 1)
+
+function isexpired(h::Handler)
+    return if h.remaining isa Int && h.remaining <= 0
+        true
+    elseif h.expiry isa DateTime && now() > h.expiry
+        true
+    else
+        false
+    end
+end
+
+function Base.wait(h::Handler)
+    if h.remaining === nothing && h.expiry === nothing
+        throw(ArgumentError("Can't wait for a handler with no expiry"))
+    end
+    h.remaining isa Int && h.remaining > 0 && wait(h.cond)
+    h.expiry isa DateTime && h.expiry > now() && sleep(h.expiry - now())
 end
 
 # A versioned WebSocket connection.
@@ -92,8 +129,7 @@ mutable struct Client
     limiter::Limiter    # Rate limiter.
     ready::Bool         # Client is connected and authenticated.
     use_cache::Bool     # Whether or not to use the cache for REST ops.
-    handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, Handler}}    # Event handlers.
-    waiters::Dict{Type{<:AbstractEvent}, Dict{Symbol, Waiter}}      # Event waiters.
+    handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, AbstractHandler}}  # Event handlers.
     conn::Conn          # WebSocket connection.
 
     function Client(
@@ -121,7 +157,6 @@ mutable struct Client
             false,        # ready
             true,         # use_cache
             Dict(),       # handlers
-            Dict(),       # waiters
             # conn left undef, it gets assigned in open.
         )
 
@@ -167,17 +202,19 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         T::Type{<:AbstractEvent},
         func::Function;
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period, Nothing}=nothing,
+        n::Union{Int, Nothing}=nothing,
+        expiry::Union{Period, Nothing}=nothing,
     )
     add_handler!(
         func::Function,
         c::Client,
         T::Type{<:AbstractEvent};
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period, Nothing}=nothing,
+        n::Union{Int, Nothing}=nothing,
+        expiry::Union{Period, Nothing}=nothing,
     )
 
-Add an event handler. The handler should be a function which takes two arguments: A
+Add an event handler. `func` should be a function which takes two arguments: A
 [`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). The handler is appended to
 the event's current handlers. You can also define a single handler for multiple event types
 by using a `Union`. `do` syntax is also accepted.
@@ -185,9 +222,15 @@ by using a `Union`. `do` syntax is also accepted.
 # Keywords
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
   [`delete_handler!`](@ref).
-- `expiry::Union{Int, Period, Nothing}=nothing`: The handler's expiry. If an `Int` is given,
-  the handler will run that many times before expiring. If a `Period` is given, the handler
-  will expire after it elapsed. The default of `nothing` indicates no expiry.
+- `pred::Function=alwaystrue`: A predicate function. The handler will only run if this
+  function returns `true`. Its signature should match that of `func`.
+- `n::Union{Int, Nothing}=nothing`: The number of times to run the handler before expiring.
+  if left unset, the handler runs an infinite number of times. Can be used in conjunction
+  with `expiry`.
+- `expiry::Union{Period, Nothing}=nothing`: The handler's time expiry. If left unset,
+  the handler stays active forever. Can be used in conjunction with `n`.
+- `block::Bool=false`: If set, block until the handler expires. You must set `expiry` or
+  `n` along with this keyword.
 
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
@@ -198,21 +241,28 @@ function add_handler!(
     T::Type{<:AbstractEvent},
     func::Function;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period, Nothing}=nothing,
+    pred::Function=alwaystrue,
+    n::Union{Int, Nothing}=nothing,
+    expiry::Union{Period, Nothing}=nothing,
+    block::Bool=false,
 )
     if T isa Union
-        add_handler!(c, T.a, func; tag=tag, expiry=expiry)
-        add_handler!(c, T.b, func; tag=tag, expiry=expiry)
+        block && throw(ArgumentError("Can only block for one event at a time"))
+        add_handler!(c, T.a, func; tag=tag, pred=pred, expiry=expiry)
+        add_handler!(c, T.b, func; tag=tag, pred=pred, expiry=expiry)
         return
     end
+
+    h = Handler{T}(func, pred, n, expiry)
 
     if !hasmethod(func, (Client, T))
         throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
     end
-
-    h = Handler(func, expiry)
+    if !hasmethod(pred, (Client, T))
+        throw(ArgumentError("Predicate function must accept (::Client, ::$T)"))
+    end
     if isexpired(h)
-        throw(ArgumentError("Can't add a handler that will never run"))
+        throw(ArgumentError("Can't add a handler that's already expired"))
     end
 
     if haskey(c.handlers, T)
@@ -220,6 +270,9 @@ function add_handler!(
     else
         c.handlers[T] = Dict(tag => h)
     end
+
+    block && wait(h)
+    return nothing
 end
 
 function add_handler!(
@@ -227,9 +280,12 @@ function add_handler!(
     c::Client,
     T::Type{<:AbstractEvent};
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period, Nothing}=nothing,
+    pred::Function=alwaystrue,
+    n::Union{Int, Nothing}=nothing,
+    expiry::Union{Period, Nothing}=nothing,
+    block::Bool=false,
 )
-    return add_handler!(c, T, func; tag=tag, expiry=expiry)
+    return add_handler!(c, T, func; tag=tag, pred=pred, n=n, expiry=expiry, block=block)
 end
 
 """
@@ -237,79 +293,62 @@ end
         c::Client,
         m::Module;
         tag::Symbol=gensym(),
-        expiry::Union{Int, Period, Nothing}=nothing,
+        pred::Function=alwaystrue,
+        n::Union{Int, Nothing}=nothing,
+        expiry::Union{Period, Nothing}=nothing,
     )
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
 handler must be exported. Only functions with correct type signatures (see above) are used.
 
 !!! note
-    If you specify a `tag` and/or `expiry`, it's applied to all of the handlers in the
-    module. That means if you add two handlers for the same event type, one of them will be
-    immediately overwritten.
+    If you specify a `tag`, `pred`, `n`, and/or `expiry`, it's applied to all of the
+    handlers in the module. For example, if you add two handlers for the same event type
+    with the same tag, one of them will be immediately overwritten.
 """
 function add_handler!(
     c::Client,
     m::Module;
     tag::Symbol=gensym(),
-    expiry::Union{Int, Period, Nothing}=nothing,
+    pred::Function=alwaystrue,
+    n::Union{Int, Nothing}=nothing,
+    expiry::Union{Period, Nothing}=nothing,
 )
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f).ms
             ts = m.sig.types[2:end]
             length(m.sig.types) == 3 || continue
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
-                add_handler!(c, m.sig.types[3], f; tag=tag, expiry=expiry)
+                add_handler!(c, m.sig.types[3], f; tag=tag, pred=pred, n=n, expiry=expiry)
             end
         end
     end
 end
 
 """
-    delete_handler!(c::Client, T::Type{<:AbstractEvent})
     delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
+    delete_handler!(c::Client, T::Type{<:AbstractEvent})
 
 Delete event handlers. If no `tag` is supplied, all handlers for the event are deleted.
 Using the tagless method is generally not recommended because it also clears default
 handlers which maintain the client state. If you do want to delete a default handler, use
 [`DEFAULT_HANDLER_TAG`](@ref).
 """
-delete_handler!(c::Client, T::Type{<:AbstractEvent}) = delete!(c.handlers, T)
-
 function delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
-    delete!(get(c.handlers, T, Dict()), tag)
-end
-
-function add_waiter!(
-    c::Client,
-    func::Function,
-    T::Type{<:AbstractEvent};
-    pred::Function=e -> true,
-    tag::Symbol=gensym(),
-    expiry::Union{Int, Period, Nothing}=1,
-)
-    if !hasmethod(func, (T,))
-        throw(ArgumentError("Predicate function must accept (::$T)"))
-    end
-    if !hasmethod(func, (Client, T))
-        throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
-    end
-
-    w = Waiter(func, pred, expiry)
-    if isexpired(w)
-        throw(ArgumentError("Can't add a waiter that will never run"))
-    end
-
-    if haskey(c.waiters, T)
-        c.waiters[T][tag] = w
-    else
-        c.waiters[T] = Dict(tag => w)
+    handlers = get(c.handlers, T, Dict())
+    if haskey(handlers, tag)
+        notify(handlers[tag])
+        delete!(handlers, tag)
     end
 end
+function delete_handler!(c::Client, T::Type{<:AbstractEvent})
+    foreach(p -> delete_handler!(c, T, p.first), get(c.handlers, T, Dict()))
+    delete!(c.handlers, T)
+end
 
-# Get all handlers for a specific event, and delete expired ones.
+# Get all handlers for a specific event.
 function handlers(c::Client, T::Type{<:AbstractEvent})
-    return collect(filter!(p -> !isexpired(p.second), get(c.handlers, T, Dict())))
+    return collect(filter(p -> !isexpired(p.second), get(c.handlers, T, Dict())))
 end
 
 # Get all handlers that should be run for an event, including catch-alls and fallbacks.

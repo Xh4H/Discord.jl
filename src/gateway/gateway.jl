@@ -285,9 +285,7 @@ end
 # Dispatch an event to its handlers.
 function dispatch(c::Client, data::Dict)
     c.hb_seq = data[:s]
-
     T = get(EVENT_TYPES, data[:t], UnknownEvent)
-
     handlers = allhandlers(c, T)
     # If there are no handlers to call, don't bother parsing the event.
     isempty(handlers) && return
@@ -305,17 +303,28 @@ function dispatch(c::Client, data::Dict)
         end
     end
 
+    filter!(handlers) do p
+        try
+            # Without invokelatest, we hit world age issues.
+            Base.invokelatest(pred(p.second), c, evt) === true
+        catch e
+            msg = "Predicate function raised an exception:\n$(catchmsg(e))"
+            @warn msg logkws(c; event=T, handler=p.first)...
+            false
+        end
+    end
+
     for (tag, handler) in handlers
         @async try
-            handler.f(c, evt)
+            func(handler)(c, evt)
         catch e
-            @error catchmsg(e) logkws(c; event=T, handler=tag)...
+            msg = "Handler function raised an exception:\n$(catchmsg(e))"
+            @error msg logkws(c; event=T, handler=tag)...
             push!(c.state.errors, evt)
         finally
             # TODO: There are race conditions here.
-            if handler.expiry isa Int && handler.expiry != -1
-                handler.expiry -= 1
-            end
+            dec!(handler)
+            isexpired(handler) && delete_handler!(c, eltype(handler), tag)
         end
     end
 end
