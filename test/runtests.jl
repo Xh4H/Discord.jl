@@ -28,7 +28,9 @@ using Discord:
     should_put,
     snowflake,
     snowflake2datetime,
+    validate_fetch,
     worker_id,
+    wrapfn,
     writejson,
     @boilerplate,
     @dict,
@@ -223,6 +225,31 @@ end
                 "mentions" => [JSON.lower(u)],
             ))
             @test plaintext(msg) == "@foo @foo"
+        end
+
+        @testset "@fetch/@fetchval" begin
+            @testset "wrapfn" begin
+                ex = :(foo(1, 2, 3))
+
+                # Calls to the designated functions get wrapped in another function.
+                @test wrapfn(ex, (:foo,), :bar) == :($(esc(:bar))($(esc(:(foo(1, 2, 3))))))
+                # But only if we specify that function to be wrapped.
+                @test wrapfn(ex, (:baz,), :bar) == ex
+
+                ex = :(x = foo(1))
+                expected = :($(esc(:x)) = $(esc(:baz))($(esc(:(foo(1))))))
+
+                # The function operates recursively.
+                @test wrapfn(ex, (:foo,), :baz) == expected
+            end
+
+            @testset "validate_fetch" begin
+                @test_throws ArgumentError validate_fetch(:foo, :(begin end))
+                @test_throws ArgumentError validate_fetch(:create, :foo, :(begin end))
+                @test_throws ArgumentError validate_fetch(:create, :(x = 1))
+                @test_throws ArgumentError validate_fetch(:create, :retrieve)
+                validate_fetch(:create, :(begin end))
+            end
         end
     end
 

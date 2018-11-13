@@ -13,4 +13,6 @@ reply
 plaintext
 upload_file
 set_game
+@fetch
+@fetchval
 ```

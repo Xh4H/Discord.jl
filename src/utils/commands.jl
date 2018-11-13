@@ -9,9 +9,9 @@ export add_command!
         expiry::Union{Int, Period, Nothing}=nothing,
     )
     add_command!(
-        func::Function;
+        func::Function,
         c::Client,
-        prefix::AbstractString,
+        prefix::AbstractString;
         tag::Symbol=gensym(),
         expiry::Union{Int, Period, Nothing}=nothing,
     )

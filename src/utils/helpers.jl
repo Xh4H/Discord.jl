@@ -34,7 +34,11 @@ export PERM_CREATE_INSTANT_INVITE,
     reply,
     plaintext,
     upload_file,
-    set_game
+    set_game,
+    @fetch,
+    @fetchval
+
+const CRUD_FNS = :create, :retrieve, :update, :delete
 
 """
 Bitwise permission flags.
@@ -270,4 +274,93 @@ function set_game(
 )
     activity = merge(Dict("name" => game, "type" => type), kwargs)
     return update_status(c, since, activity, status, afk)
+end
+
+"""
+    @fetch [functions...] block
+
+Within a block, wrap all calls to CRUD functions ([`create`](@ref), [`retrieve`](@ref),
+[`update`](@ref), and [`delete`](@ref)) in `fetch`. If no functions are specified, all CRUD
+functions are wrapped.
+
+# Example
+```julia
+julia> resp = @fetch begin
+           resp = create(c, Guild; name="foo")  # Blocks and returns a Response.
+           retrieve(c, DiscordChannel, resp.val)  # Blocks and returns a Response.
+       end
+
+julia> typeof(resp)
+Response{Vector{DiscordChannel}}
+
+julia> future = @fetch retrieve begin
+           resp = retrieve(c, DiscordChannel, 123)  # Blocks and returns a Response.
+           create(c, Message, resp.val; content="foo")  # Behaves normally.
+       end
+
+julia> typeof(future)
+Distributed.Future
+```
+"""
+macro fetch(exs...)
+    validate_fetch(exs...)
+    fns = length(exs) == 1 ? CRUD_FNS : exs[1:end-1]
+    quote
+        $(wrapfn(exs[end], fns, :fetch))
+    end
+end
+
+"""
+    @fetchval [functions...] block
+
+Within a block, wrap all calls to CRUD functions ([`create`](@ref), [`retrieve`](@ref),
+[`update`](@ref), and [`delete`](@ref)) in [`fetchval`](@ref). If no functions are
+specified, all CRUD functions are wrapped.
+
+# Example
+```julia
+julia> channels = @fetchval begin
+           guild = create(c, Guild; name="foo")  # Blocks and returns the guild.
+           retrieve(c, DiscordChannel, 123)  # Blocks and returns the channels.
+       end
+
+julia> typeof(channels)
+Vector{DiscordChannel}
+
+julia> future = @fetchval retrieve begin
+           channel = retrieve(c, DiscordChannel, 123)  # Blocks and returns the channel.
+           create(c, Message, channel; content="foo")  # Behaves normally.
+       end
+
+julia> typeof(future)
+Distributed.Future
+```
+"""
+macro fetchval(exs...)
+    validate_fetch(exs...)
+    fns = length(exs) == 1 ? CRUD_FNS : exs[1:end-1]
+    quote
+        $(wrapfn(exs[end], fns, :fetchval))
+    end
+end
+
+# Validate the arguments to @fetch or @fetchval.
+function validate_fetch(exs...)
+    if !(exs[end] isa Expr && exs[end].head === :block)
+        throw(ArgumentError("Final argument must be a block"))
+    end
+    if !all(fn -> fn in CRUD_FNS, exs[1:end-1])
+        throw(ArgumentError("Only CRUD functions can be wrapped"))
+    end
+end
+
+# Wrap calls to certain functions in a call to another function.
+wrapfn(ex, ::Tuple, ::Symbol) = esc(ex)
+function wrapfn(ex::Expr, fns::Tuple, with::Symbol)
+    if ex.head === :call && ex.args[1] in fns
+        ex = :($(esc(with))($(esc(ex))))
+    else
+        map!(arg -> wrapfn(arg, fns, with), ex.args, ex.args)
+    end
+    return ex
 end

@@ -160,9 +160,9 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         expiry::Union{Int, Period, Nothing}=nothing,
     )
     add_handler!(
-        func::Function;
+        func::Function,
         c::Client,
-        T::Type{<:AbstractEvent},
+        T::Type{<:AbstractEvent};
         tag::Symbol=gensym(),
         expiry::Union{Int, Period, Nothing}=nothing,
     )
