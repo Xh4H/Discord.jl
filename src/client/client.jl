@@ -30,44 +30,60 @@ abstract type AbstractHandler{T<:AbstractEvent} end
 donothing(args...; kwargs...) = nothing
 alwaystrue(args...; kwargs...) = true
 Base.eltype(::AbstractHandler{T}) where T = T
-Base.notify(::AbstractHandler) = nothing
-Base.wait(::AbstractHandler) = nothing
+Base.put!(::AbstractHandler, ::Vector) = nothing
+Base.take!(::AbstractHandler) = []
 func(::AbstractHandler) = donothing
 pred(::AbstractHandler) = alwaystrue
 expiry(::AbstractHandler) = nothing
 dec!(::AbstractHandler) = nothing
-isexpired(h::AbstractHandler) = false
+isexpired(::AbstractHandler) = false
+iscollecting(::AbstractHandler) = false
+results(::AbstractHandler) = []
 
 mutable struct Handler{T} <: AbstractHandler{T}
     func::Function
     pred::Function
     remaining::Union{Int, Nothing}
     expiry::Union{DateTime, Nothing}
-    cond::Condition
+    collect::Bool
+    results::Vector{Any}
+    chan::Channel{Vector{Any}}
 
     function Handler{T}(
         func::Function,
         pred::Function,
         remaining::Union{Int, Nothing},
         expiry::Union{DateTime, Nothing},
+        collect::Bool,
     ) where T <: AbstractEvent
-        return new{T}(func, pred, remaining, expiry, Condition())
+        return new{T}(func, pred, remaining, expiry, collect, [], Channel{Vector{Any}}(1))
     end
     function Handler{T}(
         func::Function,
         pred::Function,
         remaining::Union{Int, Nothing},
         expiry::Period,
+        collect::Bool,
     ) where T <: AbstractEvent
-        return new{T}(func, pred, remaining, now() + expiry, Condition())
+        return new{T}(
+            func,
+            pred,
+            remaining,
+            now() + expiry,
+            collect,
+            [],
+            Channel{Vector{Any}}(1),
+        )
     end
 end
 
 func(h::Handler) = h.func
 pred(h::Handler) = h.pred
 expiry(h::Handler) = h.expiry
-Base.notify(h::Handler) = notify(h.cond)
 dec!(h::Handler) = h.remaining isa Int && (h.remaining -= 1)
+iscollecting(h::Handler) = h.collect
+results(h::Handler) = h.results
+Base.put!(h::Handler, v::Vector) = put!(h.chan, v)
 
 function isexpired(h::Handler)
     return if h.remaining isa Int && h.remaining <= 0
@@ -79,12 +95,17 @@ function isexpired(h::Handler)
     end
 end
 
-function Base.wait(h::Handler)
-    if h.remaining === nothing && h.expiry === nothing
-        throw(ArgumentError("Can't wait for a handler with no expiry"))
+function Base.take!(h::Handler)
+    iscollecting(h) || return []
+
+    if h.remaining isa Int && h.remaining > 0
+        wait(h.chan)
+    elseif h.expiry isa DateTime && h.expiry > now()
+        sleep(h.expiry - now())
     end
-    h.remaining isa Int && h.remaining > 0 && wait(h.cond)
-    h.expiry isa DateTime && h.expiry > now() && sleep(h.expiry - now())
+
+    # Expired handlers don't always get cleaned up immediately.
+    isready(h.chan) ? take!(h.chan) : results(h)
 end
 
 # A versioned WebSocket connection.
@@ -204,15 +225,8 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         tag::Symbol=gensym(),
         n::Union{Int, Nothing}=nothing,
         expiry::Union{Period, Nothing}=nothing,
-    )
-    add_handler!(
-        func::Function,
-        c::Client,
-        T::Type{<:AbstractEvent};
-        tag::Symbol=gensym(),
-        n::Union{Int, Nothing}=nothing,
-        expiry::Union{Period, Nothing}=nothing,
-    )
+        wait::Bool=false,
+    ) -> Union{Vector{Any}, Nothing}
 
 Add an event handler. `func` should be a function which takes two arguments: A
 [`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). The handler is appended to
@@ -224,13 +238,12 @@ by using a `Union`. `do` syntax is also accepted.
   [`delete_handler!`](@ref).
 - `pred::Function=alwaystrue`: A predicate function. The handler will only run if this
   function returns `true`. Its signature should match that of `func`.
-- `n::Union{Int, Nothing}=nothing`: The number of times to run the handler before expiring.
-  if left unset, the handler runs an infinite number of times. Can be used in conjunction
-  with `expiry`.
+- `n::Union{Int, Nothing}=nothing`: The number of times to run the handler. if left unset,
+  the handler stays active forever. Can be used in conjunction with `expiry`.
 - `expiry::Union{Period, Nothing}=nothing`: The handler's time expiry. If left unset,
   the handler stays active forever. Can be used in conjunction with `n`.
-- `block::Bool=false`: If set, block until the handler expires. You must set `expiry` or
-  `n` along with this keyword.
+- `wait::Bool=false`: If set, block until the handler expires, then return the handler's
+  results. You must set `expiry` or `n` along with this keyword.
 
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
@@ -244,16 +257,16 @@ function add_handler!(
     pred::Function=alwaystrue,
     n::Union{Int, Nothing}=nothing,
     expiry::Union{Period, Nothing}=nothing,
-    block::Bool=false,
+    wait::Bool=false,
 )
     if T isa Union
-        block && throw(ArgumentError("Can only block for one event at a time"))
-        add_handler!(c, T.a, func; tag=tag, pred=pred, expiry=expiry)
-        add_handler!(c, T.b, func; tag=tag, pred=pred, expiry=expiry)
+        wait && throw(ArgumentError("Can only block for one event at a time"))
+        add_handler!(c, T.a, func; tag=tag, pred=pred, n=n, expiry=expiry)
+        add_handler!(c, T.b, func; tag=tag, pred=pred, n=n, expiry=expiry)
         return
     end
 
-    h = Handler{T}(func, pred, n, expiry)
+    h = Handler{T}(func, pred, n, expiry, wait)
 
     if !hasmethod(func, (Client, T))
         throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
@@ -271,8 +284,7 @@ function add_handler!(
         c.handlers[T] = Dict(tag => h)
     end
 
-    block && wait(h)
-    return nothing
+    return wait ? take!(h) : nothing
 end
 
 function add_handler!(
@@ -283,9 +295,9 @@ function add_handler!(
     pred::Function=alwaystrue,
     n::Union{Int, Nothing}=nothing,
     expiry::Union{Period, Nothing}=nothing,
-    block::Bool=false,
+    wait::Bool=false,
 )
-    return add_handler!(c, T, func; tag=tag, pred=pred, n=n, expiry=expiry, block=block)
+    return add_handler!(c, T, func; tag=tag, pred=pred, n=n, expiry=expiry, wait=wait)
 end
 
 """
@@ -335,10 +347,11 @@ handlers which maintain the client state. If you do want to delete a default han
 [`DEFAULT_HANDLER_TAG`](@ref).
 """
 function delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)
-    handlers = get(c.handlers, T, Dict())
-    if haskey(handlers, tag)
-        notify(handlers[tag])
-        delete!(handlers, tag)
+    hs = get(c.handlers, T, Dict())
+    h = get(hs, tag, nothing)
+    if h !== nothing
+        put!(h, results(h))
+        delete!(hs, tag)
     end
 end
 function delete_handler!(c::Client, T::Type{<:AbstractEvent})

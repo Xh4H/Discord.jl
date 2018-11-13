@@ -316,7 +316,8 @@ function dispatch(c::Client, data::Dict)
 
     for (tag, handler) in handlers
         @async try
-            func(handler)(c, evt)
+            result = func(handler)(c, evt)
+            iscollecting(handler) && push!(results(handler), result)
         catch e
             msg = "Handler function raised an exception:\n$(catchmsg(e))"
             @error msg logkws(c; event=T, handler=tag)...
