@@ -322,7 +322,7 @@ function Base.tryparse(c::Client, T::Type, data)
     return try
         T <: Vector ? eltype(T).(data) : T(data), nothing
     catch e
-        @error catchmsg(e) logkws(c)...
+        @error catchmsg(e) logkws(c; T=T)...
         push!(c.state.errors, data)
         nothing, e
     end

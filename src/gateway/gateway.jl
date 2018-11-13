@@ -300,6 +300,7 @@ function dispatch(c::Client, data::Dict)
             val
         else
             T = UnknownEvent
+            handlers = allhandlers(c, T)
             UnknownEvent(data)
         end
     end
