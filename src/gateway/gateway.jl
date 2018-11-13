@@ -220,8 +220,8 @@ function update_status(
 )
     since != Nothing && (c.state.login_presence["since"] = since)
     game != Nothing && (c.state.login_presence["game"] = game)
-    c.state.login_presence["status"] = since
-    c.state.login_presence["afk"] = since
+    c.state.login_presence["status"] = status
+    c.state.login_presence["afk"] = afk
 
     return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
