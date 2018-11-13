@@ -115,7 +115,7 @@ function Response{T}(c::Client, r::HTTP.Messages.Response) where T
     r.status >= 300 && return Response{T}(nothing, false, r, nothing)
 
     data = if HTTP.header(r, "Content-Type") == "application/json"
-        JSON.parse(String(copy(r.body)))
+        JSON.parse(String(copy(r.body)); dicttype=Dict{Symbol, Any})
     else
         copy(r.body)
     end

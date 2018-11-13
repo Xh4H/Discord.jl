@@ -33,7 +33,7 @@ using Discord:
     wrapfn,
     writejson,
     @boilerplate,
-    @dict,
+    @constructors,
     @lower,
     @merge
 
@@ -49,7 +49,7 @@ using Discord:
     h::Union{Foo, Missing}
     abcdefghij::Union{Int, Missing}  # 10 characters.
 end
-@eval Discord @boilerplate Foo :dict :docs :lower :merge
+@eval Discord @boilerplate Foo :constructors :docs :lower :merge
 
 # A simple struct with merge.
 @eval Discord struct Bar
@@ -201,9 +201,9 @@ end
     end
 
     @testset "Helpers" begin
-        ch = DiscordChannel(Dict("id" => "255", "type" => 0, "guild_id" => "1"))
+        ch = DiscordChannel(; id="255", type=0, guild_id="1")
         r = Role(0xff, "", 0, true, 0, 0, false, false)
-        u = User(Dict{String, Any}("id" => "255", "username" => "foo"))
+        u = User(; id="255", username="foo")
 
         @testset "mention" begin
             @test mention(ch) == "<#255>"
@@ -218,12 +218,12 @@ end
         end
 
         @testset "plaintext" begin
-            msg = Message(Dict(
-                "id" => "1",
-                "channel_id" => "1",
-                "content" => "<@255> <@!255>",
-                "mentions" => [JSON.lower(u)],
-            ))
+            msg = Message(;
+                id="1",
+                channel_id="1",
+                content="<@255> <@!255>",
+                mentions=[JSON.lower(u)],
+            )
             @test plaintext(msg) == "@foo @foo"
         end
 
@@ -383,19 +383,20 @@ end
 
     @testset "Boilerplate" begin
         local f
-        d = Dict(
-            "a" => "foo",
-            "b" => "2018-10-08T05:20:22.782Z",
-            "c" => "1234567890",
-            "d" => ["a", "b", "c"],
-            "e" => 1,
-            "f" => 2,
-            "g" => ["a", "b", "c"],
+        kwargs = Dict(
+            :a => "foo",
+            :b => "2018-10-08T05:20:22.782Z",
+            :c => "1234567890",
+            :d => ["a", "b", "c"],
+            :e => 1,
+            :f => 2,
+            :g => ["a", "b", "c"],
         )
-        d["h"] = copy(d)
+        kwargs[:h] = copy(kwargs)
 
-        @testset "@dict" begin
-            f = Foo(d)
+        @testset "@constructors" begin
+            f = Foo(; kwargs...)
+            @test f.a == Foo(kwargs).a
             @test f.a == "foo"
             @test f.b == DateTime(2018, 10, 8, 5, 20, 22, 782)
             @test f.c == 1234567890
@@ -406,17 +407,17 @@ end
             @test f.h isa Foo && f.h.a == "foo"
 
             # Set e to nothing, f and g to missing.
-            d["e"] = nothing
-            delete!(d, "f")
-            delete!(d, "g")
-            f = Foo(d)
+            kwargs[:e] = nothing
+            delete!(kwargs, :f)
+            delete!(kwargs, :g)
+            f = Foo(; kwargs...)
             @test f.e === nothing
             @test ismissing(f.f)
             @test ismissing(f.g)
 
             # Union{T, Nothing, Missing} works too.
-            d["g"] = nothing
-            f = Foo(d)
+            kwargs[:g] = nothing
+            f = Foo(; kwargs...)
             @test f.g === nothing
         end
 
@@ -435,19 +436,19 @@ end
         end
 
         @testset "@lower" begin
-            d["b"] = d["h"]["b"] = round(Int, datetime2unix(f.b))
-            d["c"] = d["h"]["c"] = snowflake(f.c)
-            d = JSON.lower(f)
-            # The result is always a Dict{String, Any}.
-            @test d isa Dict{String, Any}
-            @test d == Dict(
-                "a" => "foo",
-                "b" => d["b"],
-                "c" => d["c"],
-                "d" => ["a", "b", "c"],
-                "e" => nothing,
-                "g" => nothing,
-                "h" => d["h"],
+            kwargs[:b] = kwargs[:h][:b] = round(Int, datetime2unix(f.b))
+            kwargs[:c] = kwargs[:h][:c] = snowflake(f.c)
+            lowered = JSON.lower(f)
+            # The result is always a Dict{Symbol, Any}.
+            @test lowered isa Dict{Symbol, Any}
+            @test lowered == Dict(
+                :a => "foo",
+                :b => kwargs[:b],
+                :c => kwargs[:c],
+                :d => ["a", "b", "c"],
+                :e => nothing,
+                :g => nothing,
+                :h => kwargs[:h],
             )
         end
 

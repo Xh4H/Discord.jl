@@ -59,7 +59,7 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     @debug "Receiving HELLO" logkws(c)...
     data, e = readjson(c.conn.io)
     e === nothing || throw(e)
-    op = get(OPCODES, data["op"], data["op"])
+    op = get(OPCODES, data[:op], data[:op])
     op === :HELLO || error("Expected opcode HELLO, received $op")
     hello(c, data)
 
@@ -268,10 +268,10 @@ function read_loop(c::Client)
                 else
                     @debug "Read failed, but the connection is outdated" logkws(c; error=e)...
                 end
-            elseif haskey(HANDLERS, data["op"])
-                HANDLERS[data["op"]](c, data)
+            elseif haskey(HANDLERS, data[:op])
+                HANDLERS[data[:op]](c, data)
             else
-                @warn "Unkown opcode" logkws(c; op=data["op"])...
+                @warn "Unkown opcode" logkws(c; op=data[:op])...
             end
         end
         @debug "Read loop exited" logkws(c; conn=v)...
@@ -284,9 +284,9 @@ end
 
 # Dispatch an event to its handlers.
 function dispatch(c::Client, data::Dict)
-    c.hb_seq = data["s"]
+    c.hb_seq = data[:s]
 
-    T = get(EVENT_TYPES, data["t"], UnknownEvent)
+    T = get(EVENT_TYPES, data[:t], UnknownEvent)
 
     handlers = allhandlers(c, T)
     # If there are no handlers to call, don't bother parsing the event.
@@ -295,7 +295,7 @@ function dispatch(c::Client, data::Dict)
     evt = if T === UnknownEvent
         UnknownEvent(data)
     else
-        val, e = tryparse(c, T, data["d"])
+        val, e = tryparse(c, T, data[:d])
         if e === nothing
             val
         else
@@ -335,13 +335,13 @@ end
 
 # React to an invalid session.
 function invalid_session(c::Client, data::Dict)
-    @warn "Received INVALID_SESSION" logkws(c; resumable=data["d"])...
+    @warn "Received INVALID_SESSION" logkws(c; resumable=data[:d])...
     sleep(rand(1:5))
-    reconnect(c; resume=data["d"])
+    reconnect(c; resume=data[:d])
 end
 
 # React to a hello message.
-hello(c::Client, data::Dict) = c.hb_interval = data["d"]["heartbeat_interval"]
+hello(c::Client, data::Dict) = c.hb_interval = data[:d][:heartbeat_interval]
 
 # React to a heartbeack ack.
 heartbeat_ack(c::Client, ::Dict) = c.last_ack = now()
@@ -413,7 +413,7 @@ function readjson(io)
         if isempty(data)
             nothing, Empty()
         else
-            JSON.parse(String(data)), nothing
+            JSON.parse(String(data); dicttype=Dict{Symbol, Any}), nothing
         end
     catch e
         nothing, e

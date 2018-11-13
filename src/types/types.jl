@@ -33,12 +33,12 @@ macro lower(T)
     else
         quote
             function JSON.lower(x::$T)
-                d = Dict{String, Any}()
+                d = Dict{Symbol, Any}()
 
                 for f in fieldnames($T)
                     v = getfield(x, f)
                     if !ismissing(v)
-                        d[string(f)] = lowered(v)
+                        d[f] = lowered(v)
                     end
                 end
 
@@ -67,33 +67,32 @@ macro merge(T)
     end
 end
 
-# Compute the expression needed to extract field k from a Dict.
-field(k::String, ::Type{Any}) = :(d[$k])
-field(k::String, ::Type{Snowflake}) = :(snowflake(d[$k]))
-field(k::String, ::Type{DateTime}) = :(datetime(d[$k]))
-field(k::String, ::Type{T}) where T = :($T(d[$k]))
-field(k::String, ::Type{Vector{Snowflake}}) = :(snowflake.(d[$k]))
-field(k::String, ::Type{Vector{DateTime}}) = :(datetime.(d[$k]))
-field(k::String, ::Type{Vector{T}}) where T = :($T.(d[$k]))
-function field(k::String, ::Type{Union{T, Missing}}) where T
-    return :(haskey(d, $k) ? $(field(k, T)) : missing)
+# Compute the expression needed to extract field k from keywords.
+field(k::QuoteNode, ::Type{Any}) = :(kwargs[$k])
+field(k::QuoteNode, ::Type{Snowflake}) = :(snowflake(kwargs[$k]))
+field(k::QuoteNode, ::Type{DateTime}) = :(datetime(kwargs[$k]))
+field(k::QuoteNode, ::Type{T}) where T = :($T(kwargs[$k]))
+field(k::QuoteNode, ::Type{Vector{Snowflake}}) = :(snowflake.(kwargs[$k]))
+field(k::QuoteNode, ::Type{Vector{DateTime}}) = :(datetime.(kwargs[$k]))
+field(k::QuoteNode, ::Type{Vector{T}}) where T = :($T.(kwargs[$k]))
+function field(k::QuoteNode, ::Type{Union{T, Missing}}) where T
+    return :(haskey(kwargs, $k) ? $(field(k, T)) : missing)
 end
-function field(k::String, ::Type{Union{T, Nothing}}) where T
-    return :(d[$k] === nothing ? nothing : $(field(k, T)))
+function field(k::QuoteNode, ::Type{Union{T, Nothing}}) where T
+    return :(kwargs[$k] === nothing ? nothing : $(field(k, T)))
 end
-function field(k::String, ::Type{Union{T, Nothing, Missing}}) where T
-    return :(haskey(d, $k) ? $(field(k, Union{T, Nothing})) : missing)
+function field(k::QuoteNode, ::Type{Union{T, Nothing, Missing}}) where T
+    return :(haskey(kwargs, $k) ? $(field(k, Union{T, Nothing})) : missing)
 end
 
-# Define a constructor from a Dict for a type.
-macro dict(T)
+# Define constructors from keyword arguments and a Dict for a type.
+macro constructors(T)
     TT = eval(T)
-    args = map(f -> field(string(f), fieldtype(TT, f)), fieldnames(TT))
+    args = map(f -> field(QuoteNode(f), fieldtype(TT, f)), fieldnames(TT))
 
     quote
-        function $(esc(T))(d::Dict{String, Any})
-            $(esc(T))($(args...))
-        end
+        $(esc(T))(; kwargs...) = $(esc(T))($(args...))
+        $(esc(T))(d::Dict{Symbol, Any}) = $(esc(T))(; d...)
     end
 end
 
@@ -143,8 +142,8 @@ macro boilerplate(T, exs...)
         @static if :docs in $macros
             @fielddoc $T
         end
-        @static if :dict in $macros
-            @dict $T
+        @static if :constructors in $macros
+            @constructors $T
         end
         @static if :lower in $macros
             @lower $T
