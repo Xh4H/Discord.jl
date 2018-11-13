@@ -279,22 +279,26 @@ end
 """
     @fetch [functions...] block
 
-Within a block, wrap all calls to CRUD functions ([`create`](@ref), [`retrieve`](@ref),
-[`update`](@ref), and [`delete`](@ref)) in `fetch`. If no functions are specified, all CRUD
-functions are wrapped.
+Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@ref),
+[`update`](@ref), and [`delete`](@ref)) with `fetch` inside a block. If no functions are
+specified, all CRUD functions are wrapped.
 
-# Example
+# Examples
 ```julia
 julia> resp = @fetch begin
-           resp = create(c, Guild; name="foo")  # Blocks and returns a Response.
-           retrieve(c, DiscordChannel, resp.val)  # Blocks and returns a Response.
+           resp = create(c, Guild; name="foo")  # Wrapped in fetch.
+           if resp.ok
+               retrieve(c, DiscordChannel, resp.val)  # Wrapped in fetch.
+           else
+               error("Request failed")
+           end
        end
 
 julia> typeof(resp)
 Response{Vector{DiscordChannel}}
 
 julia> future = @fetch retrieve begin
-           resp = retrieve(c, DiscordChannel, 123)  # Blocks and returns a Response.
+           resp = retrieve(c, DiscordChannel, 123)  # Wrapped in fetch.
            create(c, Message, resp.val; content="foo")  # Behaves normally.
        end
 
@@ -313,22 +317,22 @@ end
 """
     @fetchval [functions...] block
 
-Within a block, wrap all calls to CRUD functions ([`create`](@ref), [`retrieve`](@ref),
-[`update`](@ref), and [`delete`](@ref)) in [`fetchval`](@ref). If no functions are
-specified, all CRUD functions are wrapped.
+Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@ref),
+[`update`](@ref), and [`delete`](@ref)) with [`fetchval`](@ref) inside a block. If no
+functions are specified, all CRUD functions are wrapped.
 
-# Example
+# Examples
 ```julia
 julia> channels = @fetchval begin
-           guild = create(c, Guild; name="foo")  # Blocks and returns the guild.
-           retrieve(c, DiscordChannel, 123)  # Blocks and returns the channels.
+           guild = create(c, Guild; name="foo")  # Wrapped in fetchval.
+           retrieve(c, DiscordChannel, 123)  # Wrapped in fetchval.
        end
 
 julia> typeof(channels)
 Vector{DiscordChannel}
 
 julia> future = @fetchval retrieve begin
-           channel = retrieve(c, DiscordChannel, 123)  # Blocks and returns the channel.
+           channel = retrieve(c, DiscordChannel, 123)  # Wrapped in fetchval.
            create(c, Message, channel; content="foo")  # Behaves normally.
        end
 

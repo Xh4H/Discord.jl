@@ -8,6 +8,7 @@ export Client,
 
 include("limiter.jl")
 include("state.jl")
+include("handlers.jl")
 
 """
 Tag assigned to default handlers, which you can use to delete them.
@@ -23,90 +24,6 @@ const DEFAULT_TTLS = TTLDict(
     Presence       => nothing,
     Message        => Hour(6),
 )
-
-# An event handler.
-abstract type AbstractHandler{T<:AbstractEvent} end
-
-donothing(args...; kwargs...) = nothing
-alwaystrue(args...; kwargs...) = true
-Base.eltype(::AbstractHandler{T}) where T = T
-Base.put!(::AbstractHandler, ::Vector) = nothing
-Base.take!(::AbstractHandler) = []
-func(::AbstractHandler) = donothing
-pred(::AbstractHandler) = alwaystrue
-expiry(::AbstractHandler) = nothing
-dec!(::AbstractHandler) = nothing
-isexpired(::AbstractHandler) = false
-iscollecting(::AbstractHandler) = false
-results(::AbstractHandler) = []
-
-mutable struct Handler{T} <: AbstractHandler{T}
-    func::Function
-    pred::Function
-    remaining::Union{Int, Nothing}
-    expiry::Union{DateTime, Nothing}
-    collect::Bool
-    results::Vector{Any}
-    chan::Channel{Vector{Any}}
-
-    function Handler{T}(
-        func::Function,
-        pred::Function,
-        remaining::Union{Int, Nothing},
-        expiry::Union{DateTime, Nothing},
-        collect::Bool,
-    ) where T <: AbstractEvent
-        return new{T}(func, pred, remaining, expiry, collect, [], Channel{Vector{Any}}(1))
-    end
-    function Handler{T}(
-        func::Function,
-        pred::Function,
-        remaining::Union{Int, Nothing},
-        expiry::Period,
-        collect::Bool,
-    ) where T <: AbstractEvent
-        return new{T}(
-            func,
-            pred,
-            remaining,
-            now() + expiry,
-            collect,
-            [],
-            Channel{Vector{Any}}(1),
-        )
-    end
-end
-
-func(h::Handler) = h.func
-pred(h::Handler) = h.pred
-expiry(h::Handler) = h.expiry
-dec!(h::Handler) = h.remaining isa Int && (h.remaining -= 1)
-iscollecting(h::Handler) = h.collect
-results(h::Handler) = h.results
-Base.put!(h::Handler, v::Vector) = put!(h.chan, v)
-
-function isexpired(h::Handler)
-    return if h.remaining isa Int && h.remaining <= 0
-        true
-    elseif h.expiry isa DateTime && now() > h.expiry
-        true
-    else
-        false
-    end
-end
-
-function Base.take!(h::Handler)
-    iscollecting(h) || return []
-
-    if h.remaining isa Int && h.remaining > 0
-        wait(h.chan)
-    elseif h.expiry isa DateTime && h.expiry > now()
-        sleep(h.expiry - now())
-    end
-
-    # Expired handlers don't always get cleaned up immediately.
-    isready(h.chan) ? take!(h.chan) : results(h)
-end
 
 # A versioned WebSocket connection.
 struct Conn
@@ -224,14 +141,13 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         func::Function;
         tag::Symbol=gensym(),
         n::Union{Int, Nothing}=nothing,
-        expiry::Union{Period, Nothing}=nothing,
+        timeout::Union{Period, Nothing}=nothing,
         wait::Bool=false,
     ) -> Union{Vector{Any}, Nothing}
 
 Add an event handler. `func` should be a function which takes two arguments: A
-[`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). The handler is appended to
-the event's current handlers. You can also define a single handler for multiple event types
-by using a `Union`. `do` syntax is also accepted.
+[`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). You can define a single
+handler for multiple event types by using a `Union`. `do` syntax is also accepted.
 
 # Keywords
 - `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
@@ -239,12 +155,27 @@ by using a `Union`. `do` syntax is also accepted.
 - `pred::Function=alwaystrue`: A predicate function. The handler will only run if this
   function returns `true`. Its signature should match that of `func`.
 - `n::Union{Int, Nothing}=nothing`: The number of times to run the handler. if left unset,
-  the handler stays active forever. Can be used in conjunction with `expiry`.
-- `expiry::Union{Period, Nothing}=nothing`: The handler's time expiry. If left unset,
-  the handler stays active forever. Can be used in conjunction with `n`.
+  the handler stays active forever. Can be used in conjunction with `timeout`.
+- `timeout::Union{Period, Nothing}=nothing`: The handler's time expiry. If left unset, the
+  handler stays active forever. Can be used in conjunction with `n`.
 - `wait::Bool=false`: If set, block until the handler expires, then return the handler's
-  results. You must set `expiry` or `n` along with this keyword.
+  results. You must set `timeout` or `n` along with this keyword.
 
+# Examples
+Adding a handler with a timed expiry and tag:
+```julia
+julia> add_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))
+```
+Adding a handler with a predicate and `do` syntax:
+```julia
+julia> add_handler!(c, ChannelCreate; pred=(c, e) -> length(e.channel.name) < 10) do c, e
+           println(e.channel.name)
+       end
+```
+Aggregating results of a handler with a counting expiry:
+```julia
+julia> msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
+```
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
     ([`AbstractEvent`](@ref)) handlers run before specific ones.
@@ -256,17 +187,17 @@ function add_handler!(
     tag::Symbol=gensym(),
     pred::Function=alwaystrue,
     n::Union{Int, Nothing}=nothing,
-    expiry::Union{Period, Nothing}=nothing,
+    timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
 )
     if T isa Union
-        wait && throw(ArgumentError("Can only block for one event at a time"))
-        add_handler!(c, T.a, func; tag=tag, pred=pred, n=n, expiry=expiry)
-        add_handler!(c, T.b, func; tag=tag, pred=pred, n=n, expiry=expiry)
+        wait && throw(ArgumentError("Can only wait for one event at a time"))
+        add_handler!(c, T.a, func; tag=tag, pred=pred, n=n, timeout=timeout)
+        add_handler!(c, T.b, func; tag=tag, pred=pred, n=n, timeout=timeout)
         return
     end
 
-    h = Handler{T}(func, pred, n, expiry, wait)
+    h = Handler{T}(func, pred, n, timeout, wait)
 
     if !hasmethod(func, (Client, T))
         throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
@@ -294,10 +225,10 @@ function add_handler!(
     tag::Symbol=gensym(),
     pred::Function=alwaystrue,
     n::Union{Int, Nothing}=nothing,
-    expiry::Union{Period, Nothing}=nothing,
+    timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
 )
-    return add_handler!(c, T, func; tag=tag, pred=pred, n=n, expiry=expiry, wait=wait)
+    return add_handler!(c, T, func; tag=tag, pred=pred, n=n, timeout=timeout, wait=wait)
 end
 
 """
@@ -307,16 +238,16 @@ end
         tag::Symbol=gensym(),
         pred::Function=alwaystrue,
         n::Union{Int, Nothing}=nothing,
-        expiry::Union{Period, Nothing}=nothing,
+        timeout::Union{Period, Nothing}=nothing,
     )
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
 handler must be exported. Only functions with correct type signatures (see above) are used.
 
 !!! note
-    If you specify a `tag`, `pred`, `n`, and/or `expiry`, it's applied to all of the
-    handlers in the module. For example, if you add two handlers for the same event type
-    with the same tag, one of them will be immediately overwritten.
+    If you specify keywords they are applied to all of the handlers in the module. For
+    example, if you add two handlers for the same event type with the same tag, one of them
+    will be immediately overwritten.
 """
 function add_handler!(
     c::Client,
@@ -324,14 +255,14 @@ function add_handler!(
     tag::Symbol=gensym(),
     pred::Function=alwaystrue,
     n::Union{Int, Nothing}=nothing,
-    expiry::Union{Period, Nothing}=nothing,
+    timeout::Union{Period, Nothing}=nothing,
 )
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f).ms
             ts = m.sig.types[2:end]
             length(m.sig.types) == 3 || continue
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
-                add_handler!(c, m.sig.types[3], f; tag=tag, pred=pred, n=n, expiry=expiry)
+                add_handler!(c, m.sig.types[3], f; tag=tag, pred=pred, n=n, timeout=timeout)
             end
         end
     end
