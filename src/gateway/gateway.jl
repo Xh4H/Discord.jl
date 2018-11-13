@@ -74,13 +74,8 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
             "token" => c.token,
             "properties" => conn_properties,
         ))
-        if !isempty(c.state.login_presence)
-            d["d"]["presence"] = c.state.login_presence
-        end
-        if c.shards > 1
-            d["d"]["shard"] = [c.shard, c.shards]
-        end
-
+        isempty(c.presence) || (d["d"]["presence"] = c.presence)
+        c.shards > 1 && (d["d"]["shard"] = [c.shard, c.shards])
         d
     end
 
@@ -219,10 +214,11 @@ function update_status(
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,
 )
-    since !== nothing && (c.state.login_presence["since"] = since)
-    game !== nothing && (c.state.login_presence["game"] = game)
-    c.state.login_presence["status"] = status
-    c.state.login_presence["afk"] = afk
+    # Update defaults for future calls to set_game.
+    c.presence["since"] = since
+    c.presence["game"] = game
+    c.presence["status"] = status
+    c.presence["afk"] = afk
 
     return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,

@@ -253,23 +253,24 @@ end
 """
     set_game(
         c::Client,
-        name::AbstractString,
+        game::AbstractString;
         type::Union{ActivityType, Int}=AT_GAME,
-        since::Union{Int, Nothing}=nothing,
-        status::Union{PresenceStatus, AbstractString}=PS_ONLINE,
-        afk::Bool=false,
+        since::Union{Int, Nothing}=c.presence["since"],
+        status::Union{PresenceStatus, AbstractString}=c.presence["status"],
+        afk::Bool=c.presence["afk"],
         kwargs...,
     ) -> Bool
 
-Shortcut for [`update_status`](@ref) to set the [`Client`](@ref)'s [`Activity`](@ref).
+Shortcut for [`update_status`](@ref) to set the [`Client`](@ref)'s [`Activity`](@ref). Any
+additional keywords are passed into the `activity` section.
 """
 function set_game(
     c::Client,
     game::AbstractString;
     type::Union{ActivityType, Int}=AT_GAME,
-    since::Union{Int, Nothing}=c.state.login_presence["since"],
-    status::Union{PresenceStatus, AbstractString}=c.state.login_presence["status"],
-    afk::Bool=get(c.state.login_presence, "afk", false),
+    since::Union{Int, Nothing}=c.presence["since"],
+    status::Union{PresenceStatus, AbstractString}=c.presence["status"],
+    afk::Bool=c.presence["afk"],
     kwargs...,
 )
     activity = merge(Dict("name" => game, "type" => type), kwargs)

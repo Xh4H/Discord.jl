@@ -66,7 +66,8 @@ mutable struct Client
     shard::Int          # Client's shard index.
     limiter::Limiter    # Rate limiter.
     ready::Bool         # Client is connected and authenticated.
-    use_cache::Bool     # Whether or not to use the cache for REST ops.
+    use_cache::Bool     # Whether or not to use the cache.
+    presence::Dict      # Default presence options.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, AbstractHandler}}  # Event handlers.
     conn::Conn          # WebSocket connection.
 
@@ -78,7 +79,13 @@ mutable struct Client
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
         ttls = merge(DEFAULT_TTLS, ttls)
-        state = State(presence, ttls)
+        state = State(ttls)
+        presence = merge(Dict(
+            "since" => nothing,
+            "game" => nothing,
+            "status" => PS_ONLINE,
+            "afk" => false,
+        ), Dict(string(k) => v for (k, v) in Dict(pairs(presence))))
 
         c = new(
             token,        # token
@@ -94,6 +101,7 @@ mutable struct Client
             Limiter(),    # limiter
             false,        # ready
             true,         # use_cache
+            presence,     # presence
             Dict(),       # handlers
             # conn left undef, it gets assigned in open.
         )
