@@ -56,4 +56,4 @@ For further examples, guides, and reference, please refer to the documentation l
 ## Contributing
 
 Pull requests are welcome!
-In most cases, it will be helpful to discuss the change you'd like to make on Discord before diving in too deep.
+In most cases, it will be helpful to discuss the change you'd like to make on [Discord](https://discord.gg/ng9TjYd) before diving in too deep.
