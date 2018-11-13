@@ -9,7 +9,8 @@ struct PresenceUpdate <: AbstractEvent
     presence::Presence
 end
 @boilerplate PresenceUpdate :docs
-PresenceUpdate(d::Dict{String, Any}) = PresenceUpdate(Presence(d))
+PresenceUpdate(; kwargs...) = PresenceUpdate(Presence(; kwargs...))
+PresenceUpdate(d::Dict{Symbol, Any}) = PresenceUpdate(; d...)
 
 """
 Sent when a [`User`](@ref) begins typing.
@@ -20,7 +21,7 @@ struct TypingStart <: AbstractEvent
     user_id::Snowflake
     timestamp::DateTime
 end
-@boilerplate TypingStart :dict :docs
+@boilerplate TypingStart :constructors :docs
 
 """
 Sent when a [`User`](@ref)'s details are updated.
@@ -29,4 +30,5 @@ struct UserUpdate <: AbstractEvent
     user::User
 end
 @boilerplate UserUpdate :docs
-UserUpdate(d::Dict{String, Any}) = UserUpdate(User(d))
+UserUpdate(; kwargs...) = UserUpdate(User(; kwargs...))
+UserUpdate(d::Dict{Symbol, Any}) = UserUpdate(; d...)

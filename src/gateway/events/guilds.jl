@@ -20,7 +20,8 @@ struct GuildCreate <: AbstractEvent
     guild::Guild
 end
 @boilerplate GuildCreate :docs
-GuildCreate(d::Dict{String, Any}) = GuildCreate(Guild(d))
+GuildCreate(; kwargs...) = GuildCreate(Guild(; kwargs...))
+GuildCreate(d::Dict{Symbol, Any}) = GuildCreate(; d...)
 
 """
 Sent when a [`Guild`](@ref) is updated.
@@ -29,7 +30,8 @@ struct GuildUpdate <: AbstractEvent
     guild::Guild
 end
 @boilerplate GuildUpdate :docs
-GuildUpdate(d::Dict{String, Any}) = GuildUpdate(Guild(d))
+GuildUpdate(; kwargs...) = GuildUpdate(Guild(; kwargs...))
+GuildUpdate(d::Dict{Symbol, Any}) = GuildUpdate(; d...)
 
 """
 Sent when a [`Guild`](@ref) is deleted.
@@ -38,7 +40,8 @@ struct GuildDelete <: AbstractEvent
     guild::AbstractGuild  # Supposed to be an UnavailableGuild.
 end
 @boilerplate GuildDelete :docs
-GuildDelete(d::Dict{String, Any}) = GuildDelete(AbstractGuild(d))
+GuildDelete(; kwargs...) = GuildDelete(AbstractGuild(; kwargs...))
+GuildDelete(d::Dict{Symbol, Any}) = GuildDelete(; d...)
 
 """
 Sent when a [`User`](@ref) is banned from a [`Guild`](@ref).
@@ -47,7 +50,7 @@ struct GuildBanAdd <: AbstractEvent
     guild_id::Snowflake
     user::User
 end
-@boilerplate GuildBanAdd :dict :docs
+@boilerplate GuildBanAdd :constructors :docs
 
 """
 Sent when a [`User`](@ref) is unbanned from a [`Guild`](@ref).
@@ -56,7 +59,7 @@ struct GuildBanRemove <: AbstractEvent
     guild_id::Snowflake
     user::User
 end
-@boilerplate GuildBanRemove :dict :docs
+@boilerplate GuildBanRemove :constructors :docs
 
 """
 Sent when a [`Guild`](@ref) has its [`Emoji`](@ref)s updated.
@@ -65,7 +68,7 @@ struct GuildEmojisUpdate <: AbstractEvent
     guild_id::Snowflake
     emojis::Vector{Emoji}
 end
-@boilerplate GuildEmojisUpdate :dict :docs
+@boilerplate GuildEmojisUpdate :constructors :docs
 
 """
 Sent when a [`Guild`](@ref) has its [`Integration`](@ref)s updated.
@@ -73,7 +76,7 @@ Sent when a [`Guild`](@ref) has its [`Integration`](@ref)s updated.
 struct GuildIntegrationsUpdate <: AbstractEvent
     guild_id::Snowflake
 end
-@boilerplate GuildIntegrationsUpdate :dict :docs
+@boilerplate GuildIntegrationsUpdate :constructors :docs
 
 """
 Sent when a [`Member`](@ref) is added to a [`Guild`](@ref).
@@ -83,7 +86,10 @@ struct GuildMemberAdd <: AbstractEvent
     member::Member
 end
 @boilerplate GuildMemberAdd :docs
-GuildMemberAdd(d::Dict{String, Any}) = GuildMemberAdd(snowflake(d["guild_id"]), Member(d))
+GuildMemberAdd(d::Dict{Symbol, Any}) = GuildMemberAdd(; d...)
+function GuildMemberAdd(; kwargs...)
+    return GuildMemberAdd(snowflake(kwargs[:guild_id]), Member(; kwargs...))
+end
 
 """
 Sent when a [`Member`](@ref) is removed from a [`Guild`](@ref).
@@ -92,7 +98,7 @@ struct GuildMemberRemove <: AbstractEvent
     guild_id::Snowflake
     user::User
 end
-@boilerplate GuildMemberRemove :dict :docs
+@boilerplate GuildMemberRemove :constructors :docs
 
 """
 Sent when a [`Member`](@ref) is updated in a [`Guild`](@ref).
@@ -103,7 +109,7 @@ struct GuildMemberUpdate <: AbstractEvent
     user::User
     nick::Union{String, Nothing}  # Not supposed to be nullable.
 end
-@boilerplate GuildMemberUpdate :dict :docs
+@boilerplate GuildMemberUpdate :constructors :docs
 
 """
 Sent when the [`Client`](@ref) requests guild members with [`request_guild_members`](@ref).
@@ -112,7 +118,7 @@ struct GuildMembersChunk <: AbstractEvent
     guild_id::Snowflake
     members::Vector{Member}
 end
-@boilerplate GuildMembersChunk :dict :docs
+@boilerplate GuildMembersChunk :constructors :docs
 
 """
 Sent when a new [`Role`](@ref) is created in a [`Guild`](@ref).
@@ -121,7 +127,7 @@ struct GuildRoleCreate <: AbstractEvent
     guild_id::Snowflake
     role::Role
 end
-@boilerplate GuildRoleCreate :dict :docs
+@boilerplate GuildRoleCreate :constructors :docs
 
 """
 Sent when a [`Role`](@ref) is updated in a [`Guild`](@ref).
@@ -130,7 +136,7 @@ struct GuildRoleUpdate <: AbstractEvent
     guild_id::Snowflake
     role::Role
 end
-@boilerplate GuildRoleUpdate :dict :docs
+@boilerplate GuildRoleUpdate :constructors :docs
 
 """
 Sent when a [`Role`](@ref) is deleted from a [`Guild`](@ref).
@@ -139,4 +145,4 @@ struct GuildRoleDelete <: AbstractEvent
     guild_id::Snowflake
     role_id::Snowflake
 end
-@boilerplate GuildRoleDelete :dict :docs
+@boilerplate GuildRoleDelete :constructors :docs

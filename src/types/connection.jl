@@ -9,4 +9,4 @@ struct Connection
     revoked::Bool
     integrations::Vector{Integration}
 end
-@boilerplate Connection :dict :docs :lower :merge
+@boilerplate Connection :constructors :docs :lower :merge

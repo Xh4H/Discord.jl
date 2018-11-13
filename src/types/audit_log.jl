@@ -97,9 +97,10 @@ struct AuditLogChange{T, U}
 end
 @boilerplate AuditLogChange :docs
 
-function AuditLogChange(d::Dict{String, Any})
-    return if haskey(AUDIT_LOG_CHANGE_TYPES, d["key"])
-        T, U = AUDIT_LOG_CHANGE_TYPES[d["key"]]
+AuditLogChange(d::Dict{Symbol, Any}) = AuditLogChange(; d...)
+function AuditLogChange(; kwargs...)
+    return if haskey(AUDIT_LOG_CHANGE_TYPES, kwargs[:key])
+        T, U = AUDIT_LOG_CHANGE_TYPES[kwargs[:key]]
         func = if T === Any
             identity
         elseif T === Snowflake
@@ -110,37 +111,45 @@ function AuditLogChange(d::Dict{String, Any})
             T
         end
 
-        new_value = if haskey(d, "new_value")
-            d["new_value"] isa Vector ? func.(d["new_value"]) : func(d["new_value"])
+        new_value = if haskey(kwargs, :new_value)
+            if kwargs[:new_value] isa Vector
+                func.(kwargs[:new_value])
+            else
+                func(kwargs[:new_value])
+            end
         else
             missing
         end
-        old_value = if haskey(d, "old_value")
-            d["old_value"] isa Vector ? func.(d["old_value"]) : func(d["old_value"])
+        old_value = if haskey(kwargs, :old_value)
+            if kwargs[:old_value] isa Vector
+                func.(kwargs[:old_value])
+            else
+                func(kwargs[:old_value])
+            end
         else
             missing
         end
 
-        AuditLogChange{T, U}(new_value, old_value, d["key"], U)
+        AuditLogChange{T, U}(new_value, old_value, kwargs[:key], U)
     else
         AuditLogChange{Any, Any}(
-            get(d, "new_value", missing),
-            get(d, "old_value", missing),
-            d["key"],
+            get(kwargs, :new_value, missing),
+            get(kwargs, :old_value, missing),
+            kwargs[:key],
             Any,
         )
     end
 end
 
 function JSON.lower(x::AuditLogChange)
-    d = Dict()
+    d = Dict{Symbol, Any}()
     if !ismissing(x.new_value)
-        d["new_value"] = x.new_value
+        d[:new_value] = x.new_value
     end
     if !ismissing(x.old_value)
-        d["old_value"] = x.new_value
+        d[:old_value] = x.new_value
     end
-    d["key"] = x.key
+    d[:key] = x.key
     return d
 end
 
@@ -159,41 +168,35 @@ struct AuditLogOptions
 end
 @boilerplate AuditLogOptions :docs :merge
 
-function AuditLogOptions(d::Dict{String, Any})
+AuditLogOptions(d::Dict{Symbol, Any}) = AuditLogOptions(; d...)
+function AuditLogOptions(; kwargs...)
+    dmd = if haskey(kwargs, :delete_member_days)
+        parse(Int, kwargs[:delete_member_days])
+    else
+        missing
+    end
     return AuditLogOptions(
-        haskey(d, "delete_member_days") ? parse(Int, d["delete_member_days"]) : missing,
-        haskey(d, "members_removed") ? parse(Int, d["members_removed"]) : missing,
-        haskey(d, "channel_id") ? snowflake(d["channel_id"]) : missing,
-        haskey(d, "count") ? parse(Int, d["count"]) : missing,
-        haskey(d, "id") ? snowflake(d["id"]) : missing,
-        haskey(d, "type") ? OverwriteType(d["type"]) : missing,
-        get(d, "role_name", missing),
+        dmd,
+        haskey(kwargs, :members_removed) ? parse(Int, kwargs[:members_removed]) : missing,
+        haskey(kwargs, :channel_id) ? snowflake(kwargs[:channel_id]) : missing,
+        haskey(kwargs, :count) ? parse(Int, kwargs[:count]) : missing,
+        haskey(kwargs, :id) ? snowflake(kwargs[:id]) : missing,
+        haskey(kwargs, :type) ? OverwriteType(kwargs[:type]) : missing,
+        get(kwargs, :role_name, missing),
     )
 end
 
 function JSON.lower(x::AuditLogOptions)
-    d = Dict()
+    d = Dict{Symbol, Any}()
     if !ismissing(x.delete_member_days)
-        d["delete_member_days"] = string(d.delete_member_days)
+        d[:delete_member_days] = string(d.delete_member_days)
     end
-    if !ismissing(x.members_removed)
-        d["members_removed"] = string(d.members_removed)
-    end
-    if !ismissing(x.channel_id)
-        d["channel_id"] = string(d.members_removed)
-    end
-    if !ismissing(x.count)
-        d["count"] = string(x.count)
-    end
-    if !ismissing(x.id)
-        d["id"] = string(x.id)
-    end
-    if !ismissing(x.type)
-        d["type"] = string(x.type)
-    end
-    if !ismissing(x.role_name)
-        d["role_name"] = x.role_name
-    end
+    ismissing(x.members_removed) || (d[:members_removed] = string(d.members_removed))
+    ismissing(x.channel_id) || (d[:channel_id] = string(d.members_removed))
+    ismissing(x.count) || (d[:count] = string(x.count))
+    ismissing(x.id) || (d[:id] = string(x.id))
+    ismissing(x.type) || (d[:type] = string(x.type))
+    ismissing(x.role_name) || (d[:role_name] = x.role_name)
     return d
 end
 
@@ -210,7 +213,7 @@ struct AuditLogEntry
     options::Union{AuditLogOptions, Missing}
     reason::Union{String, Missing}
 end
-@boilerplate AuditLogEntry :dict :docs :lower :merge
+@boilerplate AuditLogEntry :constructors :docs :lower :merge
 
 """
 An audit log.
@@ -221,4 +224,4 @@ struct AuditLog
     users::Vector{User}
     audit_log_entries::Vector{AuditLogEntry}
 end
-@boilerplate AuditLog :dict :docs :lower :merge
+@boilerplate AuditLog :constructors :docs :lower :merge

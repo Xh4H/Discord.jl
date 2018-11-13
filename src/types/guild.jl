@@ -33,10 +33,14 @@ A Discord guild (server).
 Can either be an [`UnavailableGuild`](@ref) or a [`Guild`](@ref).
 """
 abstract type AbstractGuild end
-
-function AbstractGuild(d::Dict{String, Any})
-    return get(d, "unavailable", length(d) <= 2) === true ? UnavailableGuild(d) : Guild(d)
+function AbstractGuild(; kwargs...)
+    return if get(kwargs, :unavailable, length(kwargs) <= 2) === true
+        UnavailableGuild(; kwargs...)
+    else
+        Guild(; kwargs...)
+    end
 end
+AbstractGuild(d::Dict{Symbol, Any}) = AbstractGuild(; d...)
 
 """
 An unavailable Discord guild (server).
@@ -46,7 +50,7 @@ struct UnavailableGuild <: AbstractGuild
     id::Snowflake
     unavailable::Union{Bool, Missing}
 end
-@boilerplate UnavailableGuild :dict :docs :lower :merge
+@boilerplate UnavailableGuild :constructors :docs :lower :merge
 
 """
 A Discord guild (server).
@@ -87,7 +91,7 @@ struct Guild <: AbstractGuild
     djl_users::Union{Set{Snowflake}, Missing}
     djl_channels::Union{Set{Snowflake}, Missing}
 end
-@boilerplate Guild :dict :docs :lower :merge
+@boilerplate Guild :constructors :docs :lower :merge
 
 Base.merge(x::UnavailableGuild, y::Guild) = y
 Base.merge(x::Guild, y::UnavailableGuild) = x

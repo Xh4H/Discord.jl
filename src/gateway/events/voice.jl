@@ -8,7 +8,8 @@ struct VoiceStateUpdate <: AbstractEvent
     state::VoiceState
 end
 @boilerplate VoiceStateUpdate :docs
-VoiceStateUpdate(d::Dict{String, Any}) = VoiceStateUpdate(VoiceState(d))
+VoiceStateUpdate(; kwargs...) = VoiceStateUpdate(VoiceState(; kwargs...))
+VoiceStateUpdate(d::Dict{Symbol, Any}) = VoiceStateUpdate(; d...)
 
 """
 Sent when a [`Guild`](@ref)'s voice server is updated.
@@ -18,4 +19,4 @@ struct VoiceServerUpdate <: AbstractEvent
     guild_id::Snowflake
     endpoint::String
 end
-@boilerplate VoiceServerUpdate :dict :docs
+@boilerplate VoiceServerUpdate :constructors :docs

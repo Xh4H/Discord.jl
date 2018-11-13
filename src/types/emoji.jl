@@ -13,4 +13,4 @@ struct Emoji
     managed::Union{Bool, Missing}
     animated::Union{Bool, Missing}
 end
-@boilerplate Emoji :dict :docs :lower :merge
+@boilerplate Emoji :constructors :docs :lower :merge

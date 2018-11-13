@@ -9,4 +9,4 @@ struct Reaction
     me::Bool
     emoji::Emoji
 end
-@boilerplate Reaction :dict :docs :lower :merge
+@boilerplate Reaction :constructors :docs :lower :merge

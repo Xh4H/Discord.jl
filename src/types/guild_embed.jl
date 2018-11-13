@@ -8,4 +8,4 @@ struct GuildEmbed
     enabled::Bool
     channel_id::Union{Snowflake, Nothing}
 end
-@boilerplate GuildEmbed :dict :docs :lower :merge
+@boilerplate GuildEmbed :constructors :docs :lower :merge

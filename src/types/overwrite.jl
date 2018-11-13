@@ -24,4 +24,4 @@ struct Overwrite
     allow::Int
     deny::Int
 end
-@boilerplate Overwrite :dict :docs :lower :merge
+@boilerplate Overwrite :constructors :docs :lower :merge

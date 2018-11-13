@@ -14,4 +14,4 @@ struct Role
     managed::Bool
     mentionable::Bool
 end
-@boilerplate Role :dict :docs :lower :merge
+@boilerplate Role :constructors :docs :lower :merge

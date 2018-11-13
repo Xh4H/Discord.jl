@@ -21,11 +21,11 @@ it will appear as an `UnknownEvent`. The fields follow the schema defined
 """
 struct UnknownEvent <: AbstractEvent
     t::String
-    d::Dict{String, Any}
+    d::Dict{Symbol, Any}
     s::Union{Int, Nothing}
 end
-
-UnknownEvent(data::Dict) = UnknownEvent(data["t"], data["d"], data["s"])
+UnknownEvent(; kwargs...) = UnknownEvent(kwargs[:t], kwargs[:d], kwargs[:s])
+UnknownEvent(d::Dict{Symbol, Any}) = UnknownEvent(; d...)
 
 include(joinpath("events", "ready.jl"))
 include(joinpath("events", "resumed.jl"))

@@ -8,4 +8,4 @@ struct Ban
     reason::Union{String, Nothing}
     user::User
 end
-@boilerplate Ban :dict :docs :lower :merge
+@boilerplate Ban :constructors :docs :lower :merge

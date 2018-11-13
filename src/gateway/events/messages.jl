@@ -13,7 +13,8 @@ struct MessageCreate <: AbstractEvent
     message::Message
 end
 @boilerplate MessageCreate :docs
-MessageCreate(d::Dict{String, Any}) = MessageCreate(Message(d))
+MessageCreate(; kwargs...) = MessageCreate(Message(; kwargs...))
+MessageCreate(d::Dict{Symbol, Any}) = MessageCreate(; d...)
 
 """
 Sent when a [`Message`](@ref) is updated.
@@ -22,7 +23,8 @@ struct MessageUpdate <: AbstractEvent
     message::Message
 end
 @boilerplate MessageUpdate :docs
-MessageUpdate(d::Dict{String, Any}) = MessageUpdate(Message(d))
+MessageUpdate(; kwargs...) = MessageUpdate(Message(; kwargs...))
+MessageUpdate(d::Dict{Symbol, Any}) = MessageUpdate(; d...)
 
 """
 Sent when a [`Message`](@ref) is deleted.
@@ -32,7 +34,7 @@ struct MessageDelete <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageDelete :dict :docs
+@boilerplate MessageDelete :constructors :docs
 
 """
 Sent when multiple [`Message`](@ref)s are deleted in bulk.
@@ -42,7 +44,7 @@ struct MessageDeleteBulk <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageDeleteBulk :dict :docs
+@boilerplate MessageDeleteBulk :constructors :docs
 
 """
 Sent when a [`Reaction`](@ref) is added to a [`Message`](@ref).
@@ -54,7 +56,7 @@ struct MessageReactionAdd <: AbstractEvent
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
-@boilerplate MessageReactionAdd :dict :docs
+@boilerplate MessageReactionAdd :constructors :docs
 
 """
 Sent when a [`Reaction`](@ref) is removed from a [`Message`](@ref).
@@ -66,7 +68,7 @@ struct MessageReactionRemove <: AbstractEvent
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
-@boilerplate MessageReactionRemove :dict :docs
+@boilerplate MessageReactionRemove :constructors :docs
 
 """
 Sent when all [`Reaction`](@ref)s are removed from a [`Message`](@ref).
@@ -76,4 +78,4 @@ struct MessageReactionRemoveAll <: AbstractEvent
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageReactionRemoveAll :dict :docs
+@boilerplate MessageReactionRemoveAll :constructors :docs
