@@ -141,6 +141,7 @@ randstring() = String(filter(!ispunct, map(i -> Char(rand(48:122)), 1:rand(1:20)
 mock(::Type{Bool}) = rand(Bool)
 mock(::Type{DateTime}) = now()
 mock(::Type{AbstractString}) = randstring()
+mock(::Type{Dict{Symbol, Any}}) = Dict(:a => mock(String), :b => mock(Int))
 mock(::Type{T}) where T <: AbstractString = T(randstring())
 mock(::Type{T}) where T <: Integer = abs(rand(T))
 mock(::Type{T}) where T <: Enum = instances(T)[rand(1:length(instances(T)))]

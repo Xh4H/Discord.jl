@@ -3,6 +3,7 @@ module Discord
 using Dates
 using Distributed
 using HTTP
+using InteractiveUtils
 using JSON
 using OpenTrick
 using Setfield

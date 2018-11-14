@@ -14,6 +14,11 @@ handler. Handlers for this type must accept an [`AbstractEvent`](@ref).
 """
 abstract type FallbackEvent <: AbstractEvent end
 
+function mock(::Union{Type{AbstractEvent}, Type{FallbackEvent}})
+    subs = subtypes(AbstractEvent)
+    return mock(subs[rand(1:length(subs))])
+end
+
 """
 An unknown event. When an event can't be parsed, due to an unknown type or any other error,
 it will appear as an `UnknownEvent`. The fields follow the schema defined
@@ -24,6 +29,7 @@ struct UnknownEvent <: AbstractEvent
     d::Dict{Symbol, Any}
     s::Union{Int, Nothing}
 end
+@boilerplate UnknownEvent :mock
 UnknownEvent(; kwargs...) = UnknownEvent(kwargs[:t], kwargs[:d], kwargs[:s])
 UnknownEvent(d::Dict{Symbol, Any}) = UnknownEvent(; d...)
 

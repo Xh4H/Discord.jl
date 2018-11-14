@@ -1,5 +1,6 @@
 using Dates
 using Distributed
+using InteractiveUtils
 using JSON
 using Test
 
@@ -70,6 +71,7 @@ using Discord: Foo, Bar
 struct TestEvent <: AbstractEvent
     x
 end
+Discord.mock(::Type{TestEvent}) = TestEvent(rand())
 
 # A module with event handlers.
 module Handlers
@@ -471,8 +473,8 @@ end
         end
 
         @testset "@mock" begin
-            # Just make sure this doesn't error.
-            mock(Foo)
+            # Just make sure this doesn't error, it should cover most types.
+            foreach(mock, subtypes(AbstractEvent))
         end
     end
 
