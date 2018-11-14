@@ -32,4 +32,4 @@ struct Presence
     status::PresenceStatus
     activities::Vector{Activity}
 end
-@boilerplate Presence :constructors :docs :lower :merge
+@boilerplate Presence :constructors :docs :lower :merge :mock

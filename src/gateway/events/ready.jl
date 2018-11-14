@@ -11,4 +11,4 @@ struct Ready <: AbstractEvent
     session_id::String
     _trace::Vector{String}
 end
-@boilerplate Ready :constructors :docs
+@boilerplate Ready :constructors :docs :mock

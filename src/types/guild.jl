@@ -41,6 +41,7 @@ function AbstractGuild(; kwargs...)
     end
 end
 AbstractGuild(d::Dict{Symbol, Any}) = AbstractGuild(; d...)
+mock(::Type{AbstractGuild}) = mock(rand(Bool) ? UnavailableGuild : Guild)
 
 """
 An unavailable Discord guild (server).
@@ -50,7 +51,7 @@ struct UnavailableGuild <: AbstractGuild
     id::Snowflake
     unavailable::Union{Bool, Missing}
 end
-@boilerplate UnavailableGuild :constructors :docs :lower :merge
+@boilerplate UnavailableGuild :constructors :docs :lower :merge :mock
 
 """
 A Discord guild (server).
@@ -91,7 +92,7 @@ struct Guild <: AbstractGuild
     djl_users::Union{Set{Snowflake}, Missing}
     djl_channels::Union{Set{Snowflake}, Missing}
 end
-@boilerplate Guild :constructors :docs :lower :merge
+@boilerplate Guild :constructors :docs :lower :merge :mock
 
 Base.merge(x::UnavailableGuild, y::Guild) = y
 Base.merge(x::Guild, y::UnavailableGuild) = x

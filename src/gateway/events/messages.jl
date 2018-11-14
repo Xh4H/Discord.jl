@@ -12,7 +12,7 @@ Sent when a [`Message`](@ref) is sent.
 struct MessageCreate <: AbstractEvent
     message::Message
 end
-@boilerplate MessageCreate :docs
+@boilerplate MessageCreate :docs :mock
 MessageCreate(; kwargs...) = MessageCreate(Message(; kwargs...))
 MessageCreate(d::Dict{Symbol, Any}) = MessageCreate(; d...)
 
@@ -22,7 +22,7 @@ Sent when a [`Message`](@ref) is updated.
 struct MessageUpdate <: AbstractEvent
     message::Message
 end
-@boilerplate MessageUpdate :docs
+@boilerplate MessageUpdate :docs :mock
 MessageUpdate(; kwargs...) = MessageUpdate(Message(; kwargs...))
 MessageUpdate(d::Dict{Symbol, Any}) = MessageUpdate(; d...)
 
@@ -34,7 +34,7 @@ struct MessageDelete <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageDelete :constructors :docs
+@boilerplate MessageDelete :constructors :docs :mock
 
 """
 Sent when multiple [`Message`](@ref)s are deleted in bulk.
@@ -44,7 +44,7 @@ struct MessageDeleteBulk <: AbstractEvent
     channel_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageDeleteBulk :constructors :docs
+@boilerplate MessageDeleteBulk :constructors :docs :mock
 
 """
 Sent when a [`Reaction`](@ref) is added to a [`Message`](@ref).
@@ -56,7 +56,7 @@ struct MessageReactionAdd <: AbstractEvent
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
-@boilerplate MessageReactionAdd :constructors :docs
+@boilerplate MessageReactionAdd :constructors :docs :mock
 
 """
 Sent when a [`Reaction`](@ref) is removed from a [`Message`](@ref).
@@ -68,7 +68,7 @@ struct MessageReactionRemove <: AbstractEvent
     guild_id::Union{Snowflake, Missing}
     emoji::Emoji
 end
-@boilerplate MessageReactionRemove :constructors :docs
+@boilerplate MessageReactionRemove :constructors :docs :mock
 
 """
 Sent when all [`Reaction`](@ref)s are removed from a [`Message`](@ref).
@@ -78,4 +78,4 @@ struct MessageReactionRemoveAll <: AbstractEvent
     message_id::Snowflake
     guild_id::Union{Snowflake, Missing}
 end
-@boilerplate MessageReactionRemoveAll :constructors :docs
+@boilerplate MessageReactionRemoveAll :constructors :docs :mock

@@ -95,7 +95,7 @@ struct AuditLogChange{T, U}
     key::String
     type::Type{U}
 end
-@boilerplate AuditLogChange :docs
+@boilerplate AuditLogChange :docs :mock
 
 AuditLogChange(d::Dict{Symbol, Any}) = AuditLogChange(; d...)
 function AuditLogChange(; kwargs...)
@@ -166,7 +166,7 @@ struct AuditLogOptions
     type::Union{OverwriteType, Missing}
     role_name::Union{String, Missing}
 end
-@boilerplate AuditLogOptions :docs :merge
+@boilerplate AuditLogOptions :docs :merge :mock
 
 AuditLogOptions(d::Dict{Symbol, Any}) = AuditLogOptions(; d...)
 function AuditLogOptions(; kwargs...)
@@ -213,7 +213,7 @@ struct AuditLogEntry
     options::Union{AuditLogOptions, Missing}
     reason::Union{String, Missing}
 end
-@boilerplate AuditLogEntry :constructors :docs :lower :merge
+@boilerplate AuditLogEntry :constructors :docs :lower :merge :mock
 
 """
 An audit log.
@@ -224,4 +224,4 @@ struct AuditLog
     users::Vector{User}
     audit_log_entries::Vector{AuditLogEntry}
 end
-@boilerplate AuditLog :constructors :docs :lower :merge
+@boilerplate AuditLog :constructors :docs :lower :merge :mock

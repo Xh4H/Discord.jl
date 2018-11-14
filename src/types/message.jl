@@ -31,7 +31,7 @@ struct MessageActivity
     type::MessageActivityType
     party_id::Union{String, Missing}
 end
-@boilerplate MessageActivity :constructors :docs :lower :merge
+@boilerplate MessageActivity :constructors :docs :lower :merge :mock
 
 """
 A Rich Presence [`Message`](@ref)'s application information.
@@ -44,7 +44,7 @@ struct MessageApplication
     icon::String
     name::String
 end
-@boilerplate MessageApplication :constructors :docs :lower :merge
+@boilerplate MessageApplication :constructors :docs :lower :merge :mock
 
 """
 A message sent to a [`DiscordChannel`](@ref).
@@ -74,4 +74,4 @@ struct Message
     activity::Union{MessageActivity, Missing}
     application::Union{MessageApplication, Missing}
 end
-@boilerplate Message :constructors :docs :lower :merge
+@boilerplate Message :constructors :docs :lower :merge :mock

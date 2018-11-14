@@ -12,4 +12,4 @@ struct Member
     deaf::Bool
     mute::Bool
 end
-@boilerplate Member :constructors :docs :lower :merge
+@boilerplate Member :constructors :docs :lower :merge :mock

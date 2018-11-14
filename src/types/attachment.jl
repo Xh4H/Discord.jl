@@ -11,4 +11,4 @@ struct Attachment
     height::Union{Int, Missing}
     width::Union{Int, Missing}
 end
-@boilerplate Attachment :constructors :docs :lower :merge
+@boilerplate Attachment :constructors :docs :lower :merge :mock

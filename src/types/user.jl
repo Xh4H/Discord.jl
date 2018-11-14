@@ -17,4 +17,4 @@ struct User
     email::Union{String, Nothing, Missing}  # Not supposed to be nullable.
     # TODO: There's a member field here in one case.
 end
-@boilerplate User :constructors :docs :lower :merge
+@boilerplate User :constructors :docs :lower :merge :mock

@@ -13,4 +13,4 @@ struct Webhook
     avatar::Union{String, Nothing}
     token::Union{String, Missing}  # Missing in audit log entries.
 end
-@boilerplate Webhook :constructors :docs :lower :merge
+@boilerplate Webhook :constructors :docs :lower :merge :mock

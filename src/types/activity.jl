@@ -34,7 +34,7 @@ struct ActivityTimestamps
     start::Union{DateTime, Missing}
     stop::Union{DateTime, Missing}
 end
-@boilerplate ActivityTimestamps :constructors :docs :lower :merge
+@boilerplate ActivityTimestamps :constructors :docs :lower :merge :mock
 
 """
 The current party of an [`Activity`](@ref)'s player.
@@ -44,7 +44,7 @@ struct ActivityParty
     id::Union{String, Missing}
     size::Union{Vector{Int}, Missing}
 end
-@boilerplate ActivityParty :constructors :docs :lower :merge
+@boilerplate ActivityParty :constructors :docs :lower :merge :mock
 
 """
 Images and hover text for an [`Activity`](@ref).
@@ -56,7 +56,7 @@ struct ActivityAssets
     small_image::Union{String, Missing}
     small_text::Union{String, Missing}
 end
-@boilerplate ActivityAssets :constructors :docs :lower :merge
+@boilerplate ActivityAssets :constructors :docs :lower :merge :mock
 
 """
 Secrets for Rich Presence joining and spectating of an [`Activity`](@ref).
@@ -67,7 +67,7 @@ struct ActivitySecrets
     spectate::Union{String, Missing}
     match::Union{String, Missing}
 end
-@boilerplate ActivitySecrets :constructors :docs :lower :merge
+@boilerplate ActivitySecrets :constructors :docs :lower :merge :mock
 
 """
 A [`User`](@ref) activity.
@@ -87,4 +87,4 @@ struct Activity
     instance::Union{Bool, Missing}
     flags::Union{Int, Missing}
 end
-@boilerplate Activity :constructors :docs :lower :merge
+@boilerplate Activity :constructors :docs :lower :merge :mock

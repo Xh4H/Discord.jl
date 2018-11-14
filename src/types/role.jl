@@ -14,4 +14,4 @@ struct Role
     managed::Union{Bool, Missing}
     mentionable::Union{Bool, Missing}
 end
-@boilerplate Role :constructors :docs :lower :merge
+@boilerplate Role :constructors :docs :lower :merge :mock

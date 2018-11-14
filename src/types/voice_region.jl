@@ -12,4 +12,4 @@ struct VoiceRegion
     deprecated::Bool
     custom::Bool
 end
-@boilerplate VoiceRegion :constructors :docs :lower :merge
+@boilerplate VoiceRegion :constructors :docs :lower :merge :mock
