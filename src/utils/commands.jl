@@ -8,6 +8,7 @@ export add_command!
         tag::Symbol=gensym(),
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
+        compile::Bool=false,
     )
 
 Add a text command handler. The handler function should take two arguments: A
@@ -21,6 +22,7 @@ function add_command!(
     tag::Symbol=gensym(),
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
+    compile::Bool=false,
 )
     if !hasmethod(func, (Client, Message))
         throw(ArgumentError("Handler function must accept (::Client, ::Message)"))
@@ -32,7 +34,10 @@ function add_command!(
     end
     handler(c::Client, e::MessageCreate) = func(c, e.message)
 
-    add_handler!(c, MessageCreate, handler; tag=tag, pred=predicate, n=n, timeout=timeout)
+    add_handler!(
+        c, MessageCreate, handler;
+        tag=tag, pred=predicate, n=n, timeout=timeout, compile=compile,
+    )
 end
 
 function add_command!(
@@ -42,8 +47,9 @@ function add_command!(
     tag::Symbol=gensym(),
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
+    compile::Bool=false,
 )
-    return add_command!(c, prefix, func; tag=tag, n=n, timeout=timeout)
+    return add_command!(c, prefix, func; tag=tag, n=n, timeout=timeout, compile=compile)
 end
 
 # TODO: A much nicer command framework.

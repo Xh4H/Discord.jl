@@ -151,6 +151,7 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         wait::Bool=false,
+        compile::Bool=false,
     ) -> Union{Vector{Any}, Nothing}
 
 Add an event handler. `func` should be a function which takes two arguments: A
@@ -168,6 +169,8 @@ handler for multiple event types by using a `Union`. `do` syntax is also accepte
   handler stays active forever. Can be used in conjunction with `n`.
 - `wait::Bool=false`: If set, block until the handler expires, then return the handler's
   results. You must set `timeout` or `n` along with this keyword.
+- `compile::Bool=false`: Immediately run the predicate and handler on a mock input to
+  compile it.
 
 # Examples
 Adding a handler with a timed expiry and tag:
@@ -184,6 +187,10 @@ Aggregating results of a handler with a counting expiry:
 ```julia
 julia> msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
 ```
+Compiling a handler function so its first invocation isn't slow:
+```julia
+julia> add_handler!(c, MessageCreate, (c, e) -> @show e; compile=true)
+```
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
     ([`AbstractEvent`](@ref)) handlers run before specific ones.
@@ -197,11 +204,12 @@ function add_handler!(
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
+    compile::Bool=false,
 )
     if T isa Union
         wait && throw(ArgumentError("Can only wait for one event at a time"))
-        add_handler!(c, T.a, func; tag=tag, pred=pred, n=n, timeout=timeout)
-        add_handler!(c, T.b, func; tag=tag, pred=pred, n=n, timeout=timeout)
+        add_handler!(c, T.a, func; tag=tag, pred=pred, n=n, timeout=timeout, compile=compile)
+        add_handler!(c, T.b, func; tag=tag, pred=pred, n=n, timeout=timeout, compile=compile)
         return
     end
 
@@ -215,6 +223,12 @@ function add_handler!(
     end
     if isexpired(h)
         throw(ArgumentError("Can't add a handler that's already expired"))
+    end
+
+    if compile
+        e = mock(T)
+        try h.pred(c, e) catch end
+        try h.func(c, e) catch end
     end
 
     if haskey(c.handlers, T)
@@ -235,8 +249,12 @@ function add_handler!(
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
+    compile::Bool=false,
 )
-    return add_handler!(c, T, func; tag=tag, pred=pred, n=n, timeout=timeout, wait=wait)
+    return add_handler!(
+        c, T, func;
+        tag=tag, pred=pred, n=n, timeout=timeout, wait=wait, compile=compile,
+    )
 end
 
 """
@@ -247,6 +265,7 @@ end
         pred::Function=alwaystrue,
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
+        compile::Bool=false,
     )
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
@@ -264,13 +283,17 @@ function add_handler!(
     pred::Function=alwaystrue,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
+    compile::Bool=false,
 )
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f).ms
             ts = m.sig.types[2:end]
             length(m.sig.types) == 3 || continue
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
-                add_handler!(c, m.sig.types[3], f; tag=tag, pred=pred, n=n, timeout=timeout)
+                add_handler!(
+                    c, m.sig.types[3], f;
+                    tag=tag, pred=pred, n=n, timeout=timeout, compile=compile,
+                )
             end
         end
     end
