@@ -4,7 +4,8 @@ module CRUD
 
 using Discord
 
-const GUILD = 494962347434049536  # Update this to a guild you have access to.
+# Set this environment variable or replace with your own guild ID.
+const GUILD = parse(Discord.Snowflake, get(ENV, "DISCORD_GUILD_ID", "1234567890"))
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
@@ -47,6 +48,26 @@ function main()
 
     # Delete the channel.
     delete(c, channel)
+
+    # Specific to CRUD: We can omit fetch/fetchval with macros.
+    @fetch retrieve begin  # Here we're only wrapping calls to retrieve in fetch.
+        resp = retrieve(c, Guild, GUILD)  # We don't have to call fetch.
+        println("Response success: $(resp.ok)")
+        future = create(c, DiscordChannel, resp.val; name="foo")  # Still returns a Future.
+    end
+    @fetchval retrieve create begin  # Wrapping calls to both retrieve and create.
+        guild = retrieve(c, Guild, GUILD)  # We get the guild directly.
+        println("Guild name: $(guild.name)")
+        channel = create(c, DiscordChannel, guild; name="foo")  # We get the channel.
+        future = update(c, channel; name="bar")  # Still returns a Future.
+    end
+    # If we don't specify any functions to wrap, they all get wrapped.
+    @fetchval begin
+        guild = retrieve(c, Guild, GUILD)
+        channel = create(c, DiscordChannel, guild; name="foo")
+        channel = update(c, channel; name="bar")
+        delete(c, channel)
+    end
 end
 
 end

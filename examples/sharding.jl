@@ -11,6 +11,8 @@ function main()
 
     add_handler!(c, AbstractEvent) do c, e
         println("shard $(c.shard) received $(typeof(e))")
+    end
+
     open(c)
     return c
 end

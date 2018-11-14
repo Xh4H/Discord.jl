@@ -4,7 +4,8 @@ module REST
 
 using Discord
 
-const GUILD = 494962347434049536  # Update this to a guild you have access to.
+# Set this environment variable or replace with your own guild ID.
+const GUILD = parse(Discord.Snowflake, get(ENV, "DISCORD_GUILD_ID", "1234567890"))
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
