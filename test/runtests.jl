@@ -25,6 +25,7 @@ using Discord:
     iscollecting,
     islimited,
     logkws,
+    mock,
     parse_endpoint,
     process_id,
     readjson,
@@ -53,7 +54,7 @@ using Discord:
     h::Union{Foo, Missing}
     abcdefghij::Union{Int, Missing}  # 10 characters.
 end
-@eval Discord @boilerplate Foo :constructors :docs :lower :merge
+@eval Discord @boilerplate Foo :constructors :docs :lower :merge :mock
 
 # A simple struct with merge.
 @eval Discord struct Bar
@@ -467,6 +468,11 @@ end
             f3 = merge(f, f2)
             @test f3.a == f2.a
             @test f3.h == f.h
+        end
+
+        @testset "@mock" begin
+            # Just make sure this doesn't error.
+            mock(Foo)
         end
     end
 

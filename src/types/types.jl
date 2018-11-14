@@ -134,6 +134,32 @@ macro fielddoc(T)
     end
 end
 
+# Produce a random string.
+randstring() = String(filter(!ispunct, map(i -> Char(rand(48:122)), 1:rand(1:20))))
+
+# Produce a "random" value of a type.
+mock(::Type{Bool}) = rand(Bool)
+mock(::Type{DateTime}) = now()
+mock(::Type{AbstractString}) = randstring()
+mock(::Type{T}) where T <: AbstractString = T(randstring())
+mock(::Type{T}) where T <: Integer = abs(rand(T))
+mock(::Type{T}) where T <: Enum = instances(T)[rand(1:length(instances(T)))]
+mock(::Type{Vector{T}}) where T = map(i -> mock(T), 1:rand(0:10))
+mock(::Type{Set{T}}) where T = Set(map(i -> mock(T), 1:rand(0:10)))
+mock(::Type{Union{T, Missing}}) where T = rand(Bool) ? mock(T) : missing
+mock(::Type{Union{T, Nothing}}) where T = rand(Bool) ? mock(T) : nothing
+mock(::Type{Union{T, Missing, Nothing}}) where T = [mock(T), missing, nothing][rand(1:3)]
+
+# Define a mock method for a type.
+macro mock(T)
+    quote
+        function $(esc(:mock))(::Type{$T})
+            types = map(TT -> fieldtype($(esc(T)), TT), fieldnames($(esc(T))))
+            return $(esc(T))(map(mock, types)...)
+        end
+    end
+end
+
 # Apply the above macros to a type.
 macro boilerplate(T, exs...)
     macros = map(e -> e.value, exs)
@@ -150,6 +176,9 @@ macro boilerplate(T, exs...)
         end
         @static if :merge in $macros
             @merge $T
+        end
+        @static if :mock in $macros
+            @mock $T
         end
     end
 end
