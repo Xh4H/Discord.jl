@@ -33,14 +33,14 @@ end
 UnknownEvent(; kwargs...) = UnknownEvent(kwargs[:t], kwargs[:d], kwargs[:s])
 UnknownEvent(d::Dict{Symbol, Any}) = UnknownEvent(; d...)
 
-include(joinpath("events", "ready.jl"))
-include(joinpath("events", "resumed.jl"))
-include(joinpath("events", "channels.jl"))
-include(joinpath("events", "guilds.jl"))
-include(joinpath("events", "messages.jl"))
-include(joinpath("events", "presence.jl"))
-include(joinpath("events", "voice.jl"))
-include(joinpath("events", "webhooks.jl"))
+include("ready.jl")
+include("resumed.jl")
+include("channels.jl")
+include("guilds.jl")
+include("messages.jl")
+include("presence.jl")
+include("voice.jl")
+include("webhooks.jl")
 
 const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "READY"                       => Ready,

@@ -26,7 +26,7 @@ const DEFAULT_TTLS = TTLDict(
 )
 
 # A versioned WebSocket connection.
-struct Conn
+mutable struct Conn
     io
     v::Int
 end
@@ -71,10 +71,10 @@ mutable struct Client
     ready::Bool                  # Client is connected and authenticated.
     use_cache::Bool              # Whether or not to use the cache.
     presence::Dict               # Default presence options.
+    conn::Conn                   # WebSocket connection.
     p_global::AbstractString     # Default command prefix.
     p_guilds::Dict{Snowflake, AbstractString}  # Command prefix overrides.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, AbstractHandler}}  # Event handlers.
-    conn::Conn          # WebSocket connection.
 
     function Client(
         token::String;
@@ -86,6 +86,7 @@ mutable struct Client
         token = startswith(token, "Bot ") ? token : "Bot $token"
         ttls = merge(DEFAULT_TTLS, ttls)
         state = State(ttls)
+        conn = Conn(nothing, 0)
         presence = merge(Dict(
             "since" => nothing,
             "game" => nothing,
@@ -108,10 +109,10 @@ mutable struct Client
             false,        # ready
             true,         # use_cache
             presence,     # presence
+            conn,         # conn
             prefix,       # p_global
             Dict(),       # p_guilds
             Dict(),       # handlers
-            # conn left undef, it gets assigned in open.
         )
 
         add_handler!(c, Defaults; tag=DEFAULT_HANDLER_TAG)
@@ -348,7 +349,7 @@ end
 function logkws(c::Client; kwargs...)
     kws = Pair[:time => now()]
     c.shards > 1 && push!(kws, :shard => c.shard)
-    isdefined(c, :conn) && push!(kws, :conn => c.conn.v)
+    c.conn.io === nothing || push!(kws, :conn => c.conn.v)
 
     for kw in kwargs
         if kw.second === undef  # Delete any keys overridden with undef.

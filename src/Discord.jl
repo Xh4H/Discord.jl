@@ -27,7 +27,7 @@ function catchmsg(e::Exception)
 end
 
 include(joinpath("types", "types.jl"))
-include(joinpath("gateway", "events.jl"))
+include(joinpath("gateway", "events", "events.jl"))
 include(joinpath("client", "client.jl"))
 include(joinpath("gateway", "gateway.jl"))
 include(joinpath("rest", "rest.jl"))

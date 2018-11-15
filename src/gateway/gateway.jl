@@ -52,9 +52,9 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
 
     data = JSON.parse(String(resp.body))
     url = "$(data["url"])?v=$(c.version)&encoding=json"
-    v = isdefined(c, :conn) ? c.conn.v + 1 : 1
-    @debug "Connecting to gateway" logkws(c; conn=v, url=url)...
-    c.conn = Conn(opentrick(HTTP.WebSockets.open, url), v)
+    c.conn.v += 1
+    @debug "Connecting to gateway" logkws(c; conn=c.conn.v, url=url)...
+    c.conn.io = opentrick(HTTP.WebSockets.open, url)
 
     @debug "Receiving HELLO" logkws(c)...
     data, e = readjson(c.conn.io)
@@ -95,24 +95,23 @@ end
 
 Determine whether the [`Client`](@ref) is connected to the gateway.
 """
-Base.isopen(c::Client) = c.ready && isdefined(c, :conn) && isopen(c.conn.io)
+Base.isopen(c::Client) = c.ready && c.conn.io !== nothing && isopen(c.conn.io)
 
 """
     close(c::Client)
 
-Disconnect the [`Client`](@ref) from the Discord gateway.
+Disconnect the [`Client`](@ref) from the gateway.
 """
 function Base.close(c::Client; statuscode::Int=1000, zombie::Bool=false)
     c.ready = false
-    if isdefined(c, :conn)
-        if zombie
-            # It seems that Discord doesn't send a closing frame for zombie connections
-            # (which makes sense). However, close waits for one forever (see HTTP.jl#350).
-            @async close(c.conn.io; statuscode=statuscode)
-            sleep(1)
-        else
-            close(c.conn.io; statuscode=statuscode)
-        end
+    c.conn.io === nothing && return
+    if zombie
+        # It seems that Discord doesn't send a closing frame for zombie connections
+        # (which makes sense). However, close waits for one forever (see HTTP.jl#350).
+        @async close(c.conn.io; statuscode=statuscode)
+        sleep(1)
+    else
+        close(c.conn.io; statuscode=statuscode)
     end
 end
 
@@ -159,7 +158,7 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
+    return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guilds,
         "query" => query,
         "limit" => limit,
@@ -186,7 +185,7 @@ function update_voice_state(
     mute::Bool,
     deaf::Bool,
 )
-    return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
+    return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild,
         "channel_id" => channel,
         "self_mute" => mute,
@@ -220,7 +219,7 @@ function update_status(
     c.presence["status"] = status
     c.presence["afk"] = afk
 
-    return isdefined(c, :conn) && writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
+    return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
         "status" => status,
@@ -428,6 +427,7 @@ function readjson(io)
 end
 
 # Write a JSON message.
+writejson(::Nothing, body) = false
 function writejson(io, body)
     return try
         write(io, json(body))
