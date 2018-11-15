@@ -34,6 +34,7 @@ end
 """
     Client(
         token::String;
+        prefix::String="",
         presence::Union{Dict, NamedTuple}=Dict(),
         ttls::$TTLDict=Dict(),
         version::Int=$API_VERSION,
@@ -43,6 +44,8 @@ A Discord bot. `Client`s can connect to the gateway, respond to events, and make
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
 
 # Keywords
+- `prefix::String=""`: Command prefix (see [`set_prefix!`](@ref) and
+  [`add_command!`](@ref)).
 - `presence::Union{Dict, NamedTuple}=Dict()`: Client's presence set upon connection.
   The schema [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
   must be followed.
@@ -54,25 +57,28 @@ calls to perform actions such as sending/deleting messages, kicking/banning user
   $API_VERSION is not officially supported by the Discord.jl developers.
 """
 mutable struct Client
-    token::String       # Bot token, always with a leading "Bot ".
-    hb_interval::Int    # Milliseconds between heartbeats.
+    token::String                # Bot token, always with a leading "Bot ".
+    hb_interval::Int             # Milliseconds between heartbeats.
     hb_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
-    last_hb::DateTime   # Last heartbeat send.
-    last_ack::DateTime  # Last heartbeat ack.
-    ttls::TTLDict       # Cache lifetimes.
-    version::Int        # Discord API version.
-    state::State        # Client state, cached data, etc.
-    shards::Int         # Number of shards in use.
-    shard::Int          # Client's shard index.
-    limiter::Limiter    # Rate limiter.
-    ready::Bool         # Client is connected and authenticated.
-    use_cache::Bool     # Whether or not to use the cache.
-    presence::Dict      # Default presence options.
+    last_hb::DateTime            # Last heartbeat send.
+    last_ack::DateTime           # Last heartbeat ack.
+    ttls::TTLDict                # Cache lifetimes.
+    version::Int                 # Discord API version.
+    state::State                 # Client state, cached data, etc.
+    shards::Int                  # Number of shards in use.
+    shard::Int                   # Client's shard index.
+    limiter::Limiter             # Rate limiter.
+    ready::Bool                  # Client is connected and authenticated.
+    use_cache::Bool              # Whether or not to use the cache.
+    presence::Dict               # Default presence options.
+    p_global::AbstractString     # Default command prefix.
+    p_guilds::Dict{Snowflake, AbstractString}  # Command prefix overrides.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, AbstractHandler}}  # Event handlers.
     conn::Conn          # WebSocket connection.
 
     function Client(
         token::String;
+        prefix::String="",
         presence::Union{Dict, NamedTuple}=Dict(),
         ttls::TTLDict=TTLDict(),
         version::Int=API_VERSION,
@@ -102,6 +108,8 @@ mutable struct Client
             false,        # ready
             true,         # use_cache
             presence,     # presence
+            prefix,       # p_global
+            Dict(),       # p_guilds
             Dict(),       # handlers
             # conn left undef, it gets assigned in open.
         )
@@ -154,23 +162,34 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         compile::Bool=false,
     ) -> Union{Vector{Any}, Nothing}
 
-Add an event handler. `func` should be a function which takes two arguments: A
-[`Client`](@ref) and an [`AbstractEvent`](@ref) (or a subtype). You can define a single
-handler for multiple event types by using a `Union`. `do` syntax is also accepted.
+Add an event handler. `do` syntax is also accepted.
 
-# Keywords
-- `tag::Symbol=gensym()`: A label for the handler, which can be used to remove it with
-  [`delete_handler!`](@ref).
-- `pred::Function=alwaystrue`: A predicate function. The handler will only run if this
-  function returns `true`. Its signature should match that of `func`.
-- `n::Union{Int, Nothing}=nothing`: The number of times to run the handler. if left unset,
-  the handler stays active forever. Can be used in conjunction with `timeout`.
-- `timeout::Union{Period, Nothing}=nothing`: The handler's time expiry. If left unset, the
-  handler stays active forever. Can be used in conjunction with `n`.
-- `wait::Bool=false`: If set, block until the handler expires, then return the handler's
-  results. You must set `timeout` or `n` along with this keyword.
-- `compile::Bool=false`: Immediately run the predicate and handler on a mock input to
-  compile it.
+# Handler Function
+The handler function must take two arguments: A [`Client`](@ref) and an
+[`AbstractEvent`](@ref) (or a subtype).
+
+# Handler Tag
+The `tag` keyword specifies a label for the handler, which can be used to remove it with
+[`delete_handler!`](@ref).
+
+# Predicate Function
+The `pred` keyword specifies a predicate function. The handler will only run if this
+function returns `true`. Its signature should match that of the handler.
+
+# Handler Expiry
+Handlers can have counting and/or timed expiries. The `n` keyword specifies the number of
+times a handler is run before expiring. The `timeout` keyword specifies how long the
+handler remains active.
+
+# Blocking Handlers and Result Collection
+To collect results from a handler, set the `wait` keyword along with an expiry. The call
+will block until the handler expires, at which point the return value of each invocation is
+returned in a `Vector`.
+
+# Precompilation
+To avoid the first invocation of a handler being slow, set the `compile` keyword to
+precompile both the predicate and handler functions. Beware that doing so will run both
+functions.
 
 # Examples
 Adding a handler with a timed expiry and tag:
@@ -214,28 +233,7 @@ function add_handler!(
     end
 
     h = Handler{T}(func, pred, n, timeout, wait)
-
-    if !hasmethod(func, (Client, T))
-        throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
-    end
-    if !hasmethod(pred, (Client, T))
-        throw(ArgumentError("Predicate function must accept (::Client, ::$T)"))
-    end
-    if isexpired(h)
-        throw(ArgumentError("Can't add a handler that's already expired"))
-    end
-
-    if compile
-        e = mock(T)
-        try h.pred(c, e) catch end
-        try h.func(c, e) catch end
-    end
-
-    if haskey(c.handlers, T)
-        c.handlers[T][tag] = h
-    else
-        c.handlers[T] = Dict(tag => h)
-    end
+    puthandler!(c, h, tag, compile)
 
     return wait ? take!(h) : nothing
 end
@@ -391,5 +389,32 @@ function set_cache(f::Function, c::Client, use_cache::Bool)
         # already returned and set the cache flag back to its original value.
         sleep(Millisecond(1))
         c.use_cache = old
+    end
+end
+
+# Add a handler to the client.
+function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, compile::Bool)
+    T = eltype(h)
+
+    if !hasmethod(func(h), (Client, T))
+        throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
+    end
+    if !hasmethod(pred(h), (Client, T))
+        throw(ArgumentError("Predicate function must accept (::Client, ::$T)"))
+    end
+    if isexpired(h)
+        throw(ArgumentError("Can't add a handler that's already expired"))
+    end
+
+    if compile
+        e = mock(T)
+        try pred(h)(c, e) catch end
+        try func(h)(c, e) catch end
+    end
+
+    if haskey(c.handlers, T)
+        c.handlers[T][tag] = h
+    else
+        c.handlers[T] = Dict(tag => h)
     end
 end

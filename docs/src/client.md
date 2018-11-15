@@ -27,6 +27,9 @@ DEFAULT_HANDLER_TAG
 
 ```@docs
 add_command!
+delete_command!
+add_help!
+set_prefix!
 ```
 
 ## Gateway Commands
