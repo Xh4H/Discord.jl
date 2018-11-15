@@ -1,7 +1,13 @@
-export DiscordChannel
+export CT_GUILD_TEXT,
+    CT_DM,
+    CT_GUILD_VOICE,
+    CT_GROUP_DM,
+    CT_GUILD_CATEGORY,
+    DiscordChannel
 
 """
-A [`DiscordChannel`](@ref)'s type.
+A [`DiscordChannel`](@ref)'s type. Available values are `CT_GUILD_TEXT`, `CT_DM`,
+`CT_GUILD_VOICE`, `CT_GROUP_DM`, and `CT_GUILD_CATEGORY`.
 """
 @enum ChannelType CT_GUILD_TEXT CT_DM CT_GUILD_VOICE CT_GROUP_DM CT_GUILD_CATEGORY
 @boilerplate ChannelType :lower

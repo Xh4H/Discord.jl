@@ -83,17 +83,16 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
   a request was made.
 - `exception::Union{Exception, Nothing}`: The caught exception, if one is thrown.
 
-# Example
-```julia-repl
-julia> using Discord; c = Client("token"); ch = 1234567890;
-
-julia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);
-
-julia> typeof(first(fs))
-Distributed.Future
-
-julia> typeof(fetch(first(fs)))
-Discord.Response{Message}
+# Examples
+Multiple API calls which immediately return `Future`s and can be awaited:
+```julia
+futures = map(i -> create_message(c, channel_id; content=string(i)), 1:10);
+other_work_here()
+resps = fetch.(futures)
+```
+Skipping error checks and returning the value directly:
+```julia
+guild = fetchval(create_guild(c; name="foo"))
 ```
 """
 struct Response{T}

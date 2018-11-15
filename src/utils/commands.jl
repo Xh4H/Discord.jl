@@ -149,7 +149,6 @@ Add a help command.
 
 # Keywords
 - `pattern::Regex`: The command pattern (see [`add_command!`](@ref)).
-  The optional capture group is important.
 - `help::AbstractString`: Help for the help command.
 - `nohelp::AbstractString`: Help for commands without their own help string.
 - `nocmd::AbstractString`: Help for commands that aren't found.

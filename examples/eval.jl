@@ -6,40 +6,34 @@ using Discord
 
 # Set this environment variable or replace with your own user ID.
 const USER = parse(Discord.Snowflake, get(ENV, "DISCORD_USER_ID", "1234567890"))
-const CODE_BLOCK = r"```(?:julia)?\n(.*)\n```"s
 
 module Sandbox end
 
+# Format some output into a code block.
 function codeblock(val)
     s = val === nothing ? "nothing" : string(val)
     return "```julia\n$s\n```"
 end
 
-function eval_codeblock(c::Client, msg::Discord.Message)
+# Parse code into an expression.
+function parsecode(code::AbstractString)
+    return try
+        Meta.parse("begin $code end")
+    catch e
+        :(sprint(showerror, $e))
+    end
+end
+
+# Evaluate an expression and reply with the result.
+function eval_codeblock(c::Client, msg::Message, code::Expr)
     if msg.author.id != USER
         reply(c, msg, "Only user $USER can run this command.")
         return
     end
 
-    m = match(CODE_BLOCK, msg.content)
-    m = if m === nothing
-        reply(c, msg, "That's not a code block.")
-        return
-    else
-        first(m.captures)
-    end
-
-    code = replace(m, '\n' => ';')
-    ex = try
-        Meta.parse(code)
-    catch e  # Parsing error.
-        reply(c, msg, codeblock(sprint(showerror, e)))
-        return
-    end
-
     result = try
-        @eval Sandbox $ex
-    catch e  # Runtime error.
+        @eval Sandbox $code
+    catch e
         sprint(showerror, e)
     end
 
@@ -48,7 +42,11 @@ end
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
-    add_command!(c, "!eval", eval_codeblock)
+    set_prefix!(c, '!')
+    add_command!(
+        c, :eval, eval_codeblock;
+        pattern=r"^eval ```(?:julia)?\n(.*)\n```", args=[parsecode],
+    )
     open(c)
     return c
 end

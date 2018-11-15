@@ -9,15 +9,17 @@ export create,
 Create, add, send, etc.
 
 # Examples
-```julia-repl
-# Send a message.
-julia> create(c, Message, channel; content="foo")
-
-# Create a new channel.
-julia> create(c, DiscordChannel, guild; name="bar")
-
-# Ban a member.
-julia> create(c, Ban, guild, member; reason="baz")
+Sending a [`Message`](@ref):
+```julia
+create(c, Message, channel; content="foo")
+```
+Creating a new [`DiscordChannel`](@ref):
+```julia
+create(c, DiscordChannel, guild; name="bar")
+```
+Banning a [`Member`](@ref):
+```julia
+create(c, Ban, guild, member; reason="baz")
 ```
 """
 function create end
@@ -28,15 +30,17 @@ function create end
 Retrieve, get, list, etc.
 
 # Examples
-```julia-repl
-# Get the client user.
-julia> retrieve(c, User)
-
-# Get a guild's channels.
-julia> retrieve(c, DiscordChannel, guild)
-
-# Get an invite to a guild by code.
-julia> retrieve(c, Invite, "abcdef")
+Getting the [`Client`](@ref)'s [`User`](@ref):
+```julia
+retrieve(c, User)
+```
+Getting a [`Guild`](@ref)'s [`DiscordChannel`](@ref)s:
+```julia
+retrieve(c, DiscordChannel, guild)
+```
+Getting an [`Invite`](@ref) to a [`Guild`](@ref) by code:
+```julia
+retrieve(c, Invite, "abcdef")
 ```
 """
 function retrieve end
@@ -47,15 +51,17 @@ function retrieve end
 Update, edit, modify, etc.
 
 # Examples
-```julia-repl
-# Edit a message.
-julia> update(c, message; content="foo2")
-
-# Modify a webhook.
-julia> update(c, webhook; name="bar2")
-
-# Update a role.
-julia> update(c, role, guild; permissions=8)
+Editing a [`Message`](@ref):
+```julia
+update(c, message; content="foo2")
+```
+Modifying a [`Webhook`](@ref):
+```julia
+update(c, webhook; name="bar2")
+```
+Updating a [`Role`](@ref):
+```julia
+update(c, role, guild; permissions=8)
 ```
 """
 function update end
@@ -66,16 +72,18 @@ function update end
 Delete, remove, discard, etc.
 
 # Examples
-```julia-repl
-# Kick a member.
-julia> delete(c, member)
-
-# Unban a member.
-julia> delete(c, ban, guild)
-
-# Delete all reactions from a message.
-# This is the only update/delete method which takes a type parameter.
-julia> delete(c, Reaction, message)
+Kicking a [`Member`](@ref):
+```julia
+delete(c, member)
+```
+Unbanning a [`Member`](@ref):
+```julia
+delete(c, ban, guild)
+```
+Deleting all [`Reaction`](@ref)s from a [`Message`](@ref) (note: this is the only
+update/delete method which takes a type parameter):
+```julia
+delete(c, Reaction, message)
 ```
 """
 function delete end

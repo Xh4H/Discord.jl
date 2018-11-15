@@ -9,13 +9,14 @@ snowflake(s::AbstractString) = parse(Snowflake, s)
 
 # TODO: Put these in helpers?
 snowflake2datetime(s::Snowflake) = unix2datetime(((s >> 22) + DISCORD_EPOCH) / 1000)
-worker_id(s::Snowflake) = (s & 0x3E0000) >> 17
-process_id(s::Snowflake) = (s & 0x1F000) >> 12
-increment(s::Snowflake) = s & 0xFFF
+worker_id(s::Snowflake) = (s & 0x3e0000) >> 17
+process_id(s::Snowflake) = (s & 0x1f000) >> 12
+increment(s::Snowflake) = s & 0xfff
 
 # Discord sends both Unix and ISO timestamps.
 datetime(s::Int) = unix2datetime(s / 1000)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
+datetime(d::DateTime) = d
 
 # Lower to something JSON-compatible.
 lowered(x::DateTime) = round(Int, datetime2unix(x))
@@ -75,6 +76,9 @@ field(k::QuoteNode, ::Type{T}) where T = :($T(kwargs[$k]))
 field(k::QuoteNode, ::Type{Vector{Snowflake}}) = :(snowflake.(kwargs[$k]))
 field(k::QuoteNode, ::Type{Vector{DateTime}}) = :(datetime.(kwargs[$k]))
 field(k::QuoteNode, ::Type{Vector{T}}) where T = :($T.(kwargs[$k]))
+function field(k::QuoteNode, ::Type{T}) where T <: Enum
+    return :(kwargs[$k] isa Integer ? $T(Int(kwargs[$k])) : $T(kwargs[$k]))
+end
 function field(k::QuoteNode, ::Type{Union{T, Missing}}) where T
     return :(haskey(kwargs, $k) ? $(field(k, T)) : missing)
 end
@@ -93,6 +97,7 @@ macro constructors(T)
     quote
         $(esc(T))(; kwargs...) = $(esc(T))($(args...))
         $(esc(T))(d::Dict{Symbol, Any}) = $(esc(T))(; d...)
+        $(esc(T))(x::$(esc(T))) = x
     end
 end
 

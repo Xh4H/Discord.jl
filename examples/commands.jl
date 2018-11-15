@@ -1,17 +1,14 @@
+# TODO: Make this more comprehensive. For now look at eval.jl.
+
 module Commands
 
 using Discord
 
-const COMMAND = "!echo"
-
-function echo(c::Client, msg::Message)
-    content = lstrip(msg.content[length(COMMAND)+1:end])
-    reply(c, msg, content)
-end
-
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
-    add_command!(c, COMMAND, echo)
+    add_command!(c, r"^echo (.+)") do c, msg, noprefix
+        reply(c, msg, noprefix)
+    end
     open(c)
     return c
 end

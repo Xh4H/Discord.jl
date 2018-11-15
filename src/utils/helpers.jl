@@ -149,6 +149,23 @@ end
     mention(x::Union{DiscordChannel, Member, Role, User}) -> String
 
 Get the mention string for an entity.
+
+# Examples
+```jldoctest; setup=:(using Dates, Discord)
+julia> u = User(; id=0xff);
+
+julia> mention(u)
+"<@255>"
+
+julia> mention(Member(; user=u, nick="foo", roles=Role[], joined_at=now(), deaf=true, mute=true))
+"<@!255>"
+
+julia> mention(DiscordChannel(; id=0xff, type=CT_GUILD_TEXT))
+"<#255>"
+
+julia> mention(Role(; id=0xff, name="foo"))
+"<@&255>"
+```
 """
 mention(c::DiscordChannel) = "<#$(c.id)>"
 mention(r::Role) = "<@&$(r.id)>"
@@ -298,26 +315,23 @@ Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@
 specified, all CRUD functions are wrapped.
 
 # Examples
+Wrapping all CRUD functions:
 ```julia
-julia> resp = @fetch begin
-           resp = create(c, Guild; name="foo")  # Wrapped in fetch.
-           if resp.ok
-               retrieve(c, DiscordChannel, resp.val)  # Wrapped in fetch.
-           else
-               error("Request failed")
-           end
-       end
-
-julia> typeof(resp)
-Response{Vector{DiscordChannel}}
-
-julia> future = @fetch retrieve begin
-           resp = retrieve(c, DiscordChannel, 123)  # Wrapped in fetch.
-           create(c, Message, resp.val; content="foo")  # Behaves normally.
-       end
-
-julia> typeof(future)
-Distributed.Future
+resp = @fetch begin
+    resp = create(c, Guild; name="foo")
+    if resp.ok
+        retrieve(c, DiscordChannel, resp.val)
+    else
+        error("Request failed")
+    end
+end
+```
+Wrapping only calls to `retrieve`:
+```julia
+future = @fetch retrieve begin
+    resp = retrieve(c, DiscordChannel, 123)
+    create(c, Message, resp.val; content="foo")  # Behaves normally.
+end
 ```
 """
 macro fetch(exs...)
@@ -336,22 +350,19 @@ Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@
 functions are specified, all CRUD functions are wrapped.
 
 # Examples
+Wrapping all CRUD functions:
 ```julia
-julia> channels = @fetchval begin
-           guild = create(c, Guild; name="foo")  # Wrapped in fetchval.
-           retrieve(c, DiscordChannel, 123)  # Wrapped in fetchval.
-       end
-
-julia> typeof(channels)
-Vector{DiscordChannel}
-
-julia> future = @fetchval retrieve begin
-           channel = retrieve(c, DiscordChannel, 123)  # Wrapped in fetchval.
-           create(c, Message, channel; content="foo")  # Behaves normally.
-       end
-
-julia> typeof(future)
-Distributed.Future
+channels = @fetchval begin
+    guild = create(c, Guild; name="foo")
+    retrieve(c, DiscordChannel, 123)
+end
+```
+Wrapping only calls to `retrieve`:
+```julia
+future = @fetchval retrieve begin
+    channel = retrieve(c, DiscordChannel, 123)
+    create(c, Message, channel; content="foo")  # Behaves normally.
+end
 ```
 """
 macro fetchval(exs...)

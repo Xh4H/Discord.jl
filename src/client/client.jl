@@ -43,18 +43,48 @@ end
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
 
-# Keywords
-- `prefix::String=""`: Command prefix (see [`set_prefix!`](@ref) and
-  [`add_command!`](@ref)).
-- `presence::Union{Dict, NamedTuple}=Dict()`: Client's presence set upon connection.
-  The schema [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
-  must be followed.
-- `ttls::$TTLDict=Dict()`: Cache lifetime overrides. Values of `nothing` indicate no
-  expiry. Keys can be any of the following: [`Guild`](@ref), [`DiscordChannel`](@ref),
-  [`Message`](@ref), [`User`](@ref), [`Member`](@ref), or [`Presence`](@ref). For most
-  workloads, the defaults are sufficient.
-- `version::Int=$API_VERSION`: Version of the Discord API to use. Using anything but
-  $API_VERSION is not officially supported by the Discord.jl developers.
+# Bot Token
+A bot token can be acquired by creating a new application
+[here](https://discordapp.com/developers/applications). Make sure not to hardcode the token
+into your Julia code! Use an environment variable or configuration file instead.
+
+# Command Prefix
+The `prefix` keyword specifies the command prefix, which is used by commands added with
+[`add_command!`](@ref). It can be changed later, both globally and on a per-guild basis,
+with [`set_prefix!`](@ref).
+
+# Presence
+The `presence` keyword specifies the bot's presence upon connection. It also sets defaults
+for future calls to [`set_game`](@ref). The schema
+[here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
+must be followed.
+
+# Cache Control
+By default, most data that comes from Discord is cached for later use. However, to avoid
+memory leakage, some of it is deleted after some time. The default setings are to keep
+everything but [`Message`](@ref)s  forever, but they can be overridden with the `ttls`
+keyword. Keys can be any of the following: [`Guild`](@ref), [`DiscordChannel`](@ref),
+[`Message`](@ref), [`User`](@ref), [`Member`](@ref), or [`Presence`](@ref). Values of
+`nothing` indicate no expiry. However, the default settings are sufficient for most
+workloads.
+
+If you want to entirely avoid caching certain objects, you can delete default handlers with
+[`delete_handler!`](@ref) and [`DEFAULT_HANDLER_TAG`](@ref). For example, if you wanted to
+avoid caching any messages at all, you would delete handlers for [`MessageCreate`](@ref)
+and [`MessageUpdate`](@ref) events.
+
+The cache can also be disabled/enabled permanently and temporarily with
+[`enable_cache!`](@ref) and [`disable_cache!`](@ref).
+
+# API Version
+The `version` keyword specifies the Version of the Discord API to use. Using anything but
+`$API_VERSION` is not officially supported by the Discord.jl developers.
+
+# Sharding
+Sharding is handled automatically. The number of available processes is the number of
+shards that are created. See the
+[sharding example](https://github.com/PurgePJ/Discord.jl/blob/master/examples/sharding.jl)
+for more details.
 """
 mutable struct Client
     token::String                # Bot token, always with a leading "Bot ".
@@ -139,7 +169,7 @@ me(c::Client) = c.state.user
     enable_cache!(c::Client)
     enable_cache!(f::Function c::Client)
 
-Enable the cache. `do` syntax is also supported.
+Enable the cache. `do` syntax is also accepted.
 """
 enable_cache!(c::Client) = c.use_cache = true
 enable_cache!(f::Function, c::Client) = set_cache(f, c, true)
@@ -148,7 +178,7 @@ enable_cache!(f::Function, c::Client) = set_cache(f, c, true)
     disable_cache!(c::Client)
     disable_cache!(f::Function, c::Client)
 
-Disable the cache. `do` syntax is also supported.
+Disable the cache. `do` syntax is also accepted.
 """
 disable_cache!(c::Client) = c.use_cache = false
 disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
@@ -199,21 +229,21 @@ input event constructor.
 # Examples
 Adding a handler with a timed expiry and tag:
 ```julia
-julia> add_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))
+add_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))
 ```
 Adding a handler with a predicate and `do` syntax:
 ```julia
-julia> add_handler!(c, ChannelCreate; pred=(c, e) -> length(e.channel.name) < 10) do c, e
-           println(e.channel.name)
-       end
+add_handler!(c, ChannelCreate; pred=(c, e) -> length(e.channel.name) < 10) do c, e
+    println(e.channel.name)
+end
 ```
 Aggregating results of a handler with a counting expiry:
 ```julia
-julia> msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
+msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
 ```
 Forcing precompilation:
 ```julia
-julia> add_handler!(c, MessageCreate, (c, e) -> @show e; compile=true)
+add_handler!(c, MessageCreate, (c, e) -> @show e; compile=true)
 ```
 
 !!! note

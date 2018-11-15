@@ -33,7 +33,8 @@ struct Empty <: Exception end
 Connect a [`Client`](@ref) to the Discord gateway.
 
 The `delay` keyword is the time between shards connecting. It can be increased from its
-default if you are frequently experiencing invalid sessions upon connection.
+default if you are using multiple shards and frequently experiencing invalid sessions upon
+ connection.
 """
 function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     isopen(c) && throw(ArgumentError("Client is already connected"))
