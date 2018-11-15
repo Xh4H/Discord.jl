@@ -26,6 +26,15 @@ function catchmsg(e::Exception)
     return sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
 end
 
+# Precompile all methods of a function, running it if force is set.
+function compile(f::Function, force::Bool; kwargs...)
+    for m in methods(f)
+        types = Tuple(m.sig.types[2:end])
+        precompile(f, types)
+        force && try f(mock.(types; kwargs...)...) catch end
+    end
+end
+
 include(joinpath("types", "types.jl"))
 include(joinpath("gateway", "events", "events.jl"))
 include(joinpath("client", "client.jl"))

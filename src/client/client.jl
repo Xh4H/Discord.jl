@@ -120,6 +120,8 @@ mutable struct Client
     end
 end
 
+mock(::Type{Client}; kwargs...) = Client("token")
+
 function Base.show(io::IO, c::Client)
     print(io, "Discord.Client(shard=$(c.shard + 1)/$(c.shards), api=$(c.version), ")
     isopen(c) || print(io, "not ")
@@ -161,6 +163,7 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         timeout::Union{Period, Nothing}=nothing,
         wait::Bool=false,
         compile::Bool=false,
+        kwargs...,
     ) -> Union{Vector{Any}, Nothing}
 
 Add an event handler. `do` syntax is also accepted.
@@ -187,10 +190,11 @@ To collect results from a handler, set the `wait` keyword along with an expiry. 
 will block until the handler expires, at which point the return value of each invocation is
 returned in a `Vector`.
 
-# Precompilation
-To avoid the first invocation of a handler being slow, set the `compile` keyword to
-precompile both the predicate and handler functions. Beware that doing so will run both
-functions.
+# Forcing Precompilation
+Predicates and handlers are precompiled without running them, but it's not always
+successful. If the `compile` keyword is set, precompilation is forced by running
+the predicate and handler on a randomized input. Any trailing keywords are passed to the
+input event constructor.
 
 # Examples
 Adding a handler with a timed expiry and tag:
@@ -207,10 +211,11 @@ Aggregating results of a handler with a counting expiry:
 ```julia
 julia> msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
 ```
-Compiling a handler function so its first invocation isn't slow:
+Forcing precompilation:
 ```julia
 julia> add_handler!(c, MessageCreate, (c, e) -> @show e; compile=true)
 ```
+
 !!! note
     There is no guarantee on the order in which handlers run, except that catch-all
     ([`AbstractEvent`](@ref)) handlers run before specific ones.
@@ -225,16 +230,23 @@ function add_handler!(
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
     compile::Bool=false,
+    kwargs...,
 )
     if T isa Union
         wait && throw(ArgumentError("Can only wait for one event at a time"))
-        add_handler!(c, T.a, func; tag=tag, pred=pred, n=n, timeout=timeout, compile=compile)
-        add_handler!(c, T.b, func; tag=tag, pred=pred, n=n, timeout=timeout, compile=compile)
+        add_handler!(
+            c, T.a, func;
+            tag=tag, pred=pred, n=n, timeout=timeout, compile=compile, kwargs...,
+        )
+        add_handler!(
+            c, T.b, func;
+            tag=tag, pred=pred, n=n, timeout=timeout, compile=compile, kwargs...,
+        )
         return
     end
 
     h = Handler{T}(func, pred, n, timeout, wait)
-    puthandler!(c, h, tag, compile)
+    puthandler!(c, h, tag, compile; kwargs...)
 
     return wait ? take!(h) : nothing
 end
@@ -285,7 +297,7 @@ function add_handler!(
     compile::Bool=false,
 )
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
-        for m in methods(f).ms
+        for m in methods(f)
             ts = m.sig.types[2:end]
             length(m.sig.types) == 3 || continue
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
@@ -394,7 +406,7 @@ function set_cache(f::Function, c::Client, use_cache::Bool)
 end
 
 # Add a handler to the client.
-function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, compile::Bool)
+function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, force::Bool; kwargs...)
     T = eltype(h)
 
     if !hasmethod(func(h), (Client, T))
@@ -407,11 +419,8 @@ function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, compile::Bool)
         throw(ArgumentError("Can't add a handler that's already expired"))
     end
 
-    if compile
-        e = mock(T)
-        try pred(h)(c, e) catch end
-        try func(h)(c, e) catch end
-    end
+    compile(pred(h), force; kwargs...)
+    compile(func(h), force; kwargs...)
 
     if haskey(c.handlers, T)
         c.handlers[T][tag] = h

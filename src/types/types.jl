@@ -137,26 +137,31 @@ end
 # Produce a random string.
 randstring() = String(filter(!ispunct, map(i -> Char(rand(48:122)), 1:rand(1:20))))
 
-# Produce a "random" value of a type.
-mock(::Type{Bool}) = rand(Bool)
-mock(::Type{DateTime}) = now()
-mock(::Type{AbstractString}) = randstring()
-mock(::Type{Dict{Symbol, Any}}) = Dict(:a => mock(String), :b => mock(Int))
-mock(::Type{T}) where T <: AbstractString = T(randstring())
-mock(::Type{T}) where T <: Integer = abs(rand(T))
-mock(::Type{T}) where T <: Enum = instances(T)[rand(1:length(instances(T)))]
-mock(::Type{Vector{T}}) where T = map(i -> mock(T), 1:rand(0:10))
-mock(::Type{Set{T}}) where T = Set(map(i -> mock(T), 1:rand(0:10)))
-mock(::Type{Union{T, Missing}}) where T = rand(Bool) ? mock(T) : missing
-mock(::Type{Union{T, Nothing}}) where T = rand(Bool) ? mock(T) : nothing
-mock(::Type{Union{T, Missing, Nothing}}) where T = [mock(T), missing, nothing][rand(1:3)]
+# Produce a randomized value of a type.
+mock(::Type{Bool}; kwargs...) = rand(Bool)
+mock(::Type{DateTime}; kwargs...) = now()
+mock(::Type{AbstractString}; kwargs...) = randstring()
+mock(::Type{Dict{Symbol, Any}}; kwargs...) = Dict(:a => mock(String), :b => mock(Int))
+mock(::Type{T}; kwargs...) where T <: AbstractString = T(randstring())
+mock(::Type{T}; kwargs...) where T <: Integer = abs(rand(T))
+mock(::Type{T}; kwargs...) where T <: Enum = instances(T)[rand(1:length(instances(T)))]
+mock(::Type{Vector{T}}; kwargs...) where T = map(i -> mock(T; kwargs...), 1:rand(1:10))
+mock(::Type{Set{T}}; kwargs...) where T = Set(map(i -> mock(T; kwargs...), 1:rand(1:10)))
+mock(::Type{Union{T, Missing}}; kwargs...) where T = mock(T; kwargs...)
+mock(::Type{Union{T, Nothing}}; kwargs...) where T = mock(T; kwargs...)
+mock(::Type{Union{T, Missing, Nothing}}; kwargs...) where T = mock(T; kwargs...)
 
 # Define a mock method for a type.
 macro mock(T)
     quote
-        function $(esc(:mock))(::Type{$T})
-            types = map(TT -> fieldtype($(esc(T)), TT), fieldnames($(esc(T))))
-            return $(esc(T))(map(mock, types)...)
+        function $(esc(:mock))(::Type{$T}; kwargs...)
+            names = fieldnames($(esc(T)))
+            types = map(TT -> fieldtype($(esc(T)), TT), names)
+            args = Vector{Any}(undef, length(names))
+            for (i, (n, t)) in enumerate(zip(names, types))
+                args[i] = haskey(kwargs, n) ? kwargs[n] : mock(t)
+            end
+            return $(esc(T))(args...)
         end
     end
 end

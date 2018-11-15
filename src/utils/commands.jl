@@ -26,6 +26,7 @@ isexpired(c::Command) = isexpired(c.h)
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
+        kwargs...,
     )
 
 Add a text command handler. `do` syntax is also accepted.
@@ -64,22 +65,23 @@ function add_command!(
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
+    kwargs...,
 )
-    if !any(methods(func).ms) do m
+    if !any(methods(func)) do m
         length(m.sig.types) < 3 && return false
         return Client <: m.sig.types[2] && Message <: m.sig.types[3]
     end
         throw(ArgumentError("Handler function must accept (::Client, ::Message, ...)"))
     end
     if !all(arg -> arg isa Base.Callable, args)
-        throw(ArgumentError("Argument must be callable"))
+        throw(ArgumentError("Entries in args must be callable"))
     end
 
     function predicate(c::Client, e::MessageCreate)
         prefix, noprefix = splitprefix(c, e)
         startswith(e.message.content, prefix) || return false
-        id = me(c) === nothing ? me(c).id : nothing
-        e.message.author.id == id && return false
+        id = me(c) === nothing ? nothing : me(c).id
+        !ismissing(e.message.author) && e.message.author.id == id && return false
         m = match(pattern, noprefix)
         m === nothing && return false
         return parsecaps!(Vector{Any}(m.captures), args)
@@ -87,13 +89,14 @@ function add_command!(
 
     function handler(c::Client, e::MessageCreate)
         noprefix = splitprefix(c, e)[2]
-        caps = Vector{Any}(match(pattern, noprefix).captures)
+        m = match(pattern, noprefix)
+        caps = m === nothing ? [] : Vector{Any}(m.captures)
         parsecaps!(caps, args)
         func(c, e.message, caps...)
     end
 
     cmd = Command(Handler{MessageCreate}(handler, predicate, n, timeout, false), name, help)
-    puthandler!(c, cmd, name, compile)
+    puthandler!(c, cmd, name, compile; kwargs...)
 end
 
 function add_command!(
@@ -106,10 +109,12 @@ function add_command!(
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
+    kwargs...
 )
-    return add_command!(
+    add_command!(
         c, name, func;
-        pattern=pattern, help=help, args=args, n=n, timeout=timeout, compile=compile,
+        pattern=pattern, help=help, args=args,
+        n=n, timeout=timeout, compile=compile, kwargs...,
     )
 end
 
@@ -165,18 +170,23 @@ function add_help!(
         reply(c, m, "```\n" * String(take!(io)) * "```")
     end
 
-    function handler(c::Client, m::Message, ::Nothing)
+    function handler(c::Client, m::Message)
         cmds = collect(get(c.handlers, MessageCreate, Dict()))
         filter!(p -> p.second isa Command, cmds)
         handler(c, m, join(map(p -> string(p.second.name), cmds), " "))
     end
+    handler(c::Client, m::Message, ::Nothing) = handler(c, m)
 
-    add_command!(c, :help, handler; pattern=pattern, help=help, compile=true)
+    add_command!(
+        c, :help, handler;
+        pattern=pattern, help=help, compile=true,
+        message=Message(; id=0x0, channel_id=0x0, content=prefix(c) * "help"),
+    )
 end
 
 """
-    set_prefix!(c::Client, prefix::String)
-    set_prefix!(c::Client, prefix::String, guild::Union{Guild, Integer})
+    set_prefix!(c::Client, prefix::AbstractString)
+    set_prefix!(c::Client, prefix::AbstractString, guild::Union{Guild, Integer})
 
 Set [`Client`](@ref)'s command prefix. If a [`Guild`](@ref) or its ID is supplied, then the
 prefix only applies to that guild.
@@ -185,11 +195,16 @@ set_prefix!(c::Client, prefix::AbstractString) = c.p_global = prefix
 set_prefix!(c::Client, prefix::AbstractString, guild::Integer) = c.p_guilds[guild] = prefix
 set_prefix!(c::Client, prefix::AbstractString, g::Guild) = set_prefix!(c, prefix, g.id)
 
+# Get the command prefix.
+prefix(c::Client) = c.p_global
+prefix(c::Client, ::Missing) = c.p_global
+prefix(c::Client, guild::Integer) = get(c.p_guilds, guild, c.p_global)
+
 # Get the prefix and the rests of the message.
 function splitprefix(c::Client, e::MessageCreate)
-    prefix = get(c.p_guilds, e.message.guild_id, c.p_global)
-    noprefix = e.message.content[length(prefix)+1:end]
-    return prefix, noprefix
+    pfx = prefix(c, e.message.guild_id)
+    noprefix = e.message.content[length(pfx)+1:end]
+    return pfx, noprefix
 end
 
 # Parse command arguments. Mutates the captures and returns the success state.
