@@ -33,6 +33,7 @@ export PERM_CREATE_INSTANT_INVITE,
     mention,
     reply,
     plaintext,
+    heartbeat_ping,
     upload_file,
     set_game,
     @fetch,
@@ -238,6 +239,18 @@ function plaintext(c::Client, m::Message)
     end
 
     return content
+end
+
+"""
+    heartbeat_ping(c::Client) -> Union{Period, Nothing}
+
+Get the [`Client`](@ref)'s ping time to the gateway. If the client is not connected, or no
+heartbeats have been sent/acknowledged, `nothing` is returned.
+"""
+function heartbeat_ping(c::Client)
+    isopen(c) || return nothing
+    zero = DateTime(0)
+    return c.last_hb == zero || c.last_ack == zero ? nothing : c.last_ack - c.last_hb
 end
 
 """

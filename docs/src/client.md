@@ -11,6 +11,7 @@ Base.isopen
 Base.close
 Base.wait
 me
+heartbeat_ping
 ```
 
 ## Event Handlers
