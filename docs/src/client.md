@@ -41,4 +41,5 @@ add_command!
 delete_command!
 add_help!
 set_prefix!
+Splat
 ```

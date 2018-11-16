@@ -39,7 +39,7 @@ isexpired(c::Command) = isexpired(c.h)
         func::Function;
         pattern::Regex=Regex("^\$name"),
         help::AbstractString="",
-        parsers::Vector{<:Base.Callable}=Base.Callable[],
+        parsers::Vector=[],
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
@@ -61,10 +61,9 @@ message contents after having removed the command prefix. By default, it's the c
 The `help` keyword specifies a help string which can be used by [`add_help!`](@ref).
 
 # Argument Parsing
-The `parsers` keyword specifies the types of the command arguments, and can contain both
-types and functions. If `pattern` contains captures, then they are converted to the type or
- run through the function before being passed into the handler. For repeating arguments,
-see: [`Splat`](@ref).
+The `parsers` keyword specifies the parsers of the command arguments, and can contain both
+types and functions. If `pattern` contains captures, then they are run through the parsers
+before being passed into the handler. For repeating arguments, see [`Splat`](@ref).
 
 Additional keyword arguments are a subset of those to [`add_handler!`](@ref).
 
@@ -84,6 +83,13 @@ add_command!(
     pattern=r"^mult (.+) (.+)", parsers=[Float64, Float64],
 )
 ```
+Splatting some comma-separated numbers:
+```julia
+add_command!(
+    c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));
+    pattern=r"^sum (.*)", parsers=[Splat(Float64, ',')],
+)
+```
 """
 function add_command!(
     c::Client,
@@ -91,7 +97,7 @@ function add_command!(
     func::Function;
     pattern::Regex=Regex("^$name"),
     help::AbstractString="",
-    parsers::Vector{<:Base.Callable}=Base.Callable[],
+    parsers::Vector=[],
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -149,7 +155,7 @@ function add_command!(
     name::Symbol;
     pattern::Regex=Regex("^$name"),
     help::AbstractString="",
-    parsers::Vector{<:Base.Callable}=Base.Callable[],
+    parsers::Vector=[],
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -255,7 +261,7 @@ function noprefix(s::AbstractString, p::AbstractString)
 end
 
 # Parse command arguments.
-function parsecaps(parsers::Vector{<:Base.Callable}, caps::Vector)
+function parsecaps(parsers::Vector, caps::Vector)
     len = min(length(parsers), length(caps))
     parsers = parsers[1:len]
     unparsed = splice!(caps, len+1:lastindex(caps))

@@ -21,11 +21,6 @@ function locked(f::Function, x::Threads.AbstractLock)
     try f() finally unlock(x) end
 end
 
-# Format a caught exception.
-function catchmsg(e::Exception)
-    return sprint(showerror, e) * sprint(Base.show_backtrace, catch_backtrace())
-end
-
 # Precompile all methods of a function, running it if force is set.
 function compile(f::Function, force::Bool; kwargs...)
     for m in methods(f)

@@ -146,7 +146,7 @@ function handler(c::Client, e::MessageReactionRemove)
             else
                 r = rs[idx]
                 r = @set r.count -= 1
-                r = @set r.me = r.me & ismissing(c.state.user) || c.state.user.id != e.user_id  # TODO: &= (Setfield#55).
+                r = @set r.me &= ismissing(c.state.user) || c.state.user.id != e.user_id
                 rs[idx] = r
             end
         end

@@ -245,7 +245,7 @@ function Base.put!(s::State, e::Emoji; kwargs...)
             else
                 r = m.reactions[idx]
                 r = @set r.count += 1
-                r = @set r.me = r.me | isclient  # TODO: |= (Setfield#55).
+                r = @set r.me |= isclient
                 r = @set r.emoji = merge(r.emoji, e)
                 m.reactions[idx] = r
             end
