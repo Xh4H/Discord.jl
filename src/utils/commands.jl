@@ -1,4 +1,5 @@
-export add_command!,
+export Splat,
+    add_command!,
     delete_command!,
     add_help!,
     set_prefix!
@@ -8,6 +9,22 @@ struct Command <: AbstractHandler{MessageCreate}
     name::Symbol
     help::AbstractString
 end
+
+"""
+    Splat(
+        f::Base.Callable=identity,
+        split::Union{AbstractString, AbstractChar}=' ',
+    ) -> Splat
+
+Collect a variable number of arguments from one capture group with a single parser.
+"""
+struct Splat <: Function
+    func::Base.Callable
+    split::Union{AbstractString, AbstractChar}
+end
+Splat() = Splat(identity, ' ')
+Splat(func::Base.Callable) = Splat(func, ' ')
+Splat(split::Union{AbstractString, AbstractChar}) = Splat(identity, split)
 
 func(c::Command) = func(c.h)
 pred(c::Command) = pred(c.h)
@@ -22,7 +39,7 @@ isexpired(c::Command) = isexpired(c.h)
         func::Function;
         pattern::Regex=Regex("^\$name"),
         help::AbstractString="",
-        args::Vector=[],
+        parsers::Vector{<:Base.Callable}=Base.Callable[],
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
@@ -34,7 +51,7 @@ Add a text command handler. `do` syntax is also accepted.
 # Handler Function
 The handler function must accept a [`Client`](@ref) and a [`Message`](@ref). Additionally,
 it can accept any number of additional arguments, which are captured from `pattern`
-and parsed with `args` (see below).
+and parsed with `parsers` (see below).
 
 # Pattern
 The `pattern` keyword specifies how to invoke the command. The given `Regex` must match the
@@ -44,9 +61,10 @@ message contents after having removed the command prefix. By default, it's the c
 The `help` keyword specifies a help string which can be used by [`add_help!`](@ref).
 
 # Argument Parsing
-The `args` keyword specifies the types of the command arguments, and can contain both types
-and functions. If `pattern` contains captures, then they are converted to the type or run
-through the function before being passed into the handler.
+The `parsers` keyword specifies the types of the command arguments, and can contain both
+types and functions. If `pattern` contains captures, then they are converted to the type or
+ run through the function before being passed into the handler. For repeating arguments,
+see: [`Splat`](@ref).
 
 Additional keyword arguments are a subset of those to [`add_handler!`](@ref).
 
@@ -63,7 +81,7 @@ Parsing two numeric arguments:
 ```julia
 add_command!(
     c, :mult, (c, m, a, b) -> reply(c, m, string(a * b));
-    pattern=r"^mult (.+) (.+)", args=[Float64, Float64],
+    pattern=r"^mult (.+) (.+)", parsers=[Float64, Float64],
 )
 ```
 """
@@ -73,7 +91,7 @@ function add_command!(
     func::Function;
     pattern::Regex=Regex("^$name"),
     help::AbstractString="",
-    args::Vector=[],
+    parsers::Vector{<:Base.Callable}=Base.Callable[],
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -85,24 +103,38 @@ function add_command!(
     end
         throw(ArgumentError("Handler function must accept (::Client, ::Message, ...)"))
     end
-    if !all(arg -> arg isa Base.Callable, args)
-        throw(ArgumentError("Entries in args must be callable"))
+    if !all(p -> p isa Base.Callable, parsers)
+        throw(ArgumentError("All parsers must be callable"))
+    end
+    if count(p -> p isa Splat, parsers) > 1
+        throw(ArgumentError("Only one Splat parser can be used at a time"))
     end
 
     function predicate(c::Client, e::MessageCreate)
+        isempty(e.message.content) && return false
+
         pfx = prefix(c, e.message.guild_id)
         startswith(e.message.content, pfx) || return false
+
         id = me(c) === nothing ? nothing : me(c).id
         !ismissing(e.message.author) && e.message.author.id == id && return false
+
         m = match(pattern, noprefix(e.message.content, pfx))
-        return m === nothing ? false : parsecaps!(Vector{Any}(m.captures), args)
+        m === nothing && return false
+
+        return try
+            parsecaps(parsers, m.captures)
+            true
+        catch e
+            @warn catchmsg(e) logkws(c; cmd=name)...
+            false
+        end
     end
 
     function handler(c::Client, e::MessageCreate)
         nopfx = noprefix(e.message.content, prefix(c, e.message.guild_id))
         m = match(pattern, nopfx)
-        caps = m === nothing ? [] : Vector{Any}(m.captures)
-        parsecaps!(caps, args)
+        caps = parsecaps(parsers, m === nothing ? [] : m.captures)
         func(c, e.message, caps...)
     end
 
@@ -116,7 +148,7 @@ function add_command!(
     name::Symbol;
     pattern::Regex=Regex("^$name"),
     help::AbstractString="",
-    args::Vector=[],
+    parsers::Vector{<:Base.Callable}=Base.Callable[],
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -124,7 +156,7 @@ function add_command!(
 )
     add_command!(
         c, name, func;
-        pattern=pattern, help=help, args=args,
+        pattern=pattern, help=help, parsers=parsers,
         n=n, timeout=timeout, compile=compile, kwargs...,
     )
 end
@@ -188,7 +220,7 @@ function add_help!(
     add_command!(
         c, :help, handler;
         pattern=pattern, help=help, compile=true,
-        message=mock(Message; content=prefix(c) * "help"),
+        message=mock(Message; content=prefix(c) * "help"), parsers=[Splat()],
     )
 end
 
@@ -221,19 +253,19 @@ function noprefix(s::AbstractString, p::AbstractString)
     return startswith(s, p) ? s[nextind(s, 1, length(p)):end] : s
 end
 
-# Parse command arguments. Mutates the captures and returns the success state.
-function parsecaps!(caps::Vector{Any}, args::Vector)
-    local success = true
-    for (i, (cap, arg)) in enumerate(zip(caps, args))
-        try
-            caps[i] = if arg isa Type && hasmethod(parse, (Type{arg}, AbstractString))
-                parse(arg, cap)
-            else
-                arg(cap)
-            end
-        catch
-            success = false
-        end
-    end
-    return success
+# Parse command arguments.
+function parsecaps(parsers::Vector{<:Base.Callable}, caps::Vector)
+    len = min(length(parsers), length(caps))
+    parsers = parsers[1:len]
+    unparsed = splice!(caps, len+1:lastindex(caps))
+    args = Vector{Any}(vcat(map(t -> parsecap(t...), zip(parsers, caps))...))
+    return append!(vcat(args...), unparsed)
+end
+
+# Parse a single capture.
+parsecap(::Base.Callable, ::Nothing) = []  # Optional captures don't return anything.
+parsecap(p::Function, s::AbstractString) = Any[p(s)]
+parsecap(p::Splat, s::AbstractString) = Any[parsecap.(p.func, split(s, p.split))...]
+function parsecap(p::Type, s::AbstractString)
+    return Any[hasmethod(parse, (Type{p}, AbstractString)) ? parse(p, s) : p(s)]
 end
