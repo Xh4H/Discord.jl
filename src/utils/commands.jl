@@ -126,7 +126,8 @@ function add_command!(
             parsecaps(parsers, m.captures)
             true
         catch e
-            @warn catchmsg(e) logkws(c; cmd=name)...
+            kws = logkws(c; cmd=name, exception=(e, catch_backtrace()))
+            @warn "Parsers raised an exception" kws...
             false
         end
     end

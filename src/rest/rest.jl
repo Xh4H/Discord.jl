@@ -199,7 +199,8 @@ function Response{T}(
                catch e
                     # If we're rate limited, then just go back to the top.
                     e isa RateLimited && continue
-                    @error catchmsg(e) logkws(c; conn=undef)...
+                    kws = logkws(c; conn=undef, exception=(e, catch_backtrace()))
+                    @error "Creating response failed" kws...
                     put!(f, Response{T}(nothing, false, http_r, e))
                 finally
                     unlock(b)

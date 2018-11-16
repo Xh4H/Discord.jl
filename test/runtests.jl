@@ -152,8 +152,7 @@ end
             val, e = @test_logs (:error, r"MethodError") tryparse(c, Int, Dict())
             @test val === nothing
             @test e isa MethodError
-            @test first(c.state.errors) == Dict()
-        end
+         end
 
         @testset "Snowflake" begin
             # Snowflakes usually come in as strings.

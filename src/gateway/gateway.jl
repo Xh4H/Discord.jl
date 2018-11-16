@@ -47,7 +47,8 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     resp = try
         HTTP.get("$DISCORD_API/v$(c.version)/gateway")
     catch e
-        @error catchmsg(e) logkws(c; conn=undef)...
+        kws = logkws(c; conn=undef, exception=(e, catch_backtrace()))
+        @error "Getting gateway URL failed" kws...
         rethrow(e)
     end
 
@@ -61,7 +62,12 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
     data, e = readjson(c.conn.io)
     e === nothing || throw(e)
     op = get(OPCODES, data[:op], data[:op])
-    op === :HELLO || error("Expected opcode HELLO, received $op")
+
+    if op !== :HELLO
+        msg = "Expected opcode HELLO, received $op"
+        @error msg logkws(c)...
+        error(msg)
+    end
     hello(c, data)
 
     data = if resume
@@ -82,7 +88,13 @@ function Base.open(c::Client; resume::Bool=false, delay::Period=Second(7))
 
     op = resume ? :RESUME : :IDENTIFY
     @debug "Writing $op" logkws(c)...
-    writejson(c.conn.io, data) === nothing || error("Writing $op failed")
+    try
+        writejson(c.conn.io, data)
+    catch e
+        kws = logkws(c; exception=(e, catch_backtrace()))
+        @error "Writing $op failed" kws...
+        rethrow(e)
+    end
 
     @debug "Starting background maintenance tasks" logkws(c)...
     @async heartbeat_loop(c)
@@ -159,11 +171,13 @@ function request_guild_members(
     query::AbstractString="",
     limit::Int=0,
 )
-    return writejson(c.conn.io, Dict("op" => 8, "d" => Dict(
+    e, bt = trywritejson(c.conn.io, Dict("op" => 8, "d" => Dict(
         "guild_id" => guilds,
         "query" => query,
         "limit" => limit,
-    ))) === nothing
+    )))
+    show_gateway_error(c, e, bt)
+    return e === nothing
 end
 
 """
@@ -186,12 +200,14 @@ function update_voice_state(
     mute::Bool,
     deaf::Bool,
 )
-    return writejson(c.conn.io, Dict("op" => 4, "d" => Dict(
+    e, bt = trywritejson(c.conn.io, Dict("op" => 4, "d" => Dict(
         "guild_id" => guild,
         "channel_id" => channel,
         "self_mute" => mute,
         "self_deaf" => deaf,
-    ))) === nothing
+    )))
+    show_gateway_error(c, e, bt)
+    return e === nothing
 end
 
 """
@@ -220,12 +236,14 @@ function update_status(
     c.presence["status"] = status
     c.presence["afk"] = afk
 
-    return writejson(c.conn.io, Dict("op" => 3, "d" => Dict(
+    e, bt = trywritejson(c.conn.io, Dict("op" => 3, "d" => Dict(
         "since" => since,
         "game" => game,
         "status" => status,
         "afk" => afk,
-    ))) === nothing
+    )))
+    show_gateway_error(c, e, bt)
+    return e === nothing
 end
 
 # Client maintenance.
@@ -248,7 +266,8 @@ function heartbeat_loop(c::Client)
         end
         @debug "Heartbeat loop exited" logkws(c; conn=v)...
     catch e
-        @error "Heartbeat loop exited unexpectedly:\n$(catchmsg(e))" logkws(c; conn=v)...
+        kws = logkws(c; conn=v, exception=(e, catch_backtrace()))
+        @error "Heartbeat loop exited unexpectedly" kws...
     end
 end
 
@@ -272,7 +291,8 @@ function read_loop(c::Client)
         end
         @debug "Read loop exited" logkws(c; conn=v)...
     catch e
-        @error "Read loop exited unexpectedly:\n$(catchmsg(e))" logkws(c; conn=v)...
+        logkws(c; conn=v, exception=(e, catch_backtrace()))
+        @error "Read loop exited unexpectedly:" kws...
     end
 end
 
@@ -304,8 +324,8 @@ function dispatch(c::Client, data::Dict)
             # Without invokelatest, we hit world age issues.
             Base.invokelatest(pred(p.second), c, evt) === true
         catch e
-            msg = "Predicate function raised an exception:\n$(catchmsg(e))"
-            @warn msg logkws(c; event=T, handler=p.first)...
+            kws = logkws(c; event=T, handler=p.first, exception=(e, catch_backtrace()))
+            @warn "Predicate function raised an exception" kws...
             false
         end
     end
@@ -315,9 +335,8 @@ function dispatch(c::Client, data::Dict)
             result = func(handler)(c, evt)
             iscollecting(handler) && push!(results(handler), result)
         catch e
-            msg = "Handler function raised an exception:\n$(catchmsg(e))"
-            @error msg logkws(c; event=T, handler=tag)...
-            push!(c.state.errors, evt)
+            kws = logkws(c; event=T, handler=tag, exception=(e, catch_backtrace()))
+            @error "Handler function raised an exception" kws...
         finally
             # TODO: There are race conditions here.
             dec!(handler)
@@ -328,9 +347,12 @@ end
 
 # Send a heartbeat.
 function heartbeat(c::Client, ::Dict=Dict())
-    e = writejson(c.conn.io, Dict("op" => 1, "d" => c.hb_seq))
-    e === nothing && (c.last_hb = now())
-    return e === nothing
+    isopen(c) || return false
+    e, bt = trywritejson(c.conn.io, Dict("op" => 1, "d" => c.hb_seq))
+    show_gateway_error(c, e, bt)
+    ok = e === nothing
+    ok && (c.last_hb = now())
+    return ok
 end
 
 # Reconnect to the gateway.
@@ -428,12 +450,26 @@ function readjson(io)
 end
 
 # Write a JSON message.
-writejson(::Nothing, body) = false
-function writejson(io, body)
+writejson(::Nothing, body) = error("Tried to write to an uninitialized connection")
+writejson(io, body) = write(io, json(body))
+
+# Write a JSON message, but don't throw an exception.
+function trywritejson(io, body)
     return try
-        write(io, json(body))
-        nothing
+        writejson(io, body)
+        nothing, nothing
     catch e
-        e
+        e, catch_backtrace()
+    end
+end
+
+# Display a gateway error.
+show_gateway_error(c::Client, ::Nothing, ::Nothing) = nothing
+function show_gateway_error(c::Client, e::Exception, bt)
+    kws = logkws(c; exception=(e, bt))
+    if isopen(c)
+        @error "Gateway error" kws...
+    else
+        @debug "Gateway error" kws...
     end
 end

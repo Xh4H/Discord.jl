@@ -10,7 +10,6 @@ mutable struct State
     messages::TTL{Snowflake, Message}         # Message ID -> message.
     presences::Dict{Snowflake, TTL{Snowflake, Presence}}  # Guild ID -> user ID -> presence.
     members::Dict{Snowflake, TTL{Snowflake, Member}}      # Guild ID -> member ID -> member.
-    errors::Vector{Union{Dict, AbstractEvent}}            # Values which caused errors.
     lock::Threads.AbstractLock    # Internal lock.
     ttls::TTLDict                 # TTLs for creating caches without a Client.
 end
@@ -27,7 +26,6 @@ function State(ttls::TTLDict)
         TTL(ttls[Message]),         # messages
         Dict(),                     # presences
         Dict(),                     # members
-        [],                         # errors
         Threads.SpinLock(),         # lock
         ttls,                       # ttls
     )
