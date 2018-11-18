@@ -32,6 +32,7 @@ export PERM_CREATE_INSTANT_INVITE,
     permissions_in,
     mention,
     reply,
+    split_message,
     plaintext,
     heartbeat_ping,
     upload_file,
@@ -201,6 +202,55 @@ function reply(
     else
         create_message(c, m.channel_id; embed=embed)
     end
+end
+
+const STYLES = [
+    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"_.+?_", r"__.+?__",
+    r"\*.+?\*", r"\*\*.+?\*\*", r"\*\*\*.+?\*\*\*",
+]
+
+"""
+    split_message(text::AbstractString) -> Vector{String}
+
+Split a message into 2000-character chunks, preserving formatting.
+
+# Examples
+```jldoctest; setup=:(using Discord)
+julia> split_message("foo")
+1-element Array{String,1}:
+ "foo"
+
+julia> split_message(repeat('.', 1995) * "**hello, world**")[2]
+"**hello, world**"
+"""
+function split_message(text::String)
+    length(text) <= 2000 && return String[text]
+    chunks = String[]
+    start = 1
+    len = length(text)
+
+    # TODO: The indexing here can break with Unicode.
+    # TODO: This doesn't work properly for nested formatting, e.g. **foo __bar__ baz**.
+
+    while !isempty(text)
+        local stop = 2000
+
+        for m in vcat(collect.(eachmatch.(STYLES, text))...)
+
+            m.offset > 1 && text[m.offset - 1] == '\\' && continue
+            if m.offset + length(m.match) > 2000
+                stop = m.offset-1
+                break
+            end
+        end
+
+        stop = min(stop, length(text))
+        stop < length(text) && (stop = something(findlast(isspace, text[1:stop]), stop))
+        push!(chunks, text[1:stop])
+        text = text[stop+1:end]
+    end
+
+    return Vector{String}(strip.(chunks))
 end
 
 """

@@ -414,7 +414,7 @@ function Base.tryparse(c::Client, T::Type, data)
     return try
         T <: Vector ? eltype(T).(data) : T(data), nothing
     catch e
-        kws = logkws(c; T=T, exception=(t, catch_backtrace()))
+        kws = logkws(c; T=T, exception=(e, catch_backtrace()))
         @error "Parsing failed" kws...
         nothing, e
     end

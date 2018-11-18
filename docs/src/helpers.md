@@ -10,6 +10,7 @@ has_permission
 permissions_in
 mention
 reply
+split_message
 plaintext
 upload_file
 set_game

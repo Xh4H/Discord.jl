@@ -34,6 +34,8 @@ using Discord:
     should_put,
     snowflake,
     snowflake2datetime,
+    split_message,
+    trywritejson,
     validate_fetch,
     worker_id,
     wrapfn,
@@ -107,7 +109,8 @@ end
             @test !haskey(kws, :shard)
             @test !haskey(kws, :conn)
             c.shards += 1
-            c.conn = Conn(nothing, 1)
+            c.conn.io = IOBuffer()
+            c.conn.v = 1
             kws = Dict(logkws(c))
             @test get(kws, :shard, nothing) == 0
             @test get(kws, :conn, nothing) == 1
@@ -149,7 +152,7 @@ end
         @testset "tryparse" begin
             @test tryparse(c, Int, 123) == (123, nothing)
             @test tryparse(c, Vector{UInt16}, Int[1, 2, 3]) == (UInt16[1, 2, 3], nothing)
-            val, e = @test_logs (:error, r"MethodError") tryparse(c, Int, Dict())
+            val, e = @test_logs (:error, r"Parsing failed") tryparse(c, Int, Dict())
             @test val === nothing
             @test e isa MethodError
          end
@@ -198,17 +201,27 @@ end
         @test val == [1, 2, 3]
         @test e === nothing
 
+        # writejson can throw.
         io = IOBuffer()
-        @test writejson(io, @__MODULE__) !== nothing
+        @test_throws ArgumentError writejson(io, @__MODULE__)
 
         io = IOBuffer()
-        @test writejson(io, [1, 2, 3]) === nothing
+        writejson(io, [1, 2, 3])
         @test String(take!(io)) == "[1,2,3]"
 
         io = IOBuffer()
         d = Dict("foo" => 0, "bar" => [1, 2, 3])
-        @test writejson(io, d) === nothing
+        writejson(io, d)
         @test JSON.parse(String(take!(io))) == d
+
+        # The try version just returns the exception and backtrace.
+        io = IOBuffer()
+        e, bt = trywritejson(io, @__MODULE__)
+        @test e isa ArgumentError
+
+        io = IOBuffer()
+        e, bt = trywritejson(io, [1, 2, 3])
+        @test e === nothing && bt === nothing
     end
 
     @testset "Helpers" begin
@@ -226,6 +239,25 @@ end
             @test mention(m) == mention(u)
             m = Member(u, missing, [], now(), true, true)
             @test mention(m) == mention(u)
+        end
+
+        @testset "split_message" begin
+            # A vector is returned even if no splitting happens.
+            chunks = split_message("foo")
+            @test chunks == String["foo"]
+
+            # Formatting is preserved between chunks.
+            chunks = split_message(string(repeat('.', 1995), "**foobar**"))
+            @test length(chunks) == 2
+            @test chunks[2] == "**foobar**"
+            chunks = split_message(string(repeat('.', 1995), "```julia\n1 + 1\n```"))
+            @test chunks[2] == "```julia\n1 + 1\n```"
+
+            # Chunks are separated by spaces.
+            chunks = split_message(string(repeat('.', 1995), " foo bar baz"))
+            @test length(chunks) == 2
+            @test chunks[1] == string(repeat('.', 1995), " foo")
+            @test chunks[2] == "bar baz"
         end
 
         @testset "plaintext" begin
@@ -482,7 +514,6 @@ end
         f(c, e) = nothing
         g(c, e) = nothing
         badh(c, e::String) = nothing
-        badc(c, e::AbstractEvent) = nothing
 
         @testset "Basics" begin
             empty!(c.handlers)
@@ -612,20 +643,6 @@ end
             @test fetch(t) == Any[3, 4]
         end
 
-        @testset "Commands" begin
-            delete_handler!(c, MessageCreate)
-
-            # Adding commands adds to the MessageCreate handlers.
-            add_command!(c, "!test", f; tag=:f)
-            @test length(get(c.handlers, MessageCreate, Dict())) == 1
-            # But the handler and predicate functions are modified.
-            @test c.handlers[MessageCreate][:f].func != f
-            @test c.handlers[MessageCreate][:f].pred != alwaystrue
-
-            # We can't add a command without a valid method.
-            @test_throws ArgumentError add_command!(c, "!test", badc)
-        end
-
         @testset "Handler collection" begin
             delete_handler!(c, Ready)
             add_handler!(c, Ready, f)
@@ -677,6 +694,20 @@ end
             add_handler!(c, MessageCreate, f; tag=DEFAULT_HANDLER_TAG)
             @test hasdefault(c, MessageCreate)
         end
+    end
+
+    @testset "Commands" begin
+        delete_handler!(c, MessageCreate)
+
+        # Adding handlers adds to MessageCreate.
+        add_command!(c, :foo, (c, m) -> nothing)
+        @test haskey(c.handlers[MessageCreate], :foo)
+
+        # We can delete commands with a shortcut.
+        delete_command!(c, :foo)
+        @test !haskey(c.handlers[MessageCreate], :foo)
+
+        # TODO: Finish these tests.
     end
 
     @testset "State" begin
