@@ -291,8 +291,9 @@ function read_loop(c::Client)
         end
         @debug "Read loop exited" logkws(c; conn=v)...
     catch e
-        logkws(c; conn=v, exception=(e, catch_backtrace()))
-        @error "Read loop exited unexpectedly:" kws...
+        kws = logkws(c; conn=v, exception=(e, catch_backtrace()))
+        @error "Read loop exited unexpectedly" kws...
+        reconnect(c; zombie=true)
     end
 end
 
