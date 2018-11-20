@@ -1,3 +1,7 @@
+export OT_ROLE,
+    OT_MEMBER,
+    Overwrite
+
 const OVERWRITE_TYPES = ["role", "member"]
 
 """
@@ -7,7 +11,7 @@ More details [here](https://discordapp.com/developers/docs/resources/audit-log#a
 @enum OverwriteType OT_ROLE OT_MEMBER OT_UNKNOWN
 
 function OverwriteType(x::AbstractString)
-    i = findfirst(s -> s == x, OVERWRITE_TYPES)
+    i = findfirst(isequal(x), OVERWRITE_TYPES)
     return i === nothing ? OT_UNKNOWN : OverwriteType(i - 1)
 end
 

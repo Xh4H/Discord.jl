@@ -13,7 +13,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE PS_UNKNOWN
 
 function PresenceStatus(x::AbstractString)
-    i = findfirst(s -> s == x, PRESENCE_STATUSES)
+    i = findfirst(isequal(x), PRESENCE_STATUSES)
     return i === nothing ? PS_UNKNOWN : PresenceStatus(i - 1)
 end
 
