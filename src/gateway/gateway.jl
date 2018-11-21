@@ -327,29 +327,34 @@ function dispatch(c::Client, data::Dict)
             isexpired(h) && delete_handler!(c, eltype(h), tag)
 
             pred = try
-                # Without invokelatest, we hit world age issues.
-                # Base.invokelatest(predicate(p.second), c, evt) === true
                 predicate(h)(c, evt) === true
             catch e
                 kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                @error "Predicate function raised an exception" kws...
+                @error "Predicate function threw an exception" kws...
                 return  # Don't run the handler or the fallback.
             end
 
+            fb = !pred
             if pred
                 try
                     result = handler(h)(c, evt)
                     iscollecting(h) && push!(results(h), result)
                 catch e
-                    kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                    @error "Handler function raised an exception" kws...
+                    if e isa Fallback
+                        fb = true
+                    else
+                        kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+                        @error "Handler function threw an exception" kws...
+                    end
                 end
-            else
+            end
+
+            if fb
                 try
                     fallback(h)(c, evt)
                 catch e
                     kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                    @error "Fallback function raised an exception" kws...
+                    @error "Fallback function threw an exception" kws...
                 end
             end
         end

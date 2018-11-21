@@ -1,4 +1,4 @@
-# TODO: Make this more comprehensive. For now look at eval.jl.
+# TODO: Make this more comprehensive. For now look at eval.jl or the add_command! docs.
 
 module Commands
 

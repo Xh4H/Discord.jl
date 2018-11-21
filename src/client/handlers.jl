@@ -1,3 +1,6 @@
+# An exception to indicate that the fallback handler should be run.
+struct Fallback <: Exception end
+
 # An event handler.
 abstract type AbstractHandler{T<:AbstractEvent} end
 

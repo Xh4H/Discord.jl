@@ -18,7 +18,7 @@ function main()
     # This handler runs on all MessageCreate events.
     add_handler!(c, MessageCreate, on_message_create; tag=:ping)
     # We can simplify the above handler with a predicate function and do syntax.
-    add_handler!(c, MessageCreate; tag=:ping, pred=predicate) do c, e
+    add_handler!(c, MessageCreate; tag=:ping, predicate=predicate) do c, e
         reply(c, e.message, "pong")
     end
     # This handler runs on events which have no non-default handler.

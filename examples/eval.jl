@@ -41,11 +41,10 @@ function eval_codeblock(c::Client, msg::Message, code::Expr)
 end
 
 function main()
-    c = Client(ENV["DISCORD_TOKEN"])
-    set_prefix!(c, '!')
+    c = Client(ENV["DISCORD_TOKEN"]; prefix='!')
     add_command!(
         c, :eval, eval_codeblock;
-        pattern=r"^eval ```(?:julia)?\n(.*)\n```", args=[parsecode],
+        parsers=[parsecode], pattern=r"^eval ```(?:julia)?\n(.*)\n```",
     )
     open(c)
     return c
