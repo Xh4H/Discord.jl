@@ -1,3 +1,5 @@
+# TODO: This runs but is outdated and isn't a good reference anymore.
+
 module Wager
 
 using Dates
@@ -142,11 +144,12 @@ end
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
+    set_prefix!(c, '!')
     add_handler!(c, GuildCreate, add_users)
-    add_command!(c, "!count", reply_token_count)
-    add_command!(c, "!leaderboard", reply_token_leaderboard)
-    add_command!(c, "!send", send_tokens)
-    add_command!(c, "!wager", wager_tokens)
+    add_command!(c, :count, reply_token_count)
+    add_command!(c, :leaderboard, reply_token_leaderboard)
+    add_command!(c, :send, send_tokens)
+    add_command!(c, :wager, wager_tokens)
     open(c)
     @async distribute_tokens(c)
     return c

@@ -12,7 +12,7 @@ end
 
 """
     Splat(
-        f::Base.Callable=identity,
+        func::Base.Callable=identity,
         split::Union{AbstractString, AbstractChar}=' ',
     ) -> Splat
 

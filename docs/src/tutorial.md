@@ -4,6 +4,9 @@ CurrentModule = Discord
 
 # Tutorial
 
+!!! warning
+    This is outdated, the regular documentation is a better reference.
+
 *The completed and cleaned-up code can be found in [`wager.jl`](https://github.com/PurgePJ/Discord.jl/blob/master/examples/wager.jl).*
 
 In this tutorial, we're going to build a very basic currency/wager bot with Discord.jl.
@@ -27,6 +30,7 @@ using Discord
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
+    set_prefix!(c, '!')
     # To be continued...
 end
 ```
@@ -125,7 +129,7 @@ end
 
 function main()
     # ...
-    add_command!(c, "!count", reply_token_count)
+    add_command!(c, :count, reply_token_count)
 end
 ```
 
@@ -150,7 +154,7 @@ end
 
 function main()
     # ...
-    add_command!(c, "!leaderboard", reply_token_leaderboard)
+    add_command!(c, :leaderboard, reply_token_leaderboard)
 end
 ```
 
@@ -188,7 +192,7 @@ end
 
 function main()
     # ...
-    add_command!(c, "!send", send_tokens)
+    add_command!(c, :send, send_tokens)
 end
 ```
 
@@ -224,7 +228,7 @@ end
 
 function main()
     # ...
-    add_command!(c, "!wager", wager_tokens)
+    add_command!(c, :wager, wager_tokens)
     wait(c)
 end
 ```
