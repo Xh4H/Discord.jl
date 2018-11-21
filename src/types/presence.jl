@@ -1,8 +1,3 @@
-export PS_IDLE,
-    PS_DND,
-    PS_ONLINE,
-    PS_OFFLINE
-
 const PRESENCE_STATUSES = ["idle", "dnd", "online", "offline"]
 
 """
@@ -11,6 +6,7 @@ A [`User`](@ref)'s status sent in a [`Presence`](@ref). Available values are `PS
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-application-structure).
 """
 @enum PresenceStatus PS_IDLE PS_DND PS_ONLINE PS_OFFLINE PS_UNKNOWN
+@boilerplate PresenceStatus :export
 
 function PresenceStatus(x::AbstractString)
     i = findfirst(isequal(x), PRESENCE_STATUSES)

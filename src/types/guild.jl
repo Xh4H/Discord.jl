@@ -5,28 +5,28 @@ A [`Guild`](@ref)'s verification level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-verification-level).
 """
 @enum VerificationLevel VL_NONE VL_LOW VL_MEDIUM VL_HIGH VL_VERY_HIGH
-@boilerplate VerificationLevel :lower
+@boilerplate VerificationLevel :export :lower
 
 """
 A [`Guild`](@ref)'s default message notification level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-default-message-notification-level).
 """
 @enum MessageNotificationLevel MNL_ALL_MESSAGES MNL_ONLY_MENTIONS
-@boilerplate MessageNotificationLevel :lower
+@boilerplate MessageNotificationLevel :export :lower
 
 """
 A [`Guild`](@ref)'s explicit content filter level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-explicit-content-filter-level).
 """
 @enum ExplicitContentFilterLevel ECFL_DISABLED ECFL_MEMBERS_WITHOUT_ROLES ECFL_ALL_MEMBERS
-@boilerplate ExplicitContentFilterLevel :lower
+@boilerplate ExplicitContentFilterLevel :export :lower
 
 """
 A [`Guild`](@ref)'s MFA level.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-object-mfa-level).
 """
 @enum MFALevel ML_NONE ML_ELEVATED
-@boilerplate MFALevel :lower
+@boilerplate MFALevel :export :lower
 
 """
 A Discord guild (server).

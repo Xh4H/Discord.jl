@@ -102,10 +102,18 @@ macro constructors(T)
     end
 end
 
+# Export all instances of an enum.
+macro exportenum(T)
+    TT = eval(T)
+    quote
+        $(map(x -> :(export $(Symbol(x))), instances(TT))...)
+    end
+end
+
 # Format a type for a docstring.
 function doctype(s::String)
     s = replace(s, "UInt64" => "Snowflake")
-    s = replace(s, "Int64" => "Int")
+    s = replace(s, string(Int) => "Int")
     s = replace(s, "Discord." => "")
     s = replace(s, "Dates." => "")
     m = match(r"Array{([^{}]+),1}", s)
@@ -177,11 +185,14 @@ macro boilerplate(T, exs...)
     macros = map(e -> e.value, exs)
 
     quote
+        @static if :constructors in $macros
+            @constructors $T
+        end
         @static if :docs in $macros
             @fielddoc $T
         end
-        @static if :constructors in $macros
-            @constructors $T
+        @static if :export in $macros
+            @exportenum $T
         end
         @static if :lower in $macros
             @lower $T

@@ -79,7 +79,7 @@ More details [here](https://discordapp.com/developers/docs/resources/audit-log#a
     AT_EMOJI_DELETE=62
     AT_MESSAGE_DELETE=72
 end
-@boilerplate ActionType :lower
+@boilerplate ActionType :export :lower
 
 """
 A change item in an [`AuditLogEntry`](@ref).

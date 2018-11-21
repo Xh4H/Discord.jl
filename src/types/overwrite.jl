@@ -1,6 +1,4 @@
-export OT_ROLE,
-    OT_MEMBER,
-    Overwrite
+export Overwrite
 
 const OVERWRITE_TYPES = ["role", "member"]
 
@@ -9,6 +7,7 @@ An [`Overwrite`](@ref)'s type.
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info).
 """
 @enum OverwriteType OT_ROLE OT_MEMBER OT_UNKNOWN
+@boilerplate OverwriteType :export
 
 function OverwriteType(x::AbstractString)
     i = findfirst(isequal(x), OVERWRITE_TYPES)

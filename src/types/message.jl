@@ -14,14 +14,14 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
     MT_CHANNEL_PINNED_MESSAGE
     MT_GUILD_MEMBER_JOIN
 end
-@boilerplate MessageType :lower
+@boilerplate MessageType :export :lower
 
 """
 A [`Message`](@ref)'s activity type.
 More details [here](https://discordapp.com/developers/docs/resources/channel#message-object-message-activity-types).
 """
 @enum MessageActivityType MAT_JOIN MAT_SPECTATE MAT_LISTEN MAT_JOIN_REQUEST
-@boilerplate MessageActivityType :lower
+@boilerplate MessageActivityType :export :lower
 
 """
 A [`Message`](@ref) activity.
