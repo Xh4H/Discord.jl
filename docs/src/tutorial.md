@@ -29,8 +29,7 @@ Let's get started! First of all, we need to import Discord.jl, and we'll also st
 using Discord
 
 function main()
-    c = Client(ENV["DISCORD_TOKEN"])
-    set_prefix!(c, '!')
+    c = Client(ENV["DISCORD_TOKEN"]; prefix='!')
     # To be continued...
 end
 ```

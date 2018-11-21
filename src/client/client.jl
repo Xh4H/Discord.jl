@@ -102,13 +102,13 @@ mutable struct Client
     use_cache::Bool              # Whether or not to use the cache.
     presence::Dict               # Default presence options.
     conn::Conn                   # WebSocket connection.
-    p_global::AbstractString     # Default command prefix.
-    p_guilds::Dict{Snowflake, AbstractString}  # Command prefix overrides.
+    p_global::String             # Default command prefix.
+    p_guilds::Dict{Snowflake, String}  # Command prefix overrides.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, AbstractHandler}}  # Event handlers.
 
     function Client(
         token::String;
-        prefix::String="",
+        prefix::Union{AbstractString, AbstractChar}="",
         presence::Union{Dict, NamedTuple}=Dict(),
         ttls::TTLDict=TTLDict(),
         version::Int=API_VERSION,
@@ -117,6 +117,7 @@ mutable struct Client
         ttls = merge(DEFAULT_TTLS, ttls)
         state = State(ttls)
         conn = Conn(nothing, 0)
+        prefix = string(prefix)
         presence = merge(Dict(
             "since" => nothing,
             "game" => nothing,

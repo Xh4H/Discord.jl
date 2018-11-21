@@ -143,8 +143,7 @@ function wager_tokens(c::Client, m::Message)
 end
 
 function main()
-    c = Client(ENV["DISCORD_TOKEN"])
-    set_prefix!(c, '!')
+    c = Client(ENV["DISCORD_TOKEN"]; prefix='!')
     add_handler!(c, GuildCreate, add_users)
     add_command!(c, :count, reply_token_count)
     add_command!(c, :leaderboard, reply_token_leaderboard)
