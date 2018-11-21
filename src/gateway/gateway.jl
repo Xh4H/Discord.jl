@@ -320,28 +320,38 @@ function dispatch(c::Client, data::Dict)
         end
     end
 
-    filter!(handlers) do p
-        try
-            # Without invokelatest, we hit world age issues.
-            Base.invokelatest(pred(p.second), c, evt) === true
-        catch e
-            kws = logkws(c; event=T, handler=p.first, exception=(e, catch_backtrace()))
-            @warn "Predicate function raised an exception" kws...
-            false
-        end
-    end
-
-    for (tag, handler) in handlers
-        @async try
-            result = func(handler)(c, evt)
-            iscollecting(handler) && push!(results(handler), result)
-        catch e
-            kws = logkws(c; event=T, handler=tag, exception=(e, catch_backtrace()))
-            @error "Handler function raised an exception" kws...
-        finally
+    for (t, h) in handlers
+        @async begin
             # TODO: There are race conditions here.
-            dec!(handler)
-            isexpired(handler) && delete_handler!(c, eltype(handler), tag)
+            dec!(h)
+            isexpired(h) && delete_handler!(c, eltype(h), tag)
+
+            pred = try
+                # Without invokelatest, we hit world age issues.
+                # Base.invokelatest(predicate(p.second), c, evt) === true
+                predicate(h)(c, evt) === true
+            catch e
+                kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+                @error "Predicate function raised an exception" kws...
+                return  # Don't run the handler or the fallback.
+            end
+
+            if pred
+                try
+                    result = handler(h)(c, evt)
+                    iscollecting(h) && push!(results(h), result)
+                catch e
+                    kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+                    @error "Handler function raised an exception" kws...
+                end
+            else
+                try
+                    fallback(h)(c, evt)
+                catch e
+                    kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+                    @error "Fallback function raised an exception" kws...
+                end
+            end
         end
     end
 end

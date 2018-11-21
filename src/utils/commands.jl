@@ -26,8 +26,9 @@ Splat() = Splat(identity, ' ')
 Splat(func::Base.Callable) = Splat(func, ' ')
 Splat(split::Union{AbstractString, AbstractChar}) = Splat(identity, split)
 
-func(c::Command) = func(c.h)
-pred(c::Command) = pred(c.h)
+predicate(c::Command) = predicate(c.h)
+handler(c::Command) = handler(c.h)
+fallback(c::Command) = fallback(c.h)
 expiry(c::Command) = expiry(c.h)
 dec!(c::Command) = dec!(c.h)
 isexpired(c::Command) = isexpired(c.h)
@@ -36,10 +37,12 @@ isexpired(c::Command) = isexpired(c.h)
     add_command!(
         c::Client,
         name::Symbol,
-        func::Function;
-        pattern::Regex=Regex("^\$name"),
+        handler::Function;
         help::AbstractString="",
         parsers::Vector=[],
+        separator::Union{AbstractString, AbstractChar}=' ',
+        pattern::Regex=Regex("^\$name " * join(repeat(["(.*)"], length(parsers)), separator)),
+        fallback::Function=donothing,
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
@@ -53,9 +56,11 @@ The handler function must accept a [`Client`](@ref) and a [`Message`](@ref). Add
 it can accept any number of additional arguments, which are captured from `pattern`
 and parsed with `parsers` (see below).
 
-# Pattern
+# Command Pattern
 The `pattern` keyword specifies how to invoke the command. The given `Regex` must match the
-message contents after having removed the command prefix. By default, it's the command name.
+message contents after having removed the command prefix. By default, it's the command name
+with as many wildcard capture groups as there are parsers, separated by the `separator`
+keyword (a space character by default).
 
 # Command Help
 The `help` keyword specifies a help string which can be used by [`add_help!`](@ref).
@@ -64,6 +69,10 @@ The `help` keyword specifies a help string which can be used by [`add_help!`](@r
 The `parsers` keyword specifies the parsers of the command arguments, and can contain both
 types and functions. If `pattern` contains captures, then they are run through the parsers
 before being passed into the handler. For repeating arguments, see [`Splat`](@ref).
+
+# Fallback Function
+The `fallback` keyword specifies a function that runs whenever argument parsing fails, and
+its signature should be the same as that of the handler function.
 
 Additional keyword arguments are a subset of those to [`add_handler!`](@ref).
 
@@ -76,34 +85,36 @@ The same, but excluding the command part:
 ```julia
 add_command!(c, :echo, (c, m, msg) -> reply(c, m, msg); pattern=r"^echo (.+)")
 ```
-Parsing two numeric arguments:
+Parsing a subtraction expression with custom parsers and separator:
 ```julia
 add_command!(
-    c, :mult, (c, m, a, b) -> reply(c, m, string(a * b));
-    pattern=r"^mult (.+) (.+)", parsers=[Float64, Float64],
+    c, :sub, (c, m, a, b) -> reply(c, m, string(a - b));
+    parsers=[Float64, Float64], separator='-',
 )
 ```
-Splatting some comma-separated numbers:
+Splatting some comma-separated numbers with a fallback function:
 ```julia
 add_command!(
     c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));
-    pattern=r"^sum (.*)", parsers=[Splat(Float64, ',')],
+    parsers=[Splat(Float64, ',')], fallback=(c, m) -> reply(c, m, "Args must be numbers."),
 )
 ```
 """
 function add_command!(
     c::Client,
     name::Symbol,
-    func::Function;
-    pattern::Regex=Regex("^$name"),
+    handler::Function;
     help::AbstractString="",
     parsers::Vector=[],
+    separator::Union{AbstractString, AbstractChar}=' ',
+    pattern::Regex=Regex("^$name " * join(repeat(["(.*)"], length(parsers)), separator)),
+    fallback::Function=donothing,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
     kwargs...,
 )
-    if !any(methods(func)) do m
+    if !any(methods(handler)) do m
         length(m.sig.types) < 3 && return false
         return Client <: m.sig.types[2] && Message <: m.sig.types[3]
     end
@@ -116,55 +127,71 @@ function add_command!(
         throw(ArgumentError("Only one Splat parser can be used at a time"))
     end
 
-    function predicate(c::Client, e::MessageCreate)
-        isempty(e.message.content) && return false
+    function basic_match(c::Client, e::MessageCreate)
+        isempty(e.message.content) && return nothing
 
         pfx = prefix(c, e.message.guild_id)
-        startswith(e.message.content, pfx) || return false
+        startswith(e.message.content, pfx) || return nothing
 
         id = me(c) === nothing ? nothing : me(c).id
-        !ismissing(e.message.author) && e.message.author.id == id && return false
+        !ismissing(e.message.author) && e.message.author.id == id && return nothing
 
-        m = match(pattern, noprefix(e.message.content, pfx))
+        return match(pattern, noprefix(e.message.content, pfx))
+    end
+
+    function predicate(c::Client, e::MessageCreate)
+        m = basic_match(c, e)
         m === nothing && return false
 
         return try
             parsecaps(parsers, m.captures)
             true
         catch e
-            kws = logkws(c; cmd=name, exception=(e, catch_backtrace()))
+            kws = logkws(c; command=name, exception=(e, catch_backtrace()))
             @warn "Parsers raised an exception" kws...
             false
         end
     end
 
-    function handler(c::Client, e::MessageCreate)
+    function wrapped_handler(c::Client, e::MessageCreate)
         nopfx = noprefix(e.message.content, prefix(c, e.message.guild_id))
         m = match(pattern, nopfx)
         caps = parsecaps(parsers, m === nothing ? [] : m.captures)
-        func(c, e.message, caps...)
+        handler(c, e.message, caps...)
     end
 
-    cmd = Command(Handler{MessageCreate}(handler, predicate, n, timeout, false), name, help)
+    function wrapped_fallback(c::Client, e::MessageCreate)
+        basic_match(c, e) === nothing || fallback(c, e.message)
+    end
+
+    cmd = Command(
+        Handler{MessageCreate}(
+            predicate, wrapped_handler, wrapped_fallback,
+            n, timeout, false,
+        ),
+        name, help,
+    )
     puthandler!(c, cmd, name, compile; kwargs...)
 end
 
 function add_command!(
-    func::Function,
+    handler::Function,
     c::Client,
     name::Symbol;
-    pattern::Regex=Regex("^$name"),
     help::AbstractString="",
     parsers::Vector=[],
+    separator::Union{AbstractString, AbstractChar}=' ',
+    pattern::Regex=Regex=Regex("^$name " * join(repeat(["(.*)"], length(parsers)), separator)),
+    fallback::Function=donothing,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
     kwargs...
 )
     add_command!(
-        c, name, func;
-        pattern=pattern, help=help, parsers=parsers,
-        n=n, timeout=timeout, compile=compile, kwargs...,
+        c, name, handler;
+        help=help, separator=separator, parsers=parsers, pattern=pattern,
+        fallback=fallback, n=n, timeout=timeout, compile=compile, kwargs...,
     )
 end
 
@@ -187,6 +214,7 @@ delete_command!(c::Client, name::Symbol) = delete_handler!(c, MessageCreate, nam
 Add a help command.
 
 # Keywords
+- `separator::Union{AbstractString, AbstractChar}`: Separator between commands.
 - `pattern::Regex`: The command pattern (see [`add_command!`](@ref)).
 - `help::AbstractString`: Help for the help command.
 - `nohelp::AbstractString`: Help for commands without their own help string.
@@ -194,22 +222,24 @@ Add a help command.
 """
 function add_help!(
     c::Client;
+    separator::Union{AbstractString, AbstractChar}=' ',
     pattern::Regex=r"^help(?: (.+))?",
     help::AbstractString="Show this help message",
     nohelp::AbstractString="No help provided",
     nocmd::AbstractString="Command not found",
 )
     function handler(c::Client, m::Message, names::AbstractString...)
+        names = strip.(names)
         sort!(collect(names))
         len = maximum(length, names)
-        cmds = get(c.handlers, MessageCreate, Dict())
+        handlers = get(c.handlers, MessageCreate, Dict())
         io = IOBuffer()
 
         for name in names
             padded = lpad(name, len)
-            cmd = get(cmds, Symbol(name), nothing)
-            if cmd isa Command
-                println(io, padded, ": ", isempty(cmd.help) ? nohelp : cmd.help)
+            h = get(handlers, Symbol(name), nothing)
+            if h isa Command
+                println(io, padded, ": ", isempty(h.help) ? nohelp : h.help)
             else
                 println(io, padded, ": ", nocmd)
             end
@@ -226,8 +256,8 @@ function add_help!(
 
     add_command!(
         c, :help, handler;
-        pattern=pattern, help=help, compile=true,
-        message=mock(Message; content=prefix(c) * "help"), parsers=[Splat()],
+        parsers=[Splat(separator)], pattern=pattern, help=help,
+        compile=true, message=mock(Message; content=prefix(c) * "help"),
     )
 end
 

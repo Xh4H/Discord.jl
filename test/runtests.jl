@@ -18,6 +18,7 @@ using Discord:
     datetime,
     dec!,
     get_channel_message,
+    handler,
     handlers,
     hasdefault,
     increment,
@@ -28,6 +29,7 @@ using Discord:
     logkws,
     mock,
     parse_endpoint,
+    predicate,
     process_id,
     readjson,
     results,
@@ -538,7 +540,7 @@ end
             @test length(get(c.handlers, MessageCreate, Dict())) == 2
             delete_handler!(c, MessageCreate, :g)
             @test length(get(c.handlers, MessageCreate, Dict())) == 1
-            @test c.handlers[MessageCreate][:f].func == f
+            @test handler(c.handlers[MessageCreate][:f]) == f
 
             # We can also use do syntax.
             add_handler!(c, TypingStart) do c, e
@@ -556,7 +558,7 @@ end
             @test length(get(c.handlers, TypingStart, Dict())) == 1
             # Only exported functions are considered.
             @test length(get(c.handlers, WebhooksUpdate, Dict())) == 1
-            @test first(values(c.handlers[WebhooksUpdate])).func == Handlers.b
+            @test handler(first(values(c.handlers[WebhooksUpdate]))) == Handlers.b
 
             # Adding a module handler with keywords propogates to all handlers.
             empty!(c.handlers)
@@ -578,13 +580,17 @@ end
 
             # By default, the predicate always returns true.
             add_handler!(c, TestEvent, f; tag=:f)
-            @test c.handlers[TestEvent][:f].pred == alwaystrue
-            @test c.handlers[TestEvent][:f].pred(c, TestEvent(1))
+            @test predicate(c.handlers[TestEvent][:f]) == alwaystrue
+            @test predicate(c.handlers[TestEvent][:f])(c, TestEvent(1))
 
             # But we can also specify our own.
-            add_handler!(c, TestEvent, g; tag=:g, pred=(c, e) -> e.x == 1)
-            @test c.handlers[TestEvent][:g].pred(c, TestEvent(1))
-            @test !c.handlers[TestEvent][:g].pred(c, TestEvent(2))
+            add_handler!(c, TestEvent, g; tag=:g, predicate=(c, e) -> e.x == 1)
+            @test predicate(c.handlers[TestEvent][:g])(c, TestEvent(1))
+            @test !predicate(c.handlers[TestEvent][:g])(c, TestEvent(2))
+        end
+
+        @testset "Fallback functions" begin
+            # TODO
         end
 
         @testset "Expiries" begin

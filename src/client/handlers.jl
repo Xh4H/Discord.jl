@@ -12,9 +12,9 @@ Base.eltype(::AbstractHandler{T}) where T = T
 Base.put!(::AbstractHandler, ::Vector) = nothing
 Base.take!(::AbstractHandler) = []
 
-# handler, predicate, and expiry.
-func(::AbstractHandler) = donothing
-pred(::AbstractHandler) = alwaystrue
+predicate(::AbstractHandler) = alwaystrue
+handler(::AbstractHandler) = donothing
+fallback(::AbstractHandler) = donothing
 expiry(::AbstractHandler) = nothing
 
 # Update the handler's expiry.
@@ -29,8 +29,9 @@ results(::AbstractHandler) = []
 
 # A generic event handler.
 mutable struct Handler{T} <: AbstractHandler{T}
-    func::Function
-    pred::Function
+    predicate::Function
+    handler::Function
+    fallback::Function
     remaining::Union{Int, Nothing}
     expiry::Union{DateTime, Nothing}
     collect::Bool
@@ -38,35 +39,36 @@ mutable struct Handler{T} <: AbstractHandler{T}
     chan::Channel{Vector{Any}}
 
     function Handler{T}(
-        func::Function,
-        pred::Function,
+        predicate::Function,
+        handler::Function,
+        fallback::Function,
         remaining::Union{Int, Nothing},
         expiry::Union{DateTime, Nothing},
         collect::Bool,
     ) where T <: AbstractEvent
-        return new{T}(func, pred, remaining, expiry, collect, [], Channel{Vector{Any}}(1))
+        return new{T}(
+            predicate, handler, fallback,
+            remaining, expiry, collect, [], Channel{Vector{Any}}(1),
+        )
     end
     function Handler{T}(
-        func::Function,
-        pred::Function,
+        predicate::Function,
+        handler::Function,
+        fallback::Function,
         remaining::Union{Int, Nothing},
         expiry::Period,
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(
-            func,
-            pred,
-            remaining,
-            now() + expiry,
-            collect,
-            [],
-            Channel{Vector{Any}}(1),
+            predicate, handler, fallback,
+            remaining, now() + expiry, collect, [], Channel{Vector{Any}}(1),
         )
     end
 end
 
-func(h::Handler) = h.func
-pred(h::Handler) = h.pred
+predicate(h::Handler) = h.predicate
+handler(h::Handler) = h.handler
+fallback(h::Handler) = h.fallback
 expiry(h::Handler) = h.expiry
 dec!(h::Handler) = h.remaining isa Int && (h.remaining -= 1)
 iscollecting(h::Handler) = h.collect

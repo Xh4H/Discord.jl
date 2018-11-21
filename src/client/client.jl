@@ -187,8 +187,10 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
     add_handler!(
         c::Client,
         T::Type{<:AbstractEvent},
-        func::Function;
+        handler::Function;
         tag::Symbol=gensym(),
+        predicate::Function=alwaystrue,
+        fallback::Function=donothing,
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         wait::Bool=false,
@@ -199,16 +201,17 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
 Add an event handler. `do` syntax is also accepted.
 
 # Handler Function
-The handler function must take two arguments: A [`Client`](@ref) and an
-[`AbstractEvent`](@ref) (or a subtype).
+The handler function does the real work and must take two arguments: A [`Client`](@ref) and
+an [`AbstractEvent`](@ref) (or a subtype).
 
 # Handler Tag
 The `tag` keyword specifies a label for the handler, which can be used to remove it with
 [`delete_handler!`](@ref).
 
-# Predicate Function
-The `pred` keyword specifies a predicate function. The handler will only run if this
-function returns `true`. Its signature should match that of the handler.
+# Predicate/Fallback Functions
+The `predicate` keyword specifies a predicate function. The handler will only run if this
+function returns `true`. Otherwise, a fallback function, specified by the `fallback`
+keyword, is run. Their signatures should match that of the handler.
 
 # Handler Expiry
 Handlers can have counting and/or timed expiries. The `n` keyword specifies the number of
@@ -233,7 +236,7 @@ add_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))
 ```
 Adding a handler with a predicate and `do` syntax:
 ```julia
-add_handler!(c, ChannelCreate; pred=(c, e) -> length(e.channel.name) < 10) do c, e
+add_handler!(c, ChannelCreate; predicate=(c, e) -> length(e.channel.name) < 10) do c, e
     println(e.channel.name)
 end
 ```
@@ -253,9 +256,10 @@ add_handler!(c, MessageCreate, (c, e) -> @show e; compile=true)
 function add_handler!(
     c::Client,
     T::Type{<:AbstractEvent},
-    func::Function;
+    handler::Function;
     tag::Symbol=gensym(),
-    pred::Function=alwaystrue,
+    predicate::Function=alwaystrue,
+    fallback::Function=donothing,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
@@ -265,36 +269,41 @@ function add_handler!(
     if T isa Union
         wait && throw(ArgumentError("Can only wait for one event at a time"))
         add_handler!(
-            c, T.a, func;
-            tag=tag, pred=pred, n=n, timeout=timeout, compile=compile, kwargs...,
+            c, T.a, handler;
+            tag=tag, predicate=predicate, fallback=fallback,
+            n=n, timeout=timeout, compile=compile, kwargs...,
         )
         add_handler!(
-            c, T.b, func;
-            tag=tag, pred=pred, n=n, timeout=timeout, compile=compile, kwargs...,
+            c, T.b, handler;
+            tag=tag, predicate=predicate, fallback=fallback,
+            n=n, timeout=timeout, compile=compile, kwargs...,
         )
         return
     end
 
-    h = Handler{T}(func, pred, n, timeout, wait)
+    h = Handler{T}(predicate, handler, fallback, n, timeout, wait)
     puthandler!(c, h, tag, compile; kwargs...)
 
     return wait ? take!(h) : nothing
 end
 
 function add_handler!(
-    func::Function,
+    handler::Function,
     c::Client,
     T::Type{<:AbstractEvent};
     tag::Symbol=gensym(),
-    pred::Function=alwaystrue,
+    predicate::Function=alwaystrue,
+    fallback::Function=donothing,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
     compile::Bool=false,
+    kwargs...,
 )
     return add_handler!(
-        c, T, func;
-        tag=tag, pred=pred, n=n, timeout=timeout, wait=wait, compile=compile,
+        c, T, handler;
+        tag=tag, predicate=predicate, fallback=fallback,
+        n=n, timeout=timeout, wait=wait, compile=compile, kwargs...,
     )
 end
 
@@ -303,7 +312,8 @@ end
         c::Client,
         m::Module;
         tag::Symbol=gensym(),
-        pred::Function=alwaystrue,
+        predicate::Function=alwaystrue,
+        fallback::Function=donothing,
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
@@ -321,7 +331,8 @@ function add_handler!(
     c::Client,
     m::Module;
     tag::Symbol=gensym(),
-    pred::Function=alwaystrue,
+    predicate::Function=alwaystrue,
+    fallback::Function=donothing,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -333,7 +344,8 @@ function add_handler!(
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
                 add_handler!(
                     c, m.sig.types[3], f;
-                    tag=tag, pred=pred, n=n, timeout=timeout, compile=compile,
+                    tag=tag, predicate=predicate, fallback=fallback,
+                    n=n, timeout=timeout, compile=compile,
                 )
             end
         end
@@ -439,18 +451,22 @@ end
 function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, force::Bool; kwargs...)
     T = eltype(h)
 
-    if !hasmethod(func(h), (Client, T))
+    if !hasmethod(handler(h), (Client, T))
         throw(ArgumentError("Handler function must accept (::Client, ::$T)"))
     end
-    if !hasmethod(pred(h), (Client, T))
+    if !hasmethod(predicate(h), (Client, T))
         throw(ArgumentError("Predicate function must accept (::Client, ::$T)"))
+    end
+    if !hasmethod(fallback(h), (Client, T))
+        throw(ArgumentError("Fallback function must accept (::Client, ::$T)"))
     end
     if isexpired(h)
         throw(ArgumentError("Can't add a handler that's already expired"))
     end
 
-    compile(pred(h), force; kwargs...)
-    compile(func(h), force; kwargs...)
+    compile(predicate(h), force; kwargs...)
+    compile(handler(h), force; kwargs...)
+    compile(fallback(h), force; kwargs...)
 
     if haskey(c.handlers, T)
         c.handlers[T][tag] = h
