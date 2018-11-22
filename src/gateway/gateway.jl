@@ -293,7 +293,7 @@ function read_loop(c::Client)
     catch e
         kws = logkws(c; conn=v, exception=(e, catch_backtrace()))
         @error "Read loop exited unexpectedly" kws...
-        reconnect(c; zombie=true)
+        c.ready && reconnect(c; zombie=true)
     end
 end
 
@@ -320,7 +320,7 @@ function dispatch(c::Client, data::Dict)
         end
     end
 
-    for (t, h) in handlers
+    for (t, h) in sort(handlers; by=p -> priority(p.second), rev=true)
         @async begin
             # TODO: There are race conditions here.
             dec!(h)
@@ -427,7 +427,7 @@ end
 handle_specific_exception(::Client, ::Empty) = nothing
 handle_specific_exception(c::Client, ::EOFError) = reconnect(c)
 function handle_specific_exception(c::Client, e::HTTP.WebSockets.WebSocketError)
-    err = get(CLOSE_CODES, status, :UNKNOWN_ERROR)
+    err = get(CLOSE_CODES, e.status, :UNKNOWN_ERROR)
     if err === :NORMAL
         close(c)
     elseif err === :AUTHENTICATION_FAILED

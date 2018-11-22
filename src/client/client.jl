@@ -54,7 +54,7 @@ The `prefix` keyword specifies the command prefix, which is used by commands add
 with [`set_prefix!`](@ref).
 
 # Presence
-The `presence` keyword specifies the bot's presence upon connection. It also sets defaults
+The `presence` keyword sets the bot's presence upon connection. It also sets defaults
 for future calls to [`set_game`](@ref). The schema
 [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
 must be followed.
@@ -77,7 +77,7 @@ The cache can also be disabled/enabled permanently and temporarily with
 [`enable_cache!`](@ref) and [`disable_cache!`](@ref).
 
 # API Version
-The `version` keyword specifies the Version of the Discord API to use. Using anything but
+The `version` keyword chooses the Version of the Discord API to use. Using anything but
 `$API_VERSION` is not officially supported by the Discord.jl developers.
 
 # Sharding
@@ -146,7 +146,7 @@ mutable struct Client
             Dict(),       # handlers
         )
 
-        add_handler!(c, Defaults; tag=DEFAULT_HANDLER_TAG)
+        add_handler!(c, Defaults; tag=DEFAULT_HANDLER_TAG, priority=typemax(Int) - 10)
         return c
     end
 end
@@ -192,6 +192,7 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         tag::Symbol=gensym(),
         predicate::Function=alwaystrue,
         fallback::Function=donothing,
+        priority::Int=$DEFAULT_PRIORITY,
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         wait::Bool=false,
@@ -206,7 +207,7 @@ The handler function does the real work and must take two arguments: A [`Client`
 an [`AbstractEvent`](@ref) (or a subtype).
 
 # Handler Tag
-The `tag` keyword specifies a label for the handler, which can be used to remove it with
+The `tag` keyword gives a label to the handler, which can be used to remove it with
 [`delete_handler!`](@ref).
 
 # Predicate/Fallback Functions
@@ -214,10 +215,14 @@ The `predicate` keyword specifies a predicate function. The handler will only ru
 function returns `true`. Otherwise, a fallback function, specified by the `fallback`
 keyword, is run. Their signatures should match that of the handler.
 
+# Handler Priority
+The `priority` keyword indicates the handler's priority relative to other handlers for the
+same event. Handlers with higher values execute before those with lower ones.
+
 # Handler Expiry
-Handlers can have counting and/or timed expiries. The `n` keyword specifies the number of
-times a handler is run before expiring. The `timeout` keyword specifies how long the
-handler remains active.
+Handlers can have counting and/or timed expiries. The `n` keyword sets the number of times
+a handler is run before expiring. The `timeout` keyword sets how long the handler
+remains active.
 
 # Blocking Handlers and Result Collection
 To collect results from a handler, set the `wait` keyword along with an expiry. The call
@@ -225,10 +230,10 @@ will block until the handler expires, at which point the return value of each in
 returned in a `Vector`.
 
 # Forcing Precompilation
-Predicates and handlers are precompiled without running them, but it's not always
-successful. If the `compile` keyword is set, precompilation is forced by running
-the predicate and handler on a randomized input. Any trailing keywords are passed to the
-input event constructor.
+Handler functions are precompiled without running them, but it's not always
+successful, especially if your functions are not type-safe. If the `compile` keyword is
+set, precompilation is forced by running the predicate and handler on a randomized input.
+Any trailing keywords are passed to the input event constructor.
 
 # Examples
 Adding a handler with a timed expiry and tag:
@@ -245,14 +250,10 @@ Aggregating results of a handler with a counting expiry:
 ```julia
 msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
 ```
-Forcing precompilation:
+Forcing precompilation and assigning a low priority:
 ```julia
-add_handler!(c, MessageCreate, (c, e) -> @show e; compile=true)
+add_handler!(c, MessageCreate, (c, e) -> @show e; priority=-10, compile=true)
 ```
-
-!!! note
-    There is no guarantee on the order in which handlers run, except that catch-all
-    ([`AbstractEvent`](@ref)) handlers run before specific ones.
 """
 function add_handler!(
     c::Client,
@@ -261,6 +262,7 @@ function add_handler!(
     tag::Symbol=gensym(),
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
@@ -271,18 +273,18 @@ function add_handler!(
         wait && throw(ArgumentError("Can only wait for one event at a time"))
         add_handler!(
             c, T.a, handler;
-            tag=tag, predicate=predicate, fallback=fallback,
+            tag=tag, predicate=predicate, fallback=fallback, priority=priority,
             n=n, timeout=timeout, compile=compile, kwargs...,
         )
         add_handler!(
             c, T.b, handler;
-            tag=tag, predicate=predicate, fallback=fallback,
+            tag=tag, predicate=predicate, fallback=fallback, priority=priority,
             n=n, timeout=timeout, compile=compile, kwargs...,
         )
         return
     end
 
-    h = Handler{T}(predicate, handler, fallback, n, timeout, wait)
+    h = Handler{T}(predicate, handler, fallback, priority, n, timeout, wait)
     puthandler!(c, h, tag, compile; kwargs...)
 
     return wait ? take!(h) : nothing
@@ -295,6 +297,7 @@ function add_handler!(
     tag::Symbol=gensym(),
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
@@ -303,7 +306,7 @@ function add_handler!(
 )
     return add_handler!(
         c, T, handler;
-        tag=tag, predicate=predicate, fallback=fallback,
+        tag=tag, predicate=predicate, fallback=fallback, priority=priority,
         n=n, timeout=timeout, wait=wait, compile=compile, kwargs...,
     )
 end
@@ -324,7 +327,7 @@ Add all of the event handlers defined in a module. Any function you wish to use 
 handler must be exported. Only functions with correct type signatures (see above) are used.
 
 !!! note
-    If you specify keywords, they are applied to all of the handlers in the module. For
+    If you set keywords, they are applied to all of the handlers in the module. For
     example, if you add two handlers for the same event type with the same tag, one of them
     will be immediately overwritten.
 """
@@ -334,6 +337,7 @@ function add_handler!(
     tag::Symbol=gensym(),
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -346,7 +350,7 @@ function add_handler!(
                 add_handler!(
                     c, m.sig.types[3], f;
                     tag=tag, predicate=predicate, fallback=fallback,
-                    n=n, timeout=timeout, compile=compile,
+                    priority=priority, n=n, timeout=timeout, compile=compile,
                 )
             end
         end

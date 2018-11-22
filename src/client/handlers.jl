@@ -1,3 +1,5 @@
+const DEFAULT_PRIORITY = 100
+
 # An exception to indicate that the fallback handler should be run.
 struct Fallback <: Exception end
 
@@ -18,6 +20,7 @@ Base.take!(::AbstractHandler) = []
 predicate(::AbstractHandler) = alwaystrue
 handler(::AbstractHandler) = donothing
 fallback(::AbstractHandler) = donothing
+priority(::AbstractHandler) = DEFAULT_PRIORITY
 expiry(::AbstractHandler) = nothing
 
 # Update the handler's expiry.
@@ -35,6 +38,7 @@ mutable struct Handler{T} <: AbstractHandler{T}
     predicate::Function
     handler::Function
     fallback::Function
+    priority::Int
     remaining::Union{Int, Nothing}
     expiry::Union{DateTime, Nothing}
     collect::Bool
@@ -45,12 +49,13 @@ mutable struct Handler{T} <: AbstractHandler{T}
         predicate::Function,
         handler::Function,
         fallback::Function,
+        priority::Int,
         remaining::Union{Int, Nothing},
         expiry::Union{DateTime, Nothing},
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(
-            predicate, handler, fallback,
+            predicate, handler, fallback, priority,
             remaining, expiry, collect, [], Channel{Vector{Any}}(1),
         )
     end
@@ -58,12 +63,13 @@ mutable struct Handler{T} <: AbstractHandler{T}
         predicate::Function,
         handler::Function,
         fallback::Function,
+        priority::Int,
         remaining::Union{Int, Nothing},
         expiry::Period,
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(
-            predicate, handler, fallback,
+            predicate, handler, fallback, priority,
             remaining, now() + expiry, collect, [], Channel{Vector{Any}}(1),
         )
     end
@@ -72,6 +78,7 @@ end
 predicate(h::Handler) = h.predicate
 handler(h::Handler) = h.handler
 fallback(h::Handler) = h.fallback
+priority(h::Handler) = h.priority
 expiry(h::Handler) = h.expiry
 dec!(h::Handler) = h.remaining isa Int && (h.remaining -= 1)
 iscollecting(h::Handler) = h.collect

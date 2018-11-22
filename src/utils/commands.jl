@@ -29,6 +29,7 @@ Splat(split::Union{AbstractString, AbstractChar}) = Splat(identity, split)
 predicate(c::Command) = predicate(c.h)
 handler(c::Command) = handler(c.h)
 fallback(c::Command) = fallback(c.h)
+priority(c::Command) = priority(c.h)
 expiry(c::Command) = expiry(c.h)
 dec!(c::Command) = dec!(c.h)
 isexpired(c::Command) = isexpired(c.h)
@@ -44,6 +45,7 @@ isexpired(c::Command) = isexpired(c.h)
         pattern::Regex=Regex("^\$name " * join(repeat(["(.*)"], length(parsers)), separator)),
         allowed::Vector{<:Integer}=Snowflake[],
         fallback::Function=donothing,
+        priority::Int=$DEFAULT_PRIORITY,
         n::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
@@ -116,6 +118,7 @@ function add_command!(
     pattern::Regex=Regex("^$name " * join(repeat(["(.*)"], length(parsers)), separator)),
     allowed::Vector{<:Integer}=Snowflake[],
     fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -135,6 +138,7 @@ function add_command!(
     end
 
     function wrapped_handler(c::Client, e::MessageCreate)
+        ismissing(e.webhook_id) || return
         isempty(e.message.content) && return
 
         pfx = prefix(c, e.message.guild_id)
@@ -187,7 +191,7 @@ function add_command!(
     cmd = Command(
         Handler{MessageCreate}(
             alwaystrue, wrapped_handler, wrapped_fallback,
-            n, timeout, false,
+            priority, n, timeout, false,
         ),
         name, help,
     )
@@ -204,6 +208,7 @@ function add_command!(
     pattern::Regex=Regex=Regex("^$name " * join(repeat(["(.*)"], length(parsers)), separator)),
     allowed::Vector{<:Integer}=Snowflake[],
     fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
@@ -212,7 +217,7 @@ function add_command!(
     add_command!(
         c, name, handler;
         help=help, separator=separator, parsers=parsers, pattern=pattern, allowed=allowed,
-        fallback=fallback, n=n, timeout=timeout, compile=compile, kwargs...,
+        priority=priority, fallback=fallback, n=n, timeout=timeout, compile=compile, kwargs...,
     )
 end
 
@@ -277,7 +282,7 @@ function add_help!(
 
     add_command!(
         c, :help, handler;
-        parsers=[Splat(separator)], pattern=pattern, help=help,
+        parsers=[Splat(separator)], pattern=pattern, help=help, priority=typemax(Int),
         compile=true, message=mock(Message; content=prefix(c) * "help"),
     )
 end
