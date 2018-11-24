@@ -124,7 +124,7 @@ end
 Mark a function as a bot command to be collected by [`add_command!`](@ref) (from a module).
 Supported keywords are identical to `add_command!`.
 
-# Example
+## Example
 ```julia
 module Commands
 using Discord
@@ -187,42 +187,42 @@ isexpired(c::Command) = isexpired(c.h)
 
 Add a text command handler. `do` syntax is also accepted.
 
-# Handler Function
+### Handler Function
 The handler function must accept a [`Client`](@ref) and a [`Message`](@ref). Additionally,
 it can accept any number of additional arguments, which are captured from `pattern`
 and parsed with `parsers` (see below).
 
-# Command Pattern
+### Command Pattern
 The `pattern` keyword specifies how to invoke the command. The given `Regex` must match the
 message contents after having removed the command prefix. By default, it's the command name
 with as many wildcard capture groups as there are parsers, separated by the `separator`
 keyword (a space character by default).
 
-# Command Help
+### Command Help
 The `help` keyword specifies a help string which can be used by [`add_help!`](@ref).
 
-# Argument Parsing
+### Argument Parsing
 The `parsers` keyword specifies the parsers of the command arguments, and can contain both
 types and functions. If `pattern` contains captures, then they are run through the parsers
 before being passed into the handler. For repeating arguments, see [`Splat`](@ref).
 
-# Permissions
+### Permissions
 The `allowed` keyword specifies [`User`](@ref)s or [`Role`](@ref)s (by ID) that are allowed
 to use the command. If the caller does not have permissions for the command, the fallback
 handler is run.
 
-# Rate Limiting
+### Rate Limiting
 The `cooldown` keyword sets the rate at which a user can invoke the command. The default
 of `nothing` indicates no limit.
 
-# Fallback Function
+### Fallback Function
 The `fallback` keyword specifies a function that runs whenever a command is called but
 cannot be run, such as failed argument parsing, missing permissions, or rate limiting.
 it should accept a [`Client`](@ref) and a [`Message`](@ref).
 
 Additional keyword arguments are a subset of those to [`add_handler!`](@ref).
 
-# Examples
+## Examples
 Basic echo command with a help string:
 ```julia
 add_command!(c, :echo, (c, m) -> reply(c, m, m.content); help="repeat a message")
@@ -327,7 +327,7 @@ delete_command!(c::Client, name::Symbol) = delete_handler!(c, MessageCreate, nam
 Add a help command. This can be called at any time, new commands will be included
 automatically.
 
-# Keywords
+## Keywords
 - `separator::Union{AbstractString, AbstractChar}`: Separator between commands.
 - `pattern::Regex`: The command pattern (see [`add_command!`](@ref)).
 - `help::AbstractString`: Help for the help command.

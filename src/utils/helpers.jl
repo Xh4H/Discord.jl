@@ -85,7 +85,7 @@ const PERM_ALL = |(Int.(instances(Permission))...)
 
 Determine whether a bitwise OR of permissions contains one [`Permission`](@ref).
 
-# Example
+## Example
 ```jldoctest; setup=:(using Discord)
 julia> has_permission(0x0420, PERM_VIEW_CHANNEL)
 true
@@ -151,7 +151,7 @@ end
 
 Get the mention string for an entity.
 
-# Examples
+## Examples
 ```jldoctest; setup=:(using Dates, Discord)
 julia> u = User(; id=0xff);
 
@@ -214,7 +214,7 @@ const STYLES = [
 
 Split a message into 2000-character chunks, preserving formatting.
 
-# Examples
+## Examples
 ```jldoctest; setup=:(using Discord)
 julia> split_message("foo")
 1-element Array{String,1}:
@@ -364,7 +364,7 @@ Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@
 [`update`](@ref), and [`delete`](@ref)) with `fetch` inside a block. If no functions are
 specified, all CRUD functions are wrapped.
 
-# Examples
+## Examples
 Wrapping all CRUD functions:
 ```julia
 resp = @fetch begin
@@ -399,7 +399,7 @@ Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@
 [`update`](@ref), and [`delete`](@ref)) with [`fetchval`](@ref) inside a block. If no
 functions are specified, all CRUD functions are wrapped.
 
-# Examples
+## Examples
 Wrapping all CRUD functions:
 ```julia
 channels = @fetchval begin

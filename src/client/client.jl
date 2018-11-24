@@ -43,23 +43,23 @@ end
 A Discord bot. `Client`s can connect to the gateway, respond to events, and make REST API
 calls to perform actions such as sending/deleting messages, kicking/banning users, etc.
 
-# Bot Token
+### Bot Token
 A bot token can be acquired by creating a new application
 [here](https://discordapp.com/developers/applications). Make sure not to hardcode the token
 into your Julia code! Use an environment variable or configuration file instead.
 
-# Command Prefix
+### Command Prefix
 The `prefix` keyword specifies the command prefix, which is used by commands added with
 [`add_command!`](@ref). It can be changed later, both globally and on a per-guild basis,
 with [`set_prefix!`](@ref).
 
-# Presence
+### Presence
 The `presence` keyword sets the bot's presence upon connection. It also sets defaults
 for future calls to [`set_game`](@ref). The schema
 [here](https://discordapp.com/developers/docs/topics/gateway#update-status-gateway-status-update-structure)
 must be followed.
 
-# Cache Control
+### Cache Control
 By default, most data that comes from Discord is cached for later use. However, to avoid
 memory leakage, some of it is deleted after some time. The default setings are to keep
 everything but [`Message`](@ref)s  forever, but they can be overridden with the `ttls`
@@ -76,11 +76,11 @@ and [`MessageUpdate`](@ref) events.
 The cache can also be disabled/enabled permanently and temporarily with
 [`enable_cache!`](@ref) and [`disable_cache!`](@ref).
 
-# API Version
+### API Version
 The `version` keyword chooses the Version of the Discord API to use. Using anything but
 `$API_VERSION` is not officially supported by the Discord.jl developers.
 
-# Sharding
+### Sharding
 Sharding is handled automatically. The number of available processes is the number of
 shards that are created. See the
 [sharding example](https://github.com/PurgePJ/Discord.jl/blob/master/examples/sharding.jl)
@@ -202,40 +202,40 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
 
 Add an event handler. `do` syntax is also accepted.
 
-# Handler Function
+### Handler Function
 The handler function does the real work and must take two arguments: A [`Client`](@ref) and
 an [`AbstractEvent`](@ref) (or a subtype).
 
-# Handler Tag
+### Handler Tag
 The `tag` keyword gives a label to the handler, which can be used to remove it with
 [`delete_handler!`](@ref).
 
-# Predicate/Fallback Functions
+### Predicate/Fallback Functions
 The `predicate` keyword specifies a predicate function. The handler will only run if this
 function returns `true`. Otherwise, a fallback function, specified by the `fallback`
 keyword, is run. Their signatures should match that of the handler.
 
-# Handler Priority
+### Handler Priority
 The `priority` keyword indicates the handler's priority relative to other handlers for the
 same event. Handlers with higher values execute before those with lower ones.
 
-# Handler Expiry
+### Handler Expiry
 Handlers can have counting and/or timed expiries. The `n` keyword sets the number of times
 a handler is run before expiring. The `timeout` keyword sets how long the handler
 remains active.
 
-# Blocking Handlers and Result Collection
+### Blocking Handlers and Result Collection
 To collect results from a handler, set the `wait` keyword along with an expiry. The call
 will block until the handler expires, at which point the return value of each invocation is
 returned in a `Vector`.
 
-# Forcing Precompilation
+### Forcing Precompilation
 Handler functions are precompiled without running them, but it's not always
 successful, especially if your functions are not type-safe. If the `compile` keyword is
 set, precompilation is forced by running the predicate and handler on a randomized input.
 Any trailing keywords are passed to the input event constructor.
 
-# Examples
+## Examples
 Adding a handler with a timed expiry and tag:
 ```julia
 add_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))

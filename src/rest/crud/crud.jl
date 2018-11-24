@@ -8,7 +8,7 @@ export create,
 
 Create, add, send, etc.
 
-# Examples
+## Examples
 Sending a [`Message`](@ref):
 ```julia
 create(c, Message, channel; content="foo")
@@ -29,7 +29,7 @@ function create end
 
 Retrieve, get, list, etc.
 
-# Examples
+## Examples
 Getting the [`Client`](@ref)'s [`User`](@ref):
 ```julia
 retrieve(c, User)
@@ -50,7 +50,7 @@ function retrieve end
 
 Update, edit, modify, etc.
 
-# Examples
+## Examples
 Editing a [`Message`](@ref):
 ```julia
 update(c, message; content="foo2")
@@ -71,7 +71,7 @@ function update end
 
 Delete, remove, discard, etc.
 
-# Examples
+## Examples
 Kicking a [`Member`](@ref):
 ```julia
 delete(c, member)

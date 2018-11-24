@@ -75,7 +75,7 @@ A wrapper around a response from the REST API. Every function which wraps a Disc
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
 `Response` from the `Future`, use `fetch`. See also: [`fetchval`](@ref).
 
-# Fields
+## Fields
 - `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, for a
   call to [`get_channel_message`](@ref), this value will be a [`Message`](@ref).
 - `ok::Bool`: The state of the request. If `true`, then it is safe to access `val`.
@@ -83,7 +83,7 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
   a request was made.
 - `exception::Union{Exception, Nothing}`: The caught exception, if one is thrown.
 
-# Examples
+## Examples
 Multiple API calls which immediately return `Future`s and can be awaited:
 ```julia
 futures = map(i -> create_message(c, channel_id; content=string(i)), 1:10);
