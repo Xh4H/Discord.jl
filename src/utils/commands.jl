@@ -2,12 +2,123 @@ export Splat,
     add_command!,
     delete_command!,
     add_help!,
-    set_prefix!
+    set_prefix!,
+    @command
 
 struct Command <: AbstractHandler{MessageCreate}
     h::Handler{MessageCreate}
     name::Symbol
     help::AbstractString
+end
+
+function Command(;
+    name::Symbol,
+    handler::Function,
+    help::AbstractString="",
+    parsers::Vector=[],
+    separator::Union{AbstractString, AbstractChar}=' ',
+    pattern::Regex=defaultpattern(name, length(parsers), separator),
+    allowed::Vector{<:Integer}=Snowflake[],
+    fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
+    n::Union{Int, Nothing}=nothing,
+    timeout::Union{Period, Nothing}=nothing,
+)
+    if !any(methods(handler)) do m
+        length(m.sig.types) < 3 && return false
+        return Client <: m.sig.types[2] && Message <: m.sig.types[3]
+    end
+        throw(ArgumentError("Handler function must accept (::Client, ::Message, ...)"))
+    end
+    if !all(p -> p isa Base.Callable, parsers)
+        throw(ArgumentError("All parsers must be callable"))
+    end
+    if count(p -> p isa Splat, parsers) > 1
+        throw(ArgumentError("Only one Splat parser can be used at a time"))
+    end
+
+    function wrapped_handler(c::Client, e::MessageCreate)
+        ismissing(e.message.webhook_id) || return
+        isempty(e.message.content) && return
+
+        pfx = prefix(c, e.message.guild_id)
+        startswith(e.message.content, pfx) || return
+
+        id = me(c) === nothing ? nothing : me(c).id
+        !ismissing(e.message.author) && e.message.author.id == id && return
+
+        m = match(pattern, noprefix(e.message.content, pfx))
+        m === nothing && return
+
+        # None of the above cases result in fallback handlers running.
+
+        caps = try
+            parsecaps(parsers, m.captures)
+        catch e
+            kws = logkws(c; command=name, exception=(e, catch_backtrace()))
+            @warn "Parsers threw an exception" kws...
+            throw(Fallback())
+        end
+
+        if !isempty(allowed)
+            ids = ismissing(e.message.author) ? Snowflake[] : [e.message.author.id]
+            if ismissing(e.message.member)
+                # TODO: Should we be making potential REST calls here?
+                # It's very likely that everything is cached but that's not a given.
+                if !ismissing(e.message.guild_id)
+                    guild = fetch(retrieve(c, Guild, e.message.guild_id))
+                    if guild.ok
+                        member = fetch(retrieve(c, Member, guild.val, e.message.author))
+                        member.ok && append!(ids, member.val.roles)
+                    end
+                end
+            else
+                append!(ids, e.message.member.roles)
+            end
+
+            # We do run the fallback for lack of permissions.
+            any(id -> id in allowed, ids) || throw(Fallback())
+        end
+
+        handler(c, e.message, caps...)
+    end
+
+    # Run the fallback on the message itself.
+    function wrapped_fallback(c::Client, e::MessageCreate)
+        fallback(c, e.message)
+    end
+
+    return Command(
+        Handler{MessageCreate}(
+            alwaystrue, wrapped_handler, wrapped_fallback,
+            priority, n, timeout, false,
+        ),
+        name, help,
+    )
+end
+
+"""
+    @command name=name handler=handler kwargs...
+
+Mark a function as a bot command to be collected by [`add_command!`](@ref) (from a module).
+Supported keywords are identical to `add_command!`.
+
+# Example
+```julia
+module Commands
+using Discord
+echo(c::Client, m::Message, noprefix::AbstractString) = reply(c, m, noprefix)
+@command name=:echo handler=echo help="Echo a message" pattern=r"^echo (.+)"
+end
+c = Client("token")
+add_command!(c, Commands)
+```
+"""
+macro command(exs...)
+    kws = map(ex -> Expr(:kw, ex.args[1], esc(ex.args[2])), exs)
+    quote
+        $(gensym(:djl_cmd)) = Discord.Command(; $(kws...))
+    end
 end
 
 """
@@ -42,7 +153,7 @@ isexpired(c::Command) = isexpired(c.h)
         help::AbstractString="",
         parsers::Vector=[],
         separator::Union{AbstractString, AbstractChar}=' ',
-        pattern::Regex=Regex("^\$name " * join(repeat(["(.*)"], length(parsers)), separator)),
+        pattern::Regex=defaultpattern(name, length(parsers), separator),
         allowed::Vector{<:Integer}=Snowflake[],
         fallback::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
@@ -115,7 +226,7 @@ function add_command!(
     help::AbstractString="",
     parsers::Vector=[],
     separator::Union{AbstractString, AbstractChar}=' ',
-    pattern::Regex=Regex("^$name " * join(repeat(["(.*)"], length(parsers)), separator)),
+    pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
@@ -124,76 +235,10 @@ function add_command!(
     compile::Bool=false,
     kwargs...,
 )
-    if !any(methods(handler)) do m
-        length(m.sig.types) < 3 && return false
-        return Client <: m.sig.types[2] && Message <: m.sig.types[3]
-    end
-        throw(ArgumentError("Handler function must accept (::Client, ::Message, ...)"))
-    end
-    if !all(p -> p isa Base.Callable, parsers)
-        throw(ArgumentError("All parsers must be callable"))
-    end
-    if count(p -> p isa Splat, parsers) > 1
-        throw(ArgumentError("Only one Splat parser can be used at a time"))
-    end
-
-    function wrapped_handler(c::Client, e::MessageCreate)
-        ismissing(e.webhook_id) || return
-        isempty(e.message.content) && return
-
-        pfx = prefix(c, e.message.guild_id)
-        startswith(e.message.content, pfx) || return
-
-        id = me(c) === nothing ? nothing : me(c).id
-        !ismissing(e.message.author) && e.message.author.id == id && return
-
-        m = match(pattern, noprefix(e.message.content, pfx))
-        m === nothing && return
-
-        # None of the above cases result in fallback handlers running.
-
-        caps = try
-            parsecaps(parsers, m.captures)
-        catch e
-            kws = logkws(c; command=name, exception=(e, catch_backtrace()))
-            @warn "Parsers threw an exception" kws...
-            throw(Fallback())
-        end
-
-        if !isempty(allowed)
-            ids = ismissing(e.message.author) ? Snowflake[] : [e.message.author.id]
-            if ismissing(e.message.member)
-                # TODO: Should we be making potential REST calls here?
-                # It's very likely that everything is cached but that's not a given.
-                if !ismissing(e.message.guild_id)
-                    guild = fetch(retrieve(c, Guild, e.message.guild_id))
-                    if guild.ok
-                        member = fetch(retrieve(c, Member, guild.val, e.message.author))
-                        member.ok && append!(ids, member.val.roles)
-                    end
-                end
-            else
-                append!(ids, e.message.member.roles)
-            end
-
-            # We do run the fallback for lack of permissions.
-            any(id -> id in allowed, ids) || throw(Fallback())
-        end
-
-        handler(c, e.message, caps...)
-    end
-
-    # Run the fallback on the message itself.
-    function wrapped_fallback(c::Client, e::MessageCreate)
-        fallback(c, e.message)
-    end
-
     cmd = Command(
-        Handler{MessageCreate}(
-            alwaystrue, wrapped_handler, wrapped_fallback,
-            priority, n, timeout, false,
-        ),
-        name, help,
+        name=name, handler=handler, help=help, parsers=parsers, separator=separator,
+        pattern=pattern, allowed=allowed, fallback=fallback, priority=priority, n=n,
+        timeout=timeout,
     )
     puthandler!(c, cmd, name, compile; kwargs...)
 end
@@ -205,7 +250,7 @@ function add_command!(
     help::AbstractString="",
     parsers::Vector=[],
     separator::Union{AbstractString, AbstractChar}=' ',
-    pattern::Regex=Regex=Regex("^$name " * join(repeat(["(.*)"], length(parsers)), separator)),
+    pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
@@ -219,6 +264,18 @@ function add_command!(
         help=help, separator=separator, parsers=parsers, pattern=pattern, allowed=allowed,
         priority=priority, fallback=fallback, n=n, timeout=timeout, compile=compile, kwargs...,
     )
+end
+
+"""
+    add_command!(c::Client, m::Module; compile::Bool=false; kwargs...)
+
+Add all of the bot commands defined in a module. To set up commands to be included, see
+[`@command`](@ref).
+"""
+function add_command!(c::Client, m::Module; compile::Bool=false, kwargs...)
+    for cmd in filter(cmd -> cmd isa Command, map(n -> getfield(m, n), names(m; all=true)))
+        puthandler!(c, cmd, cmd.name, compile; kwargs...)
+    end
 end
 
 """
@@ -237,7 +294,8 @@ delete_command!(c::Client, name::Symbol) = delete_handler!(c, MessageCreate, nam
         nocmd::AbstractString="Command not found",
     )
 
-Add a help command.
+Add a help command. This can be called at any time, new commands will be included
+automatically.
 
 # Keywords
 - `separator::Union{AbstractString, AbstractChar}`: Separator between commands.
@@ -331,4 +389,9 @@ parsecap(p::Function, s::AbstractString) = Any[p(s)]
 parsecap(p::Splat, s::AbstractString) = Any[parsecap.(p.func, split(s, p.split))...]
 function parsecap(p::Type, s::AbstractString)
     return Any[hasmethod(parse, (Type{p}, AbstractString)) ? parse(p, s) : p(s)]
+end
+
+# Generate a bot command's default pattern.
+function defaultpattern(name::Symbol, n::Int, separator::Union{AbstractString, AbstractChar})
+    return n == 0 ? Regex("^$name") : Regex("^$name " * join(repeat(["(.*)"], n), separator))
 end
