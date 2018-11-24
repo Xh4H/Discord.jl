@@ -5,10 +5,22 @@ export Splat,
     set_prefix!,
     @command
 
+# A bot command handler.
 struct Command <: AbstractHandler{MessageCreate}
     h::Handler{MessageCreate}
     name::Symbol
     help::AbstractString
+    cooldown::Union{Period, Nothing}
+    cooldowns::TTL{Snowflake, Nothing}
+
+    function Command(
+        h::Handler{MessageCreate},
+        name::Symbol,
+        help::AbstractString,
+        cooldown::Union{Period, Nothing},
+    )
+        return new(h, name, help, cooldown, TTL{Snowflake, Nothing}(cooldown))
+    end
 end
 
 function Command(;
@@ -19,6 +31,7 @@ function Command(;
     separator::Union{AbstractString, AbstractChar}=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
+    cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
@@ -80,6 +93,14 @@ function Command(;
             any(id -> id in allowed, ids) || throw(Fallback())
         end
 
+        if cooldown !== nothing && !ismissing(e.message.author)
+            cmd = get(get(c.handlers, MessageCreate, Dict()), name, nothing)
+            if cmd !== nothing && haskey(cmd.cooldowns, e.message.author.id)
+                throw(Fallback())
+            end
+            cmd.cooldowns[e.message.author.id] = nothing
+        end
+
         handler(c, e.message, caps...)
     end
 
@@ -93,7 +114,7 @@ function Command(;
             alwaystrue, wrapped_handler, wrapped_fallback,
             priority, n, timeout, false,
         ),
-        name, help,
+        name, help, cooldown,
     )
 end
 
@@ -155,6 +176,7 @@ isexpired(c::Command) = isexpired(c.h)
         separator::Union{AbstractString, AbstractChar}=' ',
         pattern::Regex=defaultpattern(name, length(parsers), separator),
         allowed::Vector{<:Integer}=Snowflake[],
+        cooldown::Union{Period, Nothing}=nothing,
         fallback::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
         n::Union{Int, Nothing}=nothing,
@@ -184,14 +206,19 @@ The `parsers` keyword specifies the parsers of the command arguments, and can co
 types and functions. If `pattern` contains captures, then they are run through the parsers
 before being passed into the handler. For repeating arguments, see [`Splat`](@ref).
 
-# Fallback Function
-The `fallback` keyword specifies a function that runs whenever argument parsing fails, and
-it should accept a [`Client`](@ref) and a [`Message`](@ref).
-
 # Permissions
 The `allowed` keyword specifies [`User`](@ref)s or [`Role`](@ref)s (by ID) that are allowed
 to use the command. If the caller does not have permissions for the command, the fallback
 handler is run.
+
+# Rate Limiting
+The `cooldown` keyword sets the rate at which a user can invoke the command. The default
+of `nothing` indicates no limit.
+
+# Fallback Function
+The `fallback` keyword specifies a function that runs whenever a command is called but
+cannot be run, such as failed argument parsing, missing permissions, or rate limiting.
+it should accept a [`Client`](@ref) and a [`Message`](@ref).
 
 Additional keyword arguments are a subset of those to [`add_handler!`](@ref).
 
@@ -228,6 +255,7 @@ function add_command!(
     separator::Union{AbstractString, AbstractChar}=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
+    cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
@@ -235,10 +263,10 @@ function add_command!(
     compile::Bool=false,
     kwargs...,
 )
-    cmd = Command(
+    cmd = Command(;
         name=name, handler=handler, help=help, parsers=parsers, separator=separator,
-        pattern=pattern, allowed=allowed, fallback=fallback, priority=priority, n=n,
-        timeout=timeout,
+        pattern=pattern, allowed=allowed, fallback=fallback, cooldown=cooldown,
+        priority=priority, n=n, timeout=timeout,
     )
     puthandler!(c, cmd, name, compile; kwargs...)
 end
@@ -252,6 +280,7 @@ function add_command!(
     separator::Union{AbstractString, AbstractChar}=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
+    cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
     n::Union{Int, Nothing}=nothing,
@@ -262,7 +291,8 @@ function add_command!(
     add_command!(
         c, name, handler;
         help=help, separator=separator, parsers=parsers, pattern=pattern, allowed=allowed,
-        priority=priority, fallback=fallback, n=n, timeout=timeout, compile=compile, kwargs...,
+        cooldown=cooldown, priority=priority, fallback=fallback, n=n, timeout=timeout,
+        compile=compile, kwargs...,
     )
 end
 
