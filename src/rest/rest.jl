@@ -241,7 +241,10 @@ function should_put(c::Client, method::Symbol, endpoint::AbstractString)
     isopen(c) || return true
     method === :GET && return true
 
-    Ts = map(last, filter(t -> match(t[1], endpoint) !== nothing, EVENTS_FIRED[method]))
+    Ts = map(
+        last,
+        Iterators.filter(t -> match(t[1], endpoint) !== nothing, EVENTS_FIRED[method]),
+    )
     return !all(T -> hasdefault(c, T), Ts)
 end
 

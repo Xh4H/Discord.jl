@@ -51,7 +51,7 @@ function Base.get(s::State, ::Type{Vector{DiscordChannel}}; kwargs...)
 
     channels = map(
         i -> s.channels[i],
-        filter(i -> haskey(s.channels, i), collect(s.guilds[guild].djl_channels)),
+        Iterators.filter(i -> haskey(s.channels, i), collect(s.guilds[guild].djl_channels)),
     )
     return isempty(channels) ? nothing : channels
 end
@@ -69,18 +69,18 @@ function Base.get(s::State, ::Type{Guild}; kwargs...)
     # Guilds are stored with missing channels, members, and presences.
     g = @set g.channels = map(
         ch -> s.channels[ch],
-        filter(ch -> haskey(s.channels, ch), collect(g.djl_channels)),
+        Iterators.filter(ch -> haskey(s.channels, ch), collect(g.djl_channels)),
     )
     g = @set g.djl_channels = missing
     ms = get(s.members, g.id, Dict())
     g = @set g.members = map(
         i -> get(s, Member; guild=g.id, user=i),
-        filter(i -> haskey(ms, i), collect(coalesce(g.djl_users, Member[]))),
+        Iterators.filter(i -> haskey(ms, i), collect(coalesce(g.djl_users, Member[]))),
     )
     ps = get(s.presences, g.id, Dict())
     g = @set g.presences = map(
         i -> get(s, Presence; guild=g.id, user=i),
-        filter(i -> haskey(ps, i), collect(coalesce(g.djl_users, Presence[]))),
+        Iterators.filter(i -> haskey(ps, i), collect(coalesce(g.djl_users, Presence[]))),
     )
     g = @set g.djl_users = missing
 
@@ -130,7 +130,7 @@ function Base.put!(s::State, g::Guild; kwargs...)
     # Replace members and presences with IDs that can be looked up later.
     ms = coalesce(g.members, Member[])
     ps = coalesce(g.presences, Presence[])
-    users = map(m -> m.user.id, filter(m -> m.user !== nothing, ms))
+    users = map(m -> m.user.id, Iterators.filter(m -> m.user !== nothing, ms))
     unique!(append!(users, map(p -> p.user.id, ps)))
     g = @set g.members = missing
     g = @set g.presences = missing
