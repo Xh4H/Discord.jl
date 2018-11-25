@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Why Julia/Discord.jl?",
     "category": "section",
-    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nRobust: You can\'t crash your bot with a bad event handler or request, and errors are introspectible for debugging.\nLightweight: Cache what\'s important but shed dead weight with TTL.\nGateway independent: Interact with Discord\'s API without establishing a gateway connection.\nDistributed: Process-based sharding requires next to no intervention and you can even run shards on separate machines.For usage examples, see the examples/ directory."
+    "text": "Strong, expressive type system: No fast-and-loose JSON objects here.\nNon-blocking: API calls return immediately and can be awaited when necessary.\nSimple: Multiple dispatch allows for a small, elegant core API.\nFast: Julia is fast like C but still easy like Python.\nRobust: Resistant to bad event handlers and/or requests. Errors are introspectible for debugging.\nLightweight: Cache what is important but shed dead weight with TTL.\nGateway independent: Ability to interact with Discord\'s API without establishing a gateway connection.\nDistributed: Process-based sharding requires next to no intervention and you can even run shards on separate machines.For usage examples, see the examples/ directory."
 },
 
 {
@@ -45,39 +45,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(\n    token::String;\n    presence::Union{Dict, NamedTuple}=Dict(),\n    ttls::Dict{DataType,Union{Nothing, Period}}=Dict(),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nKeywords\n\npresence::Union{Dict, NamedTuple}=Dict(): Client\'s presence set upon connection. The schema here must be followed.\nttls::Dict{DataType,Union{Nothing, Period}}=Dict(): Cache lifetime overrides. Values of nothing indicate no expiry. Keys can be any of the following: Guild, DiscordChannel, Message, User, Member, or Presence. For most workloads, the defaults are sufficient.\nversion::Int=6: Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\n\n\n\n\n"
+    "text": "Client(\n    token::String;\n    prefix::String=\"\",\n    presence::Union{Dict, NamedTuple}=Dict(),\n    ttls::Dict{DataType,Union{Nothing, Period}}=Dict(),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nBot Token\n\nA bot token can be acquired by creating a new application here. Make sure not to hardcode the token into your Julia code! Use an environment variable or configuration file instead.\n\nCommand Prefix\n\nThe prefix keyword specifies the command prefix, which is used by commands added with add_command!. It can be changed later, both globally and on a per-guild basis, with set_prefix!.\n\nPresence\n\nThe presence keyword sets the bot\'s presence upon connection. It also sets defaults for future calls to set_game. The schema here must be followed.\n\nCache Control\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, some of it is deleted after some time. The default setings are to keep everything but Messages  forever, but they can be overridden with the ttls keyword. Keys can be any of the following: Guild, DiscordChannel, Message, User, Member, or Presence. Values of nothing indicate no expiry. However, the default settings are sufficient for most workloads.\n\nIf you want to entirely avoid caching certain objects, you can delete default handlers with delete_handler! and DEFAULT_HANDLER_TAG. For example, if you wanted to avoid caching any messages at all, you would delete handlers for MessageCreate and MessageUpdate events.\n\nThe cache can also be disabled/enabled permanently and temporarily with enable_cache! and disable_cache!.\n\nAPI Version\n\nThe version keyword chooses the Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nSharding\n\nSharding is handled automatically. The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Base.open",
+    "location": "client.html#Discord.enable_cache!",
     "page": "Client",
-    "title": "Base.open",
+    "title": "Discord.enable_cache!",
     "category": "function",
-    "text": "open(c::Client; delay::Period=Second(7))\n\nConnect a Client to the Discord gateway.\n\nThe delay keyword is the time between shards connecting. It can be increased from its default if you are frequently experiencing invalid sessions upon connection.\n\n\n\n\n\n"
+    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache. do syntax is also accepted.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Base.isopen",
+    "location": "client.html#Discord.disable_cache!",
     "page": "Client",
-    "title": "Base.isopen",
+    "title": "Discord.disable_cache!",
     "category": "function",
-    "text": "isopen(c::Client) -> Bool\n\nDetermine whether the Client is connected to the gateway.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Base.close",
-    "page": "Client",
-    "title": "Base.close",
-    "category": "function",
-    "text": "close(c::Client)\n\nDisconnect the Client from the Discord gateway.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Base.wait",
-    "page": "Client",
-    "title": "Base.wait",
-    "category": "function",
-    "text": "wait(c::Client)\n\nWait for an open Client to close.\n\n\n\n\n\n"
+    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache. do syntax is also accepted.\n\n\n\n\n\n"
 },
 
 {
@@ -93,55 +77,39 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Client",
     "category": "section",
-    "text": "Client\nBase.open\nBase.isopen\nBase.close\nBase.wait\nme"
+    "text": "Client\nenable_cache!\ndisable_cache!\nme"
 },
 
 {
-    "location": "client.html#Discord.add_handler!",
+    "location": "client.html#Base.open",
     "page": "Client",
-    "title": "Discord.add_handler!",
+    "title": "Base.open",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\nadd_handler!(\n    func::Function;\n    c::Client,\n    T::Type{<:AbstractEvent},\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\n\nAdd an event handler. The handler should be a function which takes two arguments: A Client and an AbstractEvent (or a subtype). The handler is appended to the event\'s current handlers. You can also define a single handler for multiple event types by using a Union. do syntax is also accepted.\n\nKeywords\n\ntag::Symbol=gensym(): A label for the handler, which can be used to remove it with delete_handler!.\nexpiry::Union{Int, Period, Nothing}=nothing: The handler\'s expiry. If an Int is given, the handler will run that many times before expiring. If a Period is given, the handler will expire after it elapsed. The default of nothing indicates no expiry.\n\nnote: Note\nThere is no guarantee on the order in which handlers run, except that catch-all (AbstractEvent) handlers run before specific ones.\n\n\n\n\n\nadd_handler!(\n    c::Client,\n    m::Module;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you specify a tag and/or expiry, it\'s applied to all of the handlers in the module. That means if you add two handlers for the same event type, one of them will be immediately overwritten.\n\n\n\n\n\n"
+    "text": "open(c::Client; delay::Period=Second(7))\n\nConnect a Client to the Discord gateway.\n\nThe delay keyword is the time between shards connecting. It can be increased from its default if you are using multiple shards and frequently experiencing invalid sessions upon  connection.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.delete_handler!",
+    "location": "client.html#Base.isopen",
     "page": "Client",
-    "title": "Discord.delete_handler!",
+    "title": "Base.isopen",
     "category": "function",
-    "text": "delete_handler!(c::Client, T::Type{<:AbstractEvent})\ndelete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state. If you do want to delete a default handler, use DEFAULT_HANDLER_TAG.\n\n\n\n\n\n"
+    "text": "isopen(c::Client) -> Bool\n\nDetermine whether the Client is connected to the gateway.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.DEFAULT_HANDLER_TAG",
+    "location": "client.html#Base.close",
     "page": "Client",
-    "title": "Discord.DEFAULT_HANDLER_TAG",
-    "category": "constant",
-    "text": "Tag assigned to default handlers, which you can use to delete them.\n\n\n\n\n\n"
-},
-
-{
-    "location": "client.html#Event-Handlers-1",
-    "page": "Client",
-    "title": "Event Handlers",
-    "category": "section",
-    "text": "See Events for more details.add_handler!\ndelete_handler!\nDEFAULT_HANDLER_TAG"
-},
-
-{
-    "location": "client.html#Discord.add_command!",
-    "page": "Client",
-    "title": "Discord.add_command!",
+    "title": "Base.close",
     "category": "function",
-    "text": "add_command!(\n    c::Client,\n    prefix::AbstractString,\n    func::Function;\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\nadd_command!(\n    func::Function;\n    c::Client,\n    prefix::AbstractString,\n    tag::Symbol=gensym(),\n    expiry::Union{Int, Period, Nothing}=nothing,\n)\n\nAdd a text command handler. The handler function should take two arguments: A Client and a Message. The keyword arguments are identical to add_handler!. do syntax is also accepted.\n\n\n\n\n\n"
+    "text": "close(c::Client)\n\nDisconnect the Client from the gateway.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Bot-Commands-1",
+    "location": "client.html#Base.wait",
     "page": "Client",
-    "title": "Bot Commands",
-    "category": "section",
-    "text": "add_command!"
+    "title": "Base.wait",
+    "category": "function",
+    "text": "wait(c::Client)\n\nWait for an open Client to close.\n\n\n\n\n\n"
 },
 
 {
@@ -169,43 +137,107 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Gateway-Commands-1",
+    "location": "client.html#Discord.heartbeat_ping",
     "page": "Client",
-    "title": "Gateway Commands",
-    "category": "section",
-    "text": "request_guild_members\nupdate_voice_state\nupdate_status"
-},
-
-{
-    "location": "client.html#Discord.enable_cache!",
-    "page": "Client",
-    "title": "Discord.enable_cache!",
+    "title": "Discord.heartbeat_ping",
     "category": "function",
-    "text": "enable_cache!(c::Client)\nenable_cache!(f::Function c::Client)\n\nEnable the cache. do syntax is also supported.\n\n\n\n\n\n"
+    "text": "heartbeat_ping(c::Client) -> Union{Period, Nothing}\n\nGet the Client\'s ping time to the gateway. If the client is not connected, or no heartbeats have been sent/acknowledged, nothing is returned.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.disable_cache!",
+    "location": "client.html#Gateway-1",
     "page": "Client",
-    "title": "Discord.disable_cache!",
+    "title": "Gateway",
+    "category": "section",
+    "text": "Base.open\nBase.isopen\nBase.close\nBase.wait\nrequest_guild_members\nupdate_voice_state\nupdate_status\nheartbeat_ping"
+},
+
+{
+    "location": "client.html#Discord.add_handler!",
+    "page": "Client",
+    "title": "Discord.add_handler!",
     "category": "function",
-    "text": "disable_cache!(c::Client)\ndisable_cache!(f::Function, c::Client)\n\nDisable the cache. do syntax is also supported.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    handler::Function;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    priority::Int=100,\n    n::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    wait::Bool=false,\n    compile::Bool=false,\n    kwargs...,\n) -> Union{Vector{Any}, Nothing}\n\nAdd an event handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function does the real work and must take two arguments: A Client and an AbstractEvent (or a subtype).\n\nHandler Tag\n\nThe tag keyword gives a label to the handler, which can be used to remove it with delete_handler!.\n\nPredicate/Fallback Functions\n\nThe predicate keyword specifies a predicate function. The handler will only run if this function returns true. Otherwise, a fallback function, specified by the fallback keyword, is run. Their signatures should match that of the handler.\n\nHandler Priority\n\nThe priority keyword indicates the handler\'s priority relative to other handlers for the same event. Handlers with higher values execute before those with lower ones.\n\nHandler Expiry\n\nHandlers can have counting and/or timed expiries. The n keyword sets the number of times a handler is run before expiring. The timeout keyword sets how long the handler remains active.\n\nBlocking Handlers and Result Collection\n\nTo collect results from a handler, set the wait keyword along with an expiry. The call will block until the handler expires, at which point the return value of each invocation is returned in a Vector.\n\nForcing Precompilation\n\nHandler functions are precompiled without running them, but it\'s not always successful, especially if your functions are not type-safe. If the compile keyword is set, precompilation is forced by running the predicate and handler on a randomized input. Any trailing keywords are passed to the input event constructor.\n\nExamples\n\nAdding a handler with a timed expiry and tag:\n\nadd_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))\n\nAdding a handler with a predicate and do syntax:\n\nadd_handler!(c, ChannelCreate; predicate=(c, e) -> length(e.channel.name) < 10) do c, e\n    println(e.channel.name)\nend\n\nAggregating results of a handler with a counting expiry:\n\nmsgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)\n\nForcing precompilation and assigning a low priority:\n\nadd_handler!(c, MessageCreate, (c, e) -> @show e; priority=-10, compile=true)\n\n\n\n\n\nadd_handler!(\n    c::Client,\n    m::Module;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    n::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you set keywords, they are applied to all of the handlers in the module. For example, if you add two handlers for the same event type with the same tag, one of them will be immediately overwritten.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Caching-1",
+    "location": "client.html#Discord.delete_handler!",
     "page": "Client",
-    "title": "Caching",
-    "category": "section",
-    "text": "By default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, some of it is deleted after some time. The default settings are to keep everything but Messages forever, but they can be overridden in the Client constructor. Although it\'s not recommended, you can disable caching of certain data by clearing default handlers for relevant event types with delete_handler! and DEFAULT_HANDLER_TAG. For example, if you wanted to avoid caching any messages at all, you would delete handlers for MessageCreate and MessageUpdate events. You can also enable and disable the cache with enable_cache! and disable_cache!, which both support do syntax for temporarily altering behaviour.enable_cache!\ndisable_cache!"
+    "title": "Discord.delete_handler!",
+    "category": "function",
+    "text": "delete_handler!(c::Client, T::Type{<:AbstractEvent}, tag::Symbol)\ndelete_handler!(c::Client, T::Type{<:AbstractEvent})\n\nDelete event handlers. If no tag is supplied, all handlers for the event are deleted. Using the tagless method is generally not recommended because it also clears default handlers which maintain the client state. If you do want to delete a default handler, use DEFAULT_HANDLER_TAG.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Sharding-1",
+    "location": "client.html#Discord.DEFAULT_HANDLER_TAG",
     "page": "Client",
-    "title": "Sharding",
+    "title": "Discord.DEFAULT_HANDLER_TAG",
+    "category": "constant",
+    "text": "Tag assigned to default handlers, which you can use to delete them.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Event-Handlers-1",
+    "page": "Client",
+    "title": "Event Handlers",
     "category": "section",
-    "text": "Sharding is handled automatically: The number of available processes is the number of shards that are created. See the sharding example for more details."
+    "text": "See Events for more details.add_handler!\ndelete_handler!\nDEFAULT_HANDLER_TAG"
+},
+
+{
+    "location": "client.html#Discord.add_command!",
+    "page": "Client",
+    "title": "Discord.add_command!",
+    "category": "function",
+    "text": "add_command!(\n    c::Client,\n    name::Symbol,\n    handler::Function;\n    help::AbstractString=\"\",\n    parsers::Vector=[],\n    separator::Union{AbstractString, AbstractChar}=\' \',\n    pattern::Regex=defaultpattern(name, length(parsers), separator),\n    allowed::Vector{<:Integer}=Snowflake[],\n    cooldown::Union{Period, Nothing}=nothing,\n    fallback::Function=donothing,\n    priority::Int=100,\n    n::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n    kwargs...,\n)\n\nAdd a text command handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function must accept a Client and a Message. Additionally, it can accept any number of additional arguments, which are captured from pattern and parsed with parsers (see below).\n\nCommand Pattern\n\nThe pattern keyword specifies how to invoke the command. The given Regex must match the message contents after having removed the command prefix. By default, it\'s the command name with as many wildcard capture groups as there are parsers, separated by the separator keyword (a space character by default).\n\nCommand Help\n\nThe help keyword specifies a help string which can be used by add_help!.\n\nArgument Parsing\n\nThe parsers keyword specifies the parsers of the command arguments, and can contain both types and functions. If pattern contains captures, then they are run through the parsers before being passed into the handler. For repeating arguments, see Splat.\n\nPermissions\n\nThe allowed keyword specifies Users or Roles (by ID) that are allowed to use the command. If the caller does not have permissions for the command, the fallback handler is run.\n\nRate Limiting\n\nThe cooldown keyword sets the rate at which a user can invoke the command. The default of nothing indicates no limit.\n\nFallback Function\n\nThe fallback keyword specifies a function that runs whenever a command is called but cannot be run, such as failed argument parsing, missing permissions, or rate limiting. it should accept a Client and a Message.\n\nAdditional keyword arguments are a subset of those to add_handler!.\n\nExamples\n\nBasic echo command with a help string:\n\nadd_command!(c, :echo, (c, m) -> reply(c, m, m.content); help=\"repeat a message\")\n\nThe same, but excluding the command part:\n\nadd_command!(c, :echo, (c, m, msg) -> reply(c, m, msg); pattern=r\"^echo (.+)\")\n\nParsing a subtraction expression with custom parsers and separator:\n\nadd_command!(\n    c, :sub, (c, m, a, b) -> reply(c, m, string(a - b));\n    parsers=[Float64, Float64], separator=\'-\',\n)\n\nSplatting some comma-separated numbers with a fallback function:\n\nadd_command!(\n    c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));\n    parsers=[Splat(Float64, \',\')], fallback=(c, m) -> reply(c, m, \"Args must be numbers.\"),\n)\n\n\n\n\n\nadd_command!(c::Client, m::Module; compile::Bool=false; kwargs...)\n\nAdd all of the bot commands defined in a module. To set up commands to be included, see @command.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.@command",
+    "page": "Client",
+    "title": "Discord.@command",
+    "category": "macro",
+    "text": "@command name=name handler=handler kwargs...\n\nMark a function as a bot command to be collected by add_command! (from a module). Supported keywords are identical to add_command!.\n\nExample\n\nmodule Commands\nusing Discord\necho(c::Client, m::Message, noprefix::AbstractString) = reply(c, m, noprefix)\n@command name=:echo handler=echo help=\"Echo a message\" pattern=r\"^echo (.+)\"\nend\nc = Client(\"token\")\nadd_command!(c, Commands)\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.delete_command!",
+    "page": "Client",
+    "title": "Discord.delete_command!",
+    "category": "function",
+    "text": "delete_command!(c::Client, name::Symbol)\n\nDelete a command.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.add_help!",
+    "page": "Client",
+    "title": "Discord.add_help!",
+    "category": "function",
+    "text": "add_help!(\n    c::Client;\n    pattern::Regex=r\"^help(?: (.+))?\",\n    help::AbstractString=\"Show this help message\",\n    nohelp::AbstractString=\"No help provided\",\n    nocmd::AbstractString=\"Command not found\",\n)\n\nAdd a help command. This can be called at any time, new commands will be included automatically.\n\nKeywords\n\nseparator::Union{AbstractString, AbstractChar}: Separator between commands.\npattern::Regex: The command pattern (see add_command!).\nhelp::AbstractString: Help for the help command.\nnohelp::AbstractString: Help for commands without their own help string.\nnocmd::AbstractString: Help for commands that aren\'t found.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.set_prefix!",
+    "page": "Client",
+    "title": "Discord.set_prefix!",
+    "category": "function",
+    "text": "set_prefix!(c::Client, prefix::Union{AbstractString, AbstractChar})\nset_prefix!(\n    c::Client,\n    prefix::Union{AbstractString, AbstractChar},\n    guild::Union{Guild, Integer},\n)\n\nSet Client\'s command prefix. If a Guild or its ID is supplied, then the prefix only applies to that guild.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.Splat",
+    "page": "Client",
+    "title": "Discord.Splat",
+    "category": "type",
+    "text": "Splat(\n    func::Base.Callable=identity,\n    split::Union{AbstractString, AbstractChar}=\' \',\n) -> Splat\n\nCollect a variable number of arguments from one capture group with a single parser.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Bot-Commands-1",
+    "page": "Client",
+    "title": "Bot Commands",
+    "category": "section",
+    "text": "add_command!\n@command\ndelete_command!\nadd_help!\nset_prefix!\nSplat"
 },
 
 {
@@ -589,7 +621,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.Response",
     "category": "type",
-    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch. See also: fetchval.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExample\n\njulia> using Discord; c = Client(\"token\"); ch = 1234567890;\n\njulia> fs = map(i -> Discord.create_message(c, ch; content=string(i)), 1:10);\n\njulia> typeof(first(fs))\nDistributed.Future\n\njulia> typeof(fetch(first(fs)))\nDiscord.Response{Message}\n\n\n\n\n\n"
+    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch. See also: fetchval.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExamples\n\nMultiple API calls which immediately return Futures and can be awaited:\n\nfutures = map(i -> create_message(c, channel_id; content=string(i)), 1:10);\nother_work_here()\nresps = fetch.(futures)\n\nSkipping error checks and returning the value directly:\n\nguild = fetchval(create_guild(c; name=\"foo\"))\n\n\n\n\n\n"
 },
 
 {
@@ -613,7 +645,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.create",
     "category": "function",
-    "text": "create(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}\n\nCreate, add, send, etc.\n\nExamples\n\n# Send a message.\njulia> create(c, Message, channel; content=\"foo\")\n\n# Create a new channel.\njulia> create(c, DiscordChannel, guild; name=\"bar\")\n\n# Ban a member.\njulia> create(c, Ban, guild, member; reason=\"baz\")\n\n\n\n\n\n"
+    "text": "create(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}\n\nCreate, add, send, etc.\n\nExamples\n\nSending a Message:\n\ncreate(c, Message, channel; content=\"foo\")\n\nCreating a new DiscordChannel:\n\ncreate(c, DiscordChannel, guild; name=\"bar\")\n\nBanning a Member:\n\ncreate(c, Ban, guild, member; reason=\"baz\")\n\n\n\n\n\n"
 },
 
 {
@@ -621,7 +653,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.retrieve",
     "category": "function",
-    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}\n\nRetrieve, get, list, etc.\n\nExamples\n\n# Get the client user.\njulia> retrieve(c, User)\n\n# Get a guild\'s channels.\njulia> retrieve(c, DiscordChannel, guild)\n\n# Get an invite to a guild by code.\njulia> retrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
+    "text": "retrieve(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}\n\nRetrieve, get, list, etc.\n\nExamples\n\nGetting the Client\'s User:\n\nretrieve(c, User)\n\nGetting a Guild\'s DiscordChannels:\n\nretrieve(c, DiscordChannel, guild)\n\nGetting an Invite to a Guild by code:\n\nretrieve(c, Invite, \"abcdef\")\n\n\n\n\n\n"
 },
 
 {
@@ -629,7 +661,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.update",
     "category": "function",
-    "text": "update(c::Client, x::T, args...; kwargs...) -> Future{Response}\n\nUpdate, edit, modify, etc.\n\nExamples\n\n# Edit a message.\njulia> update(c, message; content=\"foo2\")\n\n# Modify a webhook.\njulia> update(c, webhook; name=\"bar2\")\n\n# Update a role.\njulia> update(c, role, guild; permissions=8)\n\n\n\n\n\n"
+    "text": "update(c::Client, x::T, args...; kwargs...) -> Future{Response}\n\nUpdate, edit, modify, etc.\n\nExamples\n\nEditing a Message:\n\nupdate(c, message; content=\"foo2\")\n\nModifying a Webhook:\n\nupdate(c, webhook; name=\"bar2\")\n\nUpdating a Role:\n\nupdate(c, role, guild; permissions=8)\n\n\n\n\n\n"
 },
 
 {
@@ -637,7 +669,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.delete",
     "category": "function",
-    "text": "delete(c::Client, x::T, args...) -> Future{Response}\n\nDelete, remove, discard, etc.\n\nExamples\n\n# Kick a member.\njulia> delete(c, member)\n\n# Unban a member.\njulia> delete(c, ban, guild)\n\n# Delete all reactions from a message.\n# This is the only update/delete method which takes a type parameter.\njulia> delete(c, Reaction, message)\n\n\n\n\n\n"
+    "text": "delete(c::Client, x::T, args...) -> Future{Response}\n\nDelete, remove, discard, etc.\n\nExamples\n\nKicking a Member:\n\ndelete(c, member)\n\nUnbanning a Member:\n\ndelete(c, ban, guild)\n\nDeleting all Reactions from a Message (note: this is the only update/delete method which takes a type parameter):\n\ndelete(c, Reaction, message)\n\n\n\n\n\n"
 },
 
 {
@@ -1469,7 +1501,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.mention",
     "category": "function",
-    "text": "mention(x::Union{DiscordChannel, Member, Role, User}) -> String\n\nGet the mention string for an entity.\n\n\n\n\n\n"
+    "text": "mention(x::Union{DiscordChannel, Member, Role, User}) -> String\n\nGet the mention string for an entity.\n\nExamples\n\njulia> u = User(; id=0xff);\n\njulia> mention(u)\n\"<@255>\"\n\njulia> mention(Member(; user=u, nick=\"foo\", roles=Role[], joined_at=now(), deaf=true, mute=true))\n\"<@!255>\"\n\njulia> mention(DiscordChannel(; id=0xff, type=CT_GUILD_TEXT))\n\"<#255>\"\n\njulia> mention(Role(; id=0xff, name=\"foo\"))\n\"<@&255>\"\n\n\n\n\n\n"
 },
 
 {
@@ -1478,6 +1510,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Discord.reply",
     "category": "function",
     "text": "reply(\n    c::Client,\n    m::Message,\n    content::Union{AbstractString, AbstractDict, NamedTuple, Embed};\n    at::Bool=false,\n) -> Future{Response}\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.split_message",
+    "page": "Helpers",
+    "title": "Discord.split_message",
+    "category": "function",
+    "text": "split_message(text::AbstractString) -> Vector{String}\n\nSplit a message into 2000-character chunks, preserving formatting.\n\nExamples\n\n```jldoctest; setup=:(using Discord) julia> split_message(\"foo\") 1-element Array{String,1}:  \"foo\"\n\njulia> split_message(repeat(\'.\', 1995) * \"hello, world\")[2] \"hello, world\"\n\n\n\n\n\n"
 },
 
 {
@@ -1501,7 +1541,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.set_game",
     "category": "function",
-    "text": "set_game(\n    c::Client,\n    name::AbstractString,\n    type::Union{ActivityType, Int}=AT_GAME,\n    since::Union{Int, Nothing}=nothing,\n    status::Union{PresenceStatus, AbstractString}=PS_ONLINE,\n    afk::Bool=false,\n    kwargs...,\n) -> Bool\n\nShortcut for update_status to set the Client\'s Activity.\n\n\n\n\n\n"
+    "text": "set_game(\n    c::Client,\n    game::AbstractString;\n    type::Union{ActivityType, Int}=AT_GAME,\n    since::Union{Int, Nothing}=c.presence[\"since\"],\n    status::Union{PresenceStatus, AbstractString}=c.presence[\"status\"],\n    afk::Bool=c.presence[\"afk\"],\n    kwargs...,\n) -> Bool\n\nShortcut for update_status to set the Client\'s Activity. Any additional keywords are passed into the activity section.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.@fetch",
+    "page": "Helpers",
+    "title": "Discord.@fetch",
+    "category": "macro",
+    "text": "@fetch [functions...] block\n\nWrap all calls to the specified CRUD functions (create, retrieve, update, and delete) with fetch inside a block. If no functions are specified, all CRUD functions are wrapped.\n\nExamples\n\nWrapping all CRUD functions:\n\nresp = @fetch begin\n    resp = create(c, Guild; name=\"foo\")\n    if resp.ok\n        retrieve(c, DiscordChannel, resp.val)\n    else\n        error(\"Request failed\")\n    end\nend\n\nWrapping only calls to retrieve:\n\nfuture = @fetch retrieve begin\n    resp = retrieve(c, DiscordChannel, 123)\n    create(c, Message, resp.val; content=\"foo\")  # Behaves normally.\nend\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.@fetchval",
+    "page": "Helpers",
+    "title": "Discord.@fetchval",
+    "category": "macro",
+    "text": "@fetchval [functions...] block\n\nWrap all calls to the specified CRUD functions (create, retrieve, update, and delete) with fetchval inside a block. If no functions are specified, all CRUD functions are wrapped.\n\nExamples\n\nWrapping all CRUD functions:\n\nchannels = @fetchval begin\n    guild = create(c, Guild; name=\"foo\")\n    retrieve(c, DiscordChannel, 123)\nend\n\nWrapping only calls to retrieve:\n\nfuture = @fetchval retrieve begin\n    channel = retrieve(c, DiscordChannel, 123)\n    create(c, Message, channel; content=\"foo\")  # Behaves normally.\nend\n\n\n\n\n\n"
 },
 
 {
@@ -1509,7 +1565,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Helpers",
     "category": "section",
-    "text": "Permission\nhas_permission\npermissions_in\nmention\nreply\nplaintext\nupload_file\nset_game"
+    "text": "Permission\nhas_permission\npermissions_in\nmention\nreply\nsplit_message\nplaintext\nupload_file\nset_game\n@fetch\n@fetchval"
 },
 
 {
@@ -1565,7 +1621,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ActivityType",
     "category": "type",
-    "text": "An Activity\'s type. Available values are AT_GAME, AT_STREAMING, and AT_LISTENING. More details here.\n\n\n\n\n\n"
+    "text": "An Activity\'s type. Available values are AT_GAME, AT_STREAMING, AT_LISTENING, and AT_WATCHING. More details here.\n\n\n\n\n\n"
 },
 
 {
@@ -1645,7 +1701,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.ChannelType",
     "category": "type",
-    "text": "A DiscordChannel\'s type.\n\n\n\n\n\n"
+    "text": "A DiscordChannel\'s type. Available values are CT_GUILD_TEXT, CT_DM, CT_GUILD_VOICE, CT_GROUP_DM, and CT_GUILD_CATEGORY.\n\n\n\n\n\n"
 },
 
 {
@@ -1917,7 +1973,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Role",
     "category": "type",
-    "text": "A User role. More details here.\n\nFields\n\nid          :: Snowflake\nname        :: String\ncolor       :: Int\nhoist       :: Bool\nposition    :: Int\npermissions :: Int\nmanaged     :: Bool\nmentionable :: Bool\n\n\n\n\n\n"
+    "text": "A User role. More details here.\n\nFields\n\nid          :: Snowflake\nname        :: String\ncolor       :: Union{Int, Missing}\nhoist       :: Union{Bool, Missing}\nposition    :: Union{Int, Missing}\npermissions :: Union{Int, Missing}\nmanaged     :: Union{Bool, Missing}\nmentionable :: Union{Bool, Missing}\n\n\n\n\n\n"
 },
 
 {
@@ -1949,7 +2005,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.Webhook",
     "category": "type",
-    "text": "A Webhook. More details here.\n\nFields\n\nid         :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\nchannel_id :: Snowflake\nuser       :: Union{User, Missing}\nname       :: Union{String, Nothing}\navatar     :: Union{String, Nothing}\ntoken      :: String\n\n\n\n\n\n"
+    "text": "A Webhook. More details here.\n\nFields\n\nid         :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\nchannel_id :: Snowflake\nuser       :: Union{User, Missing}\nname       :: Union{String, Nothing}\navatar     :: Union{String, Nothing}\ntoken      :: Union{String, Missing}\n\n\n\n\n\n"
 },
 
 {
@@ -1957,7 +2013,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 {
@@ -1973,7 +2029,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Tutorial",
     "title": "Tutorial",
     "category": "section",
-    "text": "The completed and cleaned-up code can be found in wager.jl.In this tutorial, we\'re going to build a very basic currency/wager bot with Discord.jl. The bot will give users the following capabilities:Receive tokens from the bot on a regular interval\nSee their current token count\nSee a leaderboard of the top earners in the guild\nGive tokens to other users by username\nWager tokens on a coin flipA couple of rules apply:Users cannot wager or give more tokens than they currently have (this means that users cannot go into debt)\nUsers cannot give tokens to users in a different guildLet\'s get started! First of all, we need to import Discord.jl, and we\'ll also start a main function which we\'ll add to as we go along.using Discord\n\nfunction main()\n    c = Client(ENV[\"DISCORD_TOKEN\"])\n    # To be continued...\nendNext, let\'s think about how we want to maintain the state of our application. According to the requirements and rules outlined above, we need to track users by username and their token count, which is nonnegative, by guild. Therefore, our internal state representation is going to be a mapping from guild IDs to mappings from usernames to token counts via a Dict{Discord.Snowflake, Dict{String, UInt}}. In this example, we aren\'t particularly concerned with persistent storage so we\'ll just keep everything in memory.const TOKENS = Dict{Discord.Snowflake, Dict{String, UInt}}()Now, since this Dict starts off empty, how are we going to populate it with users? We can do this by defining a handler on GuildCreate, whose guild field contains its own ID, as well as a list of Members, each of which contains a User, and therefore a username.const TOKEN_START = 100\n\nfunction add_users(c::Client, e::GuildCreate)\n    if !haskey(TOKENS, e.guild.id)\n        TOKENS[e.guild.id] = Dict()\n    end\n\n    guild = TOKENS[e.guild.id]\n\n    for m in e.guild.members\n        if !haskey(guild, m.user.username)\n            guild[m.user.username] = TOKEN_START\n        end\n    end\nendLet\'s add that handler to our Client, and connect to the gateway with open:function main()\n    # ...\n    add_handler!(c, GuildCreate, add_users)\n    open(c)\nendWith that taken care of, we can start distributing tokens. First, we need to decide how often to distribute tokens, and how many should be given.using Dates\n\nconst TOKEN_INTERVAL = Minute(30)\nconst TOKEN_INCREMENT = 100Now, we can write a function to give out tokens on this interval, and get it running in the background.function distribute_tokens(c::Client)\n    while isopen(c)\n        for g in keys(TOKENS)\n            for u in keys(g)\n                g[u] += TOKEN_INCREMENT\n            end\n        end\n        sleep(TOKEN_INTERVAL)\n    end\nend\n\nfunction main()\n    # ...\n    @async distribute_tokens()\nendNext, we need to let users see their token count. We can do this by adding a few helpers, and a command via add_command!.# Insert a guild and/or user from a message into the token cache if they don\'t exist.\nfunction ensure_updated(m::Message)\n    if !haskey(TOKENS, m.guild_id)\n        TOKENS[m.guild_id] = Dict()\n    end\n    if !haskey(TOKENS[m.guild_id], m.author.username)\n        TOKENS[m.guild_id][m.author.username] = TOKEN_START\n    end\nend\n\n# Get the token count for the user who sent a message.\ntoken_count(m::Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)\n\nfunction reply_token_count(c::Client, m::Message)\n    ensure_updated(m)\n    reply(c, m, \"You have $(token_count(m)) tokens.\")\nend\n\nfunction main()\n    # ...\n    add_command!(c, \"!count\", reply_token_count)\nendWhen a user types \"!count\", the bot will reply with their token count. Next, we can easily implement the guild leaderboard for the \"!leaderboard\" command.function reply_token_leaderboard(c::Client, m::Message)\n    ensure_updated(m)\n\n    # Get user => token count pairs by token count in descending order.\n    sorted = sort(collect(TOKENS[m.guild_id]); by=p -> p.second, rev=true)\n\n    entries = String[]\n    for i in 1:min(10, length(sorted))  # Display at most 10.\n        user, tokens = sorted[i]\n        push!(entries, \"$user: $tokens\")\n    end\n\n    reply(c, m, join(entries, \"\\n\"))\nend\n\nfunction main()\n    # ...\n    add_command!(c, \"!leaderboard\", reply_token_leaderboard)\nendNext, we can implement the sending of tokens between users. We need to do a few new things:Parse the number of tokens and the recipient from the command\nCheck that the user sending the tokens has enough to send\nCheck that both users are in the same guildfunction send_tokens(c::Client, m::Message)\n    ensure_updated(m)\n\n    words = split(m.content)\n    if length(words) < 3\n        return reply(c, m, \"Invalid !send command.\")\n    end\n\n    tokens = tryparse(UInt, words[2])\n    tokens === nothing && return reply(c, m, \"\'$(words[2])\' is not a valid number.\")\n\n    recipient = words[3]\n    if !haskey(TOKENS[m.guild_id], recipient)\n        return reply(c, m, \"Couldn\'t find user \'$recipient\' in this guild.\")\n    end\n    if token_count(m) < tokens\n        return reply(c, m, \"You don\'t have enough tokens to give.\")\n    end\n\n    TOKENS[m.guild_id][m.author.username] -= tokens\n    TOKENS[m.guild_id][recipient] += tokens\n    reply(c, m, \"You sent $tokens tokens to $recipient.\")\nend\n\nfunction main()\n    # ...\n    add_command!(c, \"!send\", send_tokens)\nendEasy! And last but not least, we\'ll add the wagering command.function wager_tokens(c::Client, m::Message)\n    ensure_updated(m)\n\n    words = split(m.content)\n    if length(words) < 2\n        return reply(c, m, \"Invalid !wager command.\")\n    end\n\n    tokens = try\n        parse(UInt, words[2])\n    catch\n        return reply(c, m, \"\'$(words[2])\' is not a valid number of tokens.\")\n    end\n    if token_count(m) < tokens\n        return reply(c, m, \"You don\'t have enough tokens to wager.\")\n    end\n\n    if rand() > 0.5\n        TOKENS[m.guild_id][m.author.username] += tokens\n        reply(c, m, \"You win!\")\n    else\n        TOKENS[m.guild_id][m.author.username] -= tokens\n        reply(c, m, \"You lose.\")\n    end\nend\n\nfunction main()\n    # ...\n    add_command!(c, \"!wager\", wager_tokens)\n    wait(c)\nendThe wait command at the end of main blocks until the client disconnects.And that\'s it! Run this main function with the $DISCORD_TOKEN environment variable set and see your bot in action.note: Note\nPlenty of corners were cut here, so please don\'t see this as best practices for bot creation! It\'s just meant to demonstrate some features and help you get your feet wet."
+    "text": "warning: Warning\nThis is outdated, the regular documentation is a better reference.The completed and cleaned-up code can be found in wager.jl.In this tutorial, we\'re going to build a very basic currency/wager bot with Discord.jl. The bot will give users the following capabilities:Receive tokens from the bot on a regular interval\nSee their current token count\nSee a leaderboard of the top earners in the guild\nGive tokens to other users by username\nWager tokens on a coin flipA couple of rules apply:Users cannot wager or give more tokens than they currently have (this means that users cannot go into debt)\nUsers cannot give tokens to users in a different guildLet\'s get started! First of all, we need to import Discord.jl, and we\'ll also start a main function which we\'ll add to as we go along.using Discord\n\nfunction main()\n    c = Client(ENV[\"DISCORD_TOKEN\"]; prefix=\'!\')\n    # To be continued...\nendNext, let\'s think about how we want to maintain the state of our application. According to the requirements and rules outlined above, we need to track users by username and their token count, which is nonnegative, by guild. Therefore, our internal state representation is going to be a mapping from guild IDs to mappings from usernames to token counts via a Dict{Discord.Snowflake, Dict{String, UInt}}. In this example, we aren\'t particularly concerned with persistent storage so we\'ll just keep everything in memory.const TOKENS = Dict{Discord.Snowflake, Dict{String, UInt}}()Now, since this Dict starts off empty, how are we going to populate it with users? We can do this by defining a handler on GuildCreate, whose guild field contains its own ID, as well as a list of Members, each of which contains a User, and therefore a username.const TOKEN_START = 100\n\nfunction add_users(c::Client, e::GuildCreate)\n    if !haskey(TOKENS, e.guild.id)\n        TOKENS[e.guild.id] = Dict()\n    end\n\n    guild = TOKENS[e.guild.id]\n\n    for m in e.guild.members\n        if !haskey(guild, m.user.username)\n            guild[m.user.username] = TOKEN_START\n        end\n    end\nendLet\'s add that handler to our Client, and connect to the gateway with open:function main()\n    # ...\n    add_handler!(c, GuildCreate, add_users)\n    open(c)\nendWith that taken care of, we can start distributing tokens. First, we need to decide how often to distribute tokens, and how many should be given.using Dates\n\nconst TOKEN_INTERVAL = Minute(30)\nconst TOKEN_INCREMENT = 100Now, we can write a function to give out tokens on this interval, and get it running in the background.function distribute_tokens(c::Client)\n    while isopen(c)\n        for g in keys(TOKENS)\n            for u in keys(g)\n                g[u] += TOKEN_INCREMENT\n            end\n        end\n        sleep(TOKEN_INTERVAL)\n    end\nend\n\nfunction main()\n    # ...\n    @async distribute_tokens()\nendNext, we need to let users see their token count. We can do this by adding a few helpers, and a command via add_command!.# Insert a guild and/or user from a message into the token cache if they don\'t exist.\nfunction ensure_updated(m::Message)\n    if !haskey(TOKENS, m.guild_id)\n        TOKENS[m.guild_id] = Dict()\n    end\n    if !haskey(TOKENS[m.guild_id], m.author.username)\n        TOKENS[m.guild_id][m.author.username] = TOKEN_START\n    end\nend\n\n# Get the token count for the user who sent a message.\ntoken_count(m::Message) = get(get(TOKENS, m.guild_id, Dict()), m.author.username, 0)\n\nfunction reply_token_count(c::Client, m::Message)\n    ensure_updated(m)\n    reply(c, m, \"You have $(token_count(m)) tokens.\")\nend\n\nfunction main()\n    # ...\n    add_command!(c, :count, reply_token_count)\nendWhen a user types \"!count\", the bot will reply with their token count. Next, we can easily implement the guild leaderboard for the \"!leaderboard\" command.function reply_token_leaderboard(c::Client, m::Message)\n    ensure_updated(m)\n\n    # Get user => token count pairs by token count in descending order.\n    sorted = sort(collect(TOKENS[m.guild_id]); by=p -> p.second, rev=true)\n\n    entries = String[]\n    for i in 1:min(10, length(sorted))  # Display at most 10.\n        user, tokens = sorted[i]\n        push!(entries, \"$user: $tokens\")\n    end\n\n    reply(c, m, join(entries, \"\\n\"))\nend\n\nfunction main()\n    # ...\n    add_command!(c, :leaderboard, reply_token_leaderboard)\nendNext, we can implement the sending of tokens between users. We need to do a few new things:Parse the number of tokens and the recipient from the command\nCheck that the user sending the tokens has enough to send\nCheck that both users are in the same guildfunction send_tokens(c::Client, m::Message)\n    ensure_updated(m)\n\n    words = split(m.content)\n    if length(words) < 3\n        return reply(c, m, \"Invalid !send command.\")\n    end\n\n    tokens = tryparse(UInt, words[2])\n    tokens === nothing && return reply(c, m, \"\'$(words[2])\' is not a valid number.\")\n\n    recipient = words[3]\n    if !haskey(TOKENS[m.guild_id], recipient)\n        return reply(c, m, \"Couldn\'t find user \'$recipient\' in this guild.\")\n    end\n    if token_count(m) < tokens\n        return reply(c, m, \"You don\'t have enough tokens to give.\")\n    end\n\n    TOKENS[m.guild_id][m.author.username] -= tokens\n    TOKENS[m.guild_id][recipient] += tokens\n    reply(c, m, \"You sent $tokens tokens to $recipient.\")\nend\n\nfunction main()\n    # ...\n    add_command!(c, :send, send_tokens)\nendEasy! And last but not least, we\'ll add the wagering command.function wager_tokens(c::Client, m::Message)\n    ensure_updated(m)\n\n    words = split(m.content)\n    if length(words) < 2\n        return reply(c, m, \"Invalid !wager command.\")\n    end\n\n    tokens = try\n        parse(UInt, words[2])\n    catch\n        return reply(c, m, \"\'$(words[2])\' is not a valid number of tokens.\")\n    end\n    if token_count(m) < tokens\n        return reply(c, m, \"You don\'t have enough tokens to wager.\")\n    end\n\n    if rand() > 0.5\n        TOKENS[m.guild_id][m.author.username] += tokens\n        reply(c, m, \"You win!\")\n    else\n        TOKENS[m.guild_id][m.author.username] -= tokens\n        reply(c, m, \"You lose.\")\n    end\nend\n\nfunction main()\n    # ...\n    add_command!(c, :wager, wager_tokens)\n    wait(c)\nendThe wait command at the end of main blocks until the client disconnects.And that\'s it! Run this main function with the $DISCORD_TOKEN environment variable set and see your bot in action.note: Note\nPlenty of corners were cut here, so please don\'t see this as best practices for bot creation! It\'s just meant to demonstrate some features and help you get your feet wet."
 },
 
 ]}
