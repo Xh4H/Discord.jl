@@ -1,18 +1,21 @@
 module Defaults
 
-export handler_cached
+export handler_cached,
+    mandatory
 
 using Discord
 using Discord: locked, logkws
 using Setfield
 
-function handler(c::Client, e::Ready)
+function mandatory(c::Client, e::Ready)
     @info "Logged in as $(e.user.username)" logkws(c)...
 
     c.state.v = e.v
     c.state.session_id = e.session_id
     c.state._trace = e._trace
     c.state.user = e.user
+
+    c.use_cache || return
 
     foreach(ch -> put!(c.state, ch), e.private_channels)
     for  g in e.guilds
@@ -22,8 +25,8 @@ function handler(c::Client, e::Ready)
         end
     end
 end
+mandatory(c::Client, e::Resumed) = c.state._trace = e._trace
 
-handler(c::Client, e::Resumed) = c.state._trace = e._trace
 handler(c::Client, e::Union{ChannelCreate, ChannelUpdate}) = put!(c.state, e.channel)
 handler(c::Client, e::Union{GuildCreate, GuildUpdate}) = put!(c.state, e.guild)
 handler(c::Client, e::GuildEmojisUpdate) = put!(c.state, e.emojis; guild=e.guild_id)

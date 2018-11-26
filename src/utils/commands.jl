@@ -268,7 +268,7 @@ function add_command!(
         pattern=pattern, allowed=allowed, fallback=fallback, cooldown=cooldown,
         priority=priority, n=n, timeout=timeout,
     )
-    puthandler!(c, cmd, name, compile; kwargs...)
+    puthandler!(c, cmd, name, compile; message=mock(Message; kwargs...))
 end
 
 function add_command!(
@@ -371,7 +371,7 @@ function add_help!(
     add_command!(
         c, :help, handler;
         parsers=[Splat(separator)], pattern=pattern, help=help, priority=typemax(Int),
-        compile=true, message=mock(Message; content=prefix(c) * "help"),
+        compile=true, content=prefix(c) * "help",
     )
 end
 
