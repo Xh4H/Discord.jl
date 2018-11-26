@@ -66,7 +66,7 @@ function Command(;
         # None of the above cases result in fallback handlers running.
 
         caps = try
-            parsecaps(parsers, m.captures)
+            parsecaps(parsers, Any[m.captures...])
         catch e
             kws = logkws(c; command=name, exception=(e, catch_backtrace()))
             @warn "Parsers threw an exception" kws...
@@ -342,7 +342,7 @@ function add_help!(
     nohelp::AbstractString="No help provided",
     nocmd::AbstractString="Command not found",
 )
-    function handler(c::Client, m::Message, names::AbstractString...)
+    function handler(c::Client, m::Message, names::String...)
         names = strip.(names)
         sort!(collect(names))
         len = maximum(length, names)
@@ -406,17 +406,18 @@ end
 
 # Parse command arguments.
 function parsecaps(parsers::Vector, caps::Vector)
+    map!(c -> c isa AbstractString ? string(c) : c, caps, caps)
     len = min(length(parsers), length(caps))
     parsers = parsers[1:len]
     unparsed = splice!(caps, len+1:lastindex(caps))
-    args = Vector{Any}(vcat(map(t -> parsecap(t...), zip(parsers, caps))...))
+    args = Any[vcat(map(t -> parsecap(t...), zip(parsers, caps))...)...]
     return append!(vcat(args...), unparsed)
 end
 
 # Parse a single capture.
 parsecap(::Base.Callable, ::Nothing) = []  # Optional captures don't return anything.
 parsecap(p::Function, s::AbstractString) = Any[p(s)]
-parsecap(p::Splat, s::AbstractString) = Any[parsecap.(p.func, split(s, p.split))...]
+parsecap(p::Splat, s::AbstractString) = Any[parsecap.(p.func, string.(split(s, p.split)))...]
 function parsecap(p::Type, s::AbstractString)
     return Any[hasmethod(parse, (Type{p}, AbstractString)) ? parse(p, s) : p(s)]
 end

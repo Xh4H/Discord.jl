@@ -4,7 +4,7 @@ export AbstractEvent,
 
 """
 An incoming event sent over the gateway. Also a catch-all event: Handlers defined on this
-type will execute on all events, before the specific handlers run.
+type will execute on all events.
 """
 abstract type AbstractEvent end
 

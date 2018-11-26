@@ -140,7 +140,7 @@ macro fielddoc(T)
 
     quote
         doc = string(@doc $T)
-        docstring = doc * "\n# Fields\n\n```\n" * $docs * "\n```\n"
+        docstring = doc * "\n## Fields\n\n```\n" * $docs * "\n```\n"
 
         Base.CoreLogging.with_logger(Base.CoreLogging.NullLogger()) do
             @doc docstring $T

@@ -236,15 +236,16 @@ function split_message(text::String)
         local stop = 2000
 
         for m in vcat(collect.(eachmatch.(STYLES, text))...)
-
-            m.offset > 1 && text[m.offset - 1] == '\\' && continue
+            m.offset > 1 && text[m.offset - 1] == '\\' && continue  # Escaped formatting.
             if m.offset + length(m.match) > 2000
-                stop = m.offset-1
+                # TODO: Backtrack for a valid index (< 2000).
+                stop = m.offset - 1
                 break
             end
         end
 
-        stop = min(stop, length(text))
+        # The 2000 boundary hacks around the above TODO but can break formatting.
+        stop = min(stop, length(text), 2000)
         stop < length(text) && (stop = something(findlast(isspace, text[1:stop]), stop))
         push!(chunks, text[1:stop])
         text = text[stop+1:end]

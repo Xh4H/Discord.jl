@@ -153,7 +153,7 @@ function Base.put!(s::State, ms::Vector{Message}; kwargs...)
 end
 
 function Base.put!(s::State, ch::DiscordChannel; kwargs...)
-    if ismissing(ch.guild_id) && haskey(kwargs, :guild)
+    if ismissing(ch.guild_id) && get(kwargs, :guild, nothing) !== nothing
         ch = @set ch.guild_id = kwargs[:guild]
     end
 

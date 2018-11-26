@@ -1,6 +1,9 @@
 function create(c::Client, ::Type{DiscordChannel}, g::AbstractGuild; kwargs...)
     return create_guild_channel(c, g.id; kwargs...)
 end
+function create(c::Client, ::Type{DiscordChannel}, u::User; kwargs...)
+    return create_dm(c; kwargs..., recipient_id=u.id)
+end
 function create(c::Client, ::Type{DiscordChannel}; kwargs...)
     return if haskey(kwargs, :recipient_id)
         create_dm(c; kwargs...)
