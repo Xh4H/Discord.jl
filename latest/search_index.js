@@ -253,7 +253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Events",
     "title": "Discord.AbstractEvent",
     "category": "type",
-    "text": "An incoming event sent over the gateway. Also a catch-all event: Handlers defined on this type will execute on all events, before the specific handlers run.\n\n\n\n\n\n"
+    "text": "An incoming event sent over the gateway. Also a catch-all event: Handlers defined on this type will execute on all events.\n\n\n\n\n\n"
 },
 
 {
