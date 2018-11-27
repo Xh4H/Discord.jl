@@ -11,7 +11,7 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 * Robust: Resistant to bad event handlers and/or requests. Errors are introspectible for debugging.
 * Lightweight: Cache what is important but shed dead weight with [TTL](https://en.wikipedia.org/wiki/Time_to_live).
 * Gateway independent: Ability to interact with Discord's API without establishing a gateway connection.
-* Distributed: [Process-based sharding](client.md#Sharding-1) requires next to no intervention and you can even run shards on separate machines.
+* Distributed: [Process-based sharding](client.md#Discord.Client) requires next to no intervention and you can even run shards on separate machines.
 
 For usage examples, see the [`examples/` directory](https://github.com/PurgePJ/Discord.jl/tree/master/examples).
 
