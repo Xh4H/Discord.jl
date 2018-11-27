@@ -16,13 +16,13 @@ Tag assigned to default handlers, which you can use to delete them.
 const DEFAULT_HANDLER_TAG = :DJL_DEFAULT
 
 # Messages are created regularly, and lose relevance quickly.
-const DEFAULT_TTLS = TTLDict(
-    Guild          => nothing,
-    DiscordChannel => nothing,
-    User           => nothing,
-    Member         => nothing,
-    Presence       => nothing,
-    Message        => Hour(6),
+const DEFAULT_STRATEGIES = Dict{DataType, CacheStrategy}(
+    Guild          => CacheForever(),
+    DiscordChannel => CacheForever(),
+    User           => CacheForever(),
+    Member         => CacheForever(),
+    Presence       => CacheForever(),
+    Message        => CacheTTL(Hour(6)),
 )
 
 # A versioned WebSocket connection.
@@ -36,7 +36,7 @@ end
         token::String;
         prefix::String="",
         presence::Union{Dict, NamedTuple}=Dict(),
-        ttls::$TTLDict=Dict(),
+        strategies::Dict{DataType, <:CacheStrategy}=Dict(),
         version::Int=$API_VERSION,
     ) -> Client
 
@@ -61,19 +61,21 @@ must be followed.
 
 ### Cache Control
 By default, most data that comes from Discord is cached for later use. However, to avoid
-memory leakage, some of it is deleted after some time. The default setings are to keep
-everything but [`Message`](@ref)s  forever, but they can be overridden with the `ttls`
-keyword. Keys can be any of the following: [`Guild`](@ref), [`DiscordChannel`](@ref),
-[`Message`](@ref), [`User`](@ref), [`Member`](@ref), or [`Presence`](@ref). Values of
-`nothing` indicate no expiry. However, the default settings are sufficient for most
-workloads.
+memory leakage, not all of it is kept forever. The default setings are to keep everything
+but [`Message`](@ref)s, which are deleted after 6 hours, forever. Although the default
+settings are sufficient for most workloads, you can specify your own strategies per type
+with the `strategies` keyword. Keys can be any of the following:
 
-If you want to entirely avoid caching certain objects, you can delete default handlers with
-[`delete_handler!`](@ref) and [`DEFAULT_HANDLER_TAG`](@ref). For example, if you wanted to
-avoid caching any messages at all, you would delete handlers for [`MessageCreate`](@ref)
-and [`MessageUpdate`](@ref) events.
+- [`Guild`](@ref)
+- [`DiscordChannel`](@ref)
+- [`Message`](@ref)
+- [`User`](@ref)
+- [`Member`](@ref)
+- [`Presence`](@ref)
 
-The cache can also be disabled/enabled permanently and temporarily with
+For potential values, see [`CacheStrategy`](@ref).
+
+The cache can also be disabled/enabled permanently and temporarily as a whole with
 [`enable_cache!`](@ref) and [`disable_cache!`](@ref).
 
 ### API Version
@@ -92,7 +94,6 @@ mutable struct Client
     hb_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
     last_hb::DateTime            # Last heartbeat send.
     last_ack::DateTime           # Last heartbeat ack.
-    ttls::TTLDict                # Cache lifetimes.
     version::Int                 # Discord API version.
     state::State                 # Client state, cached data, etc.
     shards::Int                  # Number of shards in use.
@@ -110,12 +111,11 @@ mutable struct Client
         token::String;
         prefix::Union{AbstractString, AbstractChar}="",
         presence::Union{Dict, NamedTuple}=Dict(),
-        ttls::TTLDict=TTLDict(),
+        strategies::Dict{DataType, <:CacheStrategy}=Dict{DataType, CacheStrategy}(),
         version::Int=API_VERSION,
     )
         token = startswith(token, "Bot ") ? token : "Bot $token"
-        ttls = merge(DEFAULT_TTLS, ttls)
-        state = State(ttls)
+        state = State(merge(DEFAULT_STRATEGIES, strategies))
         conn = Conn(nothing, 0)
         prefix = string(prefix)
         presence = merge(Dict(
@@ -131,7 +131,6 @@ mutable struct Client
             nothing,      # hb_seq
             DateTime(0),  # last_hb
             DateTime(0),  # last_ack
-            ttls,         # ttls
             version,      # version
             state,        # state
             nprocs(),     # shards

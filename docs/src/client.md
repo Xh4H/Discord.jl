@@ -44,3 +44,14 @@ add_help!
 set_prefix!
 Splat
 ```
+
+## Caching
+
+```@docs
+CacheStrategy
+CacheForever
+CacheNever
+CacheTTL
+CacheLRU
+CacheFilter
+```

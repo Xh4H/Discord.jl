@@ -1,37 +1,132 @@
-# Container for all client state.
-mutable struct State
-    v::Int                              # Discord API version.
-    session_id::String                  # Gateway session ID.
-    _trace::Vector{String}              # Guilds the user is in.
-    user::Union{User, Nothing}          # Bot user.
-    guilds::TTL{Snowflake, AbstractGuild}     # Guild ID -> guild.
-    channels::TTL{Snowflake, DiscordChannel}  # Channel ID -> channel.
-    users::TTL{Snowflake, User}               # User ID -> user.
-    messages::TTL{Snowflake, Message}         # Message ID -> message.
-    presences::Dict{Snowflake, TTL{Snowflake, Presence}}  # Guild ID -> user ID -> presence.
-    members::Dict{Snowflake, TTL{Snowflake, Member}}      # Guild ID -> member ID -> member.
-    lock::Threads.AbstractLock    # Internal lock.
-    ttls::TTLDict                 # TTLs for creating caches without a Client.
+export CacheForever,
+    CacheNever,
+    CacheTTL,
+    CacheLRU,
+    CacheFilter
+
+# TODO: Strategy composition, e.g. TTL eviction with filtered insertion.
+
+"""
+A method of handling cache insertion and eviction.
+"""
+abstract type CacheStrategy end
+
+"""
+    CacheForever() -> CacheForever
+
+Store everything and never evict items from the cache.
+"""
+struct CacheForever <: CacheStrategy end
+
+"""
+    CacheNever() -> CacheNever
+
+Don't store anything in the cache.
+"""
+struct CacheNever <: CacheStrategy end
+
+"""
+    CacheTTL(ttl::Period) -> CacheTTL
+
+Evict items from the cache after `ttl` has elapsed.
+"""
+struct CacheTTL <: CacheStrategy
+    ttl::Period
 end
 
-function State(ttls::TTLDict)
+"""
+    CacheLRU(size::Int) -> CacheLRU
+
+Evict the least recently used item from the cache when there are more than `size` items.
+"""
+struct CacheLRU <: CacheStrategy
+    size::Int
+end
+
+"""
+    CacheFilter(f::Function) -> CacheFilter
+
+Only store value `v` at key `k` if `f(k, v) === true`.
+"""
+struct CacheFilter <: CacheStrategy
+    f::Function
+end
+
+# A dict-like object with a caching strategy.
+struct Store{D, S <: CacheStrategy}
+    data::D
+    strat::S
+
+    Store(d::D, s::CacheStrategy) where D = new{D, typeof(s)}(d, s)
+end
+
+Store(::CacheForever, V::Type) = Store(Dict{Snowflake, V}(), CacheForever())
+Store(::CacheNever, V::Type) = Store(Dict{Snowflake, V}(), CacheNever())
+Store(s::CacheTTL, V::Type) = Store(TTL{Snowflake, V}(s.ttl), s)
+Store(s::CacheLRU, V::Type) = Store(LRU{Snowflake, V}(s.size), s)
+Store(s::CacheFilter, V::Type) = Store(Dict{Snowflake, V}(), s)
+
+Base.eltype(s::Store) = eltype(s.data)
+Base.get(s::Store, key, default) = get(s.data, key, default)
+Base.getindex(s::Store, key) = s.data[key]
+Base.haskey(s::Store, key) = haskey(s.data, key)
+Base.isempty(s::Store) = isempty(s.data)
+Base.keys(s::Store) = keys(s.data)
+Base.values(s::Store) = values(s.data)
+Base.length(s::Store) = length(s.data)
+Base.iterate(s::Store) = iterate(s.data)
+Base.iterate(s::Store, i) = iterate(s.data, i)
+Base.touch(s::Store, k) = nothing
+Base.delete!(s::Store, key) = (delete!(s.data, key); s)
+Base.empty!(s::Store) = (empty!(s.data); s)
+Base.filter!(f, s::Store) = (filter!(s.data); s)
+Base.setindex!(s::Store, value, key) = (setindex!(s.data, value, key); s)
+
+Base.touch(s::Store{D, CacheTTL}, key) where D = touch(s.data, key)
+Base.setindex!(s::Store{D, CacheNever}, value, key) where D = s
+function Base.setindex!(s::Store{D, CacheFilter}, value, key) where D
+    try
+        s.strat.f(key, value) === true && setindex!(s.data, value, key)
+    catch
+        # TODO: Log this?
+    end
+    return s
+end
+
+# Container for all client state.
+mutable struct State
+    v::Int                                 # Discord API version.
+    session_id::String                     # Gateway session ID.
+    _trace::Vector{String}                 # Servers (not guilds) connected to.
+    user::Union{User, Nothing}             # Bot user.
+    guilds::Store                          # Guild ID -> guild.
+    channels::Store                        # Channel ID -> channel.
+    users::Store                           # User ID -> user.
+    messages::Store                        # Message ID -> message.
+    presences::Dict{Snowflake, Store}      # Guild ID -> user ID -> presence.
+    members::Dict{Snowflake, Store}        # Guild ID -> member ID -> member.
+    lock::Threads.SpinLock                 # Internal lock.
+    strats::Dict{DataType, CacheStrategy}  # Caching strategies per type.
+end
+
+function State(strats::Dict{DataType, <:CacheStrategy})
     return State(
-        0,                          # v
-        "",                         # session_id
-        [],                         # _trace
-        nothing,                    # user
-        TTL(ttls[Guild]),           # guilds
-        TTL(ttls[DiscordChannel]),  # channels
-        TTL(ttls[User]),            # users
-        TTL(ttls[Message]),         # messages
-        Dict(),                     # presences
-        Dict(),                     # members
-        Threads.SpinLock(),         # lock
-        ttls,                       # ttls
+        0,        # v
+        "",       # session_id
+        [],       # _trace
+        nothing,  # user
+        Store(strats[Guild], AbstractGuild),            # guilds
+        Store(strats[DiscordChannel], DiscordChannel),  # channels
+        Store(strats[User], User),                      # users
+        Store(strats[Message], Message),                # messages
+        Dict(),              # presences
+        Dict(),              # members
+        Threads.SpinLock(),  # lock
+        strats,              # strats
     )
 end
 
-TimeToLive.TTL(s::State, ::Type{T}) where T = TTL(get(s.ttls, T, nothing))
+Store(s::State, T::Type) = Store(get(s.strats, T, CacheForever()), T)
 
 # Base.get retrieves a value of a given type from the cache, or returns nothing.
 
@@ -176,7 +271,7 @@ function Base.put!(s::State, p::Presence; kwargs...)
         g isa Guild && push!(g.djl_users, p.user.id)
     end
 
-    haskey(s.presences, guild) || (s.presences[guild] = TTL(s, Presence))
+    haskey(s.presences, guild) || (s.presences[guild] = Store(s, Presence))
     return insert_or_update!(s.presences[guild], p.user.id, p)
 end
 
@@ -190,7 +285,7 @@ function Base.put!(s::State, m::Member; kwargs...)
 
     # This is a bit ugly, but basically we're updating the member as usual but then
     # filling in its user field at the same time as the user sync.
-    haskey(s.members, guild) || (s.members[guild] = TTL(s, Member))
+    haskey(s.members, guild) || (s.members[guild] = Store(s, Member))
     m = insert_or_update!(s.members[guild], user.id, m)
     m = @set m.user = insert_or_update!(s.users, user)
 

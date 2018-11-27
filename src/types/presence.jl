@@ -1,3 +1,5 @@
+export Presence
+
 const PRESENCE_STATUSES = ["idle", "dnd", "online", "offline"]
 
 """
