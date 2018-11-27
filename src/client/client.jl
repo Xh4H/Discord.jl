@@ -155,6 +155,7 @@ mock(::Type{Client}; kwargs...) = Client("token")
 
 function Base.show(io::IO, c::Client)
     print(io, "Discord.Client(shard=$(c.shard + 1)/$(c.shards), api=$(c.version), ")
+    isempty(c.p_global) || print(io, """prefix="$(c.p_global)", """)
     isopen(c) || print(io, "not ")
     print(io, "logged in)")
 end

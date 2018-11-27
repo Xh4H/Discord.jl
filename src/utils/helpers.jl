@@ -42,6 +42,11 @@ export PERM_CREATE_INSTANT_INVITE,
 
 const CRUD_FNS = :create, :retrieve, :update, :delete
 
+const STYLES = [
+    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"_.+?_", r"__.+?__",
+    r"\*.+?\*", r"\*\*.+?\*\*", r"\*\*\*.+?\*\*\*",
+]
+
 """
 Bitwise permission flags.
 More details [here](https://discordapp.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags).
@@ -204,11 +209,6 @@ function reply(
     end
 end
 
-const STYLES = [
-    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"_.+?_", r"__.+?__",
-    r"\*.+?\*", r"\*\*.+?\*\*", r"\*\*\*.+?\*\*\*",
-]
-
 """
     split_message(text::AbstractString) -> Vector{String}
 
@@ -223,7 +223,7 @@ julia> split_message("foo")
 julia> split_message(repeat('.', 1995) * "**hello, world**")[2]
 "**hello, world**"
 """
-function split_message(text::String)
+function split_message(text::AbstractString)
     length(text) <= 2000 && return String[text]
     chunks = String[]
     start = 1
@@ -247,11 +247,11 @@ function split_message(text::String)
         # The 2000 boundary hacks around the above TODO but can break formatting.
         stop = min(stop, length(text), 2000)
         stop < length(text) && (stop = something(findlast(isspace, text[1:stop]), stop))
-        push!(chunks, text[1:stop])
+        push!(chunks, strip(text[1:stop]))
         text = text[stop+1:end]
     end
 
-    return Vector{String}(strip.(chunks))
+    return chunks
 end
 
 """
