@@ -193,8 +193,9 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         predicate::Function=alwaystrue,
         fallback::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
-        n::Union{Int, Nothing}=nothing,
+        count::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
+        until::Union{Function, Nothing}=nothing,
         wait::Bool=false,
         compile::Bool=false,
         kwargs...,
@@ -220,14 +221,15 @@ The `priority` keyword indicates the handler's priority relative to other handle
 same event. Handlers with higher values execute before those with lower ones.
 
 ### Handler Expiry
-Handlers can have counting and/or timed expiries. The `n` keyword sets the number of times
-a handler is run before expiring. The `timeout` keyword sets how long the handler
-remains active.
+Handlers can have multiple types of expiries. The `count` keyword sets the number of times
+a handler is run before expiring. The `timeout` keyword determines how long the handler
+remains active. The `until` keyword takes a function which is called on the handler's
+previous results (in a `Vector`), and if it returns `true`, the handler expires.
 
-### Blocking Handlers and Result Collection
-To collect results from a handler, set the `wait` keyword along with an expiry. The call
-will block until the handler expires, at which point the return value of each invocation is
-returned in a `Vector`.
+### Blocking Handlers + Result Collection
+To collect results from a handler, set the `wait` keyword along with `n`, `timeout`, and/or
+`until`. The call will block until the handler expires, at which point the return value of
+each invocation is returned in a `Vector`.
 
 ### Forcing Precompilation
 Handler functions are precompiled without running them, but it's not always
@@ -248,11 +250,11 @@ end
 ```
 Aggregating results of a handler with a counting expiry:
 ```julia
-msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)
+msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; count=5, wait=true)
 ```
 Forcing precompilation and assigning a low priority:
 ```julia
-add_handler!(c, MessageCreate, (c, e) -> @show e; priority=-10, compile=true)
+add_handler!(c, MessageDelete, (c, e) -> @show e; priority=-10, compile=true, id=0xff)
 ```
 """
 function add_handler!(
@@ -263,8 +265,9 @@ function add_handler!(
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    n::Union{Int, Nothing}=nothing,
+    count::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
+    until::Union{Function, Nothing}=nothing,
     wait::Bool=false,
     compile::Bool=false,
     kwargs...,
@@ -274,17 +277,22 @@ function add_handler!(
         add_handler!(
             c, T.a, handler;
             tag=tag, predicate=predicate, fallback=fallback, priority=priority,
-            n=n, timeout=timeout, compile=compile, kwargs...,
+            count=count, timeout=timeout, compile=compile, kwargs...,
         )
         add_handler!(
             c, T.b, handler;
             tag=tag, predicate=predicate, fallback=fallback, priority=priority,
-            n=n, timeout=timeout, compile=compile, kwargs...,
+            count=count, timeout=timeout, compile=compile, kwargs...,
         )
         return
     end
 
-    h = Handler{T}(predicate, handler, fallback, priority, n, timeout, wait)
+    if wait && all(x -> x === nothing, [count, timeout, until])
+        throw(ArgumentError("Can't wait for a handler with no expiry"))
+    end
+
+    col = wait || until isa Function
+    h = Handler{T}(predicate, handler, fallback, priority, count, timeout, until, col)
     puthandler!(c, h, tag, compile; kwargs...)
 
     return wait ? take!(h) : nothing
@@ -298,7 +306,7 @@ function add_handler!(
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    n::Union{Int, Nothing}=nothing,
+    count::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     wait::Bool=false,
     compile::Bool=false,
@@ -307,7 +315,7 @@ function add_handler!(
     return add_handler!(
         c, T, handler;
         tag=tag, predicate=predicate, fallback=fallback, priority=priority,
-        n=n, timeout=timeout, wait=wait, compile=compile, kwargs...,
+        count=count, timeout=timeout, wait=wait, compile=compile, kwargs...,
     )
 end
 
@@ -318,7 +326,7 @@ end
         tag::Symbol=gensym(),
         predicate::Function=alwaystrue,
         fallback::Function=donothing,
-        n::Union{Int, Nothing}=nothing,
+        count::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
     )
@@ -338,7 +346,7 @@ function add_handler!(
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    n::Union{Int, Nothing}=nothing,
+    count::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
 )
@@ -350,7 +358,7 @@ function add_handler!(
                 add_handler!(
                     c, m.sig.types[3], f;
                     tag=tag, predicate=predicate, fallback=fallback,
-                    priority=priority, n=n, timeout=timeout, compile=compile,
+                    priority=priority, count=count, timeout=timeout, compile=compile,
                 )
             end
         end

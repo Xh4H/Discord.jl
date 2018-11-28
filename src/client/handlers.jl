@@ -9,6 +9,7 @@ abstract type AbstractHandler{T<:AbstractEvent} end
 # Default handler and predicate functions.
 donothing(args...; kwargs...) = nothing
 alwaystrue(args...; kwargs...) = true
+alwaysfalse(args...; kwargs...) = false
 
 # The event type that a handler accepts.
 Base.eltype(::AbstractHandler{T}) where T = T
@@ -22,6 +23,7 @@ handler(::AbstractHandler) = donothing
 fallback(::AbstractHandler) = donothing
 priority(::AbstractHandler) = DEFAULT_PRIORITY
 expiry(::AbstractHandler) = nothing
+stopcond(::AbstractHandler) = alwaysfalse
 
 # Update the handler's expiry.
 dec!(::AbstractHandler) = nothing
@@ -41,6 +43,7 @@ mutable struct Handler{T} <: AbstractHandler{T}
     priority::Int
     remaining::Union{Int, Nothing}
     expiry::Union{DateTime, Nothing}
+    stopcond::Union{Function, Nothing}
     collect::Bool
     results::Vector{Any}
     chan::Channel{Vector{Any}}
@@ -52,11 +55,12 @@ mutable struct Handler{T} <: AbstractHandler{T}
         priority::Int,
         remaining::Union{Int, Nothing},
         expiry::Union{DateTime, Nothing},
+        stopcond::Union{Function, Nothing},
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(
             predicate, handler, fallback, priority,
-            remaining, expiry, collect, [], Channel{Vector{Any}}(1),
+            remaining, expiry, stopcond, collect, [], Channel{Vector{Any}}(1),
         )
     end
     function Handler{T}(
@@ -66,11 +70,12 @@ mutable struct Handler{T} <: AbstractHandler{T}
         priority::Int,
         remaining::Union{Int, Nothing},
         expiry::Period,
+        stopcond::Union{Function, Nothing},
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(
             predicate, handler, fallback, priority,
-            remaining, now() + expiry, collect, [], Channel{Vector{Any}}(1),
+            remaining, now() + expiry, stopcond, collect, [], Channel{Vector{Any}}(1),
         )
     end
 end
@@ -80,6 +85,7 @@ handler(h::Handler) = h.handler
 fallback(h::Handler) = h.fallback
 priority(h::Handler) = h.priority
 expiry(h::Handler) = h.expiry
+stopcond(h::Handler) = h.stopcond
 dec!(h::Handler) = h.remaining isa Int && (h.remaining -= 1)
 iscollecting(h::Handler) = h.collect
 results(h::Handler) = h.results
@@ -90,6 +96,13 @@ function isexpired(h::Handler)
         true
     elseif h.expiry isa DateTime && now() > h.expiry
         true
+    elseif h.stopcond isa Function
+        try
+            h.stopcond(results(h)) === true
+        catch
+            # TODO: Log this?
+            false
+        end
     else
         false
     end
@@ -100,8 +113,7 @@ function Base.take!(h::Handler)
 
     # Only wait for one condition.
     while true
-        h.remaining === nothing || h.remaining > 0 || break
-        h.expiry === nothing || h.expiry > now() || break
+        isexpired(h) && break
         sleep(Millisecond(100))
     end
 

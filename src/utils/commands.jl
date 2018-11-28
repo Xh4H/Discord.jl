@@ -34,7 +34,7 @@ function Command(;
     cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    n::Union{Int, Nothing}=nothing,
+    count::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
 )
     if !any(methods(handler)) do m
@@ -179,7 +179,7 @@ isexpired(c::Command) = isexpired(c.h)
         cooldown::Union{Period, Nothing}=nothing,
         fallback::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
-        n::Union{Int, Nothing}=nothing,
+        count::Union{Int, Nothing}=nothing,
         timeout::Union{Period, Nothing}=nothing,
         compile::Bool=false,
         kwargs...,
@@ -258,7 +258,7 @@ function add_command!(
     cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    n::Union{Int, Nothing}=nothing,
+    count::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
     kwargs...,
@@ -266,7 +266,7 @@ function add_command!(
     cmd = Command(;
         name=name, handler=handler, help=help, parsers=parsers, separator=separator,
         pattern=pattern, allowed=allowed, fallback=fallback, cooldown=cooldown,
-        priority=priority, n=n, timeout=timeout,
+        priority=priority, count=count, timeout=timeout,
     )
     puthandler!(c, cmd, name, compile; message=mock(Message; kwargs...))
 end
@@ -283,7 +283,7 @@ function add_command!(
     cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    n::Union{Int, Nothing}=nothing,
+    count::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
     compile::Bool=false,
     kwargs...
@@ -291,8 +291,8 @@ function add_command!(
     add_command!(
         c, name, handler;
         help=help, separator=separator, parsers=parsers, pattern=pattern, allowed=allowed,
-        cooldown=cooldown, priority=priority, fallback=fallback, n=n, timeout=timeout,
-        compile=compile, kwargs...,
+        cooldown=cooldown, priority=priority, fallback=fallback, count=count,
+        timeout=timeout, compile=compile, kwargs...,
     )
 end
 
