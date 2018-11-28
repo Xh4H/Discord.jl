@@ -34,7 +34,7 @@ function Command(;
     cooldown::Union{Period, Nothing}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    count::Union{Int, Nothing}=nothing,
+    remaining::Union{Int, Nothing}=nothing,
     timeout::Union{Period, Nothing}=nothing,
 )
     if !any(methods(handler)) do m
@@ -112,7 +112,7 @@ function Command(;
     return Command(
         Handler{MessageCreate}(
             alwaystrue, wrapped_handler, wrapped_fallback,
-            priority, n, timeout, false,
+            priority, remaining, timeout, nothing, false,
         ),
         name, help, cooldown,
     )
@@ -266,7 +266,7 @@ function add_command!(
     cmd = Command(;
         name=name, handler=handler, help=help, parsers=parsers, separator=separator,
         pattern=pattern, allowed=allowed, fallback=fallback, cooldown=cooldown,
-        priority=priority, count=count, timeout=timeout,
+        priority=priority, remaining=count, timeout=timeout,
     )
     puthandler!(c, cmd, name, compile; message=mock(Message; kwargs...))
 end

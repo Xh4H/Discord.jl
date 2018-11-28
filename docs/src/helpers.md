@@ -16,4 +16,6 @@ upload_file
 set_game
 @fetch
 @fetchval
+@deferred_fetch
+@deferred_fetchval
 ```

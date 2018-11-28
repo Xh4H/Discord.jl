@@ -40,7 +40,7 @@ using Discord:
     trywritejson,
     validate_fetch,
     worker_id,
-    wrapfn,
+    wrapfn!,
     writejson,
     @boilerplate,
     @constructors,
@@ -273,19 +273,19 @@ end
         end
 
         @testset "@fetch/@fetchval" begin
-            @testset "wrapfn" begin
+            @testset "wrapfn!" begin
                 ex = :(foo(1, 2, 3))
 
                 # Calls to the designated functions get wrapped in another function.
-                @test wrapfn(ex, (:foo,), :bar) == :($(esc(:bar))($(esc(:(foo(1, 2, 3))))))
+                @test wrapfn!(ex, (:foo,), :bar) == :($(esc(:bar))($(esc(:(foo(1, 2, 3))))))
                 # But only if we specify that function to be wrapped.
-                @test wrapfn(ex, (:baz,), :bar) == ex
+                @test wrapfn!(ex, (:baz,), :bar) == ex
 
                 ex = :(x = foo(1))
                 expected = :($(esc(:x)) = $(esc(:baz))($(esc(:(foo(1))))))
 
                 # The function operates recursively.
-                @test wrapfn(ex, (:foo,), :baz) == expected
+                @test wrapfn!(ex, (:foo,), :baz) == expected
             end
 
             @testset "validate_fetch" begin
@@ -571,7 +571,7 @@ end
             @test_throws ArgumentError add_handler!(c, MessageCreate, badh)
 
             # We can't add a handler that's already expired.
-            @test_throws ArgumentError add_handler!(c, Ready, f; n=0)
+            @test_throws ArgumentError add_handler!(c, Ready, f; count=0)
             @test_throws ArgumentError add_handler!(c, Ready, f; timeout=Day(-1))
         end
 
@@ -597,7 +597,7 @@ end
             empty!(c.handlers)
 
             # We can pass a number for a counting expiry.
-            add_handler!(c, TestEvent, f; tag=:f, n=1)
+            add_handler!(c, TestEvent, f; tag=:f, count=1)
             @test !isexpired(c.handlers[TestEvent][:f])
             dec!(c.handlers[TestEvent][:f])
             @test isexpired(c.handlers[TestEvent][:f])
@@ -613,7 +613,7 @@ end
             empty!(c.handlers)
 
             # Blocking handler with count should return when the count reaches 0.
-            t = @async add_handler!(c, TestEvent, f; tag=:f, n=5, wait=true)
+            t = @async add_handler!(c, TestEvent, f; tag=:f, count=5, wait=true)
             sleep(Millisecond(1))
             h = c.handlers[TestEvent][:f]
             @test iscollecting(h)
@@ -636,7 +636,10 @@ end
             @test fetch(t) == Any[2]
 
             # Blocking handler with both expiries should return when either is done.
-            t = @async add_handler!(c, TestEvent, f; tag=:i, n=1, timeout=Day(1), wait=true)
+            t = @async add_handler!(
+                c, TestEvent, f;
+                tag=:i, count=1, timeout=Day(1), wait=true,
+            )
             sleep(Millisecond(1))
             h = c.handlers[TestEvent][:i]
             @test iscollecting(h)

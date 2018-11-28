@@ -1,33 +1,4 @@
-export PERM_CREATE_INSTANT_INVITE,
-    PERM_KICK_MEMBERS,
-    PERM_BAN_MEMBERS,
-    PERM_ADMINISTRATOR,
-    PERM_MANAGE_CHANNELS,
-    PERM_MANAGE_GUILD,
-    PERM_ADD_REACTIONS,
-    PERM_VIEW_AUDIT_LOG,
-    PERM_VIEW_CHANNEL,
-    PERM_SEND_MESSAGES,
-    PERM_SEND_TTS_MESSAGES,
-    PERM_MANAGE_MESSAGES,
-    PERM_EMBED_LINKS,
-    PERM_ATTACH_FILES,
-    PERM_READ_MESSAGE_HISTORY,
-    PERM_MENTION_EVERYONE,
-    PERM_USE_EXTERNAL_EMOJIS,
-    PERM_CONNECT,
-    PERM_SPEAK,
-    PERM_MUTE_MEMBERS,
-    PERM_DEAFEN_MEMBERS,
-    PERM_MOVE_MEMBERS,
-    PERM_USE_VAD,
-    PERM_PRIORITY_SPEAKER,
-    PERM_CHANGE_NICKNAME,
-    PERM_MANAGE_NICKNAMES,
-    PERM_MANAGE_ROLES,
-    PERM_MANAGE_WEBHOOKS,
-    PERM_MANAGE_EMOJIS,
-    PERM_ALL,
+export PERM_ALL,
     has_permission,
     permissions_in,
     mention,
@@ -38,7 +9,9 @@ export PERM_CREATE_INSTANT_INVITE,
     upload_file,
     set_game,
     @fetch,
-    @fetchval
+    @fetchval,
+    @deferred_fetch,
+    @deferred_fetchval
 
 const CRUD_FNS = :create, :retrieve, :update, :delete
 
@@ -82,6 +55,7 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#pe
     PERM_MANAGE_WEBHOOKS=1<<29
     PERM_MANAGE_EMOJIS=1<<30
 end
+@boilerplate Permission :export
 
 const PERM_ALL = |(Int.(instances(Permission))...)
 
@@ -368,63 +342,91 @@ specified, all CRUD functions are wrapped.
 ## Examples
 Wrapping all CRUD functions:
 ```julia
-resp = @fetch begin
-    resp = create(c, Guild; name="foo")
-    if resp.ok
-        retrieve(c, DiscordChannel, resp.val)
-    else
-        error("Request failed")
-    end
+@fetch begin
+    guild_resp = create(c, Guild; name="foo")
+    guild_resp.ok || error("Request for new guild failed")
+    channel_resp = retrieve(c, DiscordChannel, guild_resp.val)
 end
 ```
 Wrapping only calls to `retrieve`:
 ```julia
-future = @fetch retrieve begin
+@fetch retrieve begin
     resp = retrieve(c, DiscordChannel, 123)
-    create(c, Message, resp.val; content="foo")  # Behaves normally.
+    future = create(c, Message, resp.val; content="foo")  # Behaves normally.
 end
 ```
 """
 macro fetch(exs...)
     validate_fetch(exs...)
     fns = length(exs) == 1 ? CRUD_FNS : exs[1:end-1]
+    ex = wrapfn!(exs[end], fns, :fetch)
     quote
-        $(wrapfn(exs[end], fns, :fetch))
+        $ex
     end
 end
 
 """
     @fetchval [functions...] block
 
-Wrap all calls to the specified CRUD functions ([`create`](@ref), [`retrieve`](@ref),
-[`update`](@ref), and [`delete`](@ref)) with [`fetchval`](@ref) inside a block. If no
-functions are specified, all CRUD functions are wrapped.
-
-## Examples
-Wrapping all CRUD functions:
-```julia
-channels = @fetchval begin
-    guild = create(c, Guild; name="foo")
-    retrieve(c, DiscordChannel, 123)
-end
-```
-Wrapping only calls to `retrieve`:
-```julia
-future = @fetchval retrieve begin
-    channel = retrieve(c, DiscordChannel, 123)
-    create(c, Message, channel; content="foo")  # Behaves normally.
-end
-```
+Identical to [`@fetch`](@ref), but calls are wrapped with [`fetchval`](@ref) instead.
 """
 macro fetchval(exs...)
     validate_fetch(exs...)
     fns = length(exs) == 1 ? CRUD_FNS : exs[1:end-1]
+    ex = wrapfn!(exs[end], fns, :fetchval)
     quote
-        $(wrapfn(exs[end], fns, :fetchval))
+        $ex
     end
 end
 
-# Validate the arguments to @fetch or @fetchval.
+"""
+    @deferred_fetch [functions...] block
+
+Identical to [`@fetch`](@ref), but `Future`s are not `fetch`ed until the **end** of the
+block. This is more efficient, but only works when there are no data dependencies in the
+block.
+
+## Examples
+This will work:
+```julia
+@deferred_fetch begin
+    guild_resp = create(c, Guild; name="foo")
+    channel_resp = retrieve(c, DiscordChannel, 123)
+end
+```
+This will not, because the second call is dependent on the first value:
+```julia
+@deferred_fetch begin
+    guild_resp = create(c, Guild; name="foo")
+    channels_resp = retrieve(c, DiscordChannel, guild_resp.val)
+end
+```
+"""
+macro deferred_fetch(exs...)
+    validate_fetch(exs...)
+    fns = length(exs) == 1 ? CRUD_FNS : exs[1:end-1]
+    ex = deferfn!(exs[end], fns, :fetch)
+    quote
+        $ex
+    end
+end
+
+"""
+    @deferred_fetchval [functions...] block
+
+Identical to [`@deferred_fetch`](@ref), but `Future`s have [`fetchval`](@ref) called on
+them instead of `fetch`.
+"""
+macro deferred_fetchval(exs...)
+    validate_fetch(exs...)
+    fns = length(exs) == 1 ? CRUD_FNS : exs[1:end-1]
+    ex = deferfn!(exs[end], fns, :fetchval)
+    quote
+        $ex
+    end
+end
+
+# Validate the arguments to CRUD macros.
 function validate_fetch(exs...)
     if !(exs[end] isa Expr && exs[end].head === :block)
         throw(ArgumentError("Final argument must be a block"))
@@ -435,12 +437,38 @@ function validate_fetch(exs...)
 end
 
 # Wrap calls to certain functions in a call to another function.
-wrapfn(ex, ::Tuple, ::Symbol) = esc(ex)
-function wrapfn(ex::Expr, fns::Tuple, with::Symbol)
+wrapfn!(ex, ::Tuple, ::Symbol) = esc(ex)
+function wrapfn!(ex::Expr, fns::Tuple, with::Symbol)
     if ex.head === :call && ex.args[1] in fns
         ex = :($(esc(with))($(esc(ex))))
     else
-        map!(arg -> wrapfn(arg, fns, with), ex.args, ex.args)
+        map!(arg -> wrapfn!(arg, fns, with), ex.args, ex.args)
     end
+    return ex
+end
+
+# Defer fetching a Future until the end of a block.
+deferfn!(ex, ::Tuple) = (esc(ex), Pair{Symbol, Symbol}[])
+function deferfn!(ex::Expr, fns::Tuple)
+    renames = Pair{Symbol, Symbol}[]
+
+    if ex.head === :(=) && ex.args[2] isa  Expr && ex.args[2].args[1] in fns
+        newsym = gensym(ex.args[1])
+        push!(renames, ex.args[1] =>  newsym)
+        ex.args[1] = newsym
+        map!(esc, ex.args, ex.args)
+    else
+        for i in eachindex(ex.args)
+            ex.args[i], rs = deferfn!(ex.args[i], fns)
+            append!(renames, rs)
+        end
+    end
+
+    return ex, renames
+end
+function deferfn!(ex, fns::Tuple, deferred::Symbol)
+    ex, renames = deferfn!(ex, fns)
+    repls = map(r -> :($(esc(r[1])) = $(esc(deferred))($(esc(r[2])))), renames)
+    append!(ex.args, repls)
     return ex
 end
