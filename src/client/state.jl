@@ -46,7 +46,7 @@ end
 """
     CacheFilter(f::Function) -> CacheFilter
 
-Only store value `v` at key `k` if `f(k, v) === true`.
+Only store value `v` at key `k` if `f(v) === true` (`k` is always `v.id`).
 """
 struct CacheFilter <: CacheStrategy
     f::Function
@@ -86,7 +86,7 @@ Base.touch(s::Store{D, CacheTTL}, key) where D = touch(s.data, key)
 Base.setindex!(s::Store{D, CacheNever}, value, key) where D = s
 function Base.setindex!(s::Store{D, CacheFilter}, value, key) where D
     try
-        s.strat.f(key, value) === true && setindex!(s.data, value, key)
+        s.strat.f(value) === true && setindex!(s.data, value, key)
     catch
         # TODO: Log this?
     end
