@@ -20,9 +20,7 @@ export encode_emoji,
     trigger_typing_indicator,
     get_pinned_messages,
     add_pinned_channel_message,
-    delete_pinned_channel_message,
-    group_dm_add_recipient,
-    group_dm_remove_recipient
+    delete_pinned_channel_message
 
 encode_emoji(emoji::AbstractString) = HTTP.escapeuri(emoji)
 encode_emoji(emoji::AbstractChar) = encode_emoji(string(emoji))
@@ -307,23 +305,4 @@ Unpin a [`Message`](@ref) from a [`DiscordChannel`](@ref).
 """
 function delete_pinned_channel_message(c::Client, channel::Integer, message::Integer)
     return Response(c, :DELETE, "/channels/$channel/pins/$message")
-end
-
-"""
-    group_dm_add_recipient(c::Client, channel::Integer, user::Integer; kwargs...)
-
-Add a [`User`](@ref) to a group DM.
-More details [here](https://discordapp.com/developers/docs/resources/channel#group-dm-add-recipient).
-"""
-function group_dm_add_recipient(c::Client, channel::Integer, user::Integer; kwargs...)
-    return Response(c, :PUT, "/channels/$channel/recipients/$user"; body=kwargs)
-end
-
-"""
-    group_dm_remove_recipient(c::Client, channel::Integer, user::Integer)
-
-Remove a [`User`](@ref) from a group DM.
-"""
-function group_dm_remove_recipient(c::Client, channel::Integer, user::Integer)
-    return Response(c, :DELETE, "/channels/$channel/recipients/$user")
 end

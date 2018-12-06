@@ -4,13 +4,6 @@ end
 function create(c::Client, ::Type{DiscordChannel}, u::User; kwargs...)
     return create_dm(c; kwargs..., recipient_id=u.id)
 end
-function create(c::Client, ::Type{DiscordChannel}; kwargs...)
-    return if haskey(kwargs, :recipient_id)
-        create_dm(c; kwargs...)
-    else
-        create_group_dm(c; kwargs...)
-    end
-end
 
 retrieve(c::Client, ::Type{DiscordChannel}, channel::Integer) = get_channel(c, channel)
 retrieve(c::Client, ::Type{DiscordChannel}, g::AbstractGuild) = get_guild_channels(c, g.id)

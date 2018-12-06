@@ -87,8 +87,6 @@ trigger_typing_indicator
 get_pinned_messages
 add_pinned_channel_message
 delete_pinned_channel_message
-group_dm_add_recipient
-group_dm_remove_recipient
 ```
 
 ## Emoji
@@ -159,7 +157,6 @@ modify_current_user
 get_current_user_guilds
 leave_guild
 create_dm
-create_group_dm
 ```
 
 ## Voice

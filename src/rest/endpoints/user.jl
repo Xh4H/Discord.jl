@@ -3,8 +3,7 @@ export get_current_user,
     modify_current_user,
     get_current_user_guilds,
     leave_guild,
-    create_dm,
-    create_group_dm
+    create_dm
 
 """
     get_current_user(c::Client) -> User
@@ -60,15 +59,5 @@ Create a DM [`DiscordChannel`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/user#create-dm).
 """
 function create_dm(c::Client; kwargs...)
-    return Response{DiscordChannel}(c, :POST, "/users/@me/channels"; body=kwargs)
-end
-
-"""
-    create_group_dm(c::Client; kwargs...) -> DiscordChannel
-
-Create a group DM [`DiscordChannel`](@ref).
-More details [here](https://discordapp.com/developers/docs/resources/user#create-group-dm).
-"""
-function create_group_dm(c::Client; kwargs...)
     return Response{DiscordChannel}(c, :POST, "/users/@me/channels"; body=kwargs)
 end
