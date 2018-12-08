@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
-    "text": "Client(\n    token::String;\n    prefix::String=\"\",\n    presence::Union{Dict, NamedTuple}=Dict(),\n    ttls::Dict{DataType,Union{Nothing, Period}}=Dict(),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nBot Token\n\nA bot token can be acquired by creating a new application here. Make sure not to hardcode the token into your Julia code! Use an environment variable or configuration file instead.\n\nCommand Prefix\n\nThe prefix keyword specifies the command prefix, which is used by commands added with add_command!. It can be changed later, both globally and on a per-guild basis, with set_prefix!.\n\nPresence\n\nThe presence keyword sets the bot\'s presence upon connection. It also sets defaults for future calls to set_game. The schema here must be followed.\n\nCache Control\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, some of it is deleted after some time. The default setings are to keep everything but Messages  forever, but they can be overridden with the ttls keyword. Keys can be any of the following: Guild, DiscordChannel, Message, User, Member, or Presence. Values of nothing indicate no expiry. However, the default settings are sufficient for most workloads.\n\nIf you want to entirely avoid caching certain objects, you can delete default handlers with delete_handler! and DEFAULT_HANDLER_TAG. For example, if you wanted to avoid caching any messages at all, you would delete handlers for MessageCreate and MessageUpdate events.\n\nThe cache can also be disabled/enabled permanently and temporarily with enable_cache! and disable_cache!.\n\nAPI Version\n\nThe version keyword chooses the Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nSharding\n\nSharding is handled automatically. The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
+    "text": "Client(\n    token::String;\n    prefix::String=\"\",\n    presence::Union{Dict, NamedTuple}=Dict(),\n    strategies::Dict{DataType, <:CacheStrategy}=Dict(),\n    version::Int=6,\n) -> Client\n\nA Discord bot. Clients can connect to the gateway, respond to events, and make REST API calls to perform actions such as sending/deleting messages, kicking/banning users, etc.\n\nBot Token\n\nA bot token can be acquired by creating a new application here. Make sure not to hardcode the token into your Julia code! Use an environment variable or configuration file instead.\n\nCommand Prefix\n\nThe prefix keyword specifies the command prefix, which is used by commands added with add_command!. It can be changed later, both globally and on a per-guild basis, with set_prefix!.\n\nPresence\n\nThe presence keyword sets the bot\'s presence upon connection. It also sets defaults for future calls to set_game. The schema here must be followed.\n\nCache Control\n\nBy default, most data that comes from Discord is cached for later use. However, to avoid memory leakage, not all of it is kept forever. The default setings are to keep everything but Messages, which are deleted after 6 hours, forever. Although the default settings are sufficient for most workloads, you can specify your own strategies per type with the strategies keyword. Keys can be any of the following:\n\nGuild\nDiscordChannel\nMessage\nUser\nMember\nPresence\n\nFor potential values, see CacheStrategy.\n\nThe cache can also be disabled/enabled permanently and temporarily as a whole with enable_cache! and disable_cache!.\n\nAPI Version\n\nThe version keyword chooses the Version of the Discord API to use. Using anything but 6 is not officially supported by the Discord.jl developers.\n\nSharding\n\nSharding is handled automatically. The number of available processes is the number of shards that are created. See the sharding example for more details.\n\n\n\n\n\n"
 },
 
 {
@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    handler::Function;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    priority::Int=100,\n    n::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    wait::Bool=false,\n    compile::Bool=false,\n    kwargs...,\n) -> Union{Vector{Any}, Nothing}\n\nAdd an event handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function does the real work and must take two arguments: A Client and an AbstractEvent (or a subtype).\n\nHandler Tag\n\nThe tag keyword gives a label to the handler, which can be used to remove it with delete_handler!.\n\nPredicate/Fallback Functions\n\nThe predicate keyword specifies a predicate function. The handler will only run if this function returns true. Otherwise, a fallback function, specified by the fallback keyword, is run. Their signatures should match that of the handler.\n\nHandler Priority\n\nThe priority keyword indicates the handler\'s priority relative to other handlers for the same event. Handlers with higher values execute before those with lower ones.\n\nHandler Expiry\n\nHandlers can have counting and/or timed expiries. The n keyword sets the number of times a handler is run before expiring. The timeout keyword sets how long the handler remains active.\n\nBlocking Handlers and Result Collection\n\nTo collect results from a handler, set the wait keyword along with an expiry. The call will block until the handler expires, at which point the return value of each invocation is returned in a Vector.\n\nForcing Precompilation\n\nHandler functions are precompiled without running them, but it\'s not always successful, especially if your functions are not type-safe. If the compile keyword is set, precompilation is forced by running the predicate and handler on a randomized input. Any trailing keywords are passed to the input event constructor.\n\nExamples\n\nAdding a handler with a timed expiry and tag:\n\nadd_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))\n\nAdding a handler with a predicate and do syntax:\n\nadd_handler!(c, ChannelCreate; predicate=(c, e) -> length(e.channel.name) < 10) do c, e\n    println(e.channel.name)\nend\n\nAggregating results of a handler with a counting expiry:\n\nmsgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; n=5, wait=true)\n\nForcing precompilation and assigning a low priority:\n\nadd_handler!(c, MessageCreate, (c, e) -> @show e; priority=-10, compile=true)\n\n\n\n\n\nadd_handler!(\n    c::Client,\n    m::Module;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    n::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you set keywords, they are applied to all of the handlers in the module. For example, if you add two handlers for the same event type with the same tag, one of them will be immediately overwritten.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    handler::Function;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    priority::Int=100,\n    count::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    until::Union{Function, Nothing}=nothing,\n    wait::Bool=false,\n    compile::Bool=false,\n    kwargs...,\n) -> Union{Vector{Any}, Nothing}\n\nAdd an event handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function does the real work and must take two arguments: A Client and an AbstractEvent (or a subtype).\n\nHandler Tag\n\nThe tag keyword gives a label to the handler, which can be used to remove it with delete_handler!.\n\nPredicate/Fallback Functions\n\nThe predicate keyword specifies a predicate function. The handler will only run if this function returns true. Otherwise, a fallback function, specified by the fallback keyword, is run. Their signatures should match that of the handler.\n\nHandler Priority\n\nThe priority keyword indicates the handler\'s priority relative to other handlers for the same event. Handlers with higher values execute before those with lower ones.\n\nHandler Expiry\n\nHandlers can have multiple types of expiries. The count keyword sets the number of times a handler is run before expiring. The timeout keyword determines how long the handler remains active. The until keyword takes a function which is called on the handler\'s previous results (in a Vector), and if it returns true, the handler expires.\n\nBlocking Handlers + Result Collection\n\nTo collect results from a handler, set the wait keyword along with n, timeout, and/or until. The call will block until the handler expires, at which point the return value of each invocation is returned in a Vector.\n\nForcing Precompilation\n\nHandler functions are precompiled without running them, but it\'s not always successful, especially if your functions are not type-safe. If the compile keyword is set, precompilation is forced by running the predicate and handler on a randomized input. Any trailing keywords are passed to the input event constructor.\n\nExamples\n\nAdding a handler with a timed expiry and tag:\n\nadd_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))\n\nAdding a handler with a predicate and do syntax:\n\nadd_handler!(c, ChannelCreate; predicate=(c, e) -> length(e.channel.name) < 10) do c, e\n    println(e.channel.name)\nend\n\nAggregating results of a handler with a counting expiry:\n\nmsgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; count=5, wait=true)\n\nForcing precompilation and assigning a low priority:\n\nadd_handler!(c, MessageDelete, (c, e) -> @show e; priority=-10, compile=true, id=0xff)\n\n\n\n\n\nadd_handler!(\n    c::Client,\n    m::Module;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    count::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you set keywords, they are applied to all of the handlers in the module. For example, if you add two handlers for the same event type with the same tag, one of them will be immediately overwritten.\n\n\n\n\n\n"
 },
 
 {
@@ -189,7 +189,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Client",
     "title": "Discord.add_command!",
     "category": "function",
-    "text": "add_command!(\n    c::Client,\n    name::Symbol,\n    handler::Function;\n    help::AbstractString=\"\",\n    parsers::Vector=[],\n    separator::Union{AbstractString, AbstractChar}=\' \',\n    pattern::Regex=defaultpattern(name, length(parsers), separator),\n    allowed::Vector{<:Integer}=Snowflake[],\n    cooldown::Union{Period, Nothing}=nothing,\n    fallback::Function=donothing,\n    priority::Int=100,\n    n::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n    kwargs...,\n)\n\nAdd a text command handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function must accept a Client and a Message. Additionally, it can accept any number of additional arguments, which are captured from pattern and parsed with parsers (see below).\n\nCommand Pattern\n\nThe pattern keyword specifies how to invoke the command. The given Regex must match the message contents after having removed the command prefix. By default, it\'s the command name with as many wildcard capture groups as there are parsers, separated by the separator keyword (a space character by default).\n\nCommand Help\n\nThe help keyword specifies a help string which can be used by add_help!.\n\nArgument Parsing\n\nThe parsers keyword specifies the parsers of the command arguments, and can contain both types and functions. If pattern contains captures, then they are run through the parsers before being passed into the handler. For repeating arguments, see Splat.\n\nPermissions\n\nThe allowed keyword specifies Users or Roles (by ID) that are allowed to use the command. If the caller does not have permissions for the command, the fallback handler is run.\n\nRate Limiting\n\nThe cooldown keyword sets the rate at which a user can invoke the command. The default of nothing indicates no limit.\n\nFallback Function\n\nThe fallback keyword specifies a function that runs whenever a command is called but cannot be run, such as failed argument parsing, missing permissions, or rate limiting. it should accept a Client and a Message.\n\nAdditional keyword arguments are a subset of those to add_handler!.\n\nExamples\n\nBasic echo command with a help string:\n\nadd_command!(c, :echo, (c, m) -> reply(c, m, m.content); help=\"repeat a message\")\n\nThe same, but excluding the command part:\n\nadd_command!(c, :echo, (c, m, msg) -> reply(c, m, msg); pattern=r\"^echo (.+)\")\n\nParsing a subtraction expression with custom parsers and separator:\n\nadd_command!(\n    c, :sub, (c, m, a, b) -> reply(c, m, string(a - b));\n    parsers=[Float64, Float64], separator=\'-\',\n)\n\nSplatting some comma-separated numbers with a fallback function:\n\nadd_command!(\n    c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));\n    parsers=[Splat(Float64, \',\')], fallback=(c, m) -> reply(c, m, \"Args must be numbers.\"),\n)\n\n\n\n\n\nadd_command!(c::Client, m::Module; compile::Bool=false; kwargs...)\n\nAdd all of the bot commands defined in a module. To set up commands to be included, see @command.\n\n\n\n\n\n"
+    "text": "add_command!(\n    c::Client,\n    name::Symbol,\n    handler::Function;\n    help::AbstractString=\"\",\n    parsers::Vector=[],\n    separator::Union{AbstractString, AbstractChar}=\' \',\n    pattern::Regex=defaultpattern(name, length(parsers), separator),\n    allowed::Vector{<:Integer}=Snowflake[],\n    cooldown::Union{Period, Nothing}=nothing,\n    fallback::Function=donothing,\n    priority::Int=100,\n    count::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n    kwargs...,\n)\n\nAdd a text command handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function must accept a Client and a Message. Additionally, it can accept any number of additional arguments, which are captured from pattern and parsed with parsers (see below).\n\nCommand Pattern\n\nThe pattern keyword specifies how to invoke the command. The given Regex must match the message contents after having removed the command prefix. By default, it\'s the command name with as many wildcard capture groups as there are parsers, separated by the separator keyword (a space character by default).\n\nCommand Help\n\nThe help keyword specifies a help string which can be used by add_help!.\n\nArgument Parsing\n\nThe parsers keyword specifies the parsers of the command arguments, and can contain both types and functions. If pattern contains captures, then they are run through the parsers before being passed into the handler. For repeating arguments, see Splat.\n\nPermissions\n\nThe allowed keyword specifies Users or Roles (by ID) that are allowed to use the command. If the caller does not have permissions for the command, the fallback handler is run.\n\nRate Limiting\n\nThe cooldown keyword sets the rate at which a user can invoke the command. The default of nothing indicates no limit.\n\nFallback Function\n\nThe fallback keyword specifies a function that runs whenever a command is called but cannot be run, such as failed argument parsing, missing permissions, or rate limiting. it should accept a Client and a Message.\n\nAdditional keyword arguments are a subset of those to add_handler!.\n\nExamples\n\nBasic echo command with a help string:\n\nadd_command!(c, :echo, (c, m) -> reply(c, m, m.content); help=\"repeat a message\")\n\nThe same, but excluding the command part:\n\nadd_command!(c, :echo, (c, m, msg) -> reply(c, m, msg); pattern=r\"^echo (.+)\")\n\nParsing a subtraction expression with custom parsers and separator:\n\nadd_command!(\n    c, :sub, (c, m, a, b) -> reply(c, m, string(a - b));\n    parsers=[Float64, Float64], separator=\'-\',\n)\n\nSplatting some comma-separated numbers with a fallback function:\n\nadd_command!(\n    c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));\n    parsers=[Splat(Float64, \',\')], fallback=(c, m) -> reply(c, m, \"Args must be numbers.\"),\n)\n\n\n\n\n\nadd_command!(c::Client, m::Module; compile::Bool=false; kwargs...)\n\nAdd all of the bot commands defined in a module. To set up commands to be included, see @command.\n\n\n\n\n\n"
 },
 
 {
@@ -238,6 +238,62 @@ var documenterSearchIndex = {"docs": [
     "title": "Bot Commands",
     "category": "section",
     "text": "add_command!\n@command\ndelete_command!\nadd_help!\nset_prefix!\nSplat"
+},
+
+{
+    "location": "client.html#Discord.CacheStrategy",
+    "page": "Client",
+    "title": "Discord.CacheStrategy",
+    "category": "type",
+    "text": "A method of handling cache insertion and eviction.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.CacheForever",
+    "page": "Client",
+    "title": "Discord.CacheForever",
+    "category": "type",
+    "text": "CacheForever() -> CacheForever\n\nStore everything and never evict items from the cache.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.CacheNever",
+    "page": "Client",
+    "title": "Discord.CacheNever",
+    "category": "type",
+    "text": "CacheNever() -> CacheNever\n\nDon\'t store anything in the cache.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.CacheTTL",
+    "page": "Client",
+    "title": "Discord.CacheTTL",
+    "category": "type",
+    "text": "CacheTTL(ttl::Period) -> CacheTTL\n\nEvict items from the cache after ttl has elapsed.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.CacheLRU",
+    "page": "Client",
+    "title": "Discord.CacheLRU",
+    "category": "type",
+    "text": "CacheLRU(size::Int) -> CacheLRU\n\nEvict the least recently used item from the cache when there are more than size items.\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Discord.CacheFilter",
+    "page": "Client",
+    "title": "Discord.CacheFilter",
+    "category": "type",
+    "text": "CacheFilter(f::Function) -> CacheFilter\n\nOnly store value v at key k if f(v) === true (k is always v.id).\n\n\n\n\n\n"
+},
+
+{
+    "location": "client.html#Caching-1",
+    "page": "Client",
+    "title": "Caching",
+    "category": "section",
+    "text": "CacheStrategy\nCacheForever\nCacheNever\nCacheTTL\nCacheLRU\nCacheFilter"
 },
 
 {
@@ -881,27 +937,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.group_dm_add_recipient",
-    "page": "REST API",
-    "title": "Discord.group_dm_add_recipient",
-    "category": "function",
-    "text": "group_dm_add_recipient(c::Client, channel::Integer, user::Integer; kwargs...)\n\nAdd a User to a group DM. More details here.\n\n\n\n\n\n"
-},
-
-{
-    "location": "rest.html#Discord.group_dm_remove_recipient",
-    "page": "REST API",
-    "title": "Discord.group_dm_remove_recipient",
-    "category": "function",
-    "text": "group_dm_remove_recipient(c::Client, channel::Integer, user::Integer)\n\nRemove a User from a group DM.\n\n\n\n\n\n"
-},
-
-{
     "location": "rest.html#Channel-1",
     "page": "REST API",
     "title": "Channel",
     "category": "section",
-    "text": "get_channel\nmodify_channel\ndelete_channel\nget_channel_messages\nget_channel_message\ncreate_message\ncreate_reaction\ndelete_own_reaction\ndelete_user_reaction\nget_reactions\ndelete_all_reactions\nedit_message\ndelete_message\nbulk_delete_messages\nedit_channel_permissions\nget_channel_invites\ncreate_channel_invite\ndelete_channel_permission\ntrigger_typing_indicator\nget_pinned_messages\nadd_pinned_channel_message\ndelete_pinned_channel_message\ngroup_dm_add_recipient\ngroup_dm_remove_recipient"
+    "text": "get_channel\nmodify_channel\ndelete_channel\nget_channel_messages\nget_channel_message\ncreate_message\ncreate_reaction\ndelete_own_reaction\ndelete_user_reaction\nget_reactions\ndelete_all_reactions\nedit_message\ndelete_message\nbulk_delete_messages\nedit_channel_permissions\nget_channel_invites\ncreate_channel_invite\ndelete_channel_permission\ntrigger_typing_indicator\nget_pinned_messages\nadd_pinned_channel_message\ndelete_pinned_channel_message"
 },
 
 {
@@ -1329,19 +1369,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_group_dm",
-    "page": "REST API",
-    "title": "Discord.create_group_dm",
-    "category": "function",
-    "text": "create_group_dm(c::Client; kwargs...) -> DiscordChannel\n\nCreate a group DM DiscordChannel. More details here.\n\n\n\n\n\n"
-},
-
-{
     "location": "rest.html#User-1",
     "page": "REST API",
     "title": "User",
     "category": "section",
-    "text": "get_current_user\nget_user\nmodify_current_user\nget_current_user_guilds\nleave_guild\ncreate_dm\ncreate_group_dm"
+    "text": "get_current_user\nget_user\nmodify_current_user\nget_current_user_guilds\nleave_guild\ncreate_dm"
 },
 
 {
@@ -1549,7 +1581,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.@fetch",
     "category": "macro",
-    "text": "@fetch [functions...] block\n\nWrap all calls to the specified CRUD functions (create, retrieve, update, and delete) with fetch inside a block. If no functions are specified, all CRUD functions are wrapped.\n\nExamples\n\nWrapping all CRUD functions:\n\nresp = @fetch begin\n    resp = create(c, Guild; name=\"foo\")\n    if resp.ok\n        retrieve(c, DiscordChannel, resp.val)\n    else\n        error(\"Request failed\")\n    end\nend\n\nWrapping only calls to retrieve:\n\nfuture = @fetch retrieve begin\n    resp = retrieve(c, DiscordChannel, 123)\n    create(c, Message, resp.val; content=\"foo\")  # Behaves normally.\nend\n\n\n\n\n\n"
+    "text": "@fetch [functions...] block\n\nWrap all calls to the specified CRUD functions (create, retrieve, update, and delete) with fetch inside a block. If no functions are specified, all CRUD functions are wrapped.\n\nExamples\n\nWrapping all CRUD functions:\n\n@fetch begin\n    guild_resp = create(c, Guild; name=\"foo\")\n    guild_resp.ok || error(\"Request for new guild failed\")\n    channel_resp = retrieve(c, DiscordChannel, guild_resp.val)\nend\n\nWrapping only calls to retrieve:\n\n@fetch retrieve begin\n    resp = retrieve(c, DiscordChannel, 123)\n    future = create(c, Message, resp.val; content=\"foo\")  # Behaves normally.\nend\n\n\n\n\n\n"
 },
 
 {
@@ -1557,7 +1589,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Discord.@fetchval",
     "category": "macro",
-    "text": "@fetchval [functions...] block\n\nWrap all calls to the specified CRUD functions (create, retrieve, update, and delete) with fetchval inside a block. If no functions are specified, all CRUD functions are wrapped.\n\nExamples\n\nWrapping all CRUD functions:\n\nchannels = @fetchval begin\n    guild = create(c, Guild; name=\"foo\")\n    retrieve(c, DiscordChannel, 123)\nend\n\nWrapping only calls to retrieve:\n\nfuture = @fetchval retrieve begin\n    channel = retrieve(c, DiscordChannel, 123)\n    create(c, Message, channel; content=\"foo\")  # Behaves normally.\nend\n\n\n\n\n\n"
+    "text": "@fetchval [functions...] block\n\nIdentical to @fetch, but calls are wrapped with fetchval instead.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.@deferred_fetch",
+    "page": "Helpers",
+    "title": "Discord.@deferred_fetch",
+    "category": "macro",
+    "text": "@deferred_fetch [functions...] block\n\nIdentical to @fetch, but Futures are not fetched until the end of the block. This is more efficient, but only works when there are no data dependencies in the block.\n\nExamples\n\nThis will work:\n\n@deferred_fetch begin\n    guild_resp = create(c, Guild; name=\"foo\")\n    channel_resp = retrieve(c, DiscordChannel, 123)\nend\n\nThis will not, because the second call is dependent on the first value:\n\n@deferred_fetch begin\n    guild_resp = create(c, Guild; name=\"foo\")\n    channels_resp = retrieve(c, DiscordChannel, guild_resp.val)\nend\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers.html#Discord.@deferred_fetchval",
+    "page": "Helpers",
+    "title": "Discord.@deferred_fetchval",
+    "category": "macro",
+    "text": "@deferred_fetchval [functions...] block\n\nIdentical to @deferred_fetch, but Futures have fetchval called on them instead of fetch.\n\n\n\n\n\n"
 },
 
 {
@@ -1565,7 +1613,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Helpers",
     "title": "Helpers",
     "category": "section",
-    "text": "Permission\nhas_permission\npermissions_in\nmention\nreply\nsplit_message\nplaintext\nupload_file\nset_game\n@fetch\n@fetchval"
+    "text": "Permission\nhas_permission\npermissions_in\nmention\nreply\nsplit_message\nplaintext\nupload_file\nset_game\n@fetch\n@fetchval\n@deferred_fetch\n@deferred_fetchval"
 },
 
 {
@@ -1981,7 +2029,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.User",
     "category": "type",
-    "text": "A Discord user. More details here.\n\nFields\n\nid            :: Snowflake\nusername      :: Union{String, Missing}\ndiscriminator :: Union{String, Missing}\navatar        :: Union{String, Missing, Nothing}\nbot           :: Union{Bool, Missing}\nmfa_enabled   :: Union{Bool, Missing}\nlocale        :: Union{String, Missing}\nverified      :: Union{Bool, Missing}\nemail         :: Union{String, Missing, Nothing}\n\n\n\n\n\n"
+    "text": "A Discord user. More details here.\n\nFields\n\nid            :: Snowflake\nusername      :: Union{String, Missing}\ndiscriminator :: Union{String, Missing}\navatar        :: Union{String, Missing, Nothing}\nbot           :: Union{Bool, Missing}\nmfa_enabled   :: Union{Bool, Missing}\nlocale        :: Union{String, Missing}\nverified      :: Union{Bool, Missing}\nemail         :: Union{String, Missing, Nothing}\nflags         :: Union{Int, Missing}\npremium_type  :: Union{PremiumType, Missing}\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.UserFlags",
+    "page": "Types",
+    "title": "Discord.UserFlags",
+    "category": "type",
+    "text": "User flags, which indicate HypeSquad status.\n\n\n\n\n\n"
+},
+
+{
+    "location": "types.html#Discord.PremiumType",
+    "page": "Types",
+    "title": "Discord.PremiumType",
+    "category": "type",
+    "text": "User Discord Nitro status.\n\n\n\n\n\n"
 },
 
 {
@@ -2013,7 +2077,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nUserFlags\nPremiumType\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 {
