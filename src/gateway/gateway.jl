@@ -117,7 +117,7 @@ Disconnect the [`Client`](@ref) from the gateway.
 """
 function Base.close(c::Client; statuscode::Int=1000, zombie::Bool=false)
     c.ready = false
-    c.conn.io === nothing && return
+    isopen(c) || return
     if zombie
         # It seems that Discord doesn't send a closing frame for zombie connections
         # (which makes sense). However, close waits for one forever (see HTTP.jl#350).
