@@ -2029,23 +2029,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.User",
     "category": "type",
-    "text": "A Discord user. More details here.\n\nFields\n\nid            :: Snowflake\nusername      :: Union{String, Missing}\ndiscriminator :: Union{String, Missing}\navatar        :: Union{String, Missing, Nothing}\nbot           :: Union{Bool, Missing}\nmfa_enabled   :: Union{Bool, Missing}\nlocale        :: Union{String, Missing}\nverified      :: Union{Bool, Missing}\nemail         :: Union{String, Missing, Nothing}\nflags         :: Union{Int, Missing}\npremium_type  :: Union{PremiumType, Missing}\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.UserFlags",
-    "page": "Types",
-    "title": "Discord.UserFlags",
-    "category": "type",
-    "text": "User flags, which indicate HypeSquad status.\n\n\n\n\n\n"
-},
-
-{
-    "location": "types.html#Discord.PremiumType",
-    "page": "Types",
-    "title": "Discord.PremiumType",
-    "category": "type",
-    "text": "User Discord Nitro status.\n\n\n\n\n\n"
+    "text": "A Discord user. More details here.\n\nFields\n\nid            :: Snowflake\nusername      :: Union{String, Missing}\ndiscriminator :: Union{String, Missing}\navatar        :: Union{String, Missing, Nothing}\nbot           :: Union{Bool, Missing}\nmfa_enabled   :: Union{Bool, Missing}\nlocale        :: Union{String, Missing}\nverified      :: Union{Bool, Missing}\nemail         :: Union{String, Missing, Nothing}\n\n\n\n\n\n"
 },
 
 {
@@ -2077,7 +2061,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nUserFlags\nPremiumType\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 {
