@@ -65,8 +65,6 @@ PresenceStatus
 Reaction
 Role
 User
-UserFlags
-PremiumType
 VoiceRegion
 VoiceState
 Webhook
