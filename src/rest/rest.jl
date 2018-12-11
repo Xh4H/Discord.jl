@@ -196,7 +196,7 @@ function Response{T}(
                     end
                     put!(f, r)
                     update!(c.limiter, b, http_r)
-               catch e
+                catch e
                     # If we're rate limited, then just go back to the top.
                     e isa RateLimited && continue
                     kws = logkws(c; conn=undef, exception=(e, catch_backtrace()))

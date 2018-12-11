@@ -230,17 +230,21 @@ end
         ch = DiscordChannel(; id="255", type=0, guild_id="1")
         r = Role(; id=0xff, name="foo")
         u = User(; id="255", username="foo")
+        e1 = Emoji(; id="255", name="foo")
+        e2 = Emoji(; id=nothing, name="foo")
 
-        @testset "mention" begin
-            @test mention(ch) == "<#255>"
-            @test mention(r) == "<@&255>"
-            @test mention(u) == "<@255>"
+        @testset "String mention" begin
+            @test sprint(show, ch) == "<#255>"
+            @test sprint(show, r) == "<@&255>"
+            @test sprint(show, u) == "<@255>"
+            @test sprint(show, e1) == "<:foo:255>"
+            @test sprint(show, e2) == ":foo:"
             m = Member(u, "foo", [], now(), true, true)
-            @test mention(m) == "<@!255>"
+            @test sprint(show, m) == "<@!255>"
             m = Member(u, nothing, [], now(), true, true)
-            @test mention(m) == mention(u)
+            @test sprint(show, m) == sprint(show, u)
             m = Member(u, missing, [], now(), true, true)
-            @test mention(m) == mention(u)
+            @test sprint(show, m) == sprint(show, u)
         end
 
         @testset "split_message" begin

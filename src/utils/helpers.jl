@@ -1,7 +1,6 @@
 export PERM_ALL,
     has_permission,
     permissions_in,
-    mention,
     reply,
     split_message,
     plaintext,
@@ -125,33 +124,18 @@ function permissions_in(m::Member, g::Guild, ch::DiscordChannel)
     return perms
 end
 
-"""
-    mention(x::Union{DiscordChannel, Member, Role, User}) -> String
-
-Get the mention string for an entity.
-
-## Examples
-```jldoctest; setup=:(using Dates, Discord)
-julia> u = User(; id=0xff);
-
-julia> mention(u)
-"<@255>"
-
-julia> mention(Member(; user=u, nick="foo", roles=Role[], joined_at=now(), deaf=true, mute=true))
-"<@!255>"
-
-julia> mention(DiscordChannel(; id=0xff, type=CT_GUILD_TEXT))
-"<#255>"
-
-julia> mention(Role(; id=0xff, name="foo"))
-"<@&255>"
-```
-"""
-mention(c::DiscordChannel) = "<#$(c.id)>"
-mention(r::Role) = "<@&$(r.id)>"
-mention(u::User) = "<@$(u.id)>"
-function mention(m::Member)
-    return ismissing(m.nick) || m.nick === nothing ? mention(m.user) : "<@!$(m.user.id)>"
+Base.show(io::IO, c::DiscordChannel) = print(io,"<#$(c.id)>")
+Base.show(io::IO, r::Role) = print(io, "<@&$(r.id)>")
+Base.show(io::IO, u::User) = print(io, "<@$(u.id)>")
+function Base.show(io::IO, m::Member)
+    if ismissing(m.nick) || m.nick === nothing
+        show(io, m.user)
+    else
+        print(io, "<@!$(m.user.id)>")
+    end
+end
+function Base.show(io::IO, e::Emoji)
+    print(io, e.id === nothing ? ":$(e.name):" : "<:$(e.name):$(e.id)>")
 end
 
 """
@@ -166,7 +150,7 @@ Reply (send a message to the same [`DiscordChannel`](@ref)) to a [`Message`](@re
 If `at` is set, then the message is prefixed with the sender's mention.
 """
 function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
-    content = at ? mention(m.author) * " " * content : content
+    at && !ismissing(m.author) && (content = string(m.author) * " " * content)
     return create_message(c, m.channel_id; content=content)
 end
 
@@ -176,8 +160,8 @@ function reply(
     embed::Union{AbstractDict, NamedTuple, Embed};
     at::Bool=false,
 )
-    return if at
-        create_message(c, m.channel_id; content=mention(m.author), embed=embed)
+    return if at && !ismissing(m.author)
+        create_message(c, m.channel_id; content=string(m.author), embed=embed)
     else
         create_message(c, m.channel_id; embed=embed)
     end
