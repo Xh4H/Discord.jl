@@ -3,99 +3,69 @@ const ENDS_MAJOR_ID_REGEX = r"(?:channels|guilds|webhooks)/\d+$"
 const ENDS_ID_REGEX = r"/\d+$"
 const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
-# A rate limit bucket for a single endpoint.
-mutable struct Bucket <: Threads.AbstractLock
+# A rate limited job queue for one endpoint.
+mutable struct JobQueue
     remaining::Nullable{Int}
     reset::Nullable{DateTime}  # UTC.
-    sem::Base.Semaphore
+    jobs::Channel{Function}  # These functions must return an HTTP response.
+    retries::Channel{Function}  # Jobs which must be retried (higher priority).
 
-    Bucket() = new(nothing, nothing, Base.Semaphore(1))
-    Bucket(remaining::Int, reset::DateTime) = new(remaining, reset, Base.Semaphore(1))
+    function JobQueue(limiter)
+        q = new(nothing, nothing, Channel{Function}(Inf), Channel{Function}(Inf))
+
+        @async while true
+            f = take!(isready(q.retries) ? q.retries : q.jobs)  # Get a job by priority.
+
+            # Wait for any existing rate limits.
+            n = now(UTC)
+            limiter.reset !== nothing && n < limiter.reset && sleep(limiter.reset - n)
+            n = now(UTC)
+            q.remaining == 0 && q.reset !== nothing && n < q.reset && sleep(q.reset - n)
+
+            # Run the job, and get the HTTP response.
+            r = f()
+
+            if r.status == 429
+                # Update the rate limiter with the response body.
+                n = now(UTC)
+                d = JSON.parse(String(copy(r.body)))
+                if get(d, "global", false)
+                    limiter.reset = n + Millisecond(get(d, "retry_after", 0))
+                end
+
+                # Requeue the job with high priority.
+                put!(q.retries, f)
+            end
+
+            # Update the rate limiter with the response headers.
+            rem = HTTP.header(r, "X-RateLimit-Remaining")
+            isempty(rem) || (q.remaining = parse(Int, rem))
+            res = HTTP.header(r, "X-RateLimit-Reset")
+            isempty(res) || (q.reset = unix2datetime(parse(Int, res)))
+        end
+
+        return q
+    end
 end
 
 # A rate limiter for all endpoints.
 mutable struct Limiter
     reset::Nullable{DateTime}  # API-wide limit.
-    buckets::Dict{AbstractString, Bucket}
-    lock::Threads.AbstractLock
+    queues::Dict{String, JobQueue}
+    lock::Threads.SpinLock
 
-    Limiter() = new(nothing, Dict(), Threads.SpinLock())
+    function Limiter()
+        new(nothing, Dict(), Threads.SpinLock())
+    end
 end
 
-# Retrieve an existing bucket or create a new one.
-function Bucket(l::Limiter, method::Symbol, endpoint::AbstractString)
+# Schedule a job.
+function enqueue!(f::Function, l::Limiter, method::Symbol, endpoint::AbstractString)
+    endpoint = parse_endpoint(endpoint, method)
     locked(l.lock) do
-        endpoint = parse_endpoint(endpoint, method)
-        if !haskey(l.buckets, endpoint)
-            l.buckets[endpoint] = Bucket()
-        end
-        return l.buckets[endpoint]
+        haskey(l.queues, endpoint) || (l.queues[endpoint] = JobQueue(l))
     end
-end
-
-# Acquire/release the bucket lock.
-Base.lock(b::Bucket) = Base.acquire(b.sem)
-Base.unlock(b::Bucket) = Base.release(b.sem)
-
-# Reset the rate limit on a bucket.
-function reset!(b::Bucket)
-    b.remaining = nothing
-    b.reset = nothing
-end
-
-# Note: These DateTime operations only work if your system clock is accurate.
-
-# Wait for a bucket's rate limit to expire.
-function Base.wait(l::Limiter, b::Bucket)
-    n = now(UTC)
-    if l.reset !== nothing && l.reset > n
-        sleep(l.reset - n)
-    end
-
-    if b.reset !== nothing && n < b.reset
-        sleep(b.reset - n)
-        reset!(b)
-    end
-end
-
-# Update a bucket's count and expiry.
-function update!(l::Limiter, b::Bucket, r::HTTP.Messages.Response)
-    if r.status == 429
-        d = JSON.parse(String(copy(r.body)))
-        if get(d, "global", false)
-            l.reset = now(UTC) + Millisecond(get(d, "retry_after", 0))
-            return
-        end
-    end
-
-    headers = Dict(r.headers)
-
-    haskey(headers, "X-RateLimit-Remaining") || return
-    haskey(headers, "X-RateLimit-Reset") || return
-
-    b.remaining = parse(Int, headers["X-RateLimit-Remaining"])
-    b.reset = unix2datetime(parse(Int, headers["X-RateLimit-Reset"]))
-end
-
-# Determine whether a bucket has an exceeded rate limit.
-function islimited(l::Limiter, b::Bucket)
-    n = now(UTC)
-
-    if l.reset !== nothing
-        if n < l.reset
-            return true
-        else
-            l.reset = nothing
-        end
-    end
-
-    (b.remaining === nothing || b.reset === nothing) && return false
-    if n > b.reset
-        reset!(b)
-        return false
-    end
-
-    return b.remaining == 0
+    put!(l.queues[endpoint].jobs, f)
 end
 
 # Get the endpoint which corresponds to its own rate limit.

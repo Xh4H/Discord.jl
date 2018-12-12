@@ -68,8 +68,6 @@ const EVENTS_FIRED = Dict(
     ],
 )
 
-struct RateLimited <: Exception end
-
 """
 A wrapper around a response from the REST API. Every function which wraps a Discord REST
 API endpoint returns a `Future` which will contain a value of this type. To retrieve the
@@ -109,7 +107,6 @@ end
 
 # HTTP response with body (maybe).
 function Response{T}(c::Client, r::HTTP.Messages.Response) where T
-    r.status == 429 && throw(RateLimited())
     r.status == 204 && return Response{T}(nothing, true, r, nothing)
     r.status >= 300 && return Response{T}(nothing, false, r, nothing)
 
@@ -154,10 +151,12 @@ function Response{T}(
             user=cap("users", endpoint),
         )
 
+        # Retrieve the value from the cache, maybe.
         if c.use_cache && method === :GET
             val = get(c.state, T; kws...)
             if val !== nothing
                 try
+                    # Only use the value if it satisfies the cache test.
                     if cachetest(val) === true
                         put!(f, Response{T}(val, true, nothing, nothing))
                         return
@@ -168,6 +167,7 @@ function Response{T}(
             end
         end
 
+        # Prepare the request.
         url = "$DISCORD_API/v$(c.version)$endpoint"
         isempty(kwargs) || (url *= "?" * HTTP.escapeuri(kwargs))
         headers = merge(Dict(
@@ -180,41 +180,33 @@ function Response{T}(
             push!(args, headers["Content-Type"] == "application/json" ? json(body) : body)
         end
 
-        # Acquire the lock, then check if we're rate limited. If we are, then release the
-        # lock and wait for the reset. Once we get the lock back and we're not rate
-        # limited, we can go through with the request (at that point we know we're the only
-        # task requesting from that endpoint). We update the bucket (we are still the only
-        # task touching the bucket) and then release the lock.
+        # Queue a job to be run within the rate-limiting constraints.
+        enqueue!(c.limiter, method, endpoint) do
+            http_r = nothing
 
-        b = Bucket(c.limiter, method, endpoint)
-        while true
-            lock(b)
+            try
+                # Make an HTTP request, and generate a Response.
+                # If we hit an upstream rate limit, return the response immediately.
+                http_r = HTTP.request(args...; status_exception=false)
+                http_r.status == 429 && return http_r
+                r = Response{T}(c, http_r)
 
-            if islimited(c.limiter, b)
-                unlock(b)
-                wait(c.limiter, b)
-            else
-                local http_r = nothing
-                try
-                    http_r = HTTP.request(args...; status_exception=false)
-                    r = Response{T}(c, http_r)
-                    if r.ok && r.val !== nothing && should_put(c, method, endpoint)
-                        r = @set r.val = put!(c.state, r.val; kws...)
-                    end
-                    put!(f, r)
-                    update!(c.limiter, b, http_r)
-                catch e
-                    # If we're rate limited, then just go back to the top.
-                    e isa RateLimited && continue
-                    kws = logkws(c; conn=undef, exception=(e, catch_backtrace()))
-                    @error "Creating response failed" kws...
-                    put!(f, Response{T}(nothing, false, http_r, e))
-                finally
-                    unlock(b)
+                if r.ok && r.val !== nothing && should_put(c, method, endpoint)
+                    # Cache the value, and also replace any missing data
+                    # in the response with data from the cache.
+                    r = @set r.val = put!(c.state, r.val; kws...)
                 end
 
-                break  # If we reached here, it means we got the request through.
+                # Store the successful Response to the Future.
+                put!(f, r)
+            catch e
+                # Otherwise, we have a real error.
+                kws = logkws(c; conn=undef, exception=(e, catch_backtrace()))
+                @error "Creating response failed" kws...
+                put!(f, Response{T}(nothing, false, http_r, e))
             end
+
+            return http_r  # Return the HTTP response to update the rate limits.
         end
     end
 
