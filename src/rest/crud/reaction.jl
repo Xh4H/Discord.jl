@@ -1,3 +1,16 @@
+function create(
+    c::Client,
+    ::Type{Reaction},
+    m::Message,
+    emoji::Union{AbstractString, AbstractChar},
+)
+    return create_reaction(c, m.channel_id, m.id, emoji)
+end
+function create(c::Client, ::Type{Reaction}, m::Message, e::Emoji)
+    emoji = e.id === nothing ? e.name : "$(e.name):$(e.id)"
+    return create_reaction(c, m.channel_id, m.id, emoji)
+end
+
 function retrieve(
     c::Client,
     ::Type{Reaction},
@@ -7,16 +20,6 @@ function retrieve(
     return get_reactions(c, m.channel_id, m.id, emoji)
 end
 retrieve(c::Client, ::Type{Reaction}, m::Message, e::Emoji) = get(Reaction, c, m, e.name)
-
-function create(
-    c::Client,
-    ::Type{Reaction},
-    m::Message,
-    emoji::Union{AbstractString, AbstractChar},
-)
-    return create_reaction(c, m.channel_id, m.id, emoji)
-end
-create(c::Client, ::Type{Reaction}, m::Message, e::Emoji) = create(Reaction, c, m, e.name)
 
 function delete(c::Client, ::Type{Reaction}, m::Message)
     return delete_all_reactions(c, m.channel_id, m.id)
