@@ -138,7 +138,8 @@ end
 function Response{T}(
     c::Client,
     method::Symbol,
-    endpoint::AbstractString;
+    endpoint::AbstractString,
+    cachetest::Function=alwaystrue;
     headers=Dict(),
     body=HTTP.nobody,
     kwargs...
@@ -156,8 +157,14 @@ function Response{T}(
         if c.use_cache && method === :GET
             val = get(c.state, T; kws...)
             if val !== nothing
-                put!(f, Response{T}(val, true, nothing, nothing))
-                return
+                try
+                    if cachetest(val) === true
+                        put!(f, Response{T}(val, true, nothing, nothing))
+                        return
+                    end
+                catch
+                    # TODO: Log this?
+                end
             end
         end
 

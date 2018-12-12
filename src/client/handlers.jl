@@ -6,11 +6,6 @@ struct Fallback <: Exception end
 # An event handler.
 abstract type AbstractHandler{T<:AbstractEvent} end
 
-# Default handler and predicate functions.
-donothing(args...; kwargs...) = nothing
-alwaystrue(args...; kwargs...) = true
-alwaysfalse(args...; kwargs...) = false
-
 # The event type that a handler accepts.
 Base.eltype(::AbstractHandler{T}) where T = T
 

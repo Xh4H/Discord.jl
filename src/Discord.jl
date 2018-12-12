@@ -19,6 +19,11 @@ const Nullable{T} = Union{T, Nothing}
 const OptionalNullable{T} = Union{T, Missing, Nothing}
 const StringOrChar = Union{AbstractString, AbstractChar}
 
+# Constant functions.
+donothing(args...; kwargs...) = nothing
+alwaystrue(args...; kwargs...) = true
+alwaysfalse(args...; kwargs...) = false
+
 # Run a function with a locked lock.
 function locked(f::Function, x::Threads.AbstractLock)
     lock(x)
