@@ -813,7 +813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "REST API",
     "title": "Discord.create_reaction",
     "category": "function",
-    "text": "create_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n)\n\nReact to a Message.\n\n\n\n\n\n"
+    "text": "create_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n)\n\nReact to a Message. If emoji is a custom Emoji, it should be formatted \"name:id\".\n\n\n\n\n\n"
 },
 
 {
