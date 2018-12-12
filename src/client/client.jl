@@ -109,7 +109,7 @@ mutable struct Client
 
     function Client(
         token::String;
-        prefix::Union{AbstractString, AbstractChar}="",
+        prefix::StringOrChar="",
         presence::Union{Dict, NamedTuple}=Dict(),
         strategies::Dict{DataType, <:CacheStrategy}=Dict{DataType, CacheStrategy}(),
         version::Int=API_VERSION,
@@ -298,38 +298,12 @@ function add_handler!(
     return wait ? take!(h) : nothing
 end
 
-function add_handler!(
-    handler::Function,
-    c::Client,
-    T::Type{<:AbstractEvent};
-    tag::Symbol=gensym(),
-    predicate::Function=alwaystrue,
-    fallback::Function=donothing,
-    priority::Int=DEFAULT_PRIORITY,
-    count::Union{Int, Nothing}=nothing,
-    timeout::Union{Period, Nothing}=nothing,
-    wait::Bool=false,
-    compile::Bool=false,
-    kwargs...,
-)
-    return add_handler!(
-        c, T, handler;
-        tag=tag, predicate=predicate, fallback=fallback, priority=priority,
-        count=count, timeout=timeout, wait=wait, compile=compile, kwargs...,
-    )
+function add_handler!(handler::Function, c::Client, T::Type{<:AbstractEvent}; kwargs...)
+    return add_handler!(c, T, handler; kwargs...)
 end
 
 """
-    add_handler!(
-        c::Client,
-        m::Module;
-        tag::Symbol=gensym(),
-        predicate::Function=alwaystrue,
-        fallback::Function=donothing,
-        count::Union{Int, Nothing}=nothing,
-        timeout::Union{Period, Nothing}=nothing,
-        compile::Bool=false,
-    )
+    add_handler!(c::Client, m::Module; kwargs...)
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
 handler must be exported. Only functions with correct type signatures (see above) are used.
@@ -339,27 +313,12 @@ handler must be exported. Only functions with correct type signatures (see above
     example, if you add two handlers for the same event type with the same tag, one of them
     will be immediately overwritten.
 """
-function add_handler!(
-    c::Client,
-    m::Module;
-    tag::Symbol=gensym(),
-    predicate::Function=alwaystrue,
-    fallback::Function=donothing,
-    priority::Int=DEFAULT_PRIORITY,
-    count::Union{Int, Nothing}=nothing,
-    timeout::Union{Period, Nothing}=nothing,
-    compile::Bool=false,
-)
+function add_handler!(c::Client, m::Module; kwargs...)
     for f in filter(f -> f isa Function, map(n -> getfield(m, n), names(m)))
         for m in methods(f)
-            ts = m.sig.types[2:end]
             length(m.sig.types) == 3 || continue
             if m.sig.types[2] === Client && m.sig.types[3] <: AbstractEvent
-                add_handler!(
-                    c, m.sig.types[3], f;
-                    tag=tag, predicate=predicate, fallback=fallback,
-                    priority=priority, count=count, timeout=timeout, compile=compile,
-                )
+                add_handler!(c, m.sig.types[3], f; kwargs...)
             end
         end
     end
@@ -435,6 +394,7 @@ function logkws(c::Client; kwargs...)
     return kws
 end
 
+# Parse some data (usually a Dict from JSON), or return the thrown error.
 function Base.tryparse(c::Client, T::Type, data)
     return try
         T <: Vector ? eltype(T).(data) : T(data), nothing

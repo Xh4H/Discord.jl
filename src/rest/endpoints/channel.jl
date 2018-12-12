@@ -92,22 +92,12 @@ function create_message(c::Client, channel::Integer; kwargs...)
 end
 
 """
-    create_reaction(
-        c::Client,
-        channel::Integer,
-        message::Integer,
-        emoji::Union{AbstractString, AbstractChar},
-    )
+    create_reaction(c::Client, channel::Integer, message::Integer, emoji::StringOrChar)
 
 React to a [`Message`](@ref). If `emoji` is a custom [`Emoji`](@ref), it should be
 formatted "name:id".
 """
-function create_reaction(
-    c::Client,
-    channel::Integer,
-    message::Integer,
-    emoji::Union{AbstractString, AbstractChar},
-)
+function create_reaction(c::Client, channel::Integer, message::Integer, emoji::StringOrChar)
     return Response(
         c,
         :PUT,
@@ -116,12 +106,7 @@ function create_reaction(
 end
 
 """
-    delete_own_reaction(
-        c::Client,
-        channel::Integer,
-        message::Integer,
-        emoji::Union{AbstractString, AbstractChar},
-    )
+    delete_own_reaction(c::Client, channel::Integer, message::Integer, emoji::StringOrChar)
 
 Delete the [`Client`](@ref) user's reaction to a [`Message`](@ref).
 """
@@ -129,7 +114,7 @@ function delete_own_reaction(
     c::Client,
     channel::Integer,
     message::Integer,
-    emoji::Union{AbstractString, AbstractChar},
+    emoji::StringOrChar,
 )
     return Response(
         c,
@@ -143,7 +128,7 @@ end
         c::Client,
         channel::Integer,
         message::Integer,
-        emoji::Union{AbstractString, AbstractChar},
+        emoji::StringOrChar,
         user::Integer,
     )
 
@@ -153,7 +138,7 @@ function delete_user_reaction(
     c::Client,
     channel::Integer,
     message::Integer,
-    emoji::Union{AbstractString, AbstractChar},
+    emoji::StringOrChar,
     user::Integer,
 )
     return Response(
@@ -168,17 +153,12 @@ end
         c::Client,
         channel::Integer,
         message::Integer,
-        emoji::Union{AbstractString, AbstractChar},
+        emoji::StringOrChar,
     ) -> Vector{User}
 
 Get the [`User`](@ref)s who reacted to a [`Message`](@ref) with an [`Emoji`](@ref).
 """
-function get_reactions(
-    c::Client,
-    channel::Integer,
-    message::Integer,
-    emoji::Union{AbstractString, AbstractChar},
-)
+function get_reactions(c::Client, channel::Integer, message::Integer, emoji::StringOrChar)
     return Response{Vector{User}}(
         c,
         :GET,

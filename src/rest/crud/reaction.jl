@@ -1,9 +1,4 @@
-function create(
-    c::Client,
-    ::Type{Reaction},
-    m::Message,
-    emoji::Union{AbstractString, AbstractChar},
-)
+function create(c::Client, ::Type{Reaction}, m::Message, emoji::StringOrChar)
     return create_reaction(c, m.channel_id, m.id, emoji)
 end
 function create(c::Client, ::Type{Reaction}, m::Message, e::Emoji)
@@ -11,12 +6,7 @@ function create(c::Client, ::Type{Reaction}, m::Message, e::Emoji)
     return create_reaction(c, m.channel_id, m.id, emoji)
 end
 
-function retrieve(
-    c::Client,
-    ::Type{Reaction},
-    m::Message,
-    emoji::Union{AbstractString, AbstractChar},
-)
+function retrieve(c::Client, ::Type{Reaction}, m::Message, emoji::StringOrChar)
     return get_reactions(c, m.channel_id, m.id, emoji)
 end
 retrieve(c::Client, ::Type{Reaction}, m::Message, e::Emoji) = get(Reaction, c, m, e.name)
@@ -24,12 +14,7 @@ retrieve(c::Client, ::Type{Reaction}, m::Message, e::Emoji) = get(Reaction, c, m
 function delete(c::Client, ::Type{Reaction}, m::Message)
     return delete_all_reactions(c, m.channel_id, m.id)
 end
-function delete(
-    c::Client,
-    emoji::Union{AbstractString, AbstractChar},
-    m::Message,
-    u::User,
-)
+function delete(c::Client, emoji::StringOrChar, m::Message, u::User)
     return if c.state.user !== nothing && u.id == c.state.user.id
         delete_own_reaction(c, m.channel_id, m.id, emoji)
     else

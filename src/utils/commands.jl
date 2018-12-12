@@ -28,7 +28,7 @@ function Command(;
     handler::Function,
     help::AbstractString="",
     parsers::Vector=[],
-    separator::Union{AbstractString, AbstractChar}=' ',
+    separator::StringOrChar=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
     cooldown::Union{Period, Nothing}=nothing,
@@ -143,20 +143,17 @@ macro command(exs...)
 end
 
 """
-    Splat(
-        func::Base.Callable=identity,
-        split::Union{AbstractString, AbstractChar}=' ',
-    ) -> Splat
+    Splat(func::Base.Callable=identity, split::StringOrChar=' ') -> Splat
 
 Collect a variable number of arguments from one capture group with a single parser.
 """
 struct Splat <: Function
     func::Base.Callable
-    split::Union{AbstractString, AbstractChar}
+    split::StringOrChar
 end
 Splat() = Splat(identity, ' ')
 Splat(func::Base.Callable) = Splat(func, ' ')
-Splat(split::Union{AbstractString, AbstractChar}) = Splat(identity, split)
+Splat(split::StringOrChar) = Splat(identity, split)
 
 predicate(c::Command) = predicate(c.h)
 handler(c::Command) = handler(c.h)
@@ -173,7 +170,7 @@ isexpired(c::Command) = isexpired(c.h)
         handler::Function;
         help::AbstractString="",
         parsers::Vector=[],
-        separator::Union{AbstractString, AbstractChar}=' ',
+        separator::StringOrChar=' ',
         pattern::Regex=defaultpattern(name, length(parsers), separator),
         allowed::Vector{<:Integer}=Snowflake[],
         cooldown::Union{Period, Nothing}=nothing,
@@ -252,7 +249,7 @@ function add_command!(
     handler::Function;
     help::AbstractString="",
     parsers::Vector=[],
-    separator::Union{AbstractString, AbstractChar}=' ',
+    separator::StringOrChar=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
     cooldown::Union{Period, Nothing}=nothing,
@@ -270,30 +267,8 @@ function add_command!(
     )
     puthandler!(c, cmd, name, compile; message=mock(Message; kwargs...))
 end
-
-function add_command!(
-    handler::Function,
-    c::Client,
-    name::Symbol;
-    help::AbstractString="",
-    parsers::Vector=[],
-    separator::Union{AbstractString, AbstractChar}=' ',
-    pattern::Regex=defaultpattern(name, length(parsers), separator),
-    allowed::Vector{<:Integer}=Snowflake[],
-    cooldown::Union{Period, Nothing}=nothing,
-    fallback::Function=donothing,
-    priority::Int=DEFAULT_PRIORITY,
-    count::Union{Int, Nothing}=nothing,
-    timeout::Union{Period, Nothing}=nothing,
-    compile::Bool=false,
-    kwargs...
-)
-    add_command!(
-        c, name, handler;
-        help=help, separator=separator, parsers=parsers, pattern=pattern, allowed=allowed,
-        cooldown=cooldown, priority=priority, fallback=fallback, count=count,
-        timeout=timeout, compile=compile, kwargs...,
-    )
+function add_command!(handler::Function, c::Client, name::Symbol; kwargs...)
+    add_handler!(handler, c, name; kwargs...)
 end
 
 """
@@ -328,7 +303,7 @@ Add a help command. This can be called at any time, new commands will be include
 automatically.
 
 ## Keywords
-- `separator::Union{AbstractString, AbstractChar}`: Separator between commands.
+- `separator::StringOrChar`: Separator between commands.
 - `pattern::Regex`: The command pattern (see [`add_command!`](@ref)).
 - `help::AbstractString`: Help for the help command.
 - `nohelp::AbstractString`: Help for commands without their own help string.
@@ -336,7 +311,7 @@ automatically.
 """
 function add_help!(
     c::Client;
-    separator::Union{AbstractString, AbstractChar}=' ',
+    separator::StringOrChar=' ',
     pattern::Regex=r"^help(?: (.+))?",
     help::AbstractString="Show this help message",
     nohelp::AbstractString="No help provided",
@@ -376,12 +351,8 @@ function add_help!(
 end
 
 """
-    set_prefix!(c::Client, prefix::Union{AbstractString, AbstractChar})
-    set_prefix!(
-        c::Client,
-        prefix::Union{AbstractString, AbstractChar},
-        guild::Union{Guild, Integer},
-    )
+    set_prefix!(c::Client, prefix::StringOrChar)
+    set_prefix!(c::Client, prefix::StringOrChar, guild::Union{Guild, Integer})
 
 Set [`Client`](@ref)'s command prefix. If a [`Guild`](@ref) or its ID is supplied, then the
 prefix only applies to that guild.
@@ -423,6 +394,6 @@ function parsecap(p::Type, s::AbstractString)
 end
 
 # Generate a bot command's default pattern.
-function defaultpattern(name::Symbol, n::Int, separator::Union{AbstractString, AbstractChar})
+function defaultpattern(name::Symbol, n::Int, separator::StringOrChar)
     return n == 0 ? Regex("^$name") : Regex("^$name " * join(repeat(["(.*)"], n), separator))
 end
