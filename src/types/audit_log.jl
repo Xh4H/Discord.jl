@@ -90,8 +90,8 @@ of the entity that `new_value` and `old_value` belong(ed) to.
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-change-object).
 """
 struct AuditLogChange{T, U}
-    new_value::Union{T, Missing}
-    old_value::Union{T, Missing}
+    new_value::Optional{T}
+    old_value::Optional{T}
     key::String
     type::Type{U}
 end
@@ -158,13 +158,13 @@ Optional information in an [`AuditLogEntry`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info).
 """
 struct AuditLogOptions
-    delete_member_days::Union{Int, Missing}
-    members_removed::Union{Int, Missing}
-    channel_id::Union{Snowflake, Missing}
-    count::Union{Int, Missing}
-    id::Union{Snowflake, Missing}
-    type::Union{OverwriteType, Missing}
-    role_name::Union{String, Missing}
+    delete_member_days::Optional{Int}
+    members_removed::Optional{Int}
+    channel_id::Optional{Snowflake}
+    count::Optional{Int}
+    id::Optional{Snowflake}
+    type::Optional{OverwriteType}
+    role_name::Optional{String}
 end
 @boilerplate AuditLogOptions :docs :merge :mock
 
@@ -205,13 +205,13 @@ An entry in an [`AuditLog`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object).
 """
 struct AuditLogEntry
-    target_id::Union{Snowflake, Nothing}
-    changes::Union{Vector{AuditLogChange}, Missing}
+    target_id::Nullable{Snowflake}
+    changes::Optional{Vector{AuditLogChange}}
     user_id::Snowflake
     id::Snowflake
     action_type::ActionType
-    options::Union{AuditLogOptions, Missing}
-    reason::Union{String, Missing}
+    options::Optional{AuditLogOptions}
+    reason::Optional{String}
 end
 @boilerplate AuditLogEntry :constructors :docs :lower :merge :mock
 

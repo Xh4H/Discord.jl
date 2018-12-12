@@ -29,7 +29,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
 """
 struct MessageActivity
     type::MessageActivityType
-    party_id::Union{String, Missing}
+    party_id::Optional{String}
 end
 @boilerplate MessageActivity :constructors :docs :lower :merge :mock
 
@@ -54,24 +54,24 @@ struct Message
     id::Snowflake
     channel_id::Snowflake
     # MessageUpdate only requires the ID and channel ID.
-    guild_id::Union{Snowflake, Missing}
-    author::Union{User, Missing}
-    member::Union{Member, Missing}
-    content::Union{String, Missing}
-    timestamp::Union{DateTime, Missing}
+    guild_id::Optional{Snowflake}
+    author::Optional{User}
+    member::Optional{Member}
+    content::Optional{String}
+    timestamp::Optional{DateTime}
     edited_timestamp::Union{DateTime, Nothing, Missing}
-    tts::Union{Bool, Missing}
-    mention_everyone::Union{Bool, Missing}
-    mentions::Union{Vector{User}, Missing}
-    mention_roles::Union{Vector{Snowflake}, Missing}
-    attachments::Union{Vector{Attachment}, Missing}
-    embeds::Union{Vector{Embed}, Missing}
-    reactions::Union{Vector{Reaction}, Missing}
+    tts::Optional{Bool}
+    mention_everyone::Optional{Bool}
+    mentions::Optional{Vector{User}}
+    mention_roles::Optional{Vector{Snowflake}}
+    attachments::Optional{Vector{Attachment}}
+    embeds::Optional{Vector{Embed}}
+    reactions::Optional{Vector{Reaction}}
     nonce::Union{Snowflake, Nothing, Missing}
-    pinned::Union{Bool, Missing}
-    webhook_id::Union{Snowflake, Missing}
-    type::Union{MessageType, Missing}
-    activity::Union{MessageActivity, Missing}
-    application::Union{MessageApplication, Missing}
+    pinned::Optional{Bool}
+    webhook_id::Optional{Snowflake}
+    type::Optional{MessageType}
+    activity::Optional{MessageActivity}
+    application::Optional{MessageApplication}
 end
 @boilerplate Message :constructors :docs :lower :merge :mock

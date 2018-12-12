@@ -10,14 +10,14 @@ struct Command <: AbstractHandler{MessageCreate}
     h::Handler{MessageCreate}
     name::Symbol
     help::AbstractString
-    cooldown::Union{Period, Nothing}
+    cooldown::Nullable{Period}
     cooldowns::TTL{Snowflake, Nothing}
 
     function Command(
         h::Handler{MessageCreate},
         name::Symbol,
         help::AbstractString,
-        cooldown::Union{Period, Nothing},
+        cooldown::Nullable{Period},
     )
         return new(h, name, help, cooldown, TTL{Snowflake, Nothing}(cooldown))
     end
@@ -31,11 +31,11 @@ function Command(;
     separator::StringOrChar=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
-    cooldown::Union{Period, Nothing}=nothing,
+    cooldown::Nullable{Period}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    remaining::Union{Int, Nothing}=nothing,
-    timeout::Union{Period, Nothing}=nothing,
+    remaining::Nullable{Int}=nothing,
+    timeout::Nullable{Period}=nothing,
 )
     if !any(methods(handler)) do m
         length(m.sig.types) < 3 && return false
@@ -173,11 +173,11 @@ isexpired(c::Command) = isexpired(c.h)
         separator::StringOrChar=' ',
         pattern::Regex=defaultpattern(name, length(parsers), separator),
         allowed::Vector{<:Integer}=Snowflake[],
-        cooldown::Union{Period, Nothing}=nothing,
+        cooldown::Nullable{Period}=nothing,
         fallback::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
-        count::Union{Int, Nothing}=nothing,
-        timeout::Union{Period, Nothing}=nothing,
+        count::Nullable{Int}=nothing,
+        timeout::Nullable{Period}=nothing,
         compile::Bool=false,
         kwargs...,
     )
@@ -252,11 +252,11 @@ function add_command!(
     separator::StringOrChar=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
-    cooldown::Union{Period, Nothing}=nothing,
+    cooldown::Nullable{Period}=nothing,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    count::Union{Int, Nothing}=nothing,
-    timeout::Union{Period, Nothing}=nothing,
+    count::Nullable{Int}=nothing,
+    timeout::Nullable{Period}=nothing,
     compile::Bool=false,
     kwargs...,
 )

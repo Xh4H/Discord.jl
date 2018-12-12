@@ -8,7 +8,7 @@ struct Attachment
     size::Int
     url::String
     proxy_url::String
-    height::Union{Int, Missing}
-    width::Union{Int, Missing}
+    height::Optional{Int}
+    width::Optional{Int}
 end
 @boilerplate Attachment :constructors :docs :lower :merge :mock

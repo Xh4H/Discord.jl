@@ -184,7 +184,7 @@ end
     update_voice_state(
         c::Client,
         guild::Integer,
-        channel::Union{Integer, Nothing},
+        channel::Nullable{Integer},
         mute::Bool,
         deaf::Bool,
     ) -> Bool
@@ -196,7 +196,7 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#update
 function update_voice_state(
     c::Client,
     guild::Integer,
-    channel::Union{Integer, Nothing},
+    channel::Nullable{Integer},
     mute::Bool,
     deaf::Bool,
 )
@@ -213,8 +213,8 @@ end
 """
     update_status(
         c::Client,
-        since::Union{Int, Nothing},
-        activity::Union{Activity, Nothing},
+        since::Nullable{Int},
+        activity::Nullable{Activity},
         status::Union{PresenceStatus, AbstractString},
         afk::Bool,
     ) -> Bool
@@ -225,7 +225,7 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#update
 """
 function update_status(
     c::Client,
-    since::Union{Int, Nothing},
+    since::Nullable{Int},
     game::Union{Dict, NamedTuple, Activity, Nothing},
     status::Union{PresenceStatus, AbstractString},
     afk::Bool,

@@ -27,8 +27,8 @@ The start and stop times of an [`Activity`](@ref).
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-timestamps).
 """
 struct ActivityTimestamps
-    start::Union{DateTime, Missing}
-    stop::Union{DateTime, Missing}
+    start::Optional{DateTime}
+    stop::Optional{DateTime}
 end
 @boilerplate ActivityTimestamps :constructors :docs :lower :merge :mock
 
@@ -37,8 +37,8 @@ The current party of an [`Activity`](@ref)'s player.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-party).
 """
 struct ActivityParty
-    id::Union{String, Missing}
-    size::Union{Vector{Int}, Missing}
+    id::Optional{String}
+    size::Optional{Vector{Int}}
 end
 @boilerplate ActivityParty :constructors :docs :lower :merge :mock
 
@@ -47,10 +47,10 @@ Images and hover text for an [`Activity`](@ref).
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-assets).
 """
 struct ActivityAssets
-    large_image::Union{String, Missing}
-    large_text::Union{String, Missing}
-    small_image::Union{String, Missing}
-    small_text::Union{String, Missing}
+    large_image::Optional{String}
+    large_text::Optional{String}
+    small_image::Optional{String}
+    small_text::Optional{String}
 end
 @boilerplate ActivityAssets :constructors :docs :lower :merge :mock
 
@@ -59,9 +59,9 @@ Secrets for Rich Presence joining and spectating of an [`Activity`](@ref).
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-secrets).
 """
 struct ActivitySecrets
-    join::Union{String, Missing}
-    spectate::Union{String, Missing}
-    match::Union{String, Missing}
+    join::Optional{String}
+    spectate::Optional{String}
+    match::Optional{String}
 end
 @boilerplate ActivitySecrets :constructors :docs :lower :merge :mock
 
@@ -73,14 +73,14 @@ struct Activity
     name::String
     type::ActivityType
     url::Union{String, Nothing, Missing}
-    timestamps::Union{ActivityTimestamps, Missing}
-    application_id::Union{Snowflake, Missing}
+    timestamps::Optional{ActivityTimestamps}
+    application_id::Optional{Snowflake}
     details::Union{String, Nothing, Missing}
     state::Union{String, Nothing, Missing}
-    party::Union{ActivityParty, Missing}
-    assets::Union{ActivityAssets, Missing}
-    secrets::Union{ActivitySecrets, Missing}
-    instance::Union{Bool, Missing}
-    flags::Union{Int, Missing}
+    party::Optional{ActivityParty}
+    assets::Optional{ActivityAssets}
+    secrets::Optional{ActivitySecrets}
+    instance::Optional{Bool}
+    flags::Optional{Int}
 end
 @boilerplate Activity :constructors :docs :lower :merge :mock

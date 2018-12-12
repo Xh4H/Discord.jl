@@ -5,7 +5,7 @@ A [`Guild`](@ref) member.
 More details [here](https://discordapp.com/developers/docs/resources/guild#guild-member-object).
 """
 struct Member
-    user::Union{User, Missing}
+    user::Optional{User}
     nick::Union{String, Nothing, Missing}  # Not supposed to be nullable.
     roles::Vector{Snowflake}
     joined_at::DateTime

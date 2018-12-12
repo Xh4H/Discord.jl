@@ -268,7 +268,7 @@ function plaintext(c::Client, m::Message)
 end
 
 """
-    heartbeat_ping(c::Client) -> Union{Period, Nothing}
+    heartbeat_ping(c::Client) -> Nullable{Period}
 
 Get the [`Client`](@ref)'s ping time to the gateway. If the client is not connected, or no
 heartbeats have been sent/acknowledged, `nothing` is returned.
@@ -294,7 +294,7 @@ end
         c::Client,
         game::AbstractString;
         type::Union{ActivityType, Int}=AT_GAME,
-        since::Union{Int, Nothing}=c.presence["since"],
+        since::Nullable{Int}=c.presence["since"],
         status::Union{PresenceStatus, AbstractString}=c.presence["status"],
         afk::Bool=c.presence["afk"],
         kwargs...,
@@ -307,7 +307,7 @@ function set_game(
     c::Client,
     game::AbstractString;
     type::Union{ActivityType, Int}=AT_GAME,
-    since::Union{Int, Nothing}=c.presence["since"],
+    since::Nullable{Int}=c.presence["since"],
     status::Union{PresenceStatus, AbstractString}=c.presence["status"],
     afk::Bool=c.presence["afk"],
     kwargs...,

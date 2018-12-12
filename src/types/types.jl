@@ -80,14 +80,14 @@ function field(k::QuoteNode, ::Type{T}) where T <: Enum
     return :(kwargs[$k] isa Integer ? $T(Int(kwargs[$k])) :
              kwargs[$k] isa $T ? kwargs[$k] : $T(kwargs[$k]))
 end
-function field(k::QuoteNode, ::Type{Union{T, Missing}}) where T
+function field(k::QuoteNode, ::Type{Optional{T}}) where T
     return :(haskey(kwargs, $k) ? $(field(k, T)) : missing)
 end
-function field(k::QuoteNode, ::Type{Union{T, Nothing}}) where T
+function field(k::QuoteNode, ::Type{Nullable{T}}) where T
     return :(kwargs[$k] === nothing ? nothing : $(field(k, T)))
 end
 function field(k::QuoteNode, ::Type{Union{T, Nothing, Missing}}) where T
-    return :(haskey(kwargs, $k) ? $(field(k, Union{T, Nothing})) : missing)
+    return :(haskey(kwargs, $k) ? $(field(k, Nullable{T})) : missing)
 end
 
 # Define constructors from keyword arguments and a Dict for a type.
@@ -119,11 +119,11 @@ function doctype(s::String)
     m = match(r"Array{([^{}]+),1}", s)
     m === nothing || (s = replace(s, m.match => "Vector{$(m.captures[1])}"))
     m = match(r"Union{Missing, Nothing, (.+)}", s)
-    m === nothing || return replace(s, m.match => "Union{$(m.captures[1]), Missing, Nothing}")
+    m === nothing || return replace(s, m.match => "OptionalNullable{$(m.captures[1])}")
     m = match(r"Union{Missing, (.+)}", s)
-    m === nothing || return replace(s, m.match => "Union{$(m.captures[1]), Missing}")
+    m === nothing || return replace(s, m.match => "Optional{$(m.captures[1])}")
     m = match(r"Union{Nothing, (.+)}", s)
-    m === nothing || return replace(s, m.match => "Union{$(m.captures[1]), Nothing}")
+    m === nothing || return replace(s, m.match => "Nullable{$(m.captures[1])}")
     return s
 end
 
@@ -161,9 +161,9 @@ mock(::Type{T}; kwargs...) where T <: Integer = abs(rand(T))
 mock(::Type{T}; kwargs...) where T <: Enum = instances(T)[rand(1:length(instances(T)))]
 mock(::Type{Vector{T}}; kwargs...) where T = map(i -> mock(T; kwargs...), 1:rand(1:10))
 mock(::Type{Set{T}}; kwargs...) where T = Set(map(i -> mock(T; kwargs...), 1:rand(1:10)))
-mock(::Type{Union{T, Missing}}; kwargs...) where T = mock(T; kwargs...)
-mock(::Type{Union{T, Nothing}}; kwargs...) where T = mock(T; kwargs...)
-mock(::Type{Union{T, Missing, Nothing}}; kwargs...) where T = mock(T; kwargs...)
+mock(::Type{Optional{T}}; kwargs...) where T = mock(T; kwargs...)
+mock(::Type{Nullable{T}}; kwargs...) where T = mock(T; kwargs...)
+mock(::Type{OptionalNullable{T}}; kwargs...) where T = mock(T; kwargs...)
 
 # Define a mock method for a type.
 macro mock(T)

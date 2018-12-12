@@ -7,13 +7,13 @@ More details [here](https://discordapp.com/developers/docs/resources/user#user-o
 struct User
     id::Snowflake
     # The User inside of a Presence only needs its ID set.
-    username::Union{String, Missing}
-    discriminator::Union{String, Missing}
+    username::Optional{String}
+    discriminator::Optional{String}
     avatar::Union{String, Nothing, Missing}
-    bot::Union{Bool, Missing}
-    mfa_enabled::Union{Bool, Missing}
-    locale::Union{String, Missing}
-    verified::Union{Bool, Missing}
+    bot::Optional{Bool}
+    mfa_enabled::Optional{Bool}
+    locale::Optional{String}
+    verified::Optional{Bool}
     email::Union{String, Nothing, Missing}  # Not supposed to be nullable.
 end
 @boilerplate User :constructors :docs :lower :merge :mock

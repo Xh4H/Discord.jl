@@ -41,9 +41,9 @@ mutable struct Handler{T} <: AbstractHandler{T}
     handler::Function
     fallback::Function
     priority::Int
-    remaining::Union{Int, Nothing}
-    expiry::Union{DateTime, Nothing}
-    stopcond::Union{Function, Nothing}
+    remaining::Nullable{Int}
+    expiry::Nullable{DateTime}
+    stopcond::Nullable{Function}
     collect::Bool
     results::Vector{Any}
     chan::Channel{Vector{Any}}
@@ -53,9 +53,9 @@ mutable struct Handler{T} <: AbstractHandler{T}
         handler::Function,
         fallback::Function,
         priority::Int,
-        remaining::Union{Int, Nothing},
-        expiry::Union{DateTime, Nothing},
-        stopcond::Union{Function, Nothing},
+        remaining::Nullable{Int},
+        expiry::Nullable{DateTime},
+        stopcond::Nullable{Function},
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(
@@ -68,9 +68,9 @@ mutable struct Handler{T} <: AbstractHandler{T}
         handler::Function,
         fallback::Function,
         priority::Int,
-        remaining::Union{Int, Nothing},
+        remaining::Nullable{Int},
         expiry::Period,
-        stopcond::Union{Function, Nothing},
+        stopcond::Nullable{Function},
         collect::Bool,
     ) where T <: AbstractEvent
         return new{T}(

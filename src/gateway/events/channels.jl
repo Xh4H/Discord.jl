@@ -38,6 +38,6 @@ Sent when a [`DiscordChannel`](@ref)'s pins are updated.
 """
 struct ChannelPinsUpdate <: AbstractEvent
     channel_id::Snowflake
-    last_pin_timestamp::Union{DateTime, Nothing}
+    last_pin_timestamp::Nullable{DateTime}
 end
 @boilerplate ChannelPinsUpdate :constructors :docs :mock

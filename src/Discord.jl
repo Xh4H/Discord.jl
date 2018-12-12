@@ -14,6 +14,9 @@ const API_VERSION = 6
 const DISCORD_API = "https://discordapp.com/api"
 
 # Shortcuts for common unions.
+const Optional{T} = Union{T, Missing}
+const Nullable{T} = Union{T, Nothing}
+const OptionalNullable{T} = Union{T, Missing, Nothing}
 const StringOrChar = Union{AbstractString, AbstractChar}
 
 # Run a function with a locked lock.

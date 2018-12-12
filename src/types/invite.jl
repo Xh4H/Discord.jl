@@ -6,9 +6,9 @@ More details [here](https://discordapp.com/developers/docs/resources/invite#invi
 """
 struct Invite
     code::String
-    guild::Union{Guild, Missing}
+    guild::Optional{Guild}
     channel::DiscordChannel
-    approximate_presence_cound::Union{Int, Missing}
-    approximate_member_count::Union{Int, Missing}
+    approximate_presence_cound::Optional{Int}
+    approximate_member_count::Optional{Int}
 end
 @boilerplate Invite :constructors :docs :lower :merge :mock

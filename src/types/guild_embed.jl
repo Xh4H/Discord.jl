@@ -6,6 +6,6 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
 """
 struct GuildEmbed
     enabled::Bool
-    channel_id::Union{Snowflake, Nothing}
+    channel_id::Nullable{Snowflake}
 end
 @boilerplate GuildEmbed :constructors :docs :lower :merge :mock

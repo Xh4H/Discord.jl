@@ -5,8 +5,7 @@ CurrentModule = Discord
 # Types
 
 This page is organized in mostly-alphabetical order.
-Note that `Snowflake ===  UInt64`.
-`Union`s with `Nothing` indicate that a field is nullable, whereas `Union`s with `Missing` indicate that a field is optional.
+Note that `Snowflake ===  UInt64`, `Optional{T} === Union{T, Missing}`, `Nullable{T} === Union{T, Nothing}`, and `OptionalNullable{T} === Union{T, Missing, Nothing}`.
 More details [here](https://discordapp.com/developers/docs/reference#nullable-and-optional-resource-fields).
 
 Most of the time, you'll receive objects of these types as return values rather than creating them yourself.

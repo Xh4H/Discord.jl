@@ -5,8 +5,8 @@ const EXCEPT_TRAILING_ID_REGEX = r"(.*?)/\d+$"
 
 # A rate limit bucket for a single endpoint.
 mutable struct Bucket <: Threads.AbstractLock
-    remaining::Union{Int, Nothing}
-    reset::Union{DateTime, Nothing}  # UTC.
+    remaining::Nullable{Int}
+    reset::Nullable{DateTime}  # UTC.
     sem::Base.Semaphore
 
     Bucket() = new(nothing, nothing, Base.Semaphore(1))
@@ -15,7 +15,7 @@ end
 
 # A rate limiter for all endpoints.
 mutable struct Limiter
-    reset::Union{DateTime, Nothing}  # API-wide limit.
+    reset::Nullable{DateTime}  # API-wide limit.
     buckets::Dict{AbstractString, Bucket}
     lock::Threads.AbstractLock
 

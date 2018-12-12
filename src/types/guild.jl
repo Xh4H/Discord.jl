@@ -49,7 +49,7 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#unava
 """
 struct UnavailableGuild <: AbstractGuild
     id::Snowflake
-    unavailable::Union{Bool, Missing}
+    unavailable::Optional{Bool}
 end
 @boilerplate UnavailableGuild :constructors :docs :lower :merge :mock
 
@@ -60,37 +60,37 @@ More details [here](https://discordapp.com/developers/docs/resources/guild#guild
 struct Guild <: AbstractGuild
     id::Snowflake
     name::String
-    icon::Union{String, Nothing}
-    splash::Union{String, Nothing}
-    owner::Union{Bool, Missing}
-    owner_id::Union{Snowflake, Missing}  # Missing in Invite.
-    permissions::Union{Int, Missing}
-    region::Union{String, Missing}  # Invite
-    afk_channel_id::Union{Snowflake, Missing, Nothing}  # Invite
-    afk_timeout::Union{Int, Missing}  # Invite
-    embed_enabled::Union{Bool, Missing}
-    embed_channel_id::Union{Snowflake, Missing, Nothing}  # Not supposed to be nullable.
+    icon::Nullable{String}
+    splash::Nullable{String}
+    owner::Optional{Bool}
+    owner_id::Optional{Snowflake}  # Missing in Invite.
+    permissions::Optional{Int}
+    region::Optional{String}  # Invite
+    afk_channel_id::OptionalNullable{Snowflake}  # Invite
+    afk_timeout::Optional{Int}  # Invite
+    embed_enabled::Optional{Bool}
+    embed_channel_id::OptionalNullable{Snowflake}  # Not supposed to be nullable.
     verification_level::VerificationLevel
-    default_message_notifications::Union{MessageNotificationLevel, Missing}  # Invite
-    explicit_content_filter::Union{ExplicitContentFilterLevel, Missing}  # Invite
-    roles::Union{Vector{Role}, Missing}  # Invite
-    emojis::Union{Vector{Emoji}, Missing}  # Invite
+    default_message_notifications::Optional{MessageNotificationLevel}  # Invite
+    explicit_content_filter::Optional{ExplicitContentFilterLevel}  # Invite
+    roles::Optional{Vector{Role}}  # Invite
+    emojis::Optional{Vector{Emoji}}  # Invite
     features::Vector{String}
-    mfa_level::Union{MFALevel, Missing}  # Invite
-    application_id::Union{Snowflake, Missing, Nothing}  # Invite
-    widget_enabled::Union{Bool, Missing}
-    widget_channel_id::Union{Snowflake, Missing, Nothing}  # Not supposed to be nullable.
-    system_channel_id::Union{Snowflake, Missing, Nothing}  # Invite
-    joined_at::Union{DateTime, Missing}
-    large::Union{Bool, Missing}
-    unavailable::Union{Bool, Missing}
-    member_count::Union{Int, Missing}
-    voice_states::Union{Vector{VoiceState}, Missing}
-    members::Union{Vector{Member}, Missing}
-    channels::Union{Vector{DiscordChannel}, Missing}
-    presences::Union{Vector{Presence}, Missing}
-    djl_users::Union{Set{Snowflake}, Missing}
-    djl_channels::Union{Set{Snowflake}, Missing}
+    mfa_level::Optional{MFALevel}  # Invite
+    application_id::OptionalNullable{Snowflake}  # Invite
+    widget_enabled::Optional{Bool}
+    widget_channel_id::OptionalNullable{Snowflake}  # Not supposed to be nullable.
+    system_channel_id::OptionalNullable{Snowflake}  # Invite
+    joined_at::Optional{DateTime}
+    large::Optional{Bool}
+    unavailable::Optional{Bool}
+    member_count::Optional{Int}
+    voice_states::Optional{Vector{VoiceState}}
+    members::Optional{Vector{Member}}
+    channels::Optional{Vector{DiscordChannel}}
+    presences::Optional{Vector{Presence}}
+    djl_users::Optional{Set{Snowflake}}
+    djl_channels::Optional{Set{Snowflake}}
 end
 @boilerplate Guild :constructors :docs :lower :merge :mock
 

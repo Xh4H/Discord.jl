@@ -89,21 +89,21 @@ shards that are created. See the
 for more details.
 """
 mutable struct Client
-    token::String                # Bot token, always with a leading "Bot ".
-    hb_interval::Int             # Milliseconds between heartbeats.
-    hb_seq::Union{Int, Nothing}  # Sequence value sent by Discord for resuming.
-    last_hb::DateTime            # Last heartbeat send.
-    last_ack::DateTime           # Last heartbeat ack.
-    version::Int                 # Discord API version.
-    state::State                 # Client state, cached data, etc.
-    shards::Int                  # Number of shards in use.
-    shard::Int                   # Client's shard index.
-    limiter::Limiter             # Rate limiter.
-    ready::Bool                  # Client is connected and authenticated.
-    use_cache::Bool              # Whether or not to use the cache.
-    presence::Dict               # Default presence options.
-    conn::Conn                   # WebSocket connection.
-    p_global::String             # Default command prefix.
+    token::String          # Bot token, always with a leading "Bot ".
+    hb_interval::Int       # Milliseconds between heartbeats.
+    hb_seq::Nullable{Int}  # Sequence value sent by Discord for resuming.
+    last_hb::DateTime      # Last heartbeat send.
+    last_ack::DateTime     # Last heartbeat ack.
+    version::Int           # Discord API version.
+    state::State           # Client state, cached data, etc.
+    shards::Int            # Number of shards in use.
+    shard::Int             # Client's shard index.
+    limiter::Limiter       # Rate limiter.
+    ready::Bool            # Client is connected and authenticated.
+    use_cache::Bool        # Whether or not to use the cache.
+    presence::Dict         # Default presence options.
+    conn::Conn             # WebSocket connection.
+    p_global::String       # Default command prefix.
     p_guilds::Dict{Snowflake, String}  # Command prefix overrides.
     handlers::Dict{Type{<:AbstractEvent}, Dict{Symbol, AbstractHandler}}  # Event handlers.
 
@@ -160,7 +160,7 @@ function Base.show(io::IO, c::Client)
 end
 
 """
-    me(c::Client) -> Union{User, Nothing}
+    me(c::Client) -> Nullable{User}
 
 Get the [`Client`](@ref)'s bot user.
 """
@@ -193,13 +193,13 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         predicate::Function=alwaystrue,
         fallback::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
-        count::Union{Int, Nothing}=nothing,
-        timeout::Union{Period, Nothing}=nothing,
-        until::Union{Function, Nothing}=nothing,
+        count::Nullable{Int}=nothing,
+        timeout::Nullable{Period}=nothing,
+        until::Nullable{Function}=nothing,
         wait::Bool=false,
         compile::Bool=false,
         kwargs...,
-    ) -> Union{Vector{Any}, Nothing}
+    ) -> Nullable{Vector{Any}}
 
 Add an event handler. `do` syntax is also accepted.
 
@@ -265,9 +265,9 @@ function add_handler!(
     predicate::Function=alwaystrue,
     fallback::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
-    count::Union{Int, Nothing}=nothing,
-    timeout::Union{Period, Nothing}=nothing,
-    until::Union{Function, Nothing}=nothing,
+    count::Nullable{Int}=nothing,
+    timeout::Nullable{Period}=nothing,
+    until::Nullable{Function}=nothing,
     wait::Bool=false,
     compile::Bool=false,
     kwargs...,

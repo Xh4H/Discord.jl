@@ -27,7 +27,7 @@ it will appear as an `UnknownEvent`. The fields follow the schema defined
 struct UnknownEvent <: AbstractEvent
     t::String
     d::Dict{Symbol, Any}
-    s::Union{Int, Nothing}
+    s::Nullable{Int}
 end
 @boilerplate UnknownEvent :mock
 UnknownEvent(; kwargs...) = UnknownEvent(kwargs[:t], kwargs[:d], kwargs[:s])

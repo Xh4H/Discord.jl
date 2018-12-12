@@ -24,9 +24,9 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#presen
 """
 struct Presence
     user::User
-    roles::Union{Vector{Snowflake}, Missing}
-    game::Union{Activity, Nothing}
-    guild_id::Union{Snowflake, Missing}
+    roles::Optional{Vector{Snowflake}}
+    game::Nullable{Activity}
+    guild_id::Optional{Snowflake}
     status::PresenceStatus
     activities::Vector{Activity}
 end

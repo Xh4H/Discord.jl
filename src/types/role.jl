@@ -7,11 +7,11 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#ro
 struct Role
     id::Snowflake
     name::String
-    color::Union{Int, Missing}  # These fields are missing in audit log entries.
-    hoist::Union{Bool, Missing}
-    position::Union{Int, Missing}
-    permissions::Union{Int, Missing}
-    managed::Union{Bool, Missing}
-    mentionable::Union{Bool, Missing}
+    color::Optional{Int}  # These fields are missing in audit log entries.
+    hoist::Optional{Bool}
+    position::Optional{Int}
+    permissions::Optional{Int}
+    managed::Optional{Bool}
+    mentionable::Optional{Bool}
 end
 @boilerplate Role :constructors :docs :lower :merge :mock

@@ -3,10 +3,10 @@ A [`User`](@ref)'s voice connection status.
 More details [here](https://discordapp.com/developers/docs/resources/voice#voice-state-object).
 """
 struct VoiceState
-    guild_id::Union{Snowflake, Missing}
-    channel_id::Union{Snowflake, Nothing}
+    guild_id::Optional{Snowflake}
+    channel_id::Nullable{Snowflake}
     user_id::Snowflake
-    member::Union{Member, Missing}
+    member::Optional{Member}
     session_id::String
     deaf::Bool
     mute::Bool

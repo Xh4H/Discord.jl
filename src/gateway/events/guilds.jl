@@ -107,7 +107,7 @@ struct GuildMemberUpdate <: AbstractEvent
     guild_id::Snowflake
     roles::Vector{Snowflake}
     user::User
-    nick::Union{String, Nothing}  # Not supposed to be nullable.
+    nick::Nullable{String}  # Not supposed to be nullable.
 end
 @boilerplate GuildMemberUpdate :constructors :docs :mock
 

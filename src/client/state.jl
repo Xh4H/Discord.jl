@@ -98,7 +98,7 @@ mutable struct State
     v::Int                                 # Discord API version.
     session_id::String                     # Gateway session ID.
     _trace::Vector{String}                 # Servers (not guilds) connected to.
-    user::Union{User, Nothing}             # Bot user.
+    user::Nullable{User}                   # Bot user.
     guilds::Store                          # Guild ID -> guild.
     channels::Store                        # Channel ID -> channel.
     users::Store                           # User ID -> user.

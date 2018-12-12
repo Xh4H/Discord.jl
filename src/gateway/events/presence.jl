@@ -17,7 +17,7 @@ Sent when a [`User`](@ref) begins typing.
 """
 struct TypingStart <: AbstractEvent
     channel_id::Snowflake
-    guild_id::Union{Snowflake, Missing}
+    guild_id::Optional{Snowflake}
     user_id::Snowflake
     timestamp::DateTime
 end

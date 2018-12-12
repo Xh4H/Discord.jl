@@ -76,12 +76,12 @@ API endpoint returns a `Future` which will contain a value of this type. To retr
 `Response` from the `Future`, use `fetch`. See also: [`fetchval`](@ref).
 
 ## Fields
-- `val::Union{T, Nothing}`: The object contained in the HTTP response. For example, for a
+- `val::Nullable{T}`: The object contained in the HTTP response. For example, for a
   call to [`get_channel_message`](@ref), this value will be a [`Message`](@ref).
 - `ok::Bool`: The state of the request. If `true`, then it is safe to access `val`.
-- `http_response::Union{HTTP.Messages.Response, Nothing}`: The underlying HTTP response, if
+- `http_response::Nullable{HTTP.Messages.Response}`: The underlying HTTP response, if
   a request was made.
-- `exception::Union{Exception, Nothing}`: The caught exception, if one is thrown.
+- `exception::Nullable{Exception}`: The caught exception, if one is thrown.
 
 ## Examples
 Multiple API calls which immediately return `Future`s and can be awaited:
@@ -96,10 +96,10 @@ guild = fetchval(create_guild(c; name="foo"))
 ```
 """
 struct Response{T}
-    val::Union{T, Nothing}
+    val::Nullable{T}
     ok::Bool
-    http_response::Union{HTTP.Messages.Response, Nothing}
-    exception::Union{Exception, Nothing}
+    http_response::Nullable{HTTP.Messages.Response}
+    exception::Nullable{Exception}
 end
 
 # HTTP response with no body.
@@ -218,7 +218,7 @@ Base.eltype(::Response{T}) where T = T
 Base.eltype(::Type{Response{T}}) where T = T
 
 """
-    fetchval(f::Future{Response{T}}) -> Union{T, Nothing}
+    fetchval(f::Future{Response{T}}) -> Nullable{T}
 
 Shortcut for `fetch(f).val`: Fetch a [`Response`](@ref) and return its value. Note that
 there are no guarantees about the response's success and the value being returned, and it

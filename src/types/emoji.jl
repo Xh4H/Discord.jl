@@ -5,12 +5,12 @@ An emoji.
 More details [here](https://discordapp.com/developers/docs/resources/emoji#emoji-object).
 """
 struct Emoji
-    id::Union{Snowflake, Nothing}
+    id::Nullable{Snowflake}
     name::String
-    roles::Union{Vector{Snowflake}, Missing}
-    user::Union{User, Missing}
-    require_colons::Union{Bool, Missing}
-    managed::Union{Bool, Missing}
-    animated::Union{Bool, Missing}
+    roles::Optional{Vector{Snowflake}}
+    user::Optional{User}
+    require_colons::Optional{Bool}
+    managed::Optional{Bool}
+    animated::Optional{Bool}
 end
 @boilerplate Emoji :constructors :docs :lower :merge :mock
