@@ -4,7 +4,7 @@ export handler_cached,
     mandatory
 
 using Discord
-using Discord: locked, logkws
+using Discord: logkws, withsem
 using Setfield
 
 function mandatory(c::Client, e::Ready)
@@ -136,7 +136,7 @@ function handler(c::Client, e::MessageReactionAdd)
 end
 
 function handler(c::Client, e::MessageReactionRemove)
-    locked(c.state.lock) do
+    withsem(c.state.sem) do
         haskey(c.state.messages, e.message_id) || return
         ismissing(c.state.messages[e.message_id].reactions) && return
 
@@ -165,7 +165,7 @@ function handler(c::Client, e::MessageReactionRemoveAll)
     haskey(c.state.messages, e.message_id) || return
     ismissing(c.state.messages[e.message_id].reactions) && return
 
-    locked(c.state.lock) do
+    withsem(c.state.sem) do
         empty!(c.state.messages[e.message_id].reactions)
     end
 

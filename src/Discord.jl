@@ -24,10 +24,10 @@ donothing(args...; kwargs...) = nothing
 alwaystrue(args...; kwargs...) = true
 alwaysfalse(args...; kwargs...) = false
 
-# Run a function with a locked lock.
-function locked(f::Function, x::Threads.AbstractLock)
-    lock(x)
-    try f() finally unlock(x) end
+# Run a function with an acquired semaphore.
+function withsem(f::Function, s::Base.Semaphore)
+    Base.acquire(s)
+    try f() finally Base.release(s) end
 end
 
 # Precompile all methods of a function, running it if force is set.

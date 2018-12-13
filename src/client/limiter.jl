@@ -14,7 +14,18 @@ mutable struct JobQueue
         q = new(nothing, nothing, Channel{Function}(Inf), Channel{Function}(Inf))
 
         @async while true
-            f = take!(isready(q.retries) ? q.retries : q.jobs)  # Get a job by priority.
+            # Get a job, prioritizing retries. This is really ugly.
+            local f = nothing
+            while true
+                if isready(q.retries)
+                    f = take!(q.retries)
+                    break
+                elseif isready(q.jobs)
+                    f = take!(q.jobs)
+                    break
+                end
+                sleep(Millisecond(10))
+            end
 
             # Wait for any existing rate limits.
             n = now(UTC)
@@ -25,12 +36,19 @@ mutable struct JobQueue
             # Run the job, and get the HTTP response.
             r = f()
 
-            if r.status == 429
+            if r === nothing
+                # Exception from the HTTP request itself, nothing to do.
+                continue
+            elseif r.status == 429
                 # Update the rate limiter with the response body.
                 n = now(UTC)
+                q.remaining = 0
                 d = JSON.parse(String(copy(r.body)))
+                reset = n + Millisecond(get(d, "retry_after", 0))
                 if get(d, "global", false)
-                    limiter.reset = n + Millisecond(get(d, "retry_after", 0))
+                    limiter.reset = reset
+                else
+                    q.reset = reset
                 end
 
                 # Requeue the job with high priority.
@@ -52,17 +70,17 @@ end
 mutable struct Limiter
     reset::Nullable{DateTime}  # API-wide limit.
     queues::Dict{String, JobQueue}
-    lock::Threads.SpinLock
+    sem::Base.Semaphore
 
     function Limiter()
-        new(nothing, Dict(), Threads.SpinLock())
+        new(nothing, Dict(), Base.Semaphore(1))
     end
 end
 
 # Schedule a job.
 function enqueue!(f::Function, l::Limiter, method::Symbol, endpoint::AbstractString)
     endpoint = parse_endpoint(endpoint, method)
-    locked(l.lock) do
+    withsem(l.sem) do
         haskey(l.queues, endpoint) || (l.queues[endpoint] = JobQueue(l))
     end
     put!(l.queues[endpoint].jobs, f)

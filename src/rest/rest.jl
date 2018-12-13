@@ -200,7 +200,6 @@ function Response{T}(
                 # Store the successful Response to the Future.
                 put!(f, r)
             catch e
-                # Otherwise, we have a real error.
                 kws = logkws(c; conn=undef, exception=(e, catch_backtrace()))
                 @error "Creating response failed" kws...
                 put!(f, Response{T}(nothing, false, http_r, e))

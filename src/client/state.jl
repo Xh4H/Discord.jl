@@ -105,7 +105,7 @@ mutable struct State
     messages::Store                        # Message ID -> message.
     presences::Dict{Snowflake, Store}      # Guild ID -> user ID -> presence.
     members::Dict{Snowflake, Store}        # Guild ID -> member ID -> member.
-    lock::Threads.SpinLock                 # Internal lock.
+    sem::Base.Semaphore                    # Internal mutex.
     strats::Dict{DataType, CacheStrategy}  # Caching strategies per type.
 end
 
@@ -121,7 +121,7 @@ function State(strats::Dict{DataType, <:CacheStrategy})
         Store(strats[Message], Message),                # messages
         Dict(),              # presences
         Dict(),              # members
-        Threads.SpinLock(),  # lock
+        Base.Semaphore(1),   # sem
         strats,              # strats
     )
 end
@@ -328,7 +328,7 @@ function Base.put!(s::State, e::Emoji; kwargs...)
     user = kwargs[:user]
     haskey(s.messages, message) || return e
 
-    locked(s.lock) do
+    withsem(s.sem) do
         m = s.messages[message]
         isclient = !ismissing(s.user) && s.user.id == user
         if ismissing(m.reactions)
