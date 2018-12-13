@@ -173,7 +173,7 @@ macro mock(T)
             types = map(TT -> fieldtype($(esc(T)), TT), names)
             args = Vector{Any}(undef, length(names))
             for (i, (n, t)) in enumerate(zip(names, types))
-                args[i] = haskey(kwargs, n) ? kwargs[n] : mock(t)
+                args[i] = haskey(kwargs, n) ? kwargs[n] : mock(t; kwargs...)
             end
             return $(esc(T))(args...)
         end

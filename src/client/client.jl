@@ -187,7 +187,7 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
 """
     add_handler!(
         c::Client,
-        T::Type{<:AbstractEvent},
+        [T::Type{<:AbstractEvent}],
         handler::Function;
         tag::Symbol=gensym(),
         predicate::Function=alwaystrue,
@@ -195,7 +195,7 @@ disable_cache!(f::Function, c::Client) = set_cache(f, c, false)
         priority::Int=$DEFAULT_PRIORITY,
         count::Nullable{Int}=nothing,
         timeout::Nullable{Period}=nothing,
-        until::Nullable{Function}=nothing,
+        until::Function=alwaysfalse,
         wait::Bool=false,
         compile::Bool=false,
         kwargs...,
@@ -205,7 +205,10 @@ Add an event handler. `do` syntax is also accepted.
 
 ### Handler Function
 The handler function does the real work and must take two arguments: A [`Client`](@ref) and
-an [`AbstractEvent`](@ref) (or a subtype).
+an [`AbstractEvent`](@ref) (or a subtype). If an event type `T` is supplied, then the
+handler is registered for that event. Otherwise, the second argument of the handler
+must be annotated, and the type annotation determines what events will invoke the
+handler. `Union` types are also accepted to register handlers for multiple events.
 
 ### Handler Tag
 The `tag` keyword gives a label to the handler, which can be used to remove it with
@@ -224,7 +227,8 @@ same event. Handlers with higher values execute before those with lower ones.
 Handlers can have multiple types of expiries. The `count` keyword sets the number of times
 a handler is run before expiring. The `timeout` keyword determines how long the handler
 remains active. The `until` keyword takes a function which is called on the handler's
-previous results (in a `Vector`), and if it returns `true`, the handler expires.
+previous results (in a `Vector`), and if it returns `true`, the handler expires. These
+keywords can be combined; the first condition to be met causes the handler to expire.
 
 ### Blocking Handlers + Result Collection
 To collect results from a handler, set the `wait` keyword along with `n`, `timeout`, and/or
@@ -235,28 +239,88 @@ each invocation is returned in a `Vector`.
 Handler functions are precompiled without running them, but it's not always
 successful, especially if your functions are not type-safe. If the `compile` keyword is
 set, precompilation is forced by running the predicate and handler on a randomized input.
-Any trailing keywords are passed to the input event constructor.
+Any trailing keywords are passed to the constructors of the event and its fields.
 
 ## Examples
-Adding a handler with a timed expiry and tag:
+Basic "hello world" with explicit event type:
 ```julia
-add_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))
+add_handler!(c, MessageCreate, (c, e) -> println(e.message.content); tag=:print)
 ```
-Adding a handler with a predicate and `do` syntax:
+Adding a handler with a predicate and fallback:
 ```julia
-add_handler!(c, ChannelCreate; predicate=(c, e) -> length(e.channel.name) < 10) do c, e
-    println(e.channel.name)
-end
+handler(::Client, e::ChannelCreate) = println(e.channel.name)
+predicate(::Client, e::ChannelCreate) = length(e.channel.name) < 10
+fallback(::Client, ::ChannelCreate) = println("channel name too long")
+add_handler!(c, handler; predicate=predicate, fallback=fallback)
 ```
-Aggregating results of a handler with a counting expiry:
+Assigning maximum priority to a handler:
 ```julia
-msgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; count=5, wait=true)
+handler(:::Client, ::MessageCreate) = println("this runs before any other handlers!")
+add_handler!(c, handler; priority=typemax(Int))
 ```
-Forcing precompilation and assigning a low priority:
+Adding a handler with various expiry conditions:
 ```julia
-add_handler!(c, MessageDelete, (c, e) -> @show e; priority=-10, compile=true, id=0xff)
+handler(::Client, e::ChannelCreate) = e.channel.name
+until(results::Vector{Any}) = "foo" in results
+add_handler!(c, handler; count=10, timeout=Minute(1), until=until)
+```
+Aggregating results of a handler:
+```julia
+handler(::Client, e::MessageCreate) = e.message.content
+msgs = add_handler!(c, handler; count=5, wait=true)
+```
+Forcing precompilation:
+```julia
+handler(::Client, e::MessageDelete) = @show e
+add_handler!(c, handler; compile=true, id=0xff)
 ```
 """
+function add_handler!(
+    c::Client,
+    handler::Function;
+    tag::Symbol=gensym(),
+    predicate::Function=alwaystrue,
+    fallback::Function=donothing,
+    priority::Int=DEFAULT_PRIORITY,
+    count::Nullable{Int}=nothing,
+    timeout::Nullable{Period}=nothing,
+    until::Function=alwaysfalse,
+    wait::Bool=false,
+    compile::Bool=false,
+    kwargs...,
+)
+    sigs = map(m -> m.sig.types[2:end], methods(handler).ms)
+    Ts = vcat(map(T -> T isa Union ? [T.a, T.b] : [T], map(last, sigs))...)
+
+    if isempty(Ts)
+        throw(ArgumentError("Must specify at least one event type"))
+    elseif length(Ts) > 1 && wait
+        throw(ArgumentError("Can only wait for one event type at a time"))
+    elseif any(s -> length(s) !== 2, sigs)
+        throw(ArgumentError("Handlers must only accept 2 arguments"))
+    elseif any(s -> s[1] !== Client, sigs)
+        throw(ArgumentError("First argument to handler must be a Client"))
+    elseif !all(s -> s[2] <: AbstractEvent, sigs)
+        throw(ArgumentError("Second argument to handler must be <: AbstractEvent"))
+    end
+
+    wait && return add_handler!(
+        c, Ts[1], handler;
+        tag=tag, predicate=predicate, fallback=fallback, priority=priority,
+        count=count, timeout=timeout, until=until, wait=wait,
+        compile=compile, kwargs...,
+    )
+
+    for T in Ts
+        add_handler!(
+            c, T, handler;
+            tag=tag, predicate=predicate, fallback=fallback, priority=priority,
+            count=count, timeout=timeout, until=until, wait=wait,
+            compile=compile, kwargs...,
+        )
+    end
+end
+
 function add_handler!(
     c::Client,
     T::Type{<:AbstractEvent},
@@ -267,13 +331,20 @@ function add_handler!(
     priority::Int=DEFAULT_PRIORITY,
     count::Nullable{Int}=nothing,
     timeout::Nullable{Period}=nothing,
-    until::Nullable{Function}=nothing,
+    until::Function=alwaysfalse,
     wait::Bool=false,
     compile::Bool=false,
     kwargs...,
 )
+    if wait && !isopen(c)
+        throw(ArgumentError("Can't wait for a handler with a disconnected Client"))
+    elseif wait && T isa Union
+        throw(ArgumentError("Can only wait for one event at a time"))
+    elseif wait && all(isequal(nothing), [count, timeout, until])
+        throw(ArgumentError("Can't wait for a handler with no expiry"))
+    end
+
     if T isa Union
-        wait && throw(ArgumentError("Can only wait for one event at a time"))
         add_handler!(
             c, T.a, handler;
             tag=tag, predicate=predicate, fallback=fallback, priority=priority,
@@ -287,18 +358,15 @@ function add_handler!(
         return
     end
 
-    if wait && all(x -> x === nothing, [count, timeout, until])
-        throw(ArgumentError("Can't wait for a handler with no expiry"))
-    end
-
-    col = wait || until isa Function
+    col = wait || until !== alwaysfalse
     h = Handler{T}(predicate, handler, fallback, priority, count, timeout, until, col)
     puthandler!(c, h, tag, compile; kwargs...)
 
     return wait ? take!(h) : nothing
 end
 
-function add_handler!(handler::Function, c::Client, T::Type{<:AbstractEvent}; kwargs...)
+add_handler!(handler::Function, c::Client; kwargs...) = add_handler!(c, handler; kwargs...)
+function add_handler!(handler::Function, c::Client, T::Type{<:AbstractEvent}, kwargs...)
     return add_handler!(c, T, handler; kwargs...)
 end
 
@@ -306,7 +374,8 @@ end
     add_handler!(c::Client, m::Module; kwargs...)
 
 Add all of the event handlers defined in a module. Any function you wish to use as a
-handler must be exported. Only functions with correct type signatures (see above) are used.
+handler must be exported. Only functions with correct, annotated type signatures (see
+above) are used.
 
 !!! note
     If you set keywords, they are applied to all of the handlers in the module. For
