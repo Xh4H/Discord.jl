@@ -128,7 +128,9 @@ Base.show(io::IO, c::DiscordChannel) = print(io,"<#$(c.id)>")
 Base.show(io::IO, r::Role) = print(io, "<@&$(r.id)>")
 Base.show(io::IO, u::User) = print(io, "<@$(u.id)>")
 function Base.show(io::IO, m::Member)
-    if ismissing(m.nick) || m.nick === nothing
+    if ismissing(m.user)
+        print(io, something(coalesce(m.nick, "<unknown member>"), "<unknown member>"))
+    elseif ismissing(m.nick) || m.nick === nothing
         show(io, m.user)
     else
         print(io, "<@!$(m.user.id)>")

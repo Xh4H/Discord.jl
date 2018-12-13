@@ -9,9 +9,8 @@ export Splat,
 struct Command <: AbstractHandler{MessageCreate}
     h::Handler{MessageCreate}
     name::Symbol
-    help::AbstractString
-    cooldown::Nullable{Period}
-    cooldowns::TTL{Snowflake, Nothing}
+    help::String
+    cooldowns::Nullable{TTL{Snowflake, Nothing}}
 
     function Command(
         h::Handler{MessageCreate},
@@ -19,7 +18,8 @@ struct Command <: AbstractHandler{MessageCreate}
         help::AbstractString,
         cooldown::Nullable{Period},
     )
-        return new(h, name, help, cooldown, TTL{Snowflake, Nothing}(cooldown))
+        cds = cooldown === nothing ? nothing : TTL{Snowflake, Nothing}(cooldown)
+        return new(h, name, help, cds)
     end
 end
 

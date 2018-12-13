@@ -53,7 +53,7 @@ struct CacheFilter <: CacheStrategy
 end
 
 # A dict-like object with a caching strategy.
-struct Store{D, S <: CacheStrategy}
+struct Store{D <: AbstractDict, S <: CacheStrategy}
     data::D
     strat::S
 
@@ -82,9 +82,9 @@ Base.empty!(s::Store) = (empty!(s.data); s)
 Base.filter!(f, s::Store) = (filter!(s.data); s)
 Base.setindex!(s::Store, value, key) = (setindex!(s.data, value, key); s)
 
-Base.touch(s::Store{D, CacheTTL}, key) where D = touch(s.data, key)
-Base.setindex!(s::Store{D, CacheNever}, value, key) where D = s
-function Base.setindex!(s::Store{D, CacheFilter}, value, key) where D
+Base.touch(s::Store{<:AbstractDict, CacheTTL}, key) = touch(s.data, key)
+Base.setindex!(s::Store{<:AbstractDict, CacheNever}, value, key) = s
+function Base.setindex!(s::Store{<:AbstractDict, CacheFilter}, value, key)
     try
         s.strat.f(value) === true && setindex!(s.data, value, key)
     catch
