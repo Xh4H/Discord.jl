@@ -42,24 +42,24 @@ mutable struct JobQueue
             elseif r.status == 429
                 # Update the rate limiter with the response body.
                 n = now(UTC)
-                q.remaining = 0
                 d = JSON.parse(String(copy(r.body)))
                 reset = n + Millisecond(get(d, "retry_after", 0))
                 if get(d, "global", false)
                     limiter.reset = reset
                 else
+                    q.remaining = 0
                     q.reset = reset
                 end
 
                 # Requeue the job with high priority.
                 put!(q.retries, f)
+            else
+                # Update the rate limiter with the response headers.
+                rem = HTTP.header(r, "X-RateLimit-Remaining")
+                isempty(rem) || (q.remaining = parse(Int, rem))
+                res = HTTP.header(r, "X-RateLimit-Reset")
+                isempty(res) || (q.reset = unix2datetime(parse(Int, res)))
             end
-
-            # Update the rate limiter with the response headers.
-            rem = HTTP.header(r, "X-RateLimit-Remaining")
-            isempty(rem) || (q.remaining = parse(Int, rem))
-            res = HTTP.header(r, "X-RateLimit-Reset")
-            isempty(res) || (q.reset = unix2datetime(parse(Int, res)))
         end
 
         return q
@@ -72,9 +72,7 @@ mutable struct Limiter
     queues::Dict{String, JobQueue}
     sem::Base.Semaphore
 
-    function Limiter()
-        new(nothing, Dict(), Base.Semaphore(1))
-    end
+    Limiter() = new(nothing, Dict(), Base.Semaphore(1))
 end
 
 # Schedule a job.
