@@ -267,7 +267,7 @@ function heartbeat_loop(c::Client)
         @debug "Heartbeat loop exited" logkws(c; conn=v)...
     catch e
         kws = logkws(c; conn=v, exception=(e, catch_backtrace()))
-        @error "Heartbeat loop exited unexpectedly" kws...
+        @warn "Heartbeat loop exited unexpectedly" kws...
     end
 end
 
@@ -292,7 +292,7 @@ function read_loop(c::Client)
         @debug "Read loop exited" logkws(c; conn=v)...
     catch e
         kws = logkws(c; conn=v, exception=(e, catch_backtrace()))
-        @error "Read loop exited unexpectedly" kws...
+        @warn "Read loop exited unexpectedly" kws...
         c.ready && reconnect(c; zombie=true)
     end
 end
@@ -330,7 +330,7 @@ function dispatch(c::Client, data::Dict)
                 predicate(h)(c, evt) === true
             catch e
                 kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                @error "Predicate function threw an exception" kws...
+                @warn "Predicate function threw an exception" kws...
                 return  # Don't run the handler or the fallback.
             end
 
@@ -344,7 +344,7 @@ function dispatch(c::Client, data::Dict)
                         fb = true
                     else
                         kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                        @error "Handler function threw an exception" kws...
+                        @warn "Handler function threw an exception" kws...
                     end
                 end
             end
@@ -354,7 +354,7 @@ function dispatch(c::Client, data::Dict)
                     fallback(h)(c, evt)
                 catch e
                     kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                    @error "Fallback function threw an exception" kws...
+                    @warn "Fallback function threw an exception" kws...
                 end
             end
         end

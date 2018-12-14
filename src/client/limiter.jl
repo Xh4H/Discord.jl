@@ -10,7 +10,7 @@ mutable struct JobQueue
     jobs::Channel{Function}  # These functions must return an HTTP response.
     retries::Channel{Function}  # Jobs which must be retried (higher priority).
 
-    function JobQueue(limiter)
+    function JobQueue(endpoint::String, limiter)
         q = new(nothing, nothing, Channel{Function}(Inf), Channel{Function}(Inf))
 
         @async while true
@@ -28,10 +28,19 @@ mutable struct JobQueue
             end
 
             # Wait for any existing rate limits.
+            # TODO: Having the shard index would be nice for logging here.
             n = now(UTC)
-            limiter.reset !== nothing && n < limiter.reset && sleep(limiter.reset - n)
+            if limiter.reset !== nothing && n < limiter.reset
+                time = limiter.reset - n
+                @debug "Waiting for global rate limit" time=now() sleep=time
+                sleep(time)
+            end
             n = now(UTC)
-            q.remaining == 0 && q.reset !== nothing && n < q.reset && sleep(q.reset - n)
+            if q.remaining == 0 && q.reset !== nothing && n < q.reset
+                time = q.reset - n
+                @debug "Waiting for rate limit" time=now() endpoint=endpoint sleep=time
+                sleep(time)
+            end
 
             # Run the job, and get the HTTP response.
             r = f()
@@ -79,7 +88,7 @@ end
 function enqueue!(f::Function, l::Limiter, method::Symbol, endpoint::AbstractString)
     endpoint = parse_endpoint(endpoint, method)
     withsem(l.sem) do
-        haskey(l.queues, endpoint) || (l.queues[endpoint] = JobQueue(l))
+        haskey(l.queues, endpoint) || (l.queues[endpoint] = JobQueue(endpoint, l))
     end
     put!(l.queues[endpoint].jobs, f)
 end
