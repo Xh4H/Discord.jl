@@ -3,7 +3,7 @@ using Discord
 
 makedocs(;
     modules=[Discord],
-    format=:html,
+    format=Documenter.HTML(),
     pages=[
         "Home"     => "index.md",
         "Client"   => "client.md",
@@ -23,8 +23,4 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/PurgePJ/Discord.jl",
-    target="build",
-    julia="1.0",
-    deps=nothing,
-    make=nothing,
 )

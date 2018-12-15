@@ -8,7 +8,6 @@ CurrentModule = Discord
 Permission
 has_permission
 permissions_in
-mention
 reply
 split_message
 plaintext

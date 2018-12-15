@@ -152,7 +152,7 @@ Reply (send a message to the same [`DiscordChannel`](@ref)) to a [`Message`](@re
 If `at` is set, then the message is prefixed with the sender's mention.
 """
 function reply(c::Client, m::Message, content::AbstractString; at::Bool=false)
-    at && !ismissing(m.author) && (content = string(m.author) * " " * content)
+    at && !ismissing(m.author) && (content = string(m.author, " ", content))
     return create_message(c, m.channel_id; content=content)
 end
 
