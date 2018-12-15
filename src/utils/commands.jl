@@ -11,15 +11,23 @@ struct Command <: AbstractHandler{MessageCreate}
     name::Symbol
     help::String
     cooldowns::Nullable{TTL{Snowflake, Nothing}}
+    fb_parsers::Function
+    fb_allowed::Function
+    fb_permissions::Function
+    fb_cooldown::Function
 
     function Command(
         h::Handler{MessageCreate},
         name::Symbol,
         help::AbstractString,
         cooldown::Nullable{Period},
+        fb_parsers::Function,
+        fb_allowed::Function,
+        fb_permissions::Function,
+        fb_cooldown::Function,
     )
         cds = cooldown === nothing ? nothing : TTL{Snowflake, Nothing}(cooldown)
-        return new(h, name, help, cds)
+        return new(h, name, help, cds, fb_parsers, fb_allowed, fb_permissions, fb_cooldown)
     end
 end
 
@@ -31,57 +39,65 @@ function Command(;
     separator::StringOrChar=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
+    permissions::Integer=PERM_NONE,
     cooldown::Nullable{Period}=nothing,
-    fallback::Function=donothing,
+    fallback_parsers::Function=donothing,
+    fallback_allowed::Function=donothing,
+    fallback_permissions::Function=donothing,
+    fallback_cooldown::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
     remaining::Nullable{Int}=nothing,
     timeout::Nullable{Period}=nothing,
 )
-    if !any(methods(handler)) do m
+    fbs = [fallback_parsers, fallback_allowed, fallback_permissions, fallback_cooldown]
+    if any(f -> !hasmethod(f, (Client, Message)), fbs)
+        throw(ArgumentError("Fallback handlers must accept (::Client, Message)"))
+    elseif !any(methods(handler)) do m
         length(m.sig.types) < 3 && return false
         return Client <: m.sig.types[2] && Message <: m.sig.types[3]
     end
         throw(ArgumentError("Handler function must accept (::Client, ::Message, ...)"))
-    end
-    if !all(p -> p isa Base.Callable, parsers)
+    elseif !all(p -> p isa Base.Callable, parsers)
         throw(ArgumentError("All parsers must be callable"))
-    end
-    if count(p -> p isa Splat, parsers) > 1
+    elseif count(p -> p isa Splat, parsers) > 1
         throw(ArgumentError("Only one Splat parser can be used at a time"))
     end
 
-    function wrapped_handler(c::Client, e::MessageCreate)
-        ismissing(e.message.webhook_id) || return
-        isempty(e.message.content) && return
+    function predicate(c::Client, e::MessageCreate)
+        # Exclude webhooks and empty messages.
+        ismissing(e.message.webhook_id) || return false
+        isempty(e.message.content) && return false
 
-        pfx = prefix(c, e.message.guild_id)
-        startswith(e.message.content, pfx) || return
-
+        # Exclude self messages.
         id = me(c) === nothing ? nothing : me(c).id
-        !ismissing(e.message.author) && e.message.author.id == id && return
+        author = e.message.author
+        !ismissing(author) && author.id == id && return false
 
+        # Check the prefix.
+        pfx = prefix(c, e.message.guild_id)
+        startswith(e.message.content, pfx) || return false
+
+        # Check the pattern.
         m = match(pattern, noprefix(e.message.content, pfx))
-        m === nothing && return
+        m === nothing && return false
 
-        # None of the above cases result in fallback handlers running.
-
-        caps = try
+        # Check the arguments.
+        try
             parsecaps(parsers, Any[m.captures...])
-        catch e
-            kws = logkws(c; command=name, exception=(e, catch_backtrace()))
-            @warn "Parsers threw an exception" kws...
-            throw(Fallback())
+        catch
+            return FB_PARSERS
         end
 
+        # Check authorization.
         if !isempty(allowed)
-            ids = ismissing(e.message.author) ? Snowflake[] : [e.message.author.id]
+            ids = ismissing(author) ? Snowflake[] : [author.id]
             if ismissing(e.message.member)
-                # TODO: Should we be making potential REST calls here?
+                # TODO: Should we be making potential REST calls here (also in perm check)?
                 # It's very likely that everything is cached but that's not a given.
                 if !ismissing(e.message.guild_id)
                     guild = fetch(retrieve(c, Guild, e.message.guild_id))
                     if guild.ok
-                        member = fetch(retrieve(c, Member, guild.val, e.message.author))
+                        member = fetch(retrieve(c, Member, guild.val, author))
                         member.ok && append!(ids, member.val.roles)
                     end
                 end
@@ -90,31 +106,52 @@ function Command(;
             end
 
             # We do run the fallback for lack of permissions.
-            any(id -> id in allowed, ids) || throw(Fallback())
+            any(id -> id in allowed, ids) || return FB_ALLOWED
         end
 
-        if cooldown !== nothing && !ismissing(e.message.author)
-            cmd = get(get(c.handlers, MessageCreate, Dict()), name, nothing)
-            if cmd !== nothing && haskey(cmd.cooldowns, e.message.author.id)
-                throw(Fallback())
+        # Check permissions.
+        if !ismissing(author) && !ismissing(e.message.guild_id) && permissions != PERM_NONE
+            @deferred_fetch begin
+                guild = retrieve(c, Guild, e.message.guild_id)
+                channel = retrieve(c, DiscordChannel, e.message.channel_id)
             end
-            cmd.cooldowns[e.message.author.id] = nothing
+            if guild.ok && channel.ok
+                member = fetch(retrieve(c, guild.val, author))
+                if member.ok
+                    user_perms = permissions_in(member.val, guild.val, channel.val)
+                    user_perms & permissions == permissions || return FB_PERMISSIONS
+                end
+            end
         end
 
-        handler(c, e.message, caps...)
+        # Check cooldowns.
+        if !ismissing(author) && cooldown !== nothing
+            cmd = get(get(c.handlers, MessageCreate, Dict()), name, nothing)
+            cmd !== nothing && haskey(cmd.cooldowns, author.id) && return FB_COOLDOWN
+            cmd.cooldowns[author.id] = nothing  # Update the rate limiter.
+        end
+
+        return true
     end
 
-    # Run the fallback on the message itself.
-    function wrapped_fallback(c::Client, e::MessageCreate)
-        fallback(c, e.message)
+    function wrapped_handler(c::Client, e::MessageCreate)
+        m = match(pattern, noprefix(e.message.content, prefix(c, e.message.guild_id)))
+        handler(c, e.message, parsecaps(parsers, Any[m.captures...])...)
     end
+
+    # Run the fallbacks on the message itself.
+    wrapped_fb_parsers(c::Client, e::MessageCreate) = fallback_parsers(c, e.message)
+    wrapped_fb_allowed(c::Client, e::MessageCreate) = falback_allowed(c, e.message)
+    wrapped_fb_permissions(c::Client, e::MessageCreate) = fallback_permissions(c, e.message)
+    wrapped_fb_cooldown(c::Client, e::MessageCreate) = fallback_cooldown(c, e.message)
 
     return Command(
         Handler{MessageCreate}(
-            alwaystrue, wrapped_handler, wrapped_fallback,
+            predicate, wrapped_handler, donothing,
             priority, remaining, timeout, nothing, false,
         ),
-        name, help, cooldown,
+        name, help, cooldown, wrapped_fb_parsers, wrapped_fb_allowed,
+        wrapped_fb_permissions, wrapped_fb_cooldown,
     )
 end
 
@@ -157,11 +194,23 @@ Splat(split::StringOrChar) = Splat(identity, split)
 
 predicate(c::Command) = predicate(c.h)
 handler(c::Command) = handler(c.h)
-fallback(c::Command) = fallback(c.h)
 priority(c::Command) = priority(c.h)
 expiry(c::Command) = expiry(c.h)
 dec!(c::Command) = dec!(c.h)
 isexpired(c::Command) = isexpired(c.h)
+function fallback(c::Command, r::FallbackReason)
+    return if r === FB_PARSERS
+        c.fb_parsers
+    elseif r === FB_ALLOWED
+        c.fb_allowed
+    elseif r === FB_PERMISSIONS
+        c.fb_permissions
+    elseif r === FB_COOLDOWN
+        c.fb_cooldown
+    else
+        donothing
+    end
+end
 
 """
     add_command!(
@@ -173,8 +222,12 @@ isexpired(c::Command) = isexpired(c.h)
         separator::StringOrChar=' ',
         pattern::Regex=defaultpattern(name, length(parsers), separator),
         allowed::Vector{<:Integer}=Snowflake[],
+        permissions::Integer=PERM_NONE,
         cooldown::Nullable{Period}=nothing,
-        fallback::Function=donothing,
+        fallback_parsers::Function=donothing,
+        fallback_allowed::Function=donothing,
+        fallback_permissions::Function=donothing,
+        fallback_cooldown::Function=donothing,
         priority::Int=$DEFAULT_PRIORITY,
         count::Nullable{Int}=nothing,
         timeout::Nullable{Period}=nothing,
@@ -199,23 +252,23 @@ keyword (a space character by default).
 The `help` keyword specifies a help string which can be used by [`add_help!`](@ref).
 
 ### Argument Parsing
-The `parsers` keyword specifies the parsers of the command arguments, and can contain both
+The `parsers` keyword sets the parsers of the command arguments, and can contain both
 types and functions. If `pattern` contains captures, then they are run through the parsers
 before being passed into the handler. For repeating arguments, see [`Splat`](@ref).
 
-### Permissions
+### Authorization + Required Permissions
 The `allowed` keyword specifies [`User`](@ref)s or [`Role`](@ref)s (by ID) that are allowed
-to use the command. If the caller does not have permissions for the command, the fallback
-handler is run.
+to use the command. The `permissions` keyword sets the minimum permissions that command
+callers must have.
 
 ### Rate Limiting
 The `cooldown` keyword sets the rate at which a user can invoke the command. The default
 of `nothing` indicates no limit.
 
-### Fallback Function
-The `fallback` keyword specifies a function that runs whenever a command is called but
+### Fallback Functions
+The `fallback_*` keywords specify functions to be run whenever a command is called but
 cannot be run, such as failed argument parsing, missing permissions, or rate limiting.
-it should accept a [`Client`](@ref) and a [`Message`](@ref).
+They should accept a [`Client`](@ref) and a [`Message`](@ref).
 
 Additional keyword arguments are a subset of those to [`add_handler!`](@ref).
 
@@ -235,11 +288,12 @@ add_command!(
     parsers=[Float64, Float64], separator='-',
 )
 ```
-Splatting some comma-separated numbers with a fallback function:
+Splatting some comma-separated numbers with a parsing fallback function:
 ```julia
 add_command!(
     c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));
-    parsers=[Splat(Float64, ',')], fallback=(c, m) -> reply(c, m, "Args must be numbers."),
+    parsers=[Splat(Float64, ',')],
+    fallback_parsers=(c, m) -> reply(c, m, "Args must be numbers."),
 )
 ```
 """
@@ -252,8 +306,12 @@ function add_command!(
     separator::StringOrChar=' ',
     pattern::Regex=defaultpattern(name, length(parsers), separator),
     allowed::Vector{<:Integer}=Snowflake[],
+    permissions::Integer=PERM_NONE,
     cooldown::Nullable{Period}=nothing,
-    fallback::Function=donothing,
+    fallback_parsers::Function=donothing,
+    fallback_allowed::Function=donothing,
+    fallback_permissions::Function=donothing,
+    fallback_cooldown::Function=donothing,
     priority::Int=DEFAULT_PRIORITY,
     count::Nullable{Int}=nothing,
     timeout::Nullable{Period}=nothing,
@@ -262,7 +320,7 @@ function add_command!(
 )
     cmd = Command(;
         name=name, handler=handler, help=help, parsers=parsers, separator=separator,
-        pattern=pattern, allowed=allowed, fallback=fallback, cooldown=cooldown,
+        pattern=pattern, allowed=allowed, permissions=permissions, fallback_parsers=fallback_parsers, cooldown=cooldown,
         priority=priority, remaining=count, timeout=timeout,
     )
     puthandler!(c, cmd, name, compile; message=mock(Message; kwargs...))
@@ -366,8 +424,7 @@ function set_prefix!(c::Client, prefix::AbstractChar, guild::Union{Guild, Intege
 end
 
 # Get the command prefix.
-prefix(c::Client) = c.p_global
-prefix(c::Client, ::Missing) = c.p_global
+prefix(c::Client, ::Missing=missing) = c.p_global
 prefix(c::Client, guild::Integer) = get(c.p_guilds, guild, c.p_global)
 
 # Get a string without a prefix.

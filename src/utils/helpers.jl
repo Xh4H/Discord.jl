@@ -1,4 +1,5 @@
-export PERM_ALL,
+export PERM_NONE,
+    PERM_ALL,
     has_permission,
     permissions_in,
     reply,
@@ -56,6 +57,7 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#pe
 end
 @boilerplate Permission :export
 
+const PERM_NONE = 0
 const PERM_ALL = |(Int.(instances(Permission))...)
 
 """

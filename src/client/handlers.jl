@@ -1,7 +1,7 @@
 const DEFAULT_PRIORITY = 100
 
-# An exception to indicate that the fallback handler should be run.
-struct Fallback <: Exception end
+# Indicators for fallback handlers to run.
+@enum FallbackReason FB_PREDICATE FB_PARSERS FB_ALLOWED FB_PERMISSIONS FB_COOLDOWN
 
 # An event handler.
 abstract type AbstractHandler{T<:AbstractEvent} end
@@ -15,7 +15,7 @@ Base.take!(::AbstractHandler) = []
 
 predicate(::AbstractHandler) = alwaystrue
 handler(::AbstractHandler) = donothing
-fallback(::AbstractHandler) = donothing
+fallback(::AbstractHandler, ::FallbackReason) = donothing
 priority(::AbstractHandler) = DEFAULT_PRIORITY
 expiry(::AbstractHandler) = nothing
 stopcond(::AbstractHandler) = alwaysfalse
@@ -77,7 +77,7 @@ end
 
 predicate(h::Handler) = h.predicate
 handler(h::Handler) = h.handler
-fallback(h::Handler) = h.fallback
+fallback(h::Handler, ::FallbackReason) = h.fallback
 priority(h::Handler) = h.priority
 expiry(h::Handler) = h.expiry
 stopcond(h::Handler) = h.stopcond

@@ -44,8 +44,8 @@ include(joinpath("gateway", "events", "events.jl"))
 include(joinpath("client", "client.jl"))
 include(joinpath("gateway", "gateway.jl"))
 include(joinpath("rest", "rest.jl"))
-include(joinpath("utils", "commands.jl"))
 include(joinpath("utils", "helpers.jl"))
+include(joinpath("utils", "commands.jl"))
 include("Defaults.jl")
 
 end

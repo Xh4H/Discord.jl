@@ -499,8 +499,8 @@ function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, force::Bool; kw
     if !hasmethod(predicate(h), (Client, T))
         throw(ArgumentError("Predicate function must accept (::Client, ::$T)"))
     end
-    if !hasmethod(fallback(h), (Client, T))
-        throw(ArgumentError("Fallback function must accept (::Client, ::$T)"))
+    if any(r -> !hasmethod(fallback(h, r), (Client, T)), instances(FallbackReason))
+        throw(ArgumentError("Fallback functions must accept (::Client, ::$T)"))
     end
     if isexpired(h)
         throw(ArgumentError("Can't add a handler that's already expired"))
@@ -508,7 +508,7 @@ function puthandler!(c::Client, h::AbstractHandler, tag::Symbol, force::Bool; kw
 
     compile(predicate(h), force; kwargs...)
     compile(handler(h), force; kwargs...)
-    compile(fallback(h), force; kwargs...)
+    foreach(r -> compile(fallback(h, r), force; kwargs...), instances(FallbackReason))
 
     if haskey(c.handlers, T)
         c.handlers[T][tag] = h

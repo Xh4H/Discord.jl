@@ -327,31 +327,25 @@ function dispatch(c::Client, data::Dict)
             isexpired(h) && delete_handler!(c, eltype(h), tag)
 
             pred = try
-                predicate(h)(c, evt) === true
+                predicate(h)(c, evt)
             catch e
                 kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
                 @warn "Predicate function threw an exception" kws...
-                return  # Don't run the handler or the fallback.
+                return  # Predicate throws -> do nothing.
             end
 
-            fb = !pred
-            if pred
+            if pred === true
                 try
                     result = handler(h)(c, evt)
                     iscollecting(h) && push!(results(h), result)
                 catch e
-                    if e isa Fallback
-                        fb = true
-                    else
-                        kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                        @warn "Handler function threw an exception" kws...
-                    end
+                    kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+                    @warn "Handler function threw an exception" kws...
                 end
-            end
-
-            if fb
+            else
+                reason = pred in instances(FallbackReason) ? pred : FB_PREDICATE
                 try
-                    fallback(h)(c, evt)
+                    fallback(h, reason)(c, evt)
                 catch e
                     kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
                     @warn "Fallback function threw an exception" kws...
