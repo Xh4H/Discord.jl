@@ -320,13 +320,14 @@ function add_command!(
 )
     cmd = Command(;
         name=name, handler=handler, help=help, parsers=parsers, separator=separator,
-        pattern=pattern, allowed=allowed, permissions=permissions, fallback_parsers=fallback_parsers, cooldown=cooldown,
-        priority=priority, remaining=count, timeout=timeout,
+        pattern=pattern, allowed=allowed, permissions=permissions,
+        fallback_parsers=fallback_parsers, cooldown=cooldown, priority=priority,
+        remaining=count, timeout=timeout,
     )
     puthandler!(c, cmd, name, compile; message=mock(Message; kwargs...))
 end
 function add_command!(handler::Function, c::Client, name::Symbol; kwargs...)
-    add_handler!(handler, c, name; kwargs...)
+    add_command!(c, name, handler; kwargs...)
 end
 
 """

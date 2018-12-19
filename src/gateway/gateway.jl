@@ -323,8 +323,8 @@ function dispatch(c::Client, data::Dict)
     for (t, h) in sort(handlers; by=p -> priority(p.second), rev=true)
         @async begin
             # TODO: There are race conditions here.
-            dec!(h)
             isexpired(h) && delete_handler!(c, eltype(h), tag)
+            dec!(h)
 
             pred = try
                 predicate(h)(c, evt)

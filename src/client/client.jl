@@ -366,7 +366,7 @@ function add_handler!(
 end
 
 add_handler!(handler::Function, c::Client; kwargs...) = add_handler!(c, handler; kwargs...)
-function add_handler!(handler::Function, c::Client, T::Type{<:AbstractEvent}, kwargs...)
+function add_handler!(handler::Function, c::Client, T::Type{<:AbstractEvent}; kwargs...)
     return add_handler!(c, T, handler; kwargs...)
 end
 

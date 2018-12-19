@@ -10,7 +10,7 @@ mutable struct JobQueue
     jobs::Channel{Function}  # These functions must return an HTTP response.
     retries::Channel{Function}  # Jobs which must be retried (higher priority).
 
-    function JobQueue(endpoint::String, limiter)
+    function JobQueue(endpoint::AbstractString, limiter)
         q = new(nothing, nothing, Channel{Function}(Inf), Channel{Function}(Inf))
 
         @async while true
