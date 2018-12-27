@@ -1,7 +1,7 @@
 var documenterSearchIndex = {"docs": [
 
 {
-    "location": "index.html#",
+    "location": "#",
     "page": "Home",
     "title": "Home",
     "category": "page",
@@ -9,7 +9,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Discord.jl-1",
+    "location": "#Discord.jl-1",
     "page": "Home",
     "title": "Discord.jl",
     "category": "section",
@@ -17,7 +17,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Why-Julia/Discord.jl?-1",
+    "location": "#Why-Julia/Discord.jl?-1",
     "page": "Home",
     "title": "Why Julia/Discord.jl?",
     "category": "section",
@@ -25,7 +25,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "index.html#Index-1",
+    "location": "#Index-1",
     "page": "Home",
     "title": "Index",
     "category": "section",
@@ -33,7 +33,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#",
+    "location": "client/#",
     "page": "Client",
     "title": "Client",
     "category": "page",
@@ -41,7 +41,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.Client",
+    "location": "client/#Discord.Client",
     "page": "Client",
     "title": "Discord.Client",
     "category": "type",
@@ -49,7 +49,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.enable_cache!",
+    "location": "client/#Discord.enable_cache!",
     "page": "Client",
     "title": "Discord.enable_cache!",
     "category": "function",
@@ -57,7 +57,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.disable_cache!",
+    "location": "client/#Discord.disable_cache!",
     "page": "Client",
     "title": "Discord.disable_cache!",
     "category": "function",
@@ -65,15 +65,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.me",
+    "location": "client/#Discord.me",
     "page": "Client",
     "title": "Discord.me",
     "category": "function",
-    "text": "me(c::Client) -> Union{User, Nothing}\n\nGet the Client\'s bot user.\n\n\n\n\n\n"
+    "text": "me(c::Client) -> Nullable{User}\n\nGet the Client\'s bot user.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Client-1",
+    "location": "client/#Client-1",
     "page": "Client",
     "title": "Client",
     "category": "section",
@@ -81,7 +81,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Base.open",
+    "location": "client/#Base.open",
     "page": "Client",
     "title": "Base.open",
     "category": "function",
@@ -89,7 +89,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Base.isopen",
+    "location": "client/#Base.isopen",
     "page": "Client",
     "title": "Base.isopen",
     "category": "function",
@@ -97,7 +97,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Base.close",
+    "location": "client/#Base.close",
     "page": "Client",
     "title": "Base.close",
     "category": "function",
@@ -105,7 +105,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Base.wait",
+    "location": "client/#Base.wait",
     "page": "Client",
     "title": "Base.wait",
     "category": "function",
@@ -113,7 +113,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.request_guild_members",
+    "location": "client/#Discord.request_guild_members",
     "page": "Client",
     "title": "Discord.request_guild_members",
     "category": "function",
@@ -121,31 +121,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.update_voice_state",
+    "location": "client/#Discord.update_voice_state",
     "page": "Client",
     "title": "Discord.update_voice_state",
     "category": "function",
-    "text": "update_voice_state(\n    c::Client,\n    guild::Integer,\n    channel::Union{Integer, Nothing},\n    mute::Bool,\n    deaf::Bool,\n) -> Bool\n\nJoin, move, or disconnect from a voice channel. A VoiceStateUpdate event is sent by the gateway in response. More details here.\n\n\n\n\n\n"
+    "text": "update_voice_state(\n    c::Client,\n    guild::Integer,\n    channel::Nullable{Integer},\n    mute::Bool,\n    deaf::Bool,\n) -> Bool\n\nJoin, move, or disconnect from a voice channel. A VoiceStateUpdate event is sent by the gateway in response. More details here.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.update_status",
+    "location": "client/#Discord.update_status",
     "page": "Client",
     "title": "Discord.update_status",
     "category": "function",
-    "text": "update_status(\n    c::Client,\n    since::Union{Int, Nothing},\n    activity::Union{Activity, Nothing},\n    status::Union{PresenceStatus, AbstractString},\n    afk::Bool,\n) -> Bool\n\nIndicate a presence or status update. A PresenceUpdate event is sent by the gateway in response. More details here.\n\n\n\n\n\n"
+    "text": "update_status(\n    c::Client,\n    since::Nullable{Int},\n    activity::Nullable{Activity},\n    status::Union{PresenceStatus, AbstractString},\n    afk::Bool,\n) -> Bool\n\nIndicate a presence or status update. A PresenceUpdate event is sent by the gateway in response. More details here.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.heartbeat_ping",
+    "location": "client/#Discord.heartbeat_ping",
     "page": "Client",
     "title": "Discord.heartbeat_ping",
     "category": "function",
-    "text": "heartbeat_ping(c::Client) -> Union{Period, Nothing}\n\nGet the Client\'s ping time to the gateway. If the client is not connected, or no heartbeats have been sent/acknowledged, nothing is returned.\n\n\n\n\n\n"
+    "text": "heartbeat_ping(c::Client) -> Nullable{Period}\n\nGet the Client\'s ping time to the gateway. If the client is not connected, or no heartbeats have been sent/acknowledged, nothing is returned.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Gateway-1",
+    "location": "client/#Gateway-1",
     "page": "Client",
     "title": "Gateway",
     "category": "section",
@@ -153,15 +153,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.add_handler!",
+    "location": "client/#Discord.add_handler!",
     "page": "Client",
     "title": "Discord.add_handler!",
     "category": "function",
-    "text": "add_handler!(\n    c::Client,\n    T::Type{<:AbstractEvent},\n    handler::Function;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    priority::Int=100,\n    count::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    until::Union{Function, Nothing}=nothing,\n    wait::Bool=false,\n    compile::Bool=false,\n    kwargs...,\n) -> Union{Vector{Any}, Nothing}\n\nAdd an event handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function does the real work and must take two arguments: A Client and an AbstractEvent (or a subtype).\n\nHandler Tag\n\nThe tag keyword gives a label to the handler, which can be used to remove it with delete_handler!.\n\nPredicate/Fallback Functions\n\nThe predicate keyword specifies a predicate function. The handler will only run if this function returns true. Otherwise, a fallback function, specified by the fallback keyword, is run. Their signatures should match that of the handler.\n\nHandler Priority\n\nThe priority keyword indicates the handler\'s priority relative to other handlers for the same event. Handlers with higher values execute before those with lower ones.\n\nHandler Expiry\n\nHandlers can have multiple types of expiries. The count keyword sets the number of times a handler is run before expiring. The timeout keyword determines how long the handler remains active. The until keyword takes a function which is called on the handler\'s previous results (in a Vector), and if it returns true, the handler expires.\n\nBlocking Handlers + Result Collection\n\nTo collect results from a handler, set the wait keyword along with n, timeout, and/or until. The call will block until the handler expires, at which point the return value of each invocation is returned in a Vector.\n\nForcing Precompilation\n\nHandler functions are precompiled without running them, but it\'s not always successful, especially if your functions are not type-safe. If the compile keyword is set, precompilation is forced by running the predicate and handler on a randomized input. Any trailing keywords are passed to the input event constructor.\n\nExamples\n\nAdding a handler with a timed expiry and tag:\n\nadd_handler!(c, ChannelCreate, (c, e) -> @show e; tag=:show, timeout=Minute(1))\n\nAdding a handler with a predicate and do syntax:\n\nadd_handler!(c, ChannelCreate; predicate=(c, e) -> length(e.channel.name) < 10) do c, e\n    println(e.channel.name)\nend\n\nAggregating results of a handler with a counting expiry:\n\nmsgs = add_handler!(c, MessageCreate, (c, e) -> e.message.content; count=5, wait=true)\n\nForcing precompilation and assigning a low priority:\n\nadd_handler!(c, MessageDelete, (c, e) -> @show e; priority=-10, compile=true, id=0xff)\n\n\n\n\n\nadd_handler!(\n    c::Client,\n    m::Module;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    count::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct type signatures (see above) are used.\n\nnote: Note\nIf you set keywords, they are applied to all of the handlers in the module. For example, if you add two handlers for the same event type with the same tag, one of them will be immediately overwritten.\n\n\n\n\n\n"
+    "text": "add_handler!(\n    c::Client,\n    [T::Type{<:AbstractEvent}],\n    handler::Function;\n    tag::Symbol=gensym(),\n    predicate::Function=alwaystrue,\n    fallback::Function=donothing,\n    priority::Int=100,\n    count::Nullable{Int}=nothing,\n    timeout::Nullable{Period}=nothing,\n    until::Function=alwaysfalse,\n    wait::Bool=false,\n    compile::Bool=false,\n    kwargs...,\n) -> Nullable{Vector{Any}}\n\nAdd an event handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function does the real work and must take two arguments: A Client and an AbstractEvent (or a subtype). If an event type T is supplied, then the handler is registered for that event. Otherwise, the second argument of the handler must be annotated, and the type annotation determines what events will invoke the handler. Union types are also accepted to register handlers for multiple events.\n\nHandler Tag\n\nThe tag keyword gives a label to the handler, which can be used to remove it with delete_handler!.\n\nPredicate/Fallback Functions\n\nThe predicate keyword specifies a predicate function. The handler will only run if this function returns true. Otherwise, a fallback function, specified by the fallback keyword, is run. Their signatures should match that of the handler.\n\nHandler Priority\n\nThe priority keyword indicates the handler\'s priority relative to other handlers for the same event. Handlers with higher values execute before those with lower ones.\n\nHandler Expiry\n\nHandlers can have multiple types of expiries. The count keyword sets the number of times a handler is run before expiring. The timeout keyword determines how long the handler remains active. The until keyword takes a function which is called on the handler\'s previous results (in a Vector), and if it returns true, the handler expires. These keywords can be combined; the first condition to be met causes the handler to expire.\n\nBlocking Handlers + Result Collection\n\nTo collect results from a handler, set the wait keyword along with n, timeout, and/or until. The call will block until the handler expires, at which point the return value of each invocation is returned in a Vector.\n\nForcing Precompilation\n\nHandler functions are precompiled without running them, but it\'s not always successful, especially if your functions are not type-safe. If the compile keyword is set, precompilation is forced by running the predicate and handler on a randomized input. Any trailing keywords are passed to the constructors of the event and its fields.\n\nExamples\n\nBasic \"hello world\" with explicit event type:\n\nadd_handler!(c, MessageCreate, (c, e) -> println(e.message.content); tag=:print)\n\nAdding a handler with a predicate and fallback:\n\nhandler(::Client, e::ChannelCreate) = println(e.channel.name)\npredicate(::Client, e::ChannelCreate) = length(e.channel.name) < 10\nfallback(::Client, ::ChannelCreate) = println(\"channel name too long\")\nadd_handler!(c, handler; predicate=predicate, fallback=fallback)\n\nAssigning maximum priority to a handler:\n\nhandler(:::Client, ::MessageCreate) = println(\"this runs before any other handlers!\")\nadd_handler!(c, handler; priority=typemax(Int))\n\nAdding a handler with various expiry conditions:\n\nhandler(::Client, e::ChannelCreate) = e.channel.name\nuntil(results::Vector{Any}) = \"foo\" in results\nadd_handler!(c, handler; count=10, timeout=Minute(1), until=until)\n\nAggregating results of a handler:\n\nhandler(::Client, e::MessageCreate) = e.message.content\nmsgs = add_handler!(c, handler; count=5, wait=true)\n\nForcing precompilation:\n\nhandler(::Client, e::MessageDelete) = @show e\nadd_handler!(c, handler; compile=true, id=0xff)\n\n\n\n\n\nadd_handler!(c::Client, m::Module; kwargs...)\n\nAdd all of the event handlers defined in a module. Any function you wish to use as a handler must be exported. Only functions with correct, annotated type signatures (see above) are used.\n\nnote: Note\nIf you set keywords, they are applied to all of the handlers in the module. For example, if you add two handlers for the same event type with the same tag, one of them will be immediately overwritten.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.delete_handler!",
+    "location": "client/#Discord.delete_handler!",
     "page": "Client",
     "title": "Discord.delete_handler!",
     "category": "function",
@@ -169,7 +169,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.DEFAULT_HANDLER_TAG",
+    "location": "client/#Discord.DEFAULT_HANDLER_TAG",
     "page": "Client",
     "title": "Discord.DEFAULT_HANDLER_TAG",
     "category": "constant",
@@ -177,7 +177,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Event-Handlers-1",
+    "location": "client/#Event-Handlers-1",
     "page": "Client",
     "title": "Event Handlers",
     "category": "section",
@@ -185,15 +185,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.add_command!",
+    "location": "client/#Discord.add_command!",
     "page": "Client",
     "title": "Discord.add_command!",
     "category": "function",
-    "text": "add_command!(\n    c::Client,\n    name::Symbol,\n    handler::Function;\n    help::AbstractString=\"\",\n    parsers::Vector=[],\n    separator::Union{AbstractString, AbstractChar}=\' \',\n    pattern::Regex=defaultpattern(name, length(parsers), separator),\n    allowed::Vector{<:Integer}=Snowflake[],\n    cooldown::Union{Period, Nothing}=nothing,\n    fallback::Function=donothing,\n    priority::Int=100,\n    count::Union{Int, Nothing}=nothing,\n    timeout::Union{Period, Nothing}=nothing,\n    compile::Bool=false,\n    kwargs...,\n)\n\nAdd a text command handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function must accept a Client and a Message. Additionally, it can accept any number of additional arguments, which are captured from pattern and parsed with parsers (see below).\n\nCommand Pattern\n\nThe pattern keyword specifies how to invoke the command. The given Regex must match the message contents after having removed the command prefix. By default, it\'s the command name with as many wildcard capture groups as there are parsers, separated by the separator keyword (a space character by default).\n\nCommand Help\n\nThe help keyword specifies a help string which can be used by add_help!.\n\nArgument Parsing\n\nThe parsers keyword specifies the parsers of the command arguments, and can contain both types and functions. If pattern contains captures, then they are run through the parsers before being passed into the handler. For repeating arguments, see Splat.\n\nPermissions\n\nThe allowed keyword specifies Users or Roles (by ID) that are allowed to use the command. If the caller does not have permissions for the command, the fallback handler is run.\n\nRate Limiting\n\nThe cooldown keyword sets the rate at which a user can invoke the command. The default of nothing indicates no limit.\n\nFallback Function\n\nThe fallback keyword specifies a function that runs whenever a command is called but cannot be run, such as failed argument parsing, missing permissions, or rate limiting. it should accept a Client and a Message.\n\nAdditional keyword arguments are a subset of those to add_handler!.\n\nExamples\n\nBasic echo command with a help string:\n\nadd_command!(c, :echo, (c, m) -> reply(c, m, m.content); help=\"repeat a message\")\n\nThe same, but excluding the command part:\n\nadd_command!(c, :echo, (c, m, msg) -> reply(c, m, msg); pattern=r\"^echo (.+)\")\n\nParsing a subtraction expression with custom parsers and separator:\n\nadd_command!(\n    c, :sub, (c, m, a, b) -> reply(c, m, string(a - b));\n    parsers=[Float64, Float64], separator=\'-\',\n)\n\nSplatting some comma-separated numbers with a fallback function:\n\nadd_command!(\n    c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));\n    parsers=[Splat(Float64, \',\')], fallback=(c, m) -> reply(c, m, \"Args must be numbers.\"),\n)\n\n\n\n\n\nadd_command!(c::Client, m::Module; compile::Bool=false; kwargs...)\n\nAdd all of the bot commands defined in a module. To set up commands to be included, see @command.\n\n\n\n\n\n"
+    "text": "add_command!(\n    c::Client,\n    name::Symbol,\n    handler::Function;\n    help::AbstractString=\"\",\n    parsers::Vector=[],\n    separator::StringOrChar=\' \',\n    pattern::Regex=defaultpattern(name, length(parsers), separator),\n    allowed::Vector{<:Integer}=Snowflake[],\n    permissions::Integer=PERM_NONE,\n    cooldown::Nullable{Period}=nothing,\n    fallback_parsers::Function=donothing,\n    fallback_allowed::Function=donothing,\n    fallback_permissions::Function=donothing,\n    fallback_cooldown::Function=donothing,\n    priority::Int=100,\n    count::Nullable{Int}=nothing,\n    timeout::Nullable{Period}=nothing,\n    compile::Bool=false,\n    kwargs...,\n)\n\nAdd a text command handler. do syntax is also accepted.\n\nHandler Function\n\nThe handler function must accept a Client and a Message. Additionally, it can accept any number of additional arguments, which are captured from pattern and parsed with parsers (see below).\n\nCommand Pattern\n\nThe pattern keyword specifies how to invoke the command. The given Regex must match the message contents after having removed the command prefix. By default, it\'s the command name with as many wildcard capture groups as there are parsers, separated by the separator keyword (a space character by default).\n\nCommand Help\n\nThe help keyword specifies a help string which can be used by add_help!.\n\nArgument Parsing\n\nThe parsers keyword sets the parsers of the command arguments, and can contain both types and functions. If pattern contains captures, then they are run through the parsers before being passed into the handler. For repeating arguments, see Splat.\n\nAuthorization + Required Permissions\n\nThe allowed keyword specifies Users or Roles (by ID) that are allowed to use the command. The permissions keyword sets the minimum permissions that command callers must have.\n\nRate Limiting\n\nThe cooldown keyword sets the rate at which a user can invoke the command. The default of nothing indicates no limit.\n\nFallback Functions\n\nThe fallback_* keywords specify functions to be run whenever a command is called but cannot be run, such as failed argument parsing, missing permissions, or rate limiting. They should accept a Client and a Message.\n\nAdditional keyword arguments are a subset of those to add_handler!.\n\nExamples\n\nBasic echo command with a help string:\n\nadd_command!(c, :echo, (c, m) -> reply(c, m, m.content); help=\"repeat a message\")\n\nThe same, but excluding the command part:\n\nadd_command!(c, :echo, (c, m, msg) -> reply(c, m, msg); pattern=r\"^echo (.+)\")\n\nParsing a subtraction expression with custom parsers and separator:\n\nadd_command!(\n    c, :sub, (c, m, a, b) -> reply(c, m, string(a - b));\n    parsers=[Float64, Float64], separator=\'-\',\n)\n\nSplatting some comma-separated numbers with a parsing fallback function:\n\nadd_command!(\n    c, :sum, (c, m, xs...) -> reply(c, m, string(sum(collect(xs))));\n    parsers=[Splat(Float64, \',\')],\n    fallback_parsers=(c, m) -> reply(c, m, \"Args must be numbers.\"),\n)\n\n\n\n\n\nadd_command!(c::Client, m::Module; compile::Bool=false; kwargs...)\n\nAdd all of the bot commands defined in a module. To set up commands to be included, see @command.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.@command",
+    "location": "client/#Discord.@command",
     "page": "Client",
     "title": "Discord.@command",
     "category": "macro",
@@ -201,7 +201,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.delete_command!",
+    "location": "client/#Discord.delete_command!",
     "page": "Client",
     "title": "Discord.delete_command!",
     "category": "function",
@@ -209,31 +209,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.add_help!",
+    "location": "client/#Discord.add_help!",
     "page": "Client",
     "title": "Discord.add_help!",
     "category": "function",
-    "text": "add_help!(\n    c::Client;\n    pattern::Regex=r\"^help(?: (.+))?\",\n    help::AbstractString=\"Show this help message\",\n    nohelp::AbstractString=\"No help provided\",\n    nocmd::AbstractString=\"Command not found\",\n)\n\nAdd a help command. This can be called at any time, new commands will be included automatically.\n\nKeywords\n\nseparator::Union{AbstractString, AbstractChar}: Separator between commands.\npattern::Regex: The command pattern (see add_command!).\nhelp::AbstractString: Help for the help command.\nnohelp::AbstractString: Help for commands without their own help string.\nnocmd::AbstractString: Help for commands that aren\'t found.\n\n\n\n\n\n"
+    "text": "add_help!(\n    c::Client;\n    pattern::Regex=r\"^help(?: (.+))?\",\n    help::AbstractString=\"Show this help message\",\n    nohelp::AbstractString=\"No help provided\",\n    nocmd::AbstractString=\"Command not found\",\n)\n\nAdd a help command. This can be called at any time, new commands will be included automatically.\n\nKeywords\n\nseparator::StringOrChar: Separator between commands.\npattern::Regex: The command pattern (see add_command!).\nhelp::AbstractString: Help for the help command.\nnohelp::AbstractString: Help for commands without their own help string.\nnocmd::AbstractString: Help for commands that aren\'t found.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.set_prefix!",
+    "location": "client/#Discord.set_prefix!",
     "page": "Client",
     "title": "Discord.set_prefix!",
     "category": "function",
-    "text": "set_prefix!(c::Client, prefix::Union{AbstractString, AbstractChar})\nset_prefix!(\n    c::Client,\n    prefix::Union{AbstractString, AbstractChar},\n    guild::Union{Guild, Integer},\n)\n\nSet Client\'s command prefix. If a Guild or its ID is supplied, then the prefix only applies to that guild.\n\n\n\n\n\n"
+    "text": "set_prefix!(c::Client, prefix::StringOrChar)\nset_prefix!(c::Client, prefix::StringOrChar, guild::Union{Guild, Integer})\n\nSet Client\'s command prefix. If a Guild or its ID is supplied, then the prefix only applies to that guild.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Discord.Splat",
+    "location": "client/#Discord.Splat",
     "page": "Client",
     "title": "Discord.Splat",
     "category": "type",
-    "text": "Splat(\n    func::Base.Callable=identity,\n    split::Union{AbstractString, AbstractChar}=\' \',\n) -> Splat\n\nCollect a variable number of arguments from one capture group with a single parser.\n\n\n\n\n\n"
+    "text": "Splat(func::Base.Callable=identity, split::StringOrChar=\' \') -> Splat\n\nCollect a variable number of arguments from one capture group with a single parser.\n\n\n\n\n\n"
 },
 
 {
-    "location": "client.html#Bot-Commands-1",
+    "location": "client/#Bot-Commands-1",
     "page": "Client",
     "title": "Bot Commands",
     "category": "section",
@@ -241,7 +241,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.CacheStrategy",
+    "location": "client/#Discord.CacheStrategy",
     "page": "Client",
     "title": "Discord.CacheStrategy",
     "category": "type",
@@ -249,7 +249,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.CacheForever",
+    "location": "client/#Discord.CacheForever",
     "page": "Client",
     "title": "Discord.CacheForever",
     "category": "type",
@@ -257,7 +257,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.CacheNever",
+    "location": "client/#Discord.CacheNever",
     "page": "Client",
     "title": "Discord.CacheNever",
     "category": "type",
@@ -265,7 +265,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.CacheTTL",
+    "location": "client/#Discord.CacheTTL",
     "page": "Client",
     "title": "Discord.CacheTTL",
     "category": "type",
@@ -273,7 +273,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.CacheLRU",
+    "location": "client/#Discord.CacheLRU",
     "page": "Client",
     "title": "Discord.CacheLRU",
     "category": "type",
@@ -281,7 +281,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Discord.CacheFilter",
+    "location": "client/#Discord.CacheFilter",
     "page": "Client",
     "title": "Discord.CacheFilter",
     "category": "type",
@@ -289,7 +289,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "client.html#Caching-1",
+    "location": "client/#Caching-1",
     "page": "Client",
     "title": "Caching",
     "category": "section",
@@ -297,7 +297,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#",
+    "location": "events/#",
     "page": "Events",
     "title": "Events",
     "category": "page",
@@ -305,7 +305,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.AbstractEvent",
+    "location": "events/#Discord.AbstractEvent",
     "page": "Events",
     "title": "Discord.AbstractEvent",
     "category": "type",
@@ -313,7 +313,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.FallbackEvent",
+    "location": "events/#Discord.FallbackEvent",
     "page": "Events",
     "title": "Discord.FallbackEvent",
     "category": "type",
@@ -321,7 +321,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.UnknownEvent",
+    "location": "events/#Discord.UnknownEvent",
     "page": "Events",
     "title": "Discord.UnknownEvent",
     "category": "type",
@@ -329,7 +329,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Events-1",
+    "location": "events/#Events-1",
     "page": "Events",
     "title": "Events",
     "category": "section",
@@ -337,7 +337,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.ChannelCreate",
+    "location": "events/#Discord.ChannelCreate",
     "page": "Events",
     "title": "Discord.ChannelCreate",
     "category": "type",
@@ -345,7 +345,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.ChannelUpdate",
+    "location": "events/#Discord.ChannelUpdate",
     "page": "Events",
     "title": "Discord.ChannelUpdate",
     "category": "type",
@@ -353,7 +353,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.ChannelDelete",
+    "location": "events/#Discord.ChannelDelete",
     "page": "Events",
     "title": "Discord.ChannelDelete",
     "category": "type",
@@ -361,15 +361,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.ChannelPinsUpdate",
+    "location": "events/#Discord.ChannelPinsUpdate",
     "page": "Events",
     "title": "Discord.ChannelPinsUpdate",
     "category": "type",
-    "text": "Sent when a DiscordChannel\'s pins are updated.\n\nFields\n\nchannel_id         :: Snowflake\nlast_pin_timestamp :: Union{DateTime, Nothing}\n\n\n\n\n\n"
+    "text": "Sent when a DiscordChannel\'s pins are updated.\n\nFields\n\nchannel_id         :: Snowflake\nlast_pin_timestamp :: Nullable{DateTime}\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Channels-1",
+    "location": "events/#Channels-1",
     "page": "Events",
     "title": "Channels",
     "category": "section",
@@ -377,7 +377,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildCreate",
+    "location": "events/#Discord.GuildCreate",
     "page": "Events",
     "title": "Discord.GuildCreate",
     "category": "type",
@@ -385,7 +385,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildUpdate",
+    "location": "events/#Discord.GuildUpdate",
     "page": "Events",
     "title": "Discord.GuildUpdate",
     "category": "type",
@@ -393,7 +393,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildDelete",
+    "location": "events/#Discord.GuildDelete",
     "page": "Events",
     "title": "Discord.GuildDelete",
     "category": "type",
@@ -401,7 +401,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildBanAdd",
+    "location": "events/#Discord.GuildBanAdd",
     "page": "Events",
     "title": "Discord.GuildBanAdd",
     "category": "type",
@@ -409,7 +409,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildBanRemove",
+    "location": "events/#Discord.GuildBanRemove",
     "page": "Events",
     "title": "Discord.GuildBanRemove",
     "category": "type",
@@ -417,7 +417,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildEmojisUpdate",
+    "location": "events/#Discord.GuildEmojisUpdate",
     "page": "Events",
     "title": "Discord.GuildEmojisUpdate",
     "category": "type",
@@ -425,7 +425,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildIntegrationsUpdate",
+    "location": "events/#Discord.GuildIntegrationsUpdate",
     "page": "Events",
     "title": "Discord.GuildIntegrationsUpdate",
     "category": "type",
@@ -433,7 +433,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildMemberAdd",
+    "location": "events/#Discord.GuildMemberAdd",
     "page": "Events",
     "title": "Discord.GuildMemberAdd",
     "category": "type",
@@ -441,7 +441,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildMemberRemove",
+    "location": "events/#Discord.GuildMemberRemove",
     "page": "Events",
     "title": "Discord.GuildMemberRemove",
     "category": "type",
@@ -449,15 +449,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildMemberUpdate",
+    "location": "events/#Discord.GuildMemberUpdate",
     "page": "Events",
     "title": "Discord.GuildMemberUpdate",
     "category": "type",
-    "text": "Sent when a Member is updated in a Guild.\n\nFields\n\nguild_id :: Snowflake\nroles    :: Vector{Snowflake}\nuser     :: User\nnick     :: Union{String, Nothing}\n\n\n\n\n\n"
+    "text": "Sent when a Member is updated in a Guild.\n\nFields\n\nguild_id :: Snowflake\nroles    :: Vector{Snowflake}\nuser     :: User\nnick     :: Nullable{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Discord.GuildMembersChunk",
+    "location": "events/#Discord.GuildMembersChunk",
     "page": "Events",
     "title": "Discord.GuildMembersChunk",
     "category": "type",
@@ -465,7 +465,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildRoleCreate",
+    "location": "events/#Discord.GuildRoleCreate",
     "page": "Events",
     "title": "Discord.GuildRoleCreate",
     "category": "type",
@@ -473,7 +473,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildRoleUpdate",
+    "location": "events/#Discord.GuildRoleUpdate",
     "page": "Events",
     "title": "Discord.GuildRoleUpdate",
     "category": "type",
@@ -481,7 +481,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.GuildRoleDelete",
+    "location": "events/#Discord.GuildRoleDelete",
     "page": "Events",
     "title": "Discord.GuildRoleDelete",
     "category": "type",
@@ -489,7 +489,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Guilds-1",
+    "location": "events/#Guilds-1",
     "page": "Events",
     "title": "Guilds",
     "category": "section",
@@ -497,7 +497,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.MessageCreate",
+    "location": "events/#Discord.MessageCreate",
     "page": "Events",
     "title": "Discord.MessageCreate",
     "category": "type",
@@ -505,7 +505,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.MessageUpdate",
+    "location": "events/#Discord.MessageUpdate",
     "page": "Events",
     "title": "Discord.MessageUpdate",
     "category": "type",
@@ -513,47 +513,47 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.MessageDelete",
+    "location": "events/#Discord.MessageDelete",
     "page": "Events",
     "title": "Discord.MessageDelete",
     "category": "type",
-    "text": "Sent when a Message is deleted.\n\nFields\n\nid         :: Snowflake\nchannel_id :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\n\n\n\n\n\n"
+    "text": "Sent when a Message is deleted.\n\nFields\n\nid         :: Snowflake\nchannel_id :: Snowflake\nguild_id   :: Optional{Snowflake}\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Discord.MessageDeleteBulk",
+    "location": "events/#Discord.MessageDeleteBulk",
     "page": "Events",
     "title": "Discord.MessageDeleteBulk",
     "category": "type",
-    "text": "Sent when multiple Messages are deleted in bulk.\n\nFields\n\nids        :: Vector{Snowflake}\nchannel_id :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\n\n\n\n\n\n"
+    "text": "Sent when multiple Messages are deleted in bulk.\n\nFields\n\nids        :: Vector{Snowflake}\nchannel_id :: Snowflake\nguild_id   :: Optional{Snowflake}\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Discord.MessageReactionAdd",
+    "location": "events/#Discord.MessageReactionAdd",
     "page": "Events",
     "title": "Discord.MessageReactionAdd",
     "category": "type",
-    "text": "Sent when a Reaction is added to a Message.\n\nFields\n\nuser_id    :: Snowflake\nchannel_id :: Snowflake\nmessage_id :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\nemoji      :: Emoji\n\n\n\n\n\n"
+    "text": "Sent when a Reaction is added to a Message.\n\nFields\n\nuser_id    :: Snowflake\nchannel_id :: Snowflake\nmessage_id :: Snowflake\nguild_id   :: Optional{Snowflake}\nemoji      :: Emoji\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Discord.MessageReactionRemove",
+    "location": "events/#Discord.MessageReactionRemove",
     "page": "Events",
     "title": "Discord.MessageReactionRemove",
     "category": "type",
-    "text": "Sent when a Reaction is removed from a Message.\n\nFields\n\nuser_id    :: Snowflake\nchannel_id :: Snowflake\nmessage_id :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\nemoji      :: Emoji\n\n\n\n\n\n"
+    "text": "Sent when a Reaction is removed from a Message.\n\nFields\n\nuser_id    :: Snowflake\nchannel_id :: Snowflake\nmessage_id :: Snowflake\nguild_id   :: Optional{Snowflake}\nemoji      :: Emoji\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Discord.MessageReactionRemoveAll",
+    "location": "events/#Discord.MessageReactionRemoveAll",
     "page": "Events",
     "title": "Discord.MessageReactionRemoveAll",
     "category": "type",
-    "text": "Sent when all Reactions are removed from a Message.\n\nFields\n\nchannel_id :: Snowflake\nmessage_id :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\n\n\n\n\n\n"
+    "text": "Sent when all Reactions are removed from a Message.\n\nFields\n\nchannel_id :: Snowflake\nmessage_id :: Snowflake\nguild_id   :: Optional{Snowflake}\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Messages-1",
+    "location": "events/#Messages-1",
     "page": "Events",
     "title": "Messages",
     "category": "section",
@@ -561,7 +561,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.PresenceUpdate",
+    "location": "events/#Discord.PresenceUpdate",
     "page": "Events",
     "title": "Discord.PresenceUpdate",
     "category": "type",
@@ -569,15 +569,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.TypingStart",
+    "location": "events/#Discord.TypingStart",
     "page": "Events",
     "title": "Discord.TypingStart",
     "category": "type",
-    "text": "Sent when a User begins typing.\n\nFields\n\nchannel_id :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\nuser_id    :: Snowflake\ntimestamp  :: DateTime\n\n\n\n\n\n"
+    "text": "Sent when a User begins typing.\n\nFields\n\nchannel_id :: Snowflake\nguild_id   :: Optional{Snowflake}\nuser_id    :: Snowflake\ntimestamp  :: DateTime\n\n\n\n\n\n"
 },
 
 {
-    "location": "events.html#Discord.UserUpdate",
+    "location": "events/#Discord.UserUpdate",
     "page": "Events",
     "title": "Discord.UserUpdate",
     "category": "type",
@@ -585,7 +585,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Presence-1",
+    "location": "events/#Presence-1",
     "page": "Events",
     "title": "Presence",
     "category": "section",
@@ -593,7 +593,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.VoiceStateUpdate",
+    "location": "events/#Discord.VoiceStateUpdate",
     "page": "Events",
     "title": "Discord.VoiceStateUpdate",
     "category": "type",
@@ -601,7 +601,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.VoiceServerUpdate",
+    "location": "events/#Discord.VoiceServerUpdate",
     "page": "Events",
     "title": "Discord.VoiceServerUpdate",
     "category": "type",
@@ -609,7 +609,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Voice-1",
+    "location": "events/#Voice-1",
     "page": "Events",
     "title": "Voice",
     "category": "section",
@@ -617,7 +617,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.WebhooksUpdate",
+    "location": "events/#Discord.WebhooksUpdate",
     "page": "Events",
     "title": "Discord.WebhooksUpdate",
     "category": "type",
@@ -625,7 +625,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Webhooks-1",
+    "location": "events/#Webhooks-1",
     "page": "Events",
     "title": "Webhooks",
     "category": "section",
@@ -633,7 +633,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.Ready",
+    "location": "events/#Discord.Ready",
     "page": "Events",
     "title": "Discord.Ready",
     "category": "type",
@@ -641,7 +641,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Discord.Resumed",
+    "location": "events/#Discord.Resumed",
     "page": "Events",
     "title": "Discord.Resumed",
     "category": "type",
@@ -649,7 +649,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "events.html#Connecting-1",
+    "location": "events/#Connecting-1",
     "page": "Events",
     "title": "Connecting",
     "category": "section",
@@ -657,7 +657,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#",
+    "location": "rest/#",
     "page": "REST API",
     "title": "REST API",
     "category": "page",
@@ -665,7 +665,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#REST-API-1",
+    "location": "rest/#REST-API-1",
     "page": "REST API",
     "title": "REST API",
     "category": "section",
@@ -673,23 +673,23 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.Response",
+    "location": "rest/#Discord.Response",
     "page": "REST API",
     "title": "Discord.Response",
     "category": "type",
-    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch. See also: fetchval.\n\nFields\n\nval::Union{T, Nothing}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Union{HTTP.Messages.Response, Nothing}: The underlying HTTP response, if a request was made.\nexception::Union{Exception, Nothing}: The caught exception, if one is thrown.\n\nExamples\n\nMultiple API calls which immediately return Futures and can be awaited:\n\nfutures = map(i -> create_message(c, channel_id; content=string(i)), 1:10);\nother_work_here()\nresps = fetch.(futures)\n\nSkipping error checks and returning the value directly:\n\nguild = fetchval(create_guild(c; name=\"foo\"))\n\n\n\n\n\n"
+    "text": "A wrapper around a response from the REST API. Every function which wraps a Discord REST API endpoint returns a Future which will contain a value of this type. To retrieve the Response from the Future, use fetch. See also: fetchval.\n\nFields\n\nval::Nullable{T}: The object contained in the HTTP response. For example, for a call to get_channel_message, this value will be a Message.\nok::Bool: The state of the request. If true, then it is safe to access val.\nhttp_response::Nullable{HTTP.Messages.Response}: The underlying HTTP response, if a request was made.\nexception::Nullable{Exception}: The caught exception, if one is thrown.\n\nExamples\n\nMultiple API calls which immediately return Futures and can be awaited:\n\nfutures = map(i -> create_message(c, channel_id; content=string(i)), 1:10);\nother_work_here()\nresps = fetch.(futures)\n\nSkipping error checks and returning the value directly:\n\nguild = fetchval(create_guild(c; name=\"foo\"))\n\n\n\n\n\n"
 },
 
 {
-    "location": "rest.html#Discord.fetchval",
+    "location": "rest/#Discord.fetchval",
     "page": "REST API",
     "title": "Discord.fetchval",
     "category": "function",
-    "text": "fetchval(f::Future{Response{T}}) -> Union{T, Nothing}\n\nShortcut for fetch(f).val: Fetch a Response and return its value. Note that there are no guarantees about the response\'s success and the value being returned, and it discards context that can be useful for debugging, such as HTTP responses and caught exceptions.\n\n\n\n\n\n"
+    "text": "fetchval(f::Future{Response{T}}) -> Nullable{T}\n\nShortcut for fetch(f).val: Fetch a Response and return its value. Note that there are no guarantees about the response\'s success and the value being returned, and it discards context that can be useful for debugging, such as HTTP responses and caught exceptions.\n\n\n\n\n\n"
 },
 
 {
-    "location": "rest.html#Response-1",
+    "location": "rest/#Response-1",
     "page": "REST API",
     "title": "Response",
     "category": "section",
@@ -697,7 +697,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create",
+    "location": "rest/#Discord.create",
     "page": "REST API",
     "title": "Discord.create",
     "category": "function",
@@ -705,7 +705,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.retrieve",
+    "location": "rest/#Discord.retrieve",
     "page": "REST API",
     "title": "Discord.retrieve",
     "category": "function",
@@ -713,7 +713,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.update",
+    "location": "rest/#Discord.update",
     "page": "REST API",
     "title": "Discord.update",
     "category": "function",
@@ -721,7 +721,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete",
+    "location": "rest/#Discord.delete",
     "page": "REST API",
     "title": "Discord.delete",
     "category": "function",
@@ -729,7 +729,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#CRUD-API-1",
+    "location": "rest/#CRUD-API-1",
     "page": "REST API",
     "title": "CRUD API",
     "category": "section",
@@ -737,7 +737,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Endpoints-1",
+    "location": "rest/#Endpoints-1",
     "page": "REST API",
     "title": "Endpoints",
     "category": "section",
@@ -745,7 +745,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_audit_log",
+    "location": "rest/#Discord.get_guild_audit_log",
     "page": "REST API",
     "title": "Discord.get_guild_audit_log",
     "category": "function",
@@ -753,7 +753,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Audit-Log-1",
+    "location": "rest/#Audit-Log-1",
     "page": "REST API",
     "title": "Audit Log",
     "category": "section",
@@ -761,7 +761,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_channel",
+    "location": "rest/#Discord.get_channel",
     "page": "REST API",
     "title": "Discord.get_channel",
     "category": "function",
@@ -769,7 +769,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_channel",
+    "location": "rest/#Discord.modify_channel",
     "page": "REST API",
     "title": "Discord.modify_channel",
     "category": "function",
@@ -777,7 +777,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_channel",
+    "location": "rest/#Discord.delete_channel",
     "page": "REST API",
     "title": "Discord.delete_channel",
     "category": "function",
@@ -785,7 +785,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_channel_messages",
+    "location": "rest/#Discord.get_channel_messages",
     "page": "REST API",
     "title": "Discord.get_channel_messages",
     "category": "function",
@@ -793,7 +793,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_channel_message",
+    "location": "rest/#Discord.get_channel_message",
     "page": "REST API",
     "title": "Discord.get_channel_message",
     "category": "function",
@@ -801,7 +801,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_message",
+    "location": "rest/#Discord.create_message",
     "page": "REST API",
     "title": "Discord.create_message",
     "category": "function",
@@ -809,39 +809,39 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_reaction",
+    "location": "rest/#Discord.create_reaction",
     "page": "REST API",
     "title": "Discord.create_reaction",
     "category": "function",
-    "text": "create_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n)\n\nReact to a Message. If emoji is a custom Emoji, it should be formatted \"name:id\".\n\n\n\n\n\n"
+    "text": "create_reaction(c::Client, channel::Integer, message::Integer, emoji::StringOrChar)\n\nReact to a Message. If emoji is a custom Emoji, it should be formatted \"name:id\".\n\n\n\n\n\n"
 },
 
 {
-    "location": "rest.html#Discord.delete_own_reaction",
+    "location": "rest/#Discord.delete_own_reaction",
     "page": "REST API",
     "title": "Discord.delete_own_reaction",
     "category": "function",
-    "text": "delete_own_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n)\n\nDelete the Client user\'s reaction to a Message.\n\n\n\n\n\n"
+    "text": "delete_own_reaction(c::Client, channel::Integer, message::Integer, emoji::StringOrChar)\n\nDelete the Client user\'s reaction to a Message.\n\n\n\n\n\n"
 },
 
 {
-    "location": "rest.html#Discord.delete_user_reaction",
+    "location": "rest/#Discord.delete_user_reaction",
     "page": "REST API",
     "title": "Discord.delete_user_reaction",
     "category": "function",
-    "text": "delete_user_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n    user::Integer,\n)\n\nDelete a User\'s reaction to a Message.\n\n\n\n\n\n"
+    "text": "delete_user_reaction(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::StringOrChar,\n    user::Integer,\n)\n\nDelete a User\'s reaction to a Message.\n\n\n\n\n\n"
 },
 
 {
-    "location": "rest.html#Discord.get_reactions",
+    "location": "rest/#Discord.get_reactions",
     "page": "REST API",
     "title": "Discord.get_reactions",
     "category": "function",
-    "text": "get_reactions(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::Union{AbstractString, AbstractChar},\n) -> Vector{User}\n\nGet the Users who reacted to a Message with an Emoji.\n\n\n\n\n\n"
+    "text": "get_reactions(\n    c::Client,\n    channel::Integer,\n    message::Integer,\n    emoji::StringOrChar,\n) -> Vector{User}\n\nGet the Users who reacted to a Message with an Emoji.\n\n\n\n\n\n"
 },
 
 {
-    "location": "rest.html#Discord.delete_all_reactions",
+    "location": "rest/#Discord.delete_all_reactions",
     "page": "REST API",
     "title": "Discord.delete_all_reactions",
     "category": "function",
@@ -849,7 +849,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.edit_message",
+    "location": "rest/#Discord.edit_message",
     "page": "REST API",
     "title": "Discord.edit_message",
     "category": "function",
@@ -857,7 +857,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_message",
+    "location": "rest/#Discord.delete_message",
     "page": "REST API",
     "title": "Discord.delete_message",
     "category": "function",
@@ -865,7 +865,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.bulk_delete_messages",
+    "location": "rest/#Discord.bulk_delete_messages",
     "page": "REST API",
     "title": "Discord.bulk_delete_messages",
     "category": "function",
@@ -873,7 +873,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.edit_channel_permissions",
+    "location": "rest/#Discord.edit_channel_permissions",
     "page": "REST API",
     "title": "Discord.edit_channel_permissions",
     "category": "function",
@@ -881,7 +881,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_channel_invites",
+    "location": "rest/#Discord.get_channel_invites",
     "page": "REST API",
     "title": "Discord.get_channel_invites",
     "category": "function",
@@ -889,7 +889,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_channel_invite",
+    "location": "rest/#Discord.create_channel_invite",
     "page": "REST API",
     "title": "Discord.create_channel_invite",
     "category": "function",
@@ -897,7 +897,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_channel_permission",
+    "location": "rest/#Discord.delete_channel_permission",
     "page": "REST API",
     "title": "Discord.delete_channel_permission",
     "category": "function",
@@ -905,7 +905,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.trigger_typing_indicator",
+    "location": "rest/#Discord.trigger_typing_indicator",
     "page": "REST API",
     "title": "Discord.trigger_typing_indicator",
     "category": "function",
@@ -913,7 +913,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_pinned_messages",
+    "location": "rest/#Discord.get_pinned_messages",
     "page": "REST API",
     "title": "Discord.get_pinned_messages",
     "category": "function",
@@ -921,7 +921,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.add_pinned_channel_message",
+    "location": "rest/#Discord.add_pinned_channel_message",
     "page": "REST API",
     "title": "Discord.add_pinned_channel_message",
     "category": "function",
@@ -929,7 +929,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_pinned_channel_message",
+    "location": "rest/#Discord.delete_pinned_channel_message",
     "page": "REST API",
     "title": "Discord.delete_pinned_channel_message",
     "category": "function",
@@ -937,7 +937,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Channel-1",
+    "location": "rest/#Channel-1",
     "page": "REST API",
     "title": "Channel",
     "category": "section",
@@ -945,7 +945,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.list_guild_emojis",
+    "location": "rest/#Discord.list_guild_emojis",
     "page": "REST API",
     "title": "Discord.list_guild_emojis",
     "category": "function",
@@ -953,7 +953,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_emoji",
+    "location": "rest/#Discord.get_guild_emoji",
     "page": "REST API",
     "title": "Discord.get_guild_emoji",
     "category": "function",
@@ -961,7 +961,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_guild_emoji",
+    "location": "rest/#Discord.create_guild_emoji",
     "page": "REST API",
     "title": "Discord.create_guild_emoji",
     "category": "function",
@@ -969,7 +969,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_emoji",
+    "location": "rest/#Discord.modify_guild_emoji",
     "page": "REST API",
     "title": "Discord.modify_guild_emoji",
     "category": "function",
@@ -977,7 +977,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_guild_emoji",
+    "location": "rest/#Discord.delete_guild_emoji",
     "page": "REST API",
     "title": "Discord.delete_guild_emoji",
     "category": "function",
@@ -985,7 +985,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Emoji-1",
+    "location": "rest/#Emoji-1",
     "page": "REST API",
     "title": "Emoji",
     "category": "section",
@@ -993,7 +993,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_guild",
+    "location": "rest/#Discord.create_guild",
     "page": "REST API",
     "title": "Discord.create_guild",
     "category": "function",
@@ -1001,7 +1001,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild",
+    "location": "rest/#Discord.get_guild",
     "page": "REST API",
     "title": "Discord.get_guild",
     "category": "function",
@@ -1009,7 +1009,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild",
+    "location": "rest/#Discord.modify_guild",
     "page": "REST API",
     "title": "Discord.modify_guild",
     "category": "function",
@@ -1017,7 +1017,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_guild",
+    "location": "rest/#Discord.delete_guild",
     "page": "REST API",
     "title": "Discord.delete_guild",
     "category": "function",
@@ -1025,7 +1025,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_channels",
+    "location": "rest/#Discord.get_guild_channels",
     "page": "REST API",
     "title": "Discord.get_guild_channels",
     "category": "function",
@@ -1033,7 +1033,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_guild_channel",
+    "location": "rest/#Discord.create_guild_channel",
     "page": "REST API",
     "title": "Discord.create_guild_channel",
     "category": "function",
@@ -1041,7 +1041,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_channel_positions",
+    "location": "rest/#Discord.modify_guild_channel_positions",
     "page": "REST API",
     "title": "Discord.modify_guild_channel_positions",
     "category": "function",
@@ -1049,7 +1049,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_member",
+    "location": "rest/#Discord.get_guild_member",
     "page": "REST API",
     "title": "Discord.get_guild_member",
     "category": "function",
@@ -1057,7 +1057,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.list_guild_members",
+    "location": "rest/#Discord.list_guild_members",
     "page": "REST API",
     "title": "Discord.list_guild_members",
     "category": "function",
@@ -1065,7 +1065,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.add_guild_member",
+    "location": "rest/#Discord.add_guild_member",
     "page": "REST API",
     "title": "Discord.add_guild_member",
     "category": "function",
@@ -1073,7 +1073,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_member",
+    "location": "rest/#Discord.modify_guild_member",
     "page": "REST API",
     "title": "Discord.modify_guild_member",
     "category": "function",
@@ -1081,7 +1081,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_current_user_nick",
+    "location": "rest/#Discord.modify_current_user_nick",
     "page": "REST API",
     "title": "Discord.modify_current_user_nick",
     "category": "function",
@@ -1089,7 +1089,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.add_guild_member_role",
+    "location": "rest/#Discord.add_guild_member_role",
     "page": "REST API",
     "title": "Discord.add_guild_member_role",
     "category": "function",
@@ -1097,7 +1097,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.remove_guild_member_role",
+    "location": "rest/#Discord.remove_guild_member_role",
     "page": "REST API",
     "title": "Discord.remove_guild_member_role",
     "category": "function",
@@ -1105,7 +1105,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.remove_guild_member",
+    "location": "rest/#Discord.remove_guild_member",
     "page": "REST API",
     "title": "Discord.remove_guild_member",
     "category": "function",
@@ -1113,7 +1113,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_bans",
+    "location": "rest/#Discord.get_guild_bans",
     "page": "REST API",
     "title": "Discord.get_guild_bans",
     "category": "function",
@@ -1121,7 +1121,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_ban",
+    "location": "rest/#Discord.get_guild_ban",
     "page": "REST API",
     "title": "Discord.get_guild_ban",
     "category": "function",
@@ -1129,7 +1129,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_guild_ban",
+    "location": "rest/#Discord.create_guild_ban",
     "page": "REST API",
     "title": "Discord.create_guild_ban",
     "category": "function",
@@ -1137,7 +1137,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.remove_guild_ban",
+    "location": "rest/#Discord.remove_guild_ban",
     "page": "REST API",
     "title": "Discord.remove_guild_ban",
     "category": "function",
@@ -1145,7 +1145,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_roles",
+    "location": "rest/#Discord.get_guild_roles",
     "page": "REST API",
     "title": "Discord.get_guild_roles",
     "category": "function",
@@ -1153,7 +1153,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_guild_role",
+    "location": "rest/#Discord.create_guild_role",
     "page": "REST API",
     "title": "Discord.create_guild_role",
     "category": "function",
@@ -1161,7 +1161,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_role_positions",
+    "location": "rest/#Discord.modify_guild_role_positions",
     "page": "REST API",
     "title": "Discord.modify_guild_role_positions",
     "category": "function",
@@ -1169,7 +1169,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_role",
+    "location": "rest/#Discord.modify_guild_role",
     "page": "REST API",
     "title": "Discord.modify_guild_role",
     "category": "function",
@@ -1177,7 +1177,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_guild_role",
+    "location": "rest/#Discord.delete_guild_role",
     "page": "REST API",
     "title": "Discord.delete_guild_role",
     "category": "function",
@@ -1185,7 +1185,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_prune_count",
+    "location": "rest/#Discord.get_guild_prune_count",
     "page": "REST API",
     "title": "Discord.get_guild_prune_count",
     "category": "function",
@@ -1193,7 +1193,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.begin_guild_prune",
+    "location": "rest/#Discord.begin_guild_prune",
     "page": "REST API",
     "title": "Discord.begin_guild_prune",
     "category": "function",
@@ -1201,7 +1201,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_voice_regions",
+    "location": "rest/#Discord.get_guild_voice_regions",
     "page": "REST API",
     "title": "Discord.get_guild_voice_regions",
     "category": "function",
@@ -1209,7 +1209,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_invites",
+    "location": "rest/#Discord.get_guild_invites",
     "page": "REST API",
     "title": "Discord.get_guild_invites",
     "category": "function",
@@ -1217,7 +1217,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_integrations",
+    "location": "rest/#Discord.get_guild_integrations",
     "page": "REST API",
     "title": "Discord.get_guild_integrations",
     "category": "function",
@@ -1225,7 +1225,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_guild_integration",
+    "location": "rest/#Discord.create_guild_integration",
     "page": "REST API",
     "title": "Discord.create_guild_integration",
     "category": "function",
@@ -1233,7 +1233,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_integration",
+    "location": "rest/#Discord.modify_guild_integration",
     "page": "REST API",
     "title": "Discord.modify_guild_integration",
     "category": "function",
@@ -1241,7 +1241,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_guild_integration",
+    "location": "rest/#Discord.delete_guild_integration",
     "page": "REST API",
     "title": "Discord.delete_guild_integration",
     "category": "function",
@@ -1249,7 +1249,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.sync_guild_integration",
+    "location": "rest/#Discord.sync_guild_integration",
     "page": "REST API",
     "title": "Discord.sync_guild_integration",
     "category": "function",
@@ -1257,7 +1257,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_embed",
+    "location": "rest/#Discord.get_guild_embed",
     "page": "REST API",
     "title": "Discord.get_guild_embed",
     "category": "function",
@@ -1265,7 +1265,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_guild_embed",
+    "location": "rest/#Discord.modify_guild_embed",
     "page": "REST API",
     "title": "Discord.modify_guild_embed",
     "category": "function",
@@ -1273,7 +1273,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_vanity_url",
+    "location": "rest/#Discord.get_vanity_url",
     "page": "REST API",
     "title": "Discord.get_vanity_url",
     "category": "function",
@@ -1281,7 +1281,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_widget_image",
+    "location": "rest/#Discord.get_guild_widget_image",
     "page": "REST API",
     "title": "Discord.get_guild_widget_image",
     "category": "function",
@@ -1289,7 +1289,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Guild-1",
+    "location": "rest/#Guild-1",
     "page": "REST API",
     "title": "Guild",
     "category": "section",
@@ -1297,7 +1297,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_invite",
+    "location": "rest/#Discord.get_invite",
     "page": "REST API",
     "title": "Discord.get_invite",
     "category": "function",
@@ -1305,7 +1305,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_invite",
+    "location": "rest/#Discord.delete_invite",
     "page": "REST API",
     "title": "Discord.delete_invite",
     "category": "function",
@@ -1313,7 +1313,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Invite-1",
+    "location": "rest/#Invite-1",
     "page": "REST API",
     "title": "Invite",
     "category": "section",
@@ -1321,7 +1321,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_current_user",
+    "location": "rest/#Discord.get_current_user",
     "page": "REST API",
     "title": "Discord.get_current_user",
     "category": "function",
@@ -1329,7 +1329,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_user",
+    "location": "rest/#Discord.get_user",
     "page": "REST API",
     "title": "Discord.get_user",
     "category": "function",
@@ -1337,7 +1337,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_current_user",
+    "location": "rest/#Discord.modify_current_user",
     "page": "REST API",
     "title": "Discord.modify_current_user",
     "category": "function",
@@ -1345,7 +1345,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_current_user_guilds",
+    "location": "rest/#Discord.get_current_user_guilds",
     "page": "REST API",
     "title": "Discord.get_current_user_guilds",
     "category": "function",
@@ -1353,7 +1353,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.leave_guild",
+    "location": "rest/#Discord.leave_guild",
     "page": "REST API",
     "title": "Discord.leave_guild",
     "category": "function",
@@ -1361,7 +1361,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_dm",
+    "location": "rest/#Discord.create_dm",
     "page": "REST API",
     "title": "Discord.create_dm",
     "category": "function",
@@ -1369,7 +1369,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#User-1",
+    "location": "rest/#User-1",
     "page": "REST API",
     "title": "User",
     "category": "section",
@@ -1377,7 +1377,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.list_voice_regions",
+    "location": "rest/#Discord.list_voice_regions",
     "page": "REST API",
     "title": "Discord.list_voice_regions",
     "category": "function",
@@ -1385,7 +1385,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Voice-1",
+    "location": "rest/#Voice-1",
     "page": "REST API",
     "title": "Voice",
     "category": "section",
@@ -1393,7 +1393,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.create_webhook",
+    "location": "rest/#Discord.create_webhook",
     "page": "REST API",
     "title": "Discord.create_webhook",
     "category": "function",
@@ -1401,7 +1401,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_channel_webhooks",
+    "location": "rest/#Discord.get_channel_webhooks",
     "page": "REST API",
     "title": "Discord.get_channel_webhooks",
     "category": "function",
@@ -1409,7 +1409,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_guild_webhooks",
+    "location": "rest/#Discord.get_guild_webhooks",
     "page": "REST API",
     "title": "Discord.get_guild_webhooks",
     "category": "function",
@@ -1417,7 +1417,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_webhook",
+    "location": "rest/#Discord.get_webhook",
     "page": "REST API",
     "title": "Discord.get_webhook",
     "category": "function",
@@ -1425,7 +1425,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.get_webhook_with_token",
+    "location": "rest/#Discord.get_webhook_with_token",
     "page": "REST API",
     "title": "Discord.get_webhook_with_token",
     "category": "function",
@@ -1433,7 +1433,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_webhook",
+    "location": "rest/#Discord.modify_webhook",
     "page": "REST API",
     "title": "Discord.modify_webhook",
     "category": "function",
@@ -1441,7 +1441,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.modify_webhook_with_token",
+    "location": "rest/#Discord.modify_webhook_with_token",
     "page": "REST API",
     "title": "Discord.modify_webhook_with_token",
     "category": "function",
@@ -1449,7 +1449,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_webhook",
+    "location": "rest/#Discord.delete_webhook",
     "page": "REST API",
     "title": "Discord.delete_webhook",
     "category": "function",
@@ -1457,7 +1457,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.delete_webhook_with_token",
+    "location": "rest/#Discord.delete_webhook_with_token",
     "page": "REST API",
     "title": "Discord.delete_webhook_with_token",
     "category": "function",
@@ -1465,7 +1465,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.execute_webhook",
+    "location": "rest/#Discord.execute_webhook",
     "page": "REST API",
     "title": "Discord.execute_webhook",
     "category": "function",
@@ -1473,7 +1473,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.execute_slack_compatible_webhook",
+    "location": "rest/#Discord.execute_slack_compatible_webhook",
     "page": "REST API",
     "title": "Discord.execute_slack_compatible_webhook",
     "category": "function",
@@ -1481,7 +1481,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Discord.execute_github_compatible_webhook",
+    "location": "rest/#Discord.execute_github_compatible_webhook",
     "page": "REST API",
     "title": "Discord.execute_github_compatible_webhook",
     "category": "function",
@@ -1489,7 +1489,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "rest.html#Webhook-1",
+    "location": "rest/#Webhook-1",
     "page": "REST API",
     "title": "Webhook",
     "category": "section",
@@ -1497,7 +1497,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "helpers.html#",
+    "location": "helpers/#",
     "page": "Helpers",
     "title": "Helpers",
     "category": "page",
@@ -1505,15 +1505,111 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "helpers.html#Helpers-1",
+    "location": "helpers/#Discord.Permission",
     "page": "Helpers",
-    "title": "Helpers",
-    "category": "section",
-    "text": "Permission\nhas_permission\npermissions_in\nmention\nreply\nsplit_message\nplaintext\nupload_file\nset_game\n@fetch\n@fetchval\n@deferred_fetch\n@deferred_fetchval"
+    "title": "Discord.Permission",
+    "category": "type",
+    "text": "Bitwise permission flags. More details here.\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#",
+    "location": "helpers/#Discord.has_permission",
+    "page": "Helpers",
+    "title": "Discord.has_permission",
+    "category": "function",
+    "text": "has_permission(perms::Integer, perm::Permission) -> Bool\n\nDetermine whether a bitwise OR of permissions contains one Permission.\n\nExample\n\njulia> has_permission(0x0420, PERM_VIEW_CHANNEL)\ntrue\n\njulia> has_permission(0x0420, PERM_ADMINISTRATOR)\nfalse\n\njulia> has_permission(0x0008, PERM_MANAGE_ROLES)\ntrue\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.permissions_in",
+    "page": "Helpers",
+    "title": "Discord.permissions_in",
+    "category": "function",
+    "text": "permissions_in(m::Member, g::Guild, ch::DiscordChannel) -> Int\n\nCompute a Member\'s Permissions in a DiscordChannel.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.reply",
+    "page": "Helpers",
+    "title": "Discord.reply",
+    "category": "function",
+    "text": "reply(\n    c::Client,\n    m::Message,\n    content::Union{AbstractString, AbstractDict, NamedTuple, Embed};\n    at::Bool=false,\n) -> Future{Response}\n\nReply (send a message to the same DiscordChannel) to a Message. If at is set, then the message is prefixed with the sender\'s mention.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.split_message",
+    "page": "Helpers",
+    "title": "Discord.split_message",
+    "category": "function",
+    "text": "split_message(text::AbstractString) -> Vector{String}\n\nSplit a message into 2000-character chunks, preserving formatting.\n\nExamples\n\n```jldoctest; setup=:(using Discord) julia> split_message(\"foo\") 1-element Array{String,1}:  \"foo\"\n\njulia> split_message(repeat(\'.\', 1995) * \"hello, world\")[2] \"hello, world\"\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.plaintext",
+    "page": "Helpers",
+    "title": "Discord.plaintext",
+    "category": "function",
+    "text": "plaintext(m::Message) -> String\nplaintext(c::Client, m::Message) -> String\n\nGet the Message contents with any User mentions replaced with their plaintext. If a Client is provided, DiscordChannels Role are also replaced. However, only channels and roles stored in state are replaced; no API requests are made.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.upload_file",
+    "page": "Helpers",
+    "title": "Discord.upload_file",
+    "category": "function",
+    "text": "upload_file(c::Client, ch::DiscordChannel, path::AbstractString; kwargs...) -> Message\n\nSend a Message with a file Attachment. Any keywords are passed on to create_message.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.set_game",
+    "page": "Helpers",
+    "title": "Discord.set_game",
+    "category": "function",
+    "text": "set_game(\n    c::Client,\n    game::AbstractString;\n    type::Union{ActivityType, Int}=AT_GAME,\n    since::Nullable{Int}=c.presence[\"since\"],\n    status::Union{PresenceStatus, AbstractString}=c.presence[\"status\"],\n    afk::Bool=c.presence[\"afk\"],\n    kwargs...,\n) -> Bool\n\nShortcut for update_status to set the Client\'s Activity. Any additional keywords are passed into the activity section.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.@fetch",
+    "page": "Helpers",
+    "title": "Discord.@fetch",
+    "category": "macro",
+    "text": "@fetch [functions...] block\n\nWrap all calls to the specified CRUD functions (create, retrieve, update, and delete) with fetch inside a block. If no functions are specified, all CRUD functions are wrapped.\n\nExamples\n\nWrapping all CRUD functions:\n\n@fetch begin\n    guild_resp = create(c, Guild; name=\"foo\")\n    guild_resp.ok || error(\"Request for new guild failed\")\n    channel_resp = retrieve(c, DiscordChannel, guild_resp.val)\nend\n\nWrapping only calls to retrieve:\n\n@fetch retrieve begin\n    resp = retrieve(c, DiscordChannel, 123)\n    future = create(c, Message, resp.val; content=\"foo\")  # Behaves normally.\nend\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.@fetchval",
+    "page": "Helpers",
+    "title": "Discord.@fetchval",
+    "category": "macro",
+    "text": "@fetchval [functions...] block\n\nIdentical to @fetch, but calls are wrapped with fetchval instead.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.@deferred_fetch",
+    "page": "Helpers",
+    "title": "Discord.@deferred_fetch",
+    "category": "macro",
+    "text": "@deferred_fetch [functions...] block\n\nIdentical to @fetch, but Futures are not fetched until the end of the block. This is more efficient, but only works when there are no data dependencies in the block.\n\nExamples\n\nThis will work:\n\n@deferred_fetch begin\n    guild_resp = create(c, Guild; name=\"foo\")\n    channel_resp = retrieve(c, DiscordChannel, 123)\nend\n\nThis will not, because the second call is dependent on the first value:\n\n@deferred_fetch begin\n    guild_resp = create(c, Guild; name=\"foo\")\n    channels_resp = retrieve(c, DiscordChannel, guild_resp.val)\nend\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Discord.@deferred_fetchval",
+    "page": "Helpers",
+    "title": "Discord.@deferred_fetchval",
+    "category": "macro",
+    "text": "@deferred_fetchval [functions...] block\n\nIdentical to @deferred_fetch, but Futures have fetchval called on them instead of fetch.\n\n\n\n\n\n"
+},
+
+{
+    "location": "helpers/#Helpers-1",
+    "page": "Helpers",
+    "title": "Helpers",
+    "category": "section",
+    "text": "Permission\nhas_permission\npermissions_in\nreply\nsplit_message\nplaintext\nupload_file\nset_game\n@fetch\n@fetchval\n@deferred_fetch\n@deferred_fetchval"
+},
+
+{
+    "location": "types/#",
     "page": "Types",
     "title": "Types",
     "category": "page",
@@ -1521,47 +1617,47 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Activity",
+    "location": "types/#Discord.Activity",
     "page": "Types",
     "title": "Discord.Activity",
     "category": "type",
-    "text": "A User activity. More details here.\n\nFields\n\nname           :: String\ntype           :: ActivityType\nurl            :: Union{String, Missing, Nothing}\ntimestamps     :: Union{ActivityTimestamps, Missing}\napplication_id :: Union{Snowflake, Missing}\ndetails        :: Union{String, Missing, Nothing}\nstate          :: Union{String, Missing, Nothing}\nparty          :: Union{ActivityParty, Missing}\nassets         :: Union{ActivityAssets, Missing}\nsecrets        :: Union{ActivitySecrets, Missing}\ninstance       :: Union{Bool, Missing}\nflags          :: Union{Int, Missing}\n\n\n\n\n\n"
+    "text": "A User activity. More details here.\n\nFields\n\nname           :: String\ntype           :: ActivityType\nurl            :: OptionalNullable{String}\ntimestamps     :: Optional{ActivityTimestamps}\napplication_id :: Optional{Snowflake}\ndetails        :: OptionalNullable{String}\nstate          :: OptionalNullable{String}\nparty          :: Optional{ActivityParty}\nassets         :: Optional{ActivityAssets}\nsecrets        :: Optional{ActivitySecrets}\ninstance       :: Optional{Bool}\nflags          :: Optional{Int}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ActivityTimestamps",
+    "location": "types/#Discord.ActivityTimestamps",
     "page": "Types",
     "title": "Discord.ActivityTimestamps",
     "category": "type",
-    "text": "The start and stop times of an Activity. More details here.\n\nFields\n\nstart :: Union{DateTime, Missing}\nstop  :: Union{DateTime, Missing}\n\n\n\n\n\n"
+    "text": "The start and stop times of an Activity. More details here.\n\nFields\n\nstart :: Optional{DateTime}\nstop  :: Optional{DateTime}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ActivityParty",
+    "location": "types/#Discord.ActivityParty",
     "page": "Types",
     "title": "Discord.ActivityParty",
     "category": "type",
-    "text": "The current party of an Activity\'s player. More details here.\n\nFields\n\nid   :: Union{String, Missing}\nsize :: Union{Vector{Int}, Missing}\n\n\n\n\n\n"
+    "text": "The current party of an Activity\'s player. More details here.\n\nFields\n\nid   :: Optional{String}\nsize :: Optional{Vector{Int}}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ActivityAssets",
+    "location": "types/#Discord.ActivityAssets",
     "page": "Types",
     "title": "Discord.ActivityAssets",
     "category": "type",
-    "text": "Images and hover text for an Activity. More details here.\n\nFields\n\nlarge_image :: Union{String, Missing}\nlarge_text  :: Union{String, Missing}\nsmall_image :: Union{String, Missing}\nsmall_text  :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "Images and hover text for an Activity. More details here.\n\nFields\n\nlarge_image :: Optional{String}\nlarge_text  :: Optional{String}\nsmall_image :: Optional{String}\nsmall_text  :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ActivitySecrets",
+    "location": "types/#Discord.ActivitySecrets",
     "page": "Types",
     "title": "Discord.ActivitySecrets",
     "category": "type",
-    "text": "Secrets for Rich Presence joining and spectating of an Activity. More details here.\n\nFields\n\njoin     :: Union{String, Missing}\nspectate :: Union{String, Missing}\nmatch    :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "Secrets for Rich Presence joining and spectating of an Activity. More details here.\n\nFields\n\njoin     :: Optional{String}\nspectate :: Optional{String}\nmatch    :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ActivityType",
+    "location": "types/#Discord.ActivityType",
     "page": "Types",
     "title": "Discord.ActivityType",
     "category": "type",
@@ -1569,7 +1665,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.ActivityFlags",
+    "location": "types/#Discord.ActivityFlags",
     "page": "Types",
     "title": "Discord.ActivityFlags",
     "category": "type",
@@ -1577,15 +1673,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Attachment",
+    "location": "types/#Discord.Attachment",
     "page": "Types",
     "title": "Discord.Attachment",
     "category": "type",
-    "text": "A Message attachment. More details here.\n\nFields\n\nid        :: Snowflake\nfilename  :: String\nsize      :: Int\nurl       :: String\nproxy_url :: String\nheight    :: Union{Int, Missing}\nwidth     :: Union{Int, Missing}\n\n\n\n\n\n"
+    "text": "A Message attachment. More details here.\n\nFields\n\nid        :: Snowflake\nfilename  :: String\nsize      :: Int\nurl       :: String\nproxy_url :: String\nheight    :: Optional{Int}\nwidth     :: Optional{Int}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.AuditLog",
+    "location": "types/#Discord.AuditLog",
     "page": "Types",
     "title": "Discord.AuditLog",
     "category": "type",
@@ -1593,31 +1689,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.AuditLogEntry",
+    "location": "types/#Discord.AuditLogEntry",
     "page": "Types",
     "title": "Discord.AuditLogEntry",
     "category": "type",
-    "text": "An entry in an AuditLog. More details here.\n\nFields\n\ntarget_id   :: Union{Snowflake, Nothing}\nchanges     :: Union{Vector{AuditLogChange}, Missing}\nuser_id     :: Snowflake\nid          :: Snowflake\naction_type :: ActionType\noptions     :: Union{AuditLogOptions, Missing}\nreason      :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "An entry in an AuditLog. More details here.\n\nFields\n\ntarget_id   :: Nullable{Snowflake}\nchanges     :: Optional{Vector{AuditLogChange}}\nuser_id     :: Snowflake\nid          :: Snowflake\naction_type :: ActionType\noptions     :: Optional{AuditLogOptions}\nreason      :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.AuditLogChange",
+    "location": "types/#Discord.AuditLogChange",
     "page": "Types",
     "title": "Discord.AuditLogChange",
     "category": "type",
-    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\nFields\n\nnew_value :: Union{T, Missing} where T\nold_value :: Union{T, Missing} where T\nkey       :: String\ntype      :: Type{U} where U\n\n\n\n\n\n"
+    "text": "A change item in an AuditLogEntry.\n\nThe first type parameter is the type of new_value and old_value. The second is the type of the entity that new_value and old_value belong(ed) to.\n\nMore details here.\n\nFields\n\nnew_value :: Optional{T} where T\nold_value :: Optional{T} where T\nkey       :: String\ntype      :: Type{U} where U\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.AuditLogOptions",
+    "location": "types/#Discord.AuditLogOptions",
     "page": "Types",
     "title": "Discord.AuditLogOptions",
     "category": "type",
-    "text": "Optional information in an AuditLogEntry. More details here.\n\nFields\n\ndelete_member_days :: Union{Int, Missing}\nmembers_removed    :: Union{Int, Missing}\nchannel_id         :: Union{Snowflake, Missing}\ncount              :: Union{Int, Missing}\nid                 :: Union{Snowflake, Missing}\ntype               :: Union{OverwriteType, Missing}\nrole_name          :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "Optional information in an AuditLogEntry. More details here.\n\nFields\n\ndelete_member_days :: Optional{Int}\nmembers_removed    :: Optional{Int}\nchannel_id         :: Optional{Snowflake}\ncount              :: Optional{Int}\nid                 :: Optional{Snowflake}\ntype               :: Optional{OverwriteType}\nrole_name          :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ActionType",
+    "location": "types/#Discord.ActionType",
     "page": "Types",
     "title": "Discord.ActionType",
     "category": "type",
@@ -1625,23 +1721,23 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Ban",
+    "location": "types/#Discord.Ban",
     "page": "Types",
     "title": "Discord.Ban",
     "category": "type",
-    "text": "A User ban. More details here.\n\nFields\n\nreason :: Union{String, Nothing}\nuser   :: User\n\n\n\n\n\n"
+    "text": "A User ban. More details here.\n\nFields\n\nreason :: Nullable{String}\nuser   :: User\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.DiscordChannel",
+    "location": "types/#Discord.DiscordChannel",
     "page": "Types",
     "title": "Discord.DiscordChannel",
     "category": "type",
-    "text": "A Discord channel. More details here.\n\nNote: The name Channel is already used, hence the prefix.\n\nFields\n\nid                    :: Snowflake\ntype                  :: ChannelType\nguild_id              :: Union{Snowflake, Missing}\nposition              :: Union{Int, Missing}\npermission_overwrites :: Union{Vector{Overwrite}, Missing}\nname                  :: Union{String, Missing}\ntopic                 :: Union{String, Missing, Nothing}\nnsfw                  :: Union{Bool, Missing}\nlast_message_id       :: Union{Snowflake, Missing, Nothing}\nbitrate               :: Union{Int, Missing}\nuser_limit            :: Union{Int, Missing}\nrate_limit_per_user   :: Union{Int, Missing}\nrecipients            :: Union{Vector{User}, Missing}\nicon                  :: Union{String, Missing, Nothing}\nowner_id              :: Union{Snowflake, Missing}\napplication_id        :: Union{Snowflake, Missing}\nparent_id             :: Union{Snowflake, Missing, Nothing}\nlast_pin_timestamp    :: Union{DateTime, Missing, Nothing}\n\n\n\n\n\n"
+    "text": "A Discord channel. More details here.\n\nNote: The name Channel is already used, hence the prefix.\n\nFields\n\nid                    :: Snowflake\ntype                  :: ChannelType\nguild_id              :: Optional{Snowflake}\nposition              :: Optional{Int}\npermission_overwrites :: Optional{Vector{Overwrite}}\nname                  :: Optional{String}\ntopic                 :: OptionalNullable{String}\nnsfw                  :: Optional{Bool}\nlast_message_id       :: OptionalNullable{Snowflake}\nbitrate               :: Optional{Int}\nuser_limit            :: Optional{Int}\nrate_limit_per_user   :: Optional{Int}\nrecipients            :: Optional{Vector{User}}\nicon                  :: OptionalNullable{String}\nowner_id              :: Optional{Snowflake}\napplication_id        :: Optional{Snowflake}\nparent_id             :: OptionalNullable{Snowflake}\nlast_pin_timestamp    :: OptionalNullable{DateTime}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.ChannelType",
+    "location": "types/#Discord.ChannelType",
     "page": "Types",
     "title": "Discord.ChannelType",
     "category": "type",
@@ -1649,7 +1745,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Connection",
+    "location": "types/#Discord.Connection",
     "page": "Types",
     "title": "Discord.Connection",
     "category": "type",
@@ -1657,79 +1753,79 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Embed",
+    "location": "types/#Discord.Embed",
     "page": "Types",
     "title": "Discord.Embed",
     "category": "type",
-    "text": "A Message embed. More details here.\n\nFields\n\ntitle       :: Union{String, Missing}\ntype        :: Union{String, Missing}\ndescription :: Union{String, Missing}\nurl         :: Union{String, Missing}\ntimestamp   :: Union{DateTime, Missing}\ncolor       :: Union{Int, Missing}\nfooter      :: Union{EmbedFooter, Missing}\nimage       :: Union{EmbedImage, Missing}\nthumbnail   :: Union{EmbedThumbnail, Missing}\nvideo       :: Union{EmbedVideo, Missing}\nprovider    :: Union{EmbedProvider, Missing}\nauthor      :: Union{EmbedAuthor, Missing}\nfields      :: Union{Vector{EmbedField}, Missing}\n\n\n\n\n\n"
+    "text": "A Message embed. More details here.\n\nFields\n\ntitle       :: Optional{String}\ntype        :: Optional{String}\ndescription :: Optional{String}\nurl         :: Optional{String}\ntimestamp   :: Optional{DateTime}\ncolor       :: Optional{Int}\nfooter      :: Optional{EmbedFooter}\nimage       :: Optional{EmbedImage}\nthumbnail   :: Optional{EmbedThumbnail}\nvideo       :: Optional{EmbedVideo}\nprovider    :: Optional{EmbedProvider}\nauthor      :: Optional{EmbedAuthor}\nfields      :: Optional{Vector{EmbedField}}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedThumbnail",
+    "location": "types/#Discord.EmbedThumbnail",
     "page": "Types",
     "title": "Discord.EmbedThumbnail",
     "category": "type",
-    "text": "An Embed\'s thumbnail image information. More details here.\n\nFields\n\nurl       :: Union{String, Missing}\nproxy_url :: Union{String, Missing}\nheight    :: Union{Int, Missing}\nwidth     :: Union{Int, Missing}\n\n\n\n\n\n"
+    "text": "An Embed\'s thumbnail image information. More details here.\n\nFields\n\nurl       :: Optional{String}\nproxy_url :: Optional{String}\nheight    :: Optional{Int}\nwidth     :: Optional{Int}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedVideo",
+    "location": "types/#Discord.EmbedVideo",
     "page": "Types",
     "title": "Discord.EmbedVideo",
     "category": "type",
-    "text": "An Embed\'s video information. More details here.\n\nFields\n\nurl    :: Union{String, Missing}\nheight :: Union{Int, Missing}\nwidth  :: Union{Int, Missing}\n\n\n\n\n\n"
+    "text": "An Embed\'s video information. More details here.\n\nFields\n\nurl    :: Optional{String}\nheight :: Optional{Int}\nwidth  :: Optional{Int}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedImage",
+    "location": "types/#Discord.EmbedImage",
     "page": "Types",
     "title": "Discord.EmbedImage",
     "category": "type",
-    "text": "An Embed\'s image information. More details here.\n\nFields\n\nurl       :: Union{String, Missing}\nproxy_url :: Union{String, Missing}\nheight    :: Union{Int, Missing}\nwidth     :: Union{Int, Missing}\n\n\n\n\n\n"
+    "text": "An Embed\'s image information. More details here.\n\nFields\n\nurl       :: Optional{String}\nproxy_url :: Optional{String}\nheight    :: Optional{Int}\nwidth     :: Optional{Int}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedProvider",
+    "location": "types/#Discord.EmbedProvider",
     "page": "Types",
     "title": "Discord.EmbedProvider",
     "category": "type",
-    "text": "An Embed\'s provider information. More details here.\n\nFields\n\nname :: Union{String, Missing}\nurl  :: Union{String, Missing, Nothing}\n\n\n\n\n\n"
+    "text": "An Embed\'s provider information. More details here.\n\nFields\n\nname :: Optional{String}\nurl  :: OptionalNullable{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedAuthor",
+    "location": "types/#Discord.EmbedAuthor",
     "page": "Types",
     "title": "Discord.EmbedAuthor",
     "category": "type",
-    "text": "An Embed\'s author information. More details here.\n\nFields\n\nname           :: Union{String, Missing}\nurl            :: Union{String, Missing}\nicon_url       :: Union{String, Missing}\nproxy_icon_url :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "An Embed\'s author information. More details here.\n\nFields\n\nname           :: Optional{String}\nurl            :: Optional{String}\nicon_url       :: Optional{String}\nproxy_icon_url :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedFooter",
+    "location": "types/#Discord.EmbedFooter",
     "page": "Types",
     "title": "Discord.EmbedFooter",
     "category": "type",
-    "text": "An Embed\'s footer information. More details here.\n\nFields\n\ntext           :: String\nicon_url       :: Union{String, Missing}\nproxy_icon_url :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "An Embed\'s footer information. More details here.\n\nFields\n\ntext           :: String\nicon_url       :: Optional{String}\nproxy_icon_url :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.EmbedField",
+    "location": "types/#Discord.EmbedField",
     "page": "Types",
     "title": "Discord.EmbedField",
     "category": "type",
-    "text": "An Embed field. More details here.\n\nFields\n\nname   :: String\nvalue  :: String\ninline :: Union{Bool, Missing}\n\n\n\n\n\n"
+    "text": "An Embed field. More details here.\n\nFields\n\nname   :: String\nvalue  :: String\ninline :: Optional{Bool}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.Emoji",
+    "location": "types/#Discord.Emoji",
     "page": "Types",
     "title": "Discord.Emoji",
     "category": "type",
-    "text": "An emoji. More details here.\n\nFields\n\nid             :: Union{Snowflake, Nothing}\nname           :: String\nroles          :: Union{Vector{Snowflake}, Missing}\nuser           :: Union{User, Missing}\nrequire_colons :: Union{Bool, Missing}\nmanaged        :: Union{Bool, Missing}\nanimated       :: Union{Bool, Missing}\n\n\n\n\n\n"
+    "text": "An emoji. More details here.\n\nFields\n\nid             :: Nullable{Snowflake}\nname           :: String\nroles          :: Optional{Vector{Snowflake}}\nuser           :: Optional{User}\nrequire_colons :: Optional{Bool}\nmanaged        :: Optional{Bool}\nanimated       :: Optional{Bool}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.AbstractGuild",
+    "location": "types/#Discord.AbstractGuild",
     "page": "Types",
     "title": "Discord.AbstractGuild",
     "category": "type",
@@ -1737,23 +1833,23 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Guild",
+    "location": "types/#Discord.Guild",
     "page": "Types",
     "title": "Discord.Guild",
     "category": "type",
-    "text": "A Discord guild (server). More details here.\n\nFields\n\nid                            :: Snowflake\nname                          :: String\nicon                          :: Union{String, Nothing}\nsplash                        :: Union{String, Nothing}\nowner                         :: Union{Bool, Missing}\nowner_id                      :: Union{Snowflake, Missing}\npermissions                   :: Union{Int, Missing}\nregion                        :: Union{String, Missing}\nafk_channel_id                :: Union{Snowflake, Missing, Nothing}\nafk_timeout                   :: Union{Int, Missing}\nembed_enabled                 :: Union{Bool, Missing}\nembed_channel_id              :: Union{Snowflake, Missing, Nothing}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Union{MessageNotificationLevel, Missing}\nexplicit_content_filter       :: Union{ExplicitContentFilterLevel, Missing}\nroles                         :: Union{Vector{Role}, Missing}\nemojis                        :: Union{Vector{Emoji}, Missing}\nfeatures                      :: Vector{String}\nmfa_level                     :: Union{MFALevel, Missing}\napplication_id                :: Union{Snowflake, Missing, Nothing}\nwidget_enabled                :: Union{Bool, Missing}\nwidget_channel_id             :: Union{Snowflake, Missing, Nothing}\nsystem_channel_id             :: Union{Snowflake, Missing, Nothing}\njoined_at                     :: Union{DateTime, Missing}\nlarge                         :: Union{Bool, Missing}\nunavailable                   :: Union{Bool, Missing}\nmember_count                  :: Union{Int, Missing}\nvoice_states                  :: Union{Vector{VoiceState}, Missing}\nmembers                       :: Union{Vector{Member}, Missing}\nchannels                      :: Union{Vector{DiscordChannel}, Missing}\npresences                     :: Union{Vector{Presence}, Missing}\n\n\n\n\n\n"
+    "text": "A Discord guild (server). More details here.\n\nFields\n\nid                            :: Snowflake\nname                          :: String\nicon                          :: Nullable{String}\nsplash                        :: Nullable{String}\nowner                         :: Optional{Bool}\nowner_id                      :: Optional{Snowflake}\npermissions                   :: Optional{Int}\nregion                        :: Optional{String}\nafk_channel_id                :: OptionalNullable{Snowflake}\nafk_timeout                   :: Optional{Int}\nembed_enabled                 :: Optional{Bool}\nembed_channel_id              :: OptionalNullable{Snowflake}\nverification_level            :: VerificationLevel\ndefault_message_notifications :: Optional{MessageNotificationLevel}\nexplicit_content_filter       :: Optional{ExplicitContentFilterLevel}\nroles                         :: Optional{Vector{Role}}\nemojis                        :: Optional{Vector{Emoji}}\nfeatures                      :: Vector{String}\nmfa_level                     :: Optional{MFALevel}\napplication_id                :: OptionalNullable{Snowflake}\nwidget_enabled                :: Optional{Bool}\nwidget_channel_id             :: OptionalNullable{Snowflake}\nsystem_channel_id             :: OptionalNullable{Snowflake}\njoined_at                     :: Optional{DateTime}\nlarge                         :: Optional{Bool}\nunavailable                   :: Optional{Bool}\nmember_count                  :: Optional{Int}\nvoice_states                  :: Optional{Vector{VoiceState}}\nmembers                       :: Optional{Vector{Member}}\nchannels                      :: Optional{Vector{DiscordChannel}}\npresences                     :: Optional{Vector{Presence}}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.UnavailableGuild",
+    "location": "types/#Discord.UnavailableGuild",
     "page": "Types",
     "title": "Discord.UnavailableGuild",
     "category": "type",
-    "text": "An unavailable Discord guild (server). More details here.\n\nFields\n\nid          :: Snowflake\nunavailable :: Union{Bool, Missing}\n\n\n\n\n\n"
+    "text": "An unavailable Discord guild (server). More details here.\n\nFields\n\nid          :: Snowflake\nunavailable :: Optional{Bool}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.VerificationLevel",
+    "location": "types/#Discord.VerificationLevel",
     "page": "Types",
     "title": "Discord.VerificationLevel",
     "category": "type",
@@ -1761,7 +1857,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.MessageNotificationLevel",
+    "location": "types/#Discord.MessageNotificationLevel",
     "page": "Types",
     "title": "Discord.MessageNotificationLevel",
     "category": "type",
@@ -1769,7 +1865,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.ExplicitContentFilterLevel",
+    "location": "types/#Discord.ExplicitContentFilterLevel",
     "page": "Types",
     "title": "Discord.ExplicitContentFilterLevel",
     "category": "type",
@@ -1777,7 +1873,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.MFALevel",
+    "location": "types/#Discord.MFALevel",
     "page": "Types",
     "title": "Discord.MFALevel",
     "category": "type",
@@ -1785,15 +1881,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.GuildEmbed",
+    "location": "types/#Discord.GuildEmbed",
     "page": "Types",
     "title": "Discord.GuildEmbed",
     "category": "type",
-    "text": "A Guild embed. More details here.\n\nFields\n\nenabled    :: Bool\nchannel_id :: Union{Snowflake, Nothing}\n\n\n\n\n\n"
+    "text": "A Guild embed. More details here.\n\nFields\n\nenabled    :: Bool\nchannel_id :: Nullable{Snowflake}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.Integration",
+    "location": "types/#Discord.Integration",
     "page": "Types",
     "title": "Discord.Integration",
     "category": "type",
@@ -1801,7 +1897,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.IntegrationAccount",
+    "location": "types/#Discord.IntegrationAccount",
     "page": "Types",
     "title": "Discord.IntegrationAccount",
     "category": "type",
@@ -1809,15 +1905,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Invite",
+    "location": "types/#Discord.Invite",
     "page": "Types",
     "title": "Discord.Invite",
     "category": "type",
-    "text": "An invite to a Guild. More details here.\n\nFields\n\ncode                       :: String\nguild                      :: Union{Guild, Missing}\nchannel                    :: DiscordChannel\napproximate_presence_cound :: Union{Int, Missing}\napproximate_member_count   :: Union{Int, Missing}\n\n\n\n\n\n"
+    "text": "An invite to a Guild. More details here.\n\nFields\n\ncode                       :: String\nguild                      :: Optional{Guild}\nchannel                    :: DiscordChannel\napproximate_presence_cound :: Optional{Int}\napproximate_member_count   :: Optional{Int}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.InviteMetadata",
+    "location": "types/#Discord.InviteMetadata",
     "page": "Types",
     "title": "Discord.InviteMetadata",
     "category": "type",
@@ -1825,31 +1921,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Member",
+    "location": "types/#Discord.Member",
     "page": "Types",
     "title": "Discord.Member",
     "category": "type",
-    "text": "A Guild member. More details here.\n\nFields\n\nuser      :: Union{User, Missing}\nnick      :: Union{String, Missing, Nothing}\nroles     :: Vector{Snowflake}\njoined_at :: DateTime\ndeaf      :: Bool\nmute      :: Bool\n\n\n\n\n\n"
+    "text": "A Guild member. More details here.\n\nFields\n\nuser      :: Optional{User}\nnick      :: OptionalNullable{String}\nroles     :: Vector{Snowflake}\njoined_at :: DateTime\ndeaf      :: Bool\nmute      :: Bool\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.Message",
+    "location": "types/#Discord.Message",
     "page": "Types",
     "title": "Discord.Message",
     "category": "type",
-    "text": "A message sent to a DiscordChannel. More details here.\n\nFields\n\nid               :: Snowflake\nchannel_id       :: Snowflake\nguild_id         :: Union{Snowflake, Missing}\nauthor           :: Union{User, Missing}\nmember           :: Union{Member, Missing}\ncontent          :: Union{String, Missing}\ntimestamp        :: Union{DateTime, Missing}\nedited_timestamp :: Union{DateTime, Missing, Nothing}\ntts              :: Union{Bool, Missing}\nmention_everyone :: Union{Bool, Missing}\nmentions         :: Union{Vector{User}, Missing}\nmention_roles    :: Union{Vector{Snowflake}, Missing}\nattachments      :: Union{Vector{Attachment}, Missing}\nembeds           :: Union{Vector{Embed}, Missing}\nreactions        :: Union{Vector{Reaction}, Missing}\nnonce            :: Union{Snowflake, Missing, Nothing}\npinned           :: Union{Bool, Missing}\nwebhook_id       :: Union{Snowflake, Missing}\ntype             :: Union{MessageType, Missing}\nactivity         :: Union{MessageActivity, Missing}\napplication      :: Union{MessageApplication, Missing}\n\n\n\n\n\n"
+    "text": "A message sent to a DiscordChannel. More details here.\n\nFields\n\nid               :: Snowflake\nchannel_id       :: Snowflake\nguild_id         :: Optional{Snowflake}\nauthor           :: Optional{User}\nmember           :: Optional{Member}\ncontent          :: Optional{String}\ntimestamp        :: Optional{DateTime}\nedited_timestamp :: OptionalNullable{DateTime}\ntts              :: Optional{Bool}\nmention_everyone :: Optional{Bool}\nmentions         :: Optional{Vector{User}}\nmention_roles    :: Optional{Vector{Snowflake}}\nattachments      :: Optional{Vector{Attachment}}\nembeds           :: Optional{Vector{Embed}}\nreactions        :: Optional{Vector{Reaction}}\nnonce            :: OptionalNullable{Snowflake}\npinned           :: Optional{Bool}\nwebhook_id       :: Optional{Snowflake}\ntype             :: Optional{MessageType}\nactivity         :: Optional{MessageActivity}\napplication      :: Optional{MessageApplication}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.MessageActivity",
+    "location": "types/#Discord.MessageActivity",
     "page": "Types",
     "title": "Discord.MessageActivity",
     "category": "type",
-    "text": "A Message activity. More details here.\n\nFields\n\ntype     :: MessageActivityType\nparty_id :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "A Message activity. More details here.\n\nFields\n\ntype     :: MessageActivityType\nparty_id :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.MessageApplication",
+    "location": "types/#Discord.MessageApplication",
     "page": "Types",
     "title": "Discord.MessageApplication",
     "category": "type",
@@ -1857,7 +1953,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.MessageType",
+    "location": "types/#Discord.MessageType",
     "page": "Types",
     "title": "Discord.MessageType",
     "category": "type",
@@ -1865,7 +1961,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.MessageActivityType",
+    "location": "types/#Discord.MessageActivityType",
     "page": "Types",
     "title": "Discord.MessageActivityType",
     "category": "type",
@@ -1873,7 +1969,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Overwrite",
+    "location": "types/#Discord.Overwrite",
     "page": "Types",
     "title": "Discord.Overwrite",
     "category": "type",
@@ -1881,7 +1977,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.OverwriteType",
+    "location": "types/#Discord.OverwriteType",
     "page": "Types",
     "title": "Discord.OverwriteType",
     "category": "type",
@@ -1889,15 +1985,15 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Presence",
+    "location": "types/#Discord.Presence",
     "page": "Types",
     "title": "Discord.Presence",
     "category": "type",
-    "text": "A User\'s presence. More details here.\n\nFields\n\nuser       :: User\nroles      :: Union{Vector{Snowflake}, Missing}\ngame       :: Union{Activity, Nothing}\nguild_id   :: Union{Snowflake, Missing}\nstatus     :: PresenceStatus\nactivities :: Vector{Activity}\n\n\n\n\n\n"
+    "text": "A User\'s presence. More details here.\n\nFields\n\nuser       :: User\nroles      :: Optional{Vector{Snowflake}}\ngame       :: Nullable{Activity}\nguild_id   :: Optional{Snowflake}\nstatus     :: PresenceStatus\nactivities :: Vector{Activity}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.PresenceStatus",
+    "location": "types/#Discord.PresenceStatus",
     "page": "Types",
     "title": "Discord.PresenceStatus",
     "category": "type",
@@ -1905,7 +2001,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Reaction",
+    "location": "types/#Discord.Reaction",
     "page": "Types",
     "title": "Discord.Reaction",
     "category": "type",
@@ -1913,23 +2009,23 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.Role",
+    "location": "types/#Discord.Role",
     "page": "Types",
     "title": "Discord.Role",
     "category": "type",
-    "text": "A User role. More details here.\n\nFields\n\nid          :: Snowflake\nname        :: String\ncolor       :: Union{Int, Missing}\nhoist       :: Union{Bool, Missing}\nposition    :: Union{Int, Missing}\npermissions :: Union{Int, Missing}\nmanaged     :: Union{Bool, Missing}\nmentionable :: Union{Bool, Missing}\n\n\n\n\n\n"
+    "text": "A User role. More details here.\n\nFields\n\nid          :: Snowflake\nname        :: String\ncolor       :: Optional{Int}\nhoist       :: Optional{Bool}\nposition    :: Optional{Int}\npermissions :: Optional{Int}\nmanaged     :: Optional{Bool}\nmentionable :: Optional{Bool}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.User",
+    "location": "types/#Discord.User",
     "page": "Types",
     "title": "Discord.User",
     "category": "type",
-    "text": "A Discord user. More details here.\n\nFields\n\nid            :: Snowflake\nusername      :: Union{String, Missing}\ndiscriminator :: Union{String, Missing}\navatar        :: Union{String, Missing, Nothing}\nbot           :: Union{Bool, Missing}\nmfa_enabled   :: Union{Bool, Missing}\nlocale        :: Union{String, Missing}\nverified      :: Union{Bool, Missing}\nemail         :: Union{String, Missing, Nothing}\n\n\n\n\n\n"
+    "text": "A Discord user. More details here.\n\nFields\n\nid            :: Snowflake\nusername      :: Optional{String}\ndiscriminator :: Optional{String}\navatar        :: OptionalNullable{String}\nbot           :: Optional{Bool}\nmfa_enabled   :: Optional{Bool}\nlocale        :: Optional{String}\nverified      :: Optional{Bool}\nemail         :: OptionalNullable{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.VoiceRegion",
+    "location": "types/#Discord.VoiceRegion",
     "page": "Types",
     "title": "Discord.VoiceRegion",
     "category": "type",
@@ -1937,31 +2033,31 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "types.html#Discord.VoiceState",
+    "location": "types/#Discord.VoiceState",
     "page": "Types",
     "title": "Discord.VoiceState",
     "category": "type",
-    "text": "A User\'s voice connection status. More details here.\n\nFields\n\nguild_id   :: Union{Snowflake, Missing}\nchannel_id :: Union{Snowflake, Nothing}\nuser_id    :: Snowflake\nmember     :: Union{Member, Missing}\nsession_id :: String\ndeaf       :: Bool\nmute       :: Bool\nself_deaf  :: Bool\nself_mute  :: Bool\nsuppress   :: Bool\n\n\n\n\n\n"
+    "text": "A User\'s voice connection status. More details here.\n\nFields\n\nguild_id   :: Optional{Snowflake}\nchannel_id :: Nullable{Snowflake}\nuser_id    :: Snowflake\nmember     :: Optional{Member}\nsession_id :: String\ndeaf       :: Bool\nmute       :: Bool\nself_deaf  :: Bool\nself_mute  :: Bool\nsuppress   :: Bool\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Discord.Webhook",
+    "location": "types/#Discord.Webhook",
     "page": "Types",
     "title": "Discord.Webhook",
     "category": "type",
-    "text": "A Webhook. More details here.\n\nFields\n\nid         :: Snowflake\nguild_id   :: Union{Snowflake, Missing}\nchannel_id :: Snowflake\nuser       :: Union{User, Missing}\nname       :: Union{String, Nothing}\navatar     :: Union{String, Nothing}\ntoken      :: Union{String, Missing}\n\n\n\n\n\n"
+    "text": "A Webhook. More details here.\n\nFields\n\nid         :: Snowflake\nguild_id   :: Optional{Snowflake}\nchannel_id :: Snowflake\nuser       :: Optional{User}\nname       :: Nullable{String}\navatar     :: Nullable{String}\ntoken      :: Optional{String}\n\n\n\n\n\n"
 },
 
 {
-    "location": "types.html#Types-1",
+    "location": "types/#Types-1",
     "page": "Types",
     "title": "Types",
     "category": "section",
-    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64. Unions with Nothing indicate that a field is nullable, whereas Unions with Missing indicate that a field is optional. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
+    "text": "This page is organized in mostly-alphabetical order. Note that Snowflake ===  UInt64, Optional{T} === Union{T, Missing}, Nullable{T} === Union{T, Nothing}, and OptionalNullable{T} === Union{T, Missing, Nothing}. More details here.Most of the time, you\'ll receive objects of these types as return values rather than creating them yourself. However, should you wish to create your own instances from scratch, all of these types have keyword constructors. If a field value can be missing, then its keyword is optional.Activity\nActivityTimestamps\nActivityParty\nActivityAssets\nActivitySecrets\nActivityType\nActivityFlags\nAttachment\nAuditLog\nAuditLogEntry\nAuditLogChange\nAuditLogOptions\nActionType\nBan\nDiscordChannel\nChannelType\nConnection\nEmbed\nEmbedThumbnail\nEmbedVideo\nEmbedImage\nEmbedProvider\nEmbedAuthor\nEmbedFooter\nEmbedField\nEmoji\nAbstractGuild\nGuild\nUnavailableGuild\nVerificationLevel\nMessageNotificationLevel\nExplicitContentFilterLevel\nMFALevel\nGuildEmbed\nIntegration\nIntegrationAccount\nInvite\nInviteMetadata\nMember\nMessage\nMessageActivity\nMessageApplication\nMessageType\nMessageActivityType\nOverwrite\nOverwriteType\nPresence\nPresenceStatus\nReaction\nRole\nUser\nVoiceRegion\nVoiceState\nWebhook"
 },
 
 {
-    "location": "tutorial.html#",
+    "location": "tutorial/#",
     "page": "Tutorial",
     "title": "Tutorial",
     "category": "page",
@@ -1969,7 +2065,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "tutorial.html#Tutorial-1",
+    "location": "tutorial/#Tutorial-1",
     "page": "Tutorial",
     "title": "Tutorial",
     "category": "section",
