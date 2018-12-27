@@ -68,12 +68,12 @@ using Discord: Foo, Bar
         @test occursin("$(rpad("a", 10)) :: String", docs)
         # Array{T,1} is replaced with Vector{T}.
         @test occursin("Vector{String}", docs)
-        # Union{Missing, Nothing, T} is replaced with Union{T, Missing, Nothing}.
-        @test_broken occursin("Union{Vector{String}, Missing, Nothing}", docs)
-        # Union{Missing, T} is replaced with Union{T, Missing}.
-        @test_broken occursin("Union{Int, Missing}", docs)
-        # Union{Nothing, T} is replaced with Union{T, Nothing}.
-        @test_broken occursin("Union{Int, Nothing}", docs)
+        # Union{Missing, Nothing, T} is replaced with OptionalNullable{T]}.
+        @test occursin("OptionalNullable{Vector{String}}", docs)
+        # Union{Missing, T} is replaced with Optional{T}.
+        @test occursin("Optional{Int}", docs)
+        # Union{Nothing, T} is replaced with Nullable{T}.
+        @test occursin("Nullable{Int}", docs)
     end
 
     @testset "@lower" begin

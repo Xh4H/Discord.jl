@@ -159,55 +159,57 @@ end
         @test fetch(t) == Any[3, 4]
     end
 
-@testset "Handler collection" begin
-    delete_handler!(c, Ready)
-    add_handler!(c, Ready, f)
-    add_handler!(c, Ready, f)
-    add_handler!(c, AbstractEvent, f)
-    add_handler!(c, FallbackEvent, f)
-    @test length(handlers(c, Ready)) == 2
+    @testset "Handler collection" begin
+        delete_handler!(c, Ready)
+        add_handler!(c, Ready, f)
+        add_handler!(c, Ready, f)
+        add_handler!(c, AbstractEvent, f)
+        add_handler!(c, FallbackEvent, f)
+        @test length(handlers(c, Ready)) == 2
 
-    # No handlers means no handlers.
-    empty!(c.handlers)
-    @test isempty(allhandlers(c, MessageCreate))
-    @test isempty(allhandlers(c, AbstractEvent))
-    @test isempty(allhandlers(c, FallbackEvent))
+        # No handlers means no handlers.
+        empty!(c.handlers)
+        @test isempty(allhandlers(c, MessageCreate))
+        @test isempty(allhandlers(c, AbstractEvent))
+        @test isempty(allhandlers(c, FallbackEvent))
 
-    # Both the specific and catch-all handler should match.
-    add_handler!(c, Ready, f)
-    add_handler!(c, AbstractEvent, f)
-    @test allhandlers(c, Ready) == [
-        collect(c.handlers[AbstractEvent]);
-        collect(c.handlers[Ready]);
-    ]
+        # Both the specific and catch-all handler should match.
+        add_handler!(c, Ready, f)
+        add_handler!(c, AbstractEvent, f)
+        @test allhandlers(c, Ready) == [
+            collect(c.handlers[AbstractEvent]);
+            collect(c.handlers[Ready]);
+        ]
 
-    # The fallback handler should only match if there are non non-default handlers.
-    add_handler!(c, FallbackEvent, f)
-    @test allhandlers(c, Ready) == [
-        collect(c.handlers[AbstractEvent]);
-        collect(c.handlers[Ready]);
-    ]
-    delete_handler!(c, Ready)
-    @test allhandlers(c, Ready) == collect(c.handlers[AbstractEvent])
-    add_handler!(c, Ready, f)
-    delete_handler!(c, AbstractEvent)
-    @test allhandlers(c, Ready) == collect(c.handlers[Ready])
-    delete_handler!(c, Ready)
-    add_handler!(c, Ready, f; tag=DEFAULT_HANDLER_TAG)
-    @test allhandlers(c, Ready) == [
-        collect(c.handlers[Ready]);
-        collect(c.handlers[FallbackEvent]);
-    ]
-    delete_handler!(c, Ready)
-    @test allhandlers(c, Ready) == collect(c.handlers[FallbackEvent])
-end
+        # The fallback handler should only match if there are non non-default handlers.
+        add_handler!(c, FallbackEvent, f)
+        @test allhandlers(c, Ready) == [
+            collect(c.handlers[AbstractEvent]);
+            collect(c.handlers[Ready]);
+        ]
+        delete_handler!(c, Ready)
+        @test allhandlers(c, Ready) == collect(c.handlers[AbstractEvent])
+        add_handler!(c, Ready, f)
+        delete_handler!(c, AbstractEvent)
+        @test allhandlers(c, Ready) == collect(c.handlers[Ready])
+        delete_handler!(c, Ready)
+        add_handler!(c, Ready, f; tag=DEFAULT_HANDLER_TAG)
+        @test allhandlers(c, Ready) == [
+            collect(c.handlers[Ready]);
+            collect(c.handlers[FallbackEvent]);
+        ]
+        delete_handler!(c, Ready)
+        @test allhandlers(c, Ready) == collect(c.handlers[FallbackEvent])
+    end
 
-@testset "Default handler lookup" begin
-    c = Client("token")
-    @test hasdefault(c, MessageCreate)
-    delete_handler!(c, MessageCreate, DEFAULT_HANDLER_TAG)
-    @test !hasdefault(c, MessageCreate)
-    add_handler!(c, MessageCreate, f; tag=DEFAULT_HANDLER_TAG)
-    @test hasdefault(c, MessageCreate)
-end
+    @testset "Default handler lookup" begin
+        c = Client("token")
+        @test hasdefault(c, MessageCreate)
+        delete_handler!(c, MessageCreate, DEFAULT_HANDLER_TAG)
+        @test !hasdefault(c, MessageCreate)
+        add_handler!(c, MessageCreate, f; tag=DEFAULT_HANDLER_TAG)
+        @test hasdefault(c, MessageCreate)
+    end
+
+    # TODO: Finish the tests.
 end

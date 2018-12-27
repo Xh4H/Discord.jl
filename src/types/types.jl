@@ -53,12 +53,10 @@ end
 macro merge(T)
     quote
         function Base.merge(a::$T, b::$T)
-            vals = []
-
-            for f in fieldnames($T)
+            vals = map(fieldnames($T)) do f
                 va = getfield(a, f)
                 vb = getfield(b, f)
-                push!(vals, ismissing(vb) ? va : vb)
+                ismissing(vb) ? va : vb
             end
 
             return $T(vals...)
