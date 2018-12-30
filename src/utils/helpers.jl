@@ -139,7 +139,12 @@ function Base.show(io::IO, m::Member)
     end
 end
 function Base.show(io::IO, e::Emoji)
-    print(io, e.id === nothing ? ":$(e.name):" : "<:$(e.name):$(e.id)>")
+    s = if e.id === nothing
+        coalesce(e.require_colons, false) ? ":$(e.name):" : e.name
+    else
+        coalesce(e.animated, false) ? "<a:$(e.name):$(e.id)>" : "<:$(e.name):$(e.id)>"
+    end
+    print(io, s)
 end
 
 """
