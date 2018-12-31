@@ -10,7 +10,7 @@
         @test sprint(show, r) == "<@&255>"
         @test sprint(show, u) == "<@255>"
         @test sprint(show, e1) == "<:foo:255>"
-        @test sprint(show, e2) == ":foo:"
+        @test sprint(show, e2) == "foo"
         m = Member(u, "foo", [], now(), true, true)
         @test sprint(show, m) == "<@!255>"
         m = Member(u, nothing, [], now(), true, true)
