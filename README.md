@@ -50,7 +50,7 @@ open(c)
 wait(c)
 ```
 
-For further examples, guides, and reference, please refer to the documentation linked above.
+For further examples, guides and reference please refer to the documentation linked above.
 
 ## Contributing
 
