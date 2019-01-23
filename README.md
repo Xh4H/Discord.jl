@@ -19,11 +19,12 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 
 ## Installation
 
-Discord.jl is not yet released. Add it from the Git repository with the following commands.
+Discord.jl is not yet released.
+Add it from the Git repository with the following command:
 
 ```julia
 # Enter ']' from the REPL to enter Pkg mode.
-pkg> add https://github.com/PurgePJ/Discord.jl https://github.com/JuliaWeb/HTTP.jl
+pkg> add https://github.com/PurgePJ/Discord.jl
 ```
 
 ## Example

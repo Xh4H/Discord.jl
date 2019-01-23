@@ -26,12 +26,10 @@ deps = ["LinearAlgebra", "Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[HTTP]]
-deps = ["Base64", "Dates", "Distributed", "IniFile", "JSON", "MbedTLS", "Sockets", "Test"]
-git-tree-sha1 = "98945530e30fd7e985bf0cd51f2e6b19ebc7be6d"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaWeb/HTTP.jl.git"
+deps = ["Base64", "Dates", "Distributed", "IniFile", "MbedTLS", "Random", "Sockets", "Test"]
+git-tree-sha1 = "25db0e3f27bd5715814ca7e4ad22025fdcf5cc6e"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "0.7.0"
+version = "0.8.0"
 
 [[IniFile]]
 deps = ["Test"]
@@ -117,9 +115,9 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
 [[Setfield]]
 deps = ["InteractiveUtils", "MacroTools", "Test"]
-git-tree-sha1 = "2df2e919665c99213475f3749343dab270baa43f"
+git-tree-sha1 = "a7d21e4a6dac5cb54f8ea2e157ac5d5bd762889b"
 uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
-version = "0.3.1"
+version = "0.3.2"
 
 [[SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
