@@ -57,3 +57,7 @@ For further examples, guides and reference please refer to the documentation lin
 
 Pull requests are welcome!
 In most cases, it will be helpful to discuss the change you would like to make on [Discord](https://discord.gg/ng9TjYd) before diving in too deep.
+
+## Credits
+
+Big thanks to [christopher-dG](https://github.com/christopher-dG) for developing this project with me, and also [TheOnlyArtz](https://github.com/TheOnlyArtz) for initially starting up this repository with me.
