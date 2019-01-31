@@ -13,14 +13,14 @@ makedocs(;
         "Types"    => "types.md",
         "Tutorial" => "tutorial.md",
     ],
-    repo="https://github.com/PurgePJ/Discord.jl/blob/{commit}{path}#L{line}",
+    repo="https://github.com/Xh4H/Discord.jl/blob/{commit}{path}#L{line}",
     sitename="Discord.jl",
-    authors="PurgePJ <sindur.esl@gmail.com>, christopher-dG <chrisadegraaf@gmail.com>",
+    authors="Xh4H <sindur.esl@gmail.com>, christopher-dG <chrisadegraaf@gmail.com>",
     assets=[
         "assets/logo.png",
     ],
 )
 
 deploydocs(;
-    repo="github.com/PurgePJ/Discord.jl",
+    repo="github.com/Xh4H/Discord.jl",
 )

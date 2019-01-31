@@ -85,7 +85,7 @@ The `version` keyword chooses the Version of the Discord API to use. Using anyth
 ### Sharding
 Sharding is handled automatically. The number of available processes is the number of
 shards that are created. See the
-[sharding example](https://github.com/PurgePJ/Discord.jl/blob/master/examples/sharding.jl)
+[sharding example](https://github.com/Xh4H/Discord.jl/blob/master/examples/sharding.jl)
 for more details.
 """
 mutable struct Client

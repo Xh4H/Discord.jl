@@ -13,7 +13,7 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 * Gateway independent: Ability to interact with Discord's API without establishing a gateway connection.
 * Distributed: [Process-based sharding](client.md#Discord.Client) requires next to no intervention and you can even run shards on separate machines.
 
-For usage examples, see the [`examples/` directory](https://github.com/PurgePJ/Discord.jl/tree/master/examples).
+For usage examples, see the [`examples/` directory](https://github.com/Xh4H/Discord.jl/tree/master/examples).
 
 ## Index
 

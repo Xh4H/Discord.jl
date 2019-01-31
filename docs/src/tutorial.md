@@ -7,7 +7,7 @@ CurrentModule = Discord
 !!! warning
     This is outdated, the regular documentation is a better reference.
 
-*The completed and cleaned-up code can be found in [`wager.jl`](https://github.com/PurgePJ/Discord.jl/blob/master/examples/wager.jl).*
+*The completed and cleaned-up code can be found in [`wager.jl`](https://github.com/Xh4H/Discord.jl/blob/master/examples/wager.jl).*
 
 In this tutorial, we're going to build a very basic currency/wager bot with Discord.jl.
 The bot will give users the following capabilities:
