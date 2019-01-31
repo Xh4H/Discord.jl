@@ -1,6 +1,7 @@
 language: julia
 julia:
   - 1.0
+  - 1.1
   - nightly
 matrix:
   allow_failures:
@@ -11,7 +12,7 @@ notifications:
 jobs:
   include:
     - stage: Documentation
-      julia: 1.0
+      julia: 1.1
       script: julia --project=docs -e '
           using Pkg;
           Pkg.develop(PackageSpec(path=pwd()));
