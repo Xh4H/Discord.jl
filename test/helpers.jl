@@ -5,18 +5,21 @@
     e1 = Emoji(; id="255", name="foo")
     e2 = Emoji(; id=nothing, name="foo")
 
-    @testset "String mention" begin
-        @test sprint(show, ch) == "<#255>"
-        @test sprint(show, r) == "<@&255>"
-        @test sprint(show, u) == "<@255>"
-        @test sprint(show, e1) == "<:foo:255>"
-        @test sprint(show, e2) == "foo"
+    @testset "String representations" begin
+        @test string(ch) == "<#255>"
+        @test string(r) == "<@&255>"
+        @test string(u) == "<@255>"
+        @test string(e1) == "<:foo:255>"
+        @test string(e2) == "foo"
         m = Member(u, "foo", [], now(), true, true)
-        @test sprint(show, m) == "<@!255>"
+        @test string(m) == "<@!255>"
         m = Member(u, nothing, [], now(), true, true)
-        @test sprint(show, m) == sprint(show, u)
+        @test string(m) == string(u)
         m = Member(u, missing, [], now(), true, true)
-        @test sprint(show, m) == sprint(show, u)
+        @test string(m) == string(u)
+        # Make sure that string interpolation works normally (julia#21982).
+        @test "$u" == string(u)
+        @test "foo $u bar" == "foo " * string(u) * " bar"
     end
 
     @testset "split_message" begin
@@ -40,11 +43,11 @@
 
     @testset "plaintext" begin
         msg = Message(;
-                      id="1",
-                      channel_id="1",
-                      content="<@255> <@!255>",
-                      mentions=[JSON.lower(u)],
-                      )
+            id="1",
+            channel_id="1",
+            content="<@255> <@!255>",
+            mentions=[JSON.lower(u)],
+        )
         @test plaintext(msg) == "@foo @foo"
     end
 

@@ -126,19 +126,19 @@ function permissions_in(m::Member, g::Guild, ch::DiscordChannel)
     return perms
 end
 
-Base.show(io::IO, c::DiscordChannel) = print(io,"<#$(c.id)>")
-Base.show(io::IO, r::Role) = print(io, "<@&$(r.id)>")
-Base.show(io::IO, u::User) = print(io, "<@$(u.id)>")
-function Base.show(io::IO, m::Member)
+Base.print(io::IO, c::DiscordChannel) = print(io, "<#$(c.id)>")
+Base.print(io::IO, r::Role) = print(io, "<@&$(r.id)>")
+Base.print(io::IO, u::User) = print(io, "<@$(u.id)>")
+function Base.print(io::IO, m::Member)
     if ismissing(m.user)
         print(io, something(coalesce(m.nick, "<unknown member>"), "<unknown member>"))
     elseif ismissing(m.nick) || m.nick === nothing
-        show(io, m.user)
+        print(io, m.user)
     else
         print(io, "<@!$(m.user.id)>")
     end
 end
-function Base.show(io::IO, e::Emoji)
+function Base.print(io::IO, e::Emoji)
     s = if e.id === nothing
         coalesce(e.require_colons, false) ? ":$(e.name):" : e.name
     else
