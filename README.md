@@ -4,7 +4,7 @@
 
 | **Documentation** | **Build Status** | **Information** |
 |:-:|:-:|:-:|
-| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://xh4h.github.io/Discord.jl/stable) [![Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://xh4h.github.io/Discord.jl/latest) | [![Build Status](https://travis-ci.com/Xh4H/Discord.jl.svg?branch=master)](https://travis-ci.com/Xh4H/Discord.jl) | [![Discord](https://img.shields.io/badge/discord-join-7289da.svg)](https://discord.gg/ng9TjYd) [![License](https://img.shields.io/github/license/Xh4H/Discord.jl.svg)](https://github.com/Xh4H/Discord.jl/blob/master/LICENSE) |
+| [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://xh4h.github.io/Discord.jl/stable) [![Latest](https://img.shields.io/badge/docs-dev-blue.svg)](https://xh4h.github.io/Discord.jl/dev) | [![Build Status](https://travis-ci.com/Xh4H/Discord.jl.svg?branch=master)](https://travis-ci.com/Xh4H/Discord.jl) | [![Discord](https://img.shields.io/badge/discord-join-7289da.svg)](https://discord.gg/ng9TjYd) [![License](https://img.shields.io/github/license/Xh4H/Discord.jl.svg)](https://github.com/Xh4H/Discord.jl/blob/master/LICENSE) |
 
 Discord.jl is the solution for creating [Discord](https://discordapp.com) bots with the [Julia programming language](https://julialang.org).
 
