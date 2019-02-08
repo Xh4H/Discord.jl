@@ -61,7 +61,7 @@ struct Guild <: AbstractGuild
     id::Snowflake
     name::String
     icon::Nullable{String}
-    splash::Nullable{String}
+    splash::OptionalNullable{String}
     owner::Optional{Bool}
     owner_id::Optional{Snowflake}  # Missing in Invite.
     permissions::Optional{Int}
@@ -70,12 +70,12 @@ struct Guild <: AbstractGuild
     afk_timeout::Optional{Int}  # Invite
     embed_enabled::Optional{Bool}
     embed_channel_id::OptionalNullable{Snowflake}  # Not supposed to be nullable.
-    verification_level::VerificationLevel
+    verification_level::Optional{VerificationLevel}
     default_message_notifications::Optional{MessageNotificationLevel}  # Invite
     explicit_content_filter::Optional{ExplicitContentFilterLevel}  # Invite
     roles::Optional{Vector{Role}}  # Invite
     emojis::Optional{Vector{Emoji}}  # Invite
-    features::Vector{String}
+    features::Optional{Vector{String}}
     mfa_level::Optional{MFALevel}  # Invite
     application_id::OptionalNullable{Snowflake}  # Invite
     widget_enabled::Optional{Bool}
