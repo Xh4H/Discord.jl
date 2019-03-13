@@ -141,7 +141,7 @@ function Command(;
 
     # Run the fallbacks on the message itself.
     wrapped_fb_parsers(c::Client, e::MessageCreate) = fallback_parsers(c, e.message)
-    wrapped_fb_allowed(c::Client, e::MessageCreate) = falback_allowed(c, e.message)
+    wrapped_fb_allowed(c::Client, e::MessageCreate) = fallback_allowed(c, e.message)
     wrapped_fb_permissions(c::Client, e::MessageCreate) = fallback_permissions(c, e.message)
     wrapped_fb_cooldown(c::Client, e::MessageCreate) = fallback_cooldown(c, e.message)
 
