@@ -284,7 +284,7 @@ function read_loop(c::Client)
                     @debug "Read failed, but the connection is outdated" logkws(c; error=e)...
                 end
             elseif haskey(HANDLERS, data[:op])
-                HANDLERS[data[:op]](c, data)
+                @async HANDLERS[data[:op]](c, data)
             else
                 @warn "Unkown opcode" logkws(c; op=data[:op])...
             end
@@ -321,35 +321,33 @@ function dispatch(c::Client, data::Dict)
     end
 
     for (t, h) in sort(handlers; by=p -> priority(p.second), rev=true)
-        @async begin
-            # TODO: There are race conditions here.
-            isexpired(h) && delete_handler!(c, eltype(h), tag)
-            dec!(h)
+        # TODO: There are race conditions here.
+        isexpired(h) && delete_handler!(c, eltype(h), tag)
+        dec!(h)
 
-            pred = try
-                predicate(h)(c, evt)
+        pred = try
+            predicate(h)(c, evt)
+        catch e
+            kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+            @warn "Predicate function threw an exception" kws...
+            return  # Predicate throws -> do nothing.
+        end
+
+        if pred === true
+            try
+                result = handler(h)(c, evt)
+                iscollecting(h) && push!(results(h), result)
             catch e
                 kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                @warn "Predicate function threw an exception" kws...
-                return  # Predicate throws -> do nothing.
+                @warn "Handler function threw an exception" kws...
             end
-
-            if pred === true
-                try
-                    result = handler(h)(c, evt)
-                    iscollecting(h) && push!(results(h), result)
-                catch e
-                    kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                    @warn "Handler function threw an exception" kws...
-                end
-            else
-                reason = pred in instances(FallbackReason) ? pred : FB_PREDICATE
-                try
-                    fallback(h, reason)(c, evt)
-                catch e
-                    kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
-                    @warn "Fallback function threw an exception" kws...
-                end
+        else
+            reason = pred in instances(FallbackReason) ? pred : FB_PREDICATE
+            try
+                fallback(h, reason)(c, evt)
+            catch e
+                kws = logkws(c; event=T, handler=t, exception=(e, catch_backtrace()))
+                @warn "Fallback function threw an exception" kws...
             end
         end
     end
