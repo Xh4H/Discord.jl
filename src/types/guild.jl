@@ -85,10 +85,12 @@ struct Guild <: AbstractGuild
     large::Optional{Bool}
     unavailable::Optional{Bool}
     member_count::Optional{Int}
+    max_members::Int
     voice_states::Optional{Vector{VoiceState}}
     members::Optional{Vector{Member}}
     channels::Optional{Vector{DiscordChannel}}
     presences::Optional{Vector{Presence}}
+    max_presences::OptionalNullable{Int}
     djl_users::Optional{Set{Snowflake}}
     djl_channels::Optional{Set{Snowflake}}
 end
