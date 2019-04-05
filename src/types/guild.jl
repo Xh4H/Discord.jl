@@ -91,6 +91,9 @@ struct Guild <: AbstractGuild
     channels::Optional{Vector{DiscordChannel}}
     presences::Optional{Vector{Presence}}
     max_presences::OptionalNullable{Int}
+    vanity_url_code::OptionalNullable{String}
+    description::OptionalNullable{String}
+    banner::OptionalNullable{String} # Hash
     djl_users::Optional{Set{Snowflake}}
     djl_channels::Optional{Set{Snowflake}}
 end
