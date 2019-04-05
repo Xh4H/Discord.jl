@@ -39,7 +39,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
 """
 struct MessageApplication
     id::Snowflake
-    cover_image::String
+    cover_image::Optional{String}
     description::String
     icon::String
     name::String
