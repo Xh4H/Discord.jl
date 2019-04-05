@@ -1949,7 +1949,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Types",
     "title": "Discord.MessageApplication",
     "category": "type",
-    "text": "A Rich Presence Message\'s application information. More details here.\n\nFields\n\nid          :: Snowflake\ncover_image :: String\ndescription :: String\nicon        :: String\nname        :: String\n\n\n\n\n\n"
+    "text": "A Rich Presence Message\'s application information. More details here.\n\nFields\n\nid          :: Snowflake\ncover_image :: Optional{String}\ndescription :: String\nicon        :: String\nname        :: String\n\n\n\n\n\n"
 },
 
 {
