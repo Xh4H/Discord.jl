@@ -72,11 +72,11 @@ More details [here](https://discordapp.com/developers/docs/topics/gateway#activi
 struct Activity
     name::String
     type::ActivityType
-    url::Union{String, Nothing, Missing}
+    url::OptionalNullable{String}
     timestamps::Optional{ActivityTimestamps}
     application_id::Optional{Snowflake}
-    details::Union{String, Nothing, Missing}
-    state::Union{String, Nothing, Missing}
+    details::OptionalNullable{String}
+    state::OptionalNullable{String}
     party::Optional{ActivityParty}
     assets::Optional{ActivityAssets}
     secrets::Optional{ActivitySecrets}

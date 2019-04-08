@@ -48,7 +48,7 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#emb
 """
 struct EmbedProvider
     name::Optional{String}
-    url::Union{String, Nothing, Missing}  # Not supposed to be nullable.
+    url::OptionalNullable{String}  # Not supposed to be nullable.
 end
 @boilerplate EmbedProvider :constructors :docs :lower :merge :mock
 

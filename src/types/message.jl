@@ -59,7 +59,7 @@ struct Message
     member::Optional{Member}
     content::Optional{String}
     timestamp::Optional{DateTime}
-    edited_timestamp::Union{DateTime, Nothing, Missing}
+    edited_timestamp::OptionalNullable{DateTime}
     tts::Optional{Bool}
     mention_everyone::Optional{Bool}
     mentions::Optional{Vector{User}}
@@ -67,7 +67,7 @@ struct Message
     attachments::Optional{Vector{Attachment}}
     embeds::Optional{Vector{Embed}}
     reactions::Optional{Vector{Reaction}}
-    nonce::Union{Snowflake, Nothing, Missing}
+    nonce::OptionalNullable{Snowflake}
     pinned::Optional{Bool}
     webhook_id::Optional{Snowflake}
     type::Optional{MessageType}

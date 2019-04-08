@@ -84,7 +84,7 @@ end
 function field(k::QuoteNode, ::Type{Nullable{T}}) where T
     return :(kwargs[$k] === nothing ? nothing : $(field(k, T)))
 end
-function field(k::QuoteNode, ::Type{Union{T, Nothing, Missing}}) where T
+function field(k::QuoteNode, ::Type{OptionalNullable{T}}) where T
     return :(haskey(kwargs, $k) ? $(field(k, Nullable{T})) : missing)
 end
 
