@@ -20,17 +20,17 @@ struct DiscordChannel
     position::Optional{Int}
     permission_overwrites::Optional{Vector{Overwrite}}
     name::Optional{String}
-    topic::Union{String, Nothing, Missing}
+    topic::OptionalNullable{String}
     nsfw::Optional{Bool}
-    last_message_id::Union{Snowflake, Nothing, Missing}
+    last_message_id::OptionalNullable{Snowflake}
     bitrate::Optional{Int}
     user_limit::Optional{Int}
     rate_limit_per_user::Optional{Int}
     recipients::Optional{Vector{User}}
-    icon::Union{String, Nothing, Missing}
+    icon::OptionalNullable{String}
     owner_id::Optional{Snowflake}
     application_id::Optional{Snowflake}
-    parent_id::Union{Snowflake, Nothing, Missing}
-    last_pin_timestamp::Union{DateTime, Nothing, Missing}  # Not supposed to be nullable.
+    parent_id::OptionalNullable{Snowflake}
+    last_pin_timestamp::OptionalNullable{DateTime}  # Not supposed to be nullable.
 end
 @boilerplate DiscordChannel :constructors :docs :lower :merge :mock
