@@ -85,7 +85,7 @@ struct Guild <: AbstractGuild
     large::Optional{Bool}
     unavailable::Optional{Bool}
     member_count::Optional{Int}
-    max_members::Int
+    max_members::Optional{Int}
     voice_states::Optional{Vector{VoiceState}}
     members::Optional{Vector{Member}}
     channels::Optional{Vector{DiscordChannel}}
