@@ -116,8 +116,8 @@ Base.isopen(c::Client) = c.ready && c.conn.io !== nothing && isopen(c.conn.io)
 Disconnect the [`Client`](@ref) from the gateway.
 """
 function Base.close(c::Client; statuscode::Int=1000, zombie::Bool=false)
-    c.ready = false
     isopen(c) || return
+    c.ready = false
     if zombie
         # It seems that Discord doesn't send a closing frame for zombie connections
         # (which makes sense). However, close waits for one forever (see HTTP.jl#350).
@@ -138,7 +138,7 @@ function Base.wait(c::Client)
         wait(c.conn.io.cond)
         # This is an arbitrary amount of time to wait,
         # but we want to wait long enough to potentially reconnect.
-        sleep(30)
+        sleep(10)
     end
 end
 
