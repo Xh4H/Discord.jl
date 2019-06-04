@@ -116,7 +116,7 @@ function Command(;
                 channel = retrieve(c, DiscordChannel, e.message.channel_id)
             end
             if guild.ok && channel.ok
-                member = fetch(retrieve(c, guild.val, author))
+                member = fetch(retrieve(c, Member, guild.val, author))
                 if member.ok
                     user_perms = permissions_in(member.val, guild.val, channel.val)
                     user_perms & permissions == permissions || return FB_PERMISSIONS
