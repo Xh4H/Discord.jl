@@ -13,6 +13,10 @@ More details [here](https://discordapp.com/developers/docs/resources/channel#mes
     MT_CHANNEL_ICON_CHANGE
     MT_CHANNEL_PINNED_MESSAGE
     MT_GUILD_MEMBER_JOIN
+    MT_USER_PREMIUM_GUILD_SUBSCRIPTION
+    MT_USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_1
+    MT_USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_2
+    MT_USER_PREMIUM_GUILD_SUBSCRIPTION_TIER_3
 end
 @boilerplate MessageType :export :lower
 
