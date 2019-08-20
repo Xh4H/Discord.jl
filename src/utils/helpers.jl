@@ -49,6 +49,7 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#pe
     PERM_MOVE_MEMBERS=1<<24
     PERM_USE_VAD=1<<25
     PERM_PRIORITY_SPEAKER=1<<8
+    PERM_STREAM=1<<9
     PERM_CHANGE_NICKNAME=1<<26
     PERM_MANAGE_NICKNAMES=1<<27
     PERM_MANAGE_ROLES=1<<28
