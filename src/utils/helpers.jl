@@ -79,13 +79,13 @@ true
 ```
 """
 function has_permission(perms::Integer, perm::Permission)
-    admin = perms & Int(PERM_ADMINISTRATOR) == Int(PERM_ADMINISTRATOR)
-    has = perms & Int(perm) == Int(perm)
+    admin = perms & Int64(PERM_ADMINISTRATOR) == Int64(PERM_ADMINISTRATOR)
+    has = perms & Int64(perm) == Int64(perm)
     return admin || has
 end
 
 """
-    permissions_in(m::Member, g::Guild, ch::DiscordChannel) -> Int
+    permissions_in(m::Member, g::Guild, ch::DiscordChannel) -> Int64
 
 Compute a [`Member`](@ref)'s [`Permission`](@ref)s in a [`DiscordChannel`](@ref).
 """
@@ -95,11 +95,13 @@ function permissions_in(m::Member, g::Guild, ch::DiscordChannel)
     # Get permissions for @everyone.
     idx = findfirst(r -> r.name == "@everyone", g.roles)
     everyone = idx === nothing ? nothing : g.roles[idx]
-    perms = idx === nothing ? 0 : everyone.permissions
-    perms & Int(PERM_ADMINISTRATOR) == Int(PERM_ADMINISTRATOR) && return PERM_ALL
+    perms = idx === nothing ? Int64(0) : everyone.permissions
+    perms & Int64(PERM_ADMINISTRATOR) == Int64(PERM_ADMINISTRATOR) && return PERM_ALL
+
+    roles = idx === nothing ? m.roles : [everyone.id; m.roles]
 
     # Apply role overwrites.
-    for role in [everyone.id; m.roles]
+    for role in roles
         idx = findfirst(
             o -> o.type === OT_ROLE && o.id == role,
             coalesce(ch.permission_overwrites, Overwrite[]),
