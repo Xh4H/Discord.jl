@@ -10,7 +10,7 @@ struct Role
     color::Optional{Int}  # These fields are missing in audit log entries.
     hoist::Optional{Bool}
     position::Optional{Int}
-    permissions::Optional{Int}
+    permissions::Optional{Int64}
     managed::Optional{Bool}
     mentionable::Optional{Bool}
 end
