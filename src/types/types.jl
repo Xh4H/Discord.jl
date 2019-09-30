@@ -14,7 +14,7 @@ process_id(s::Snowflake) = (s & 0x1f000) >> 12
 increment(s::Snowflake) = s & 0xfff
 
 # Discord sends both Unix and ISO timestamps.
-datetime(s::Int) = unix2datetime(s / 1000)
+datetime(s::Int64) = unix2datetime(s / 1000)
 datetime(s::AbstractString) = DateTime(replace(s, "+" => ".000+")[1:23], ISODateTimeFormat)
 datetime(d::DateTime) = d
 
