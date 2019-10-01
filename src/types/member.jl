@@ -9,6 +9,7 @@ struct Member
     nick::OptionalNullable{String}  # Not supposed to be nullable.
     roles::Vector{Snowflake}
     joined_at::DateTime
+    premium_since::Optional{DateTime}
     deaf::Bool
     mute::Bool
 end
