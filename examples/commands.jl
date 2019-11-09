@@ -6,7 +6,7 @@ using Discord
 
 function main()
     c = Client(ENV["DISCORD_TOKEN"])
-    add_command!(c, r"^echo (.+)") do c, msg, noprefix
+    add_command!(c, :echo; pattern=r"^echo (.+)") do c, msg, noprefix
         reply(c, msg, noprefix)
     end
     open(c)
