@@ -11,11 +11,11 @@
         @test string(u) == "<@255>"
         @test string(e1) == "<:foo:255>"
         @test string(e2) == "foo"
-        m = Member(u, "foo", [], now(), true, true)
+        m = Member(u, "foo", [], now(), missing, true, true)
         @test string(m) == "<@!255>"
-        m = Member(u, nothing, [], now(), true, true)
+        m = Member(u, nothing, [], now(), missing, true, true)
         @test string(m) == string(u)
-        m = Member(u, missing, [], now(), true, true)
+        m = Member(u, missing, [], now(), missing, true, true)
         @test string(m) == string(u)
         # Make sure that string interpolation works normally (julia#21982).
         @test "$u" == string(u)
