@@ -5,7 +5,7 @@ An [`Activity`](@ref)'s type. Available values are `AT_GAME`, `AT_STREAMING`,
 `AT_LISTENING`, and `AT_WATCHING`.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).
 """
-@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_WATCHING
+@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_WATCHING AT_CUSTOM
 @boilerplate ActivityType :export :lower
 
 """
@@ -31,6 +31,17 @@ struct ActivityTimestamps
     stop::Optional{DateTime}
 end
 @boilerplate ActivityTimestamps :constructors :docs :lower :merge :mock
+
+"""
+Emoji for a custom [`Activity`](@ref).
+More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-emoji).
+"""
+struct ActivityEmoji
+    name::String
+    id::Optional{Snowflake}
+    animated::Optional{Bool}
+end
+@boilerplate ActivityEmoji :constructors :docs :lower :merge :mock
 
 """
 The current party of an [`Activity`](@ref)'s player.
@@ -77,6 +88,7 @@ struct Activity
     application_id::Optional{Snowflake}
     details::OptionalNullable{String}
     state::OptionalNullable{String}
+    emoji::OptionalNullable{ActivityEmoji}
     party::Optional{ActivityParty}
     assets::Optional{ActivityAssets}
     secrets::Optional{ActivitySecrets}
