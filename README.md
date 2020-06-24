@@ -18,6 +18,7 @@ Discord.jl is the solution for creating [Discord](https://discordapp.com) bots w
 * Distributed: [Process-based sharding](https://xh4h.github.io/Discord.jl/stable/client.html#Discord.Client) requires next to no intervention and you can even run shards on separate machines.
 
 ## Installation
+First [install Julia](https://julialang.org/downloads/platform/)
 
 Discord.jl is not yet released.
 Add it from the Git repository with the following command:
@@ -26,6 +27,8 @@ Add it from the Git repository with the following command:
 # Enter ']' from the REPL to enter Pkg mode.
 pkg> add https://github.com/Xh4H/Discord.jl
 ```
+The above command will also update all of your dependencies, and store the
+configurations in ~/.julia. 
 
 ## Example
 
