@@ -21,4 +21,7 @@ function delete(c::Client, emoji::StringOrChar, m::Message, u::User)
         delete_user_reaction(c, m.channel_id, m.id, emoji, u.id)
     end
 end
-delete(c::Client, e::Emoji, m::Message, u::User) = delete(c, e.name, m, u)
+function delete(c::Client, e::Emoji, m::Message, u::User)
+    emoji = e.id === nothing ? e.name : "$(e.name):$(e.id)"
+    delete(c, emoji, m, u)
+end
