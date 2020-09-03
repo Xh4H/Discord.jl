@@ -17,8 +17,6 @@ function main()
     return client
 end
 
-end
-
 if abspath(PROGRAM_FILE) == @__FILE__
     client = Ping.main()
     wait(client)
