@@ -11,7 +11,7 @@ function on_message_create(client::Client, event::MessageCreate)
 end
 
 function main()
-    c = Client(ENV["DISCORD_TOKEN"])
+    client = Client(ENV["DISCORD_TOKEN"])
     open(client)
     add_handler!(client, MessageCreate, on_message_create; tag=:ping)
     return client
