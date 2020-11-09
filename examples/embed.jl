@@ -3,8 +3,7 @@ module Embed
 using Discord
 
 function embed(c::Client, m::Message)
-
-    time_now = Dates.now(Dates.UTC)
+    
     local e = Embed(
         
         color = 0x36393f,
