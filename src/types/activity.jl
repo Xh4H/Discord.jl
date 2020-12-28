@@ -2,10 +2,10 @@ export Activity
 
 """
 An [`Activity`](@ref)'s type. Available values are `AT_GAME`, `AT_STREAMING`,
-`AT_LISTENING`, and `AT_WATCHING`.
+`AT_LISTENING`, `AT_WATCHING`, and `AT_COMPETING`.
 More details [here](https://discordapp.com/developers/docs/topics/gateway#activity-object-activity-types).
 """
-@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_WATCHING AT_CUSTOM
+@enum ActivityType AT_GAME AT_STREAMING AT_LISTENING AT_WATCHING AT_CUSTOM AT_COMPETING
 @boilerplate ActivityType :export :lower
 
 """
