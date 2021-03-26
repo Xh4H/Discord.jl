@@ -366,7 +366,11 @@ end
 # Reconnect to the gateway.
 function reconnect(c::Client, ::Dict=Dict(); resume::Bool=true, zombie::Bool=false)
     @info "Reconnecting" logkws(c; resume=resume, zombie=zombie)...
-    close(c; zombie=zombie, statuscode=resume ? 4000 : 1000)
+    try
+        close(c; zombie=zombie, statuscode=resume ? 4000 : 1000)
+    catch ex
+        @warn "Unable to close existing connection" ex
+    end
     open(c; resume=resume)
 end
 
