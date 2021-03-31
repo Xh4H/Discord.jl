@@ -2,24 +2,24 @@ module Ping
 
 using Discord
 
-function on_message_create(client::Client, event::MessageCreate)
+function on_message_create(c::Client, event::MessageCreate)
     if event.message.content == "ping"
-       reply(client, event.message, "Pong!")    
+       reply(c, event.message, "Pong!")    
     elseif event.message.content == "pong"   	  
-       reply(client, event.message, "Ping!")
+       reply(c, event.message, "Ping!")
     end
 end
 
 function main()
-    client = Client(ENV["DISCORD_TOKEN"])
-    open(client)
-    add_handler!(client, MessageCreate, on_message_create; tag=:ping)
-    return client
+    c = Client(ENV["DISCORD_TOKEN"])
+    open(c)
+    add_handler!(c, MessageCreate, on_message_create; tag=:ping)
+    return c
 end
 
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    client = Ping.main()
-    wait(client)
+    c = Ping.main()
+    wait(c)
 end
