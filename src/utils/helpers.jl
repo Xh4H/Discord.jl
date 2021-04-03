@@ -15,9 +15,15 @@ export PERM_NONE,
 
 const CRUD_FNS = :create, :retrieve, :update, :delete
 
+"""
+    const STYLES = [
+        r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"(_|__).+?\1", r"(\*+).+?\1",
+    ]
+
+Define regex expressions for [`split_message`](@ref) not to break Discord formatting.
+"""
 const STYLES = [
-    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"_.+?_", r"__.+?__",
-    r"\*.+?\*", r"\*\*.+?\*\*", r"\*\*\*.+?\*\*\*",
+    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"(_|__).+?\1", r"(\*+).+?\1",
 ]
 
 """
@@ -66,7 +72,7 @@ const PERM_ALL = |(Int.(instances(Permission))...)
 
 Determine whether a bitwise OR of permissions contains one [`Permission`](@ref).
 
-## Example
+## Examples
 ```jldoctest; setup=:(using Discord)
 julia> has_permission(0x0420, PERM_VIEW_CHANNEL)
 true
@@ -180,45 +186,108 @@ function reply(
 end
 
 """
-    split_message(text::AbstractString) -> Vector{String}
+    filter_ranges(u::Vector{UnitRange{Int}})
 
-Split a message into 2000-character chunks, preserving formatting.
+Filter a list of ranges, discarding ranges included in others from the list.
+
+# Example
+```jldoctest; setup=:(using Discord)
+julia> filter_ranges([1:5, 3:8, 1:20, 2:16, 10:70, 25:60, 5:35, 50:90])
+4-element Vector{UnitRange{Int64}}:
+ 1:20
+ 10:70
+ 5:35
+ 50:90
+```
+"""
+function filter_ranges(u::Vector{UnitRange{Int}})
+    v = Vector{UnitRange{Int}}()
+    while length(u) > 1
+        if all(m -> (u[1] ⊈ m), u[2:end])
+            push!(v, u[1])
+        end
+        u = u[findall(m -> m ⊈ u[1], u[2:end]).+1]
+    end
+    if length(u) == 1
+        push!(v,u[1])
+    end
+    return v
+end
+
+
+"""
+    split_message(text::AbstractString; chunk_limit::Int=2000, extrastyles::Vector{Regex}=Vector{Regex}()) -> Vector{String}
+
+Split a message in chunks with at most chunk_limit length, preserving formatting.
+
+Formatting is specified by [`STYLES`](@ref))
 
 ## Examples
 ```jldoctest; setup=:(using Discord)
 julia> split_message("foo")
-1-element Array{String,1}:
+1-element Vector{String}:
  "foo"
 
 julia> split_message(repeat('.', 1995) * "**hello, world**")[2]
 "**hello, world**"
-"""
-function split_message(text::AbstractString)
-    length(text) <= 2000 && return String[text]
-    chunks = String[]
-    start = 1
-    len = length(text)
 
-    # TODO: The indexing here can break with Unicode.
-    # TODO: This doesn't work properly for nested formatting, e.g. **foo __bar__ baz**.
+julia> split_message("**hello**, *world*", 10)
+2-element Vector{String}:
+ "**hello**,"
+ "*world*"
+
+julia> split_message("**hello**, _*beautiful* world_", 15)
+ ┌ Warning: message could not be broken down into chunks smaller than the desired length 15
+ └ @ Main REPL[3]:26
+ 2-element Vector{String}:
+  "**hello**,"
+  "_*beautiful* world_"
+
+  julia> split_message("**hello**\n=====\n", 12)
+  2-element Vector{String}:
+   "**hello**\n=="
+   "==="
+  
+  julia> split_message("**hello**\n=====\n", 12, extrastyles = [r"\n=+\n"])
+  2-element Vector{String}:
+   "**hello**"
+   "====="
+  
+"""
+function split_message(text::AbstractString; chunk_limit::Int=2000,
+                       extrastyles::Vector{Regex}=Vector{Regex}())
+    chunks = String[]
 
     while !isempty(text)
-        local stop = 2000
+        if length(text) ≤ chunk_limit
+            push!(chunks, strip(text))
+            return chunks
+        end
+        # get ranges associated with the formattings
+        mranges = vcat(findall.(union(STYLES, extrastyles),Ref(text))...)
+        # filter ranges to eliminate inner formattings
+        franges = filter_ranges(mranges)
+        # get ranges that get split apart by the chunk limit - there should be only one, unless text is ill-formatted
+        splitranges = filter(r -> (length(text[1:r[1]]) ≤ chunk_limit) & (length(text[1:r[end]]) > chunk_limit), franges)
 
-        for m in vcat(collect.(eachmatch.(STYLES, text))...)
-            m.offset > 1 && text[m.offset - 1] == '\\' && continue  # Escaped formatting.
-            if m.offset + length(m.match) > 2000
-                # TODO: Backtrack for a valid index (< 2000).
-                stop = m.offset - 1
-                break
-            end
+        if length(splitranges) == 0
+            # get highest valid unicode index if no range is split apart
+            stop = maximum(filter(n -> length(text[1:n])≤chunk_limit, thisind.(Ref(text), 1:ncodeunits(text))))
+        else
+            # get previous valid unicode index if formatting is broken
+            stop = minimum(map(r -> prevind(text, r[1]), splitranges))
         end
 
-        # The 2000 boundary hacks around the above TODO but can break formatting.
-        stop = min(stop, length(text), 2000)
-        stop < length(text) && (stop = something(findlast(isspace, text[1:stop]), stop))
+        if stop == 0
+            # give up at this point if current chunk cannot be broken down
+            push!(chunks, strip(text))
+            @warn "message could not be broken down into chunks smaller than the desired length $chunk_limit"
+            return chunks
+        end
+
+        # push chunk and select remaining text
         push!(chunks, strip(text[1:stop]))
-        text = text[stop+1:end]
+        text = strip(text[nextind(text, stop):end])
     end
 
     return chunks
