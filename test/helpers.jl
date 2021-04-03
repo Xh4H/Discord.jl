@@ -54,27 +54,38 @@
         
         # Chunks can vary in length limit and still do not break down on nested formattings
         chunks = split_message("**hello**, _*beautiful* **blue**  world_", chunk_limit=25)
-        @test length(chunks) == 2
+        @test length(chunks) == 3
         @test chunks[1] == "**hello**,"
-        @test chunks[2] == "_*beautiful* **blue**  world_"
+        @test chunks[2] == "_*beautiful* **blue**  wo"
+        @test chunks[3] == "rld_"
 
         # Chunks respect unicode
         chunks = split_message("**≡Ηϵλλo** *ωoρλδ≡*", chunk_limit=15)
         @test length(chunks) == 2
         @test chunks[1] == "**≡Ηϵλλo**"
         @test chunks[2] == "*ωoρλδ≡*"       
-        chunks = split_message("Examples\n≡≡≡≡≡≡≡≡\n```julia\njulia> x=1\n1\n```\n", chunk_limit=12)
-        @test length(chunks) == 3
-        @test chunks[1] == "Examples\n≡≡≡"
+        chunks = split_message("**Examples**\n≡≡≡≡≡≡≡≡\n", chunk_limit=16)
+        @test length(chunks) == 2
+        @test chunks[1] == "**Examples**\n≡≡≡"
         @test chunks[2] == "≡≡≡≡≡"
-        @test chunks[3] ==  "```julia\njulia> x=1\n1\n```"
 
         # Chunks respect extra formatting
-        chunks = split_message("Examples\n≡≡≡≡≡≡≡≡\n```julia\njulia> x=1\n1\n```\n", chunk_limit=12, extrastyles = [r"\n≡.+\n", r"n-.+\n"])
-        @test length(chunks) == 3
-        @test chunks[1] == "Examples"
+        chunks = split_message("**Examples**\n≡≡≡≡≡≡≡≡\n", chunk_limit=16, extrastyles = [r"\n≡.+\n", r"n-.+\n"])
+        @test length(chunks) == 2
+        @test chunks[1] == "**Examples**"
         @test chunks[2] == "≡≡≡≡≡≡≡≡"
-        @test chunks[3] == "```julia\njulia> x=1\n1\n```"
+
+        # Chunks without forced splitting
+        chunks = split_message("**hello**, _*beautiful* **blue**  world_", chunk_limit=25, forcesplit=false)
+        @test length(chunks) == 2
+        @test chunks[1] == "**hello**,"
+        @test chunks[2] == "_*beautiful* **blue**  world_"
+        chunks = split_message("A simple assignment\n\n**Examples**\n≡≡≡≡≡≡≡≡\n```julia\njulia> x=[1,2,3]\n1\n```\n", chunk_limit=20, extrastyles = [r"\n≡.+\n", r"n-.+\n"], forcesplit=false)
+        @test length(chunks) == 4
+        @test chunks[1] == "A simple assignment"
+        @test chunks[2] == "**Examples**"
+        @test chunks[3] == "≡≡≡≡≡≡≡≡"
+        @test chunks[4] == "```julia\njulia> x=[1,2,3]\n1\n```"
     end
 
     @testset "plaintext" begin

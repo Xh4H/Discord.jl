@@ -16,9 +16,7 @@ export PERM_NONE,
 const CRUD_FNS = :create, :retrieve, :update, :delete
 
 """
-    const STYLES = [
-        r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"(_|__).+?\1", r"(\*+).+?\1",
-    ]
+    const STYLES
 
 Define regex expressions for [`split_message`](@ref) not to break Discord formatting.
 """
@@ -216,11 +214,21 @@ end
 
 
 """
-    split_message(text::AbstractString; chunk_limit::Int=2000, extrastyles::Vector{Regex}=Vector{Regex}()) -> Vector{String}
+    split_message(text::AbstractString; chunk_limit::UInt=2000,
+                  extrastyles::Vector{Regex}=Vector{Regex}(),
+                  forcesplit::Bool = true) -> Vector{String}
 
-Split a message in chunks with at most chunk_limit length, preserving formatting.
+Split a message into chunks with at most chunk_limit length, preserving formatting.
 
-Formatting is specified by [`STYLES`](@ref))
+The `chunk_limit` has as default the 2000 character limit of Discord's messages,
+but can be changed to any nonnegative integer.
+
+Formatting is specified by [`STYLES`](@ref)) and can be aggregated
+with the `extrastyles` argument.
+
+Discord limits messages to 2000, so the code forces split if format breaking
+cannot be avoided. If desired, however, this behavior can be lifter by setting
+`forcesplit` to false.
 
 ## Examples
 ```jldoctest; setup=:(using Discord)
@@ -231,31 +239,39 @@ julia> split_message("foo")
 julia> split_message(repeat('.', 1995) * "**hello, world**")[2]
 "**hello, world**"
 
-julia> split_message("**hello**, *world*", 10)
+julia> split_message("**hello**, *world*", chunk_limit=10)
 2-element Vector{String}:
  "**hello**,"
  "*world*"
 
-julia> split_message("**hello**, _*beautiful* world_", 15)
- ┌ Warning: message could not be broken down into chunks smaller than the desired length 15
- └ @ Main REPL[3]:26
- 2-element Vector{String}:
-  "**hello**,"
-  "_*beautiful* world_"
+julia> split_message("**hello**, _*beautiful* world_", chunk_limit=15)
+┌ Warning: message was forced-split to fit the desired chunk length limit 15
+└ @ Main REPL[66]:28
+3-element Vector{String}:
+ "**hello**,"
+ "_*beautiful* wo"
+ "rld_"
 
-  julia> split_message("**hello**\n=====\n", 12)
-  2-element Vector{String}:
-   "**hello**\n=="
-   "==="
+julia> split_message("**hello**, _*beautiful* world_", chunk_limit=15, forcesplit=false)
+┌ Warning: message could not be split into chunks smaller than the length limit 15
+└ @ Main REPL[66]:32
+2-element Vector{String}:
+ "**hello**,"
+ "_*beautiful* world_"
+
+julia> split_message("**hello**\n=====\n", 12)
+2-element Vector{String}:
+ "**hello**\n=="
+ "==="
   
-  julia> split_message("**hello**\n=====\n", 12, extrastyles = [r"\n=+\n"])
-  2-element Vector{String}:
-   "**hello**"
-   "====="
-  
+julia> split_message("**hello**\n≡≡≡≡≡\n", chunk_limit=12, extrastyles = [r"\n≡+\n"])
+2-element Vector{String}:
+ "**hello**"
+ "≡≡≡≡≡"
 """
 function split_message(text::AbstractString; chunk_limit::Int=2000,
-                       extrastyles::Vector{Regex}=Vector{Regex}())
+                       extrastyles::Vector{Regex}=Vector{Regex}(),
+                       forcesplit::Bool = true)
     chunks = String[]
 
     while !isempty(text)
@@ -270,18 +286,21 @@ function split_message(text::AbstractString; chunk_limit::Int=2000,
         # get ranges that get split apart by the chunk limit - there should be only one, unless text is ill-formatted
         splitranges = filter(r -> (length(text[1:r[1]]) ≤ chunk_limit) & (length(text[1:r[end]]) > chunk_limit), franges)
 
-        if length(splitranges) == 0
-            # get highest valid unicode index if no range is split apart
-            stop = maximum(filter(n -> length(text[1:n])≤chunk_limit, thisind.(Ref(text), 1:ncodeunits(text))))
-        else
-            # get previous valid unicode index if formatting is broken
+        if length(splitranges) > 0
             stop = minimum(map(r -> prevind(text, r[1]), splitranges))
         end
 
-        if stop == 0
-            # give up at this point if current chunk cannot be broken down
+        if length(splitranges) == 0
+            # get highest valid unicode index if no range is split apart
+            stop = maximum(filter(n -> length(text[1:n])≤chunk_limit, thisind.(Ref(text), 1:ncodeunits(text))))
+        elseif (stop == 0) && (forcesplit == true)
+            # get highest valid unicode if format breaking cannot be avoided and forcesplit is true
+            stop = maximum(filter(n -> length(text[1:n])≤chunk_limit, thisind.(Ref(text), 1:ncodeunits(text))))
+            # @warn "message was forced-split to fit the desired chunk length limit $chunk_limit"
+        elseif stop == 0
+            # give up at this point if current chunk cannot be split and `forcesplit` is set to false
             push!(chunks, strip(text))
-            @warn "message could not be broken down into chunks smaller than the desired length $chunk_limit"
+            # @warn "message could not be split into chunks smaller than the length limit $chunk_limit"
             return chunks
         end
 
