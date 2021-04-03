@@ -277,7 +277,8 @@ function split_message(text::AbstractString; chunk_limit::Int=2000,
             return chunks
         end
         # get ranges associated with the formattings
-        mranges = vcat(findall.(union(STYLES, extrastyles),Ref(text))...)
+        # mranges = vcat(findall.(union(STYLES, extrastyles),Ref(text))...) can't use findall in julia 1.0 and 1.1 ...
+        mranges = [m.offset:m.offset+ncodeunits(m.match)-1 for m in vcat(collect.(eachmatch.(union(STYLES, extrastyles), text))...)]
         # filter ranges to eliminate inner formattings
         franges = filter_ranges(mranges)
         # get ranges that get split apart by the chunk limit - there should be only one, unless text is ill-formatted
