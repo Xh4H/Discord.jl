@@ -186,30 +186,27 @@ end
 """
     filter_ranges(u::Vector{UnitRange{Int}})
 
-Filter a list of ranges, discarding ranges included in others from the list.
+Filter a list of ranges, discarding ranges included in other ranges from the list.
 
 # Example
 ```jldoctest; setup=:(using Discord)
-julia> filter_ranges([1:5, 3:8, 1:20, 2:16, 10:70, 25:60, 5:35, 50:90])
+julia> Discord.filter_ranges([1:5, 3:8, 1:20, 2:16, 10:70, 25:60, 5:35, 50:90, 10:70])
 4-element Vector{UnitRange{Int64}}:
  1:20
- 10:70
  5:35
  50:90
+ 10:70
 ```
 """
 function filter_ranges(u::Vector{UnitRange{Int}})
-    v = Vector{UnitRange{Int}}()
-    while length(u) > 1
-        if all(m -> (u[1] ⊈ m), u[2:end])
-            push!(v, u[1])
+    v = fill(true, length(u))
+    for i in 1:length(u)
+        if !all(m -> (m[1] == i) || (u[i] ⊈ m[2]), 
+                m for m in enumerate(u) if v[m[1]] == true)
+            v[i] = false
         end
-        u = u[findall(m -> m ⊈ u[1], u[2:end]).+1]
     end
-    if length(u) == 1
-        push!(v,u[1])
-    end
-    return v
+    return u[v]
 end
 
 
