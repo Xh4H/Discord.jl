@@ -16,9 +16,7 @@ export PERM_NONE,
 const CRUD_FNS = :create, :retrieve, :update, :delete
 
 """
-    const STYLES
-
-Define regex expressions for [`split_message`](@ref) not to break Discord formatting.
+Regex expressions for [`split_message`](@ref) to not break Discord formatting.
 """
 const STYLES = [
     r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"(_|__).+?\1", r"(\*+).+?\1",
