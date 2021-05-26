@@ -15,9 +15,11 @@ export PERM_NONE,
 
 const CRUD_FNS = :create, :retrieve, :update, :delete
 
+"""
+Regex expressions for [`split_message`](@ref) to not break Discord formatting.
+"""
 const STYLES = [
-    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"_.+?_", r"__.+?__",
-    r"\*.+?\*", r"\*\*.+?\*\*", r"\*\*\*.+?\*\*\*",
+    r"```.+?```"s, r"`.+?`", r"~~.+?~~", r"(_|__).+?\1", r"(\*+).+?\1",
 ]
 
 """
@@ -66,7 +68,7 @@ const PERM_ALL = |(Int.(instances(Permission))...)
 
 Determine whether a bitwise OR of permissions contains one [`Permission`](@ref).
 
-## Example
+## Examples
 ```jldoctest; setup=:(using Discord)
 julia> has_permission(0x0420, PERM_VIEW_CHANNEL)
 true
@@ -180,45 +182,127 @@ function reply(
 end
 
 """
-    split_message(text::AbstractString) -> Vector{String}
+    filter_ranges(u::Vector{UnitRange{Int}})
 
-Split a message into 2000-character chunks, preserving formatting.
+Filter a list of ranges, discarding ranges included in other ranges from the list.
+
+# Example
+```jldoctest; setup=:(using Discord)
+julia> Discord.filter_ranges([1:5, 3:8, 1:20, 2:16, 10:70, 25:60, 5:35, 50:90, 10:70])
+4-element Vector{UnitRange{Int64}}:
+ 1:20
+ 5:35
+ 50:90
+ 10:70
+```
+"""
+function filter_ranges(u::Vector{UnitRange{Int}})
+    v = fill(true, length(u))
+    for i in 1:length(u)
+        if !all(m -> (m[1] == i) || (u[i] ⊈ m[2]), 
+                m for m in enumerate(u) if v[m[1]] == true)
+            v[i] = false
+        end
+    end
+    return u[v]
+end
+
+
+"""
+    split_message(text::AbstractString; chunk_limit::UInt=2000,
+                  extrastyles::Vector{Regex}=Vector{Regex}(),
+                  forcesplit::Bool = true) -> Vector{String}
+
+Split a message into chunks with at most chunk_limit length, preserving formatting.
+
+The `chunk_limit` has as default the 2000 character limit of Discord's messages,
+but can be changed to any nonnegative integer.
+
+Formatting is specified by [`STYLES`](@ref)) and can be aggregated
+with the `extrastyles` argument.
+
+Discord limits messages to 2000, so the code forces split if format breaking
+cannot be avoided. If desired, however, this behavior can be lifter by setting
+`forcesplit` to false.
 
 ## Examples
 ```jldoctest; setup=:(using Discord)
 julia> split_message("foo")
-1-element Array{String,1}:
+1-element Vector{String}:
  "foo"
 
 julia> split_message(repeat('.', 1995) * "**hello, world**")[2]
 "**hello, world**"
-"""
-function split_message(text::AbstractString)
-    length(text) <= 2000 && return String[text]
-    chunks = String[]
-    start = 1
-    len = length(text)
 
-    # TODO: The indexing here can break with Unicode.
-    # TODO: This doesn't work properly for nested formatting, e.g. **foo __bar__ baz**.
+julia> split_message("**hello**, *world*", chunk_limit=10)
+2-element Vector{String}:
+ "**hello**,"
+ "*world*"
+
+julia> split_message("**hello**, _*beautiful* world_", chunk_limit=15)
+┌ Warning: message was forced-split to fit the desired chunk length limit 15
+└ @ Main REPL[66]:28
+3-element Vector{String}:
+ "**hello**,"
+ "_*beautiful* wo"
+ "rld_"
+
+julia> split_message("**hello**, _*beautiful* world_", chunk_limit=15, forcesplit=false)
+┌ Warning: message could not be split into chunks smaller than the length limit 15
+└ @ Main REPL[66]:32
+2-element Vector{String}:
+ "**hello**,"
+ "_*beautiful* world_"
+
+julia> split_message("**hello**\n=====\n", 12)
+2-element Vector{String}:
+ "**hello**\n=="
+ "==="
+  
+julia> split_message("**hello**\n≡≡≡≡≡\n", chunk_limit=12, extrastyles = [r"\n≡+\n"])
+2-element Vector{String}:
+ "**hello**"
+ "≡≡≡≡≡"
+"""
+function split_message(text::AbstractString; chunk_limit::Int=2000,
+                       extrastyles::Vector{Regex}=Vector{Regex}(),
+                       forcesplit::Bool = true)
+    chunks = String[]
 
     while !isempty(text)
-        local stop = 2000
+        if length(text) ≤ chunk_limit
+            push!(chunks, strip(text))
+            return chunks
+        end
+        # get ranges associated with the formattings
+        # mranges = vcat(findall.(union(STYLES, extrastyles),Ref(text))...) can't use findall in julia 1.0 and 1.1 ...
+        mranges = [m.offset:m.offset+ncodeunits(m.match)-1 for m in vcat(collect.(eachmatch.(union(STYLES, extrastyles), text))...)]
+        # filter ranges to eliminate inner formattings
+        franges = filter_ranges(mranges)
+        # get ranges that get split apart by the chunk limit - there should be only one, unless text is ill-formatted
+        splitranges = filter(r -> (length(text[1:r[1]]) ≤ chunk_limit) & (length(text[1:r[end]]) > chunk_limit), franges)
 
-        for m in vcat(collect.(eachmatch.(STYLES, text))...)
-            m.offset > 1 && text[m.offset - 1] == '\\' && continue  # Escaped formatting.
-            if m.offset + length(m.match) > 2000
-                # TODO: Backtrack for a valid index (< 2000).
-                stop = m.offset - 1
-                break
-            end
+        if length(splitranges) > 0
+            stop = minimum(map(r -> prevind(text, r[1]), splitranges))
         end
 
-        # The 2000 boundary hacks around the above TODO but can break formatting.
-        stop = min(stop, length(text), 2000)
-        stop < length(text) && (stop = something(findlast(isspace, text[1:stop]), stop))
+        if length(splitranges) == 0
+            # get highest valid unicode index if no range is split apart
+            stop = maximum(filter(n -> length(text[1:n])≤chunk_limit, thisind.(Ref(text), 1:ncodeunits(text))))
+        elseif (stop == 0) && (forcesplit == true)
+            # get highest valid unicode if format breaking cannot be avoided and forcesplit is true
+            stop = maximum(filter(n -> length(text[1:n])≤chunk_limit, thisind.(Ref(text), 1:ncodeunits(text))))
+            # @warn "message was forced-split to fit the desired chunk length limit $chunk_limit"
+        elseif stop == 0
+            # give up at this point if current chunk cannot be split and `forcesplit` is set to false
+            push!(chunks, strip(text))
+            # @warn "message could not be split into chunks smaller than the length limit $chunk_limit"
+            return chunks
+        end
+
+        # push chunk and select remaining text
         push!(chunks, strip(text[1:stop]))
-        text = text[stop+1:end]
+        text = strip(text[nextind(text, stop):end])
     end
 
     return chunks
