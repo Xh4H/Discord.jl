@@ -268,6 +268,7 @@ function split_message(text::AbstractString; chunk_limit::Int=2000,
                        extrastyles::Vector{Regex}=Vector{Regex}(),
                        forcesplit::Bool = true)
     chunks = String[]
+    text = strip(text)
 
     while !isempty(text)
         if length(text) ≤ chunk_limit
@@ -298,6 +299,12 @@ function split_message(text::AbstractString; chunk_limit::Int=2000,
             push!(chunks, strip(text))
             # @warn "message could not be split into chunks smaller than the length limit $chunk_limit"
             return chunks
+        end
+
+        # splits preferably at a space-like character
+        lastspace = findlast(isspace, text[1:stop])
+        if lastspace !== nothing
+            stop = lastspace
         end
 
         # push chunk and select remaining text
