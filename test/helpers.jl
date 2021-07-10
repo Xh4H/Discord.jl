@@ -41,6 +41,23 @@
         @test chunks[1] == string(repeat('.', 1995), " foo")
         @test chunks[2] == "bar baz"
 
+        # Chunks do not get split in the middle of a word.
+        chunks = split_message(string(repeat('.', 1995), " foo bar baz"))
+        @test length(chunks) == 2
+        @test chunks[1] == string(repeat('.', 1995), " foo")
+        @test chunks[2] == "bar baz"
+        chunks = split_message("foo\tbar\nbaz\vfoo\fbar\rbaz foo\x20bar\u0085baz", chunk_limit = 5)
+        @test length(chunks) == 9
+        @test chunks[1] == "foo"
+        @test chunks[2] == "bar"
+        @test chunks[3] == "baz"
+        @test chunks[4] == "foo"
+        @test chunks[5] == "bar"
+        @test chunks[6] == "baz"
+        @test chunks[7] == "foo"
+        @test chunks[8] == "bar"
+        @test chunks[9] == "baz"
+
         # Chunks do not break down on nested formattings
         chunks = split_message(string(repeat('.', 3985), "**foo __bar__ baz**"))
         @test length(chunks) == 3
@@ -51,13 +68,17 @@
         @test length(chunks) == 2
         @test chunks[1] == "**hello**,"
         @test chunks[2] == "*world*"
-        
-        # Chunks can vary in length limit and still do not break down on nested formattings
         chunks = split_message("**hello**, _*beautiful* **blue**  world_", chunk_limit=25)
         @test length(chunks) == 3
         @test chunks[1] == "**hello**,"
-        @test chunks[2] == "_*beautiful* **blue**  wo"
-        @test chunks[3] == "rld_"
+        @test chunks[2] == "_*beautiful* **blue**"
+        @test chunks[3] == "world_"
+
+        # Chunks can vary in length limit and still do not break down on nested formattings
+        chunks = split_message("**hello**, _*beautiful* **blue** world_", chunk_limit=28)
+        @test length(chunks) == 2
+        @test chunks[1] == "**hello**,"
+        @test chunks[2] == "_*beautiful* **blue** world_"
 
         # Chunks respect unicode
         chunks = split_message("**≡Ηϵλλo** *ωoρλδ≡*", chunk_limit=15)
@@ -66,8 +87,13 @@
         @test chunks[2] == "*ωoρλδ≡*"       
         chunks = split_message("**Examples**\n≡≡≡≡≡≡≡≡\n", chunk_limit=16)
         @test length(chunks) == 2
-        @test chunks[1] == "**Examples**\n≡≡≡"
-        @test chunks[2] == "≡≡≡≡≡"
+        @test chunks[1] == "**Examples**"
+        @test chunks[2] == "≡≡≡≡≡≡≡≡"
+        chunks = split_message("αβγ δϵζ ηθι", chunk_limit = 5)
+        @test length(chunks) == 3
+        @test chunks[1] == "αβγ"
+        @test chunks[2] == "δϵζ"
+        @test chunks[3] == "ηθι"
 
         # Chunks respect extra formatting
         chunks = split_message("**Examples**\n≡≡≡≡≡≡≡≡\n", chunk_limit=16, extrastyles = [r"\n≡.+\n", r"n-.+\n"])
