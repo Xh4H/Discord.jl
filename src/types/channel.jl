@@ -12,9 +12,9 @@ at https://discord.com/developers/docs/resources/channel#channel-object-channel-
     CT_GUILD_CATEGORY=4
     CT_GUILD_NEWS=5
     CT_GUILD_STORE=6
-    UNUSED_API_V9_1=7
-    UNUSED_API_V9_2=8
-    UNUSED_API_V9_3=9
+    CT_UNUSED_API_V9_1=7
+    CT_UNUSED_API_V9_2=8
+    CT_UNUSED_API_V9_3=9
     CT_GUILD_NEWS_THREAD=10
     CT_GUILD_PUBLIC_THREAD=11
     CT_GUILD_PRIVATE_THREAD=12
