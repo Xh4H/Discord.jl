@@ -57,6 +57,16 @@ More details [here](https://discordapp.com/developers/docs/topics/permissions#pe
     PERM_MANAGE_ROLES=1<<28
     PERM_MANAGE_WEBHOOKS=1<<29
     PERM_MANAGE_EMOJIS=1<<30
+    PERM_USE_APPLICATION_COMMANDS=1<<31
+    PERM_REQUEST_TO_SPEAK=1<<32
+    PERM_MANAGE_EVENTS=1<<33
+    PERM_MANAGE_THREADS=1<<34
+    PERM_CREATE_PUBLIC_THREADS=1<<35
+    PERM_CREATE_PRIVATE_THREADS=1<<36
+    PERM_UESE_EXTERNAL_STICKERS=1<<37
+    PERM_SEND_MESSAGES_IN_THREADS=1<<38
+    PERM_START_EMBEDDED_ACTIVITIES=1<<39
+    PERM_MODERATE_MEMBERS=1<<40
 end
 @boilerplate Permission :export
 
@@ -199,7 +209,7 @@ julia> Discord.filter_ranges([1:5, 3:8, 1:20, 2:16, 10:70, 25:60, 5:35, 50:90, 1
 function filter_ranges(u::Vector{UnitRange{Int}})
     v = fill(true, length(u))
     for i in 1:length(u)
-        if !all(m -> (m[1] == i) || (u[i] ⊈ m[2]), 
+        if !all(m -> (m[1] == i) || (u[i] ⊈ m[2]),
                 m for m in enumerate(u) if v[m[1]] == true)
             v[i] = false
         end
@@ -258,7 +268,7 @@ julia> split_message("**hello**\n=====\n", 12)
 2-element Vector{String}:
  "**hello**\n=="
  "==="
-  
+
 julia> split_message("**hello**\n≡≡≡≡≡\n", chunk_limit=12, extrastyles = [r"\n≡+\n"])
 2-element Vector{String}:
  "**hello**"
