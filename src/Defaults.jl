@@ -60,7 +60,7 @@ function handler(c::Client, e::ChannelDelete)
     delete!(c.state.channels, e.channel.id)
 
     if !ismissing(e.channel.guild_id) && haskey(c.state.guilds, e.channel.guild_id)
-        delete!(c.state.guilds[e.channel.guild_id], e.channel.id)
+        delete!(c.state.guilds, e.channel.id)
     end
 end
 
