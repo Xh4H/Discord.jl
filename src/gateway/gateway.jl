@@ -412,6 +412,9 @@ const CLOSE_CODES = Dict(
     4009 => :SESSION_TIMEOUT,
     4010 => :INVALID_SHARD,
     4011 => :SHARDING_REQUIRED,
+    4012 => :INVALID_API_VERSION,
+    4013 => :INVALID_INTENTS,
+    4014 => :DISALLOWED_INTENTS,
 )
 
 # Deal with an error from reading a message.
