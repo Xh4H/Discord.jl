@@ -9,18 +9,14 @@ export list_guild_emojis,
 
 Get the [`Emoji`](@ref)s in a [`Guild`](@ref).
 """
-function list_guild_emojis(c::Client, guild::Integer)
-    return Response{Vector{Emoji}}(c, :GET, "/guilds/$guild/emojis")
-end
+list_guild_emojis(c::Client, guild::Integer) = Response{Vector{Emoji}}(c, :GET, "/guilds/$guild/emojis")
 
 """
     get_guild_emoji(c::Client, guild::Integer, emoji::Integer) -> Emoji
 
 Get an [`Emoji`](@ref) in a [`Guild`](@ref).
 """
-function get_guild_emoji(c::Client, guild::Integer, emoji::Integer)
-    return Response{Emoji}(c, :GET, "/guilds/$guild/emojis/$emoji")
-end
+get_guild_emoji(c::Client, guild::Integer, emoji::Integer) = Response{Emoji}(c, :GET, "/guilds/$guild/emojis/$emoji")
 
 """
     create_guild_emoji(c::Client, guild::Integer; kwargs...) -> Emoji
@@ -28,9 +24,7 @@ end
 Create an [`Emoji`](@ref) in a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/emoji#create-guild-emoji).
 """
-function create_guild_emoji(c::Client, guild::Integer; kwargs...)
-    return Response{Emoji}(c, :POST, "/guilds/$guild/emojis"; body=kwargs)
-end
+create_guild_emoji(c::Client, guild::Integer; kwargs...) = Response{Emoji}(c, :POST, "/guilds/$guild/emojis"; body = kwargs)
 
 """
     modify_guild_emoji(c::Client, guild::Integer, emoji::Integer; kwargs...) -> Emoji
@@ -38,15 +32,11 @@ end
 Edit an [`Emoji`](@ref) in a [`Guild`](@ref).
 More details [here](https://discordapp.com/developers/docs/resources/emoji#modify-guild-emoji).
 """
-function modify_guild_emoji(c::Client, guild::Integer, emoji::Integer; kwargs...)
-    return Response{Emoji}(c, :PATCH, "/guilds/$guild/emojis/$emoji"; body=kwargs)
-end
+modify_guild_emoji(c::Client, guild::Integer, emoji::Integer; kwargs...) = Response{Emoji}(c, :PATCH, "/guilds/$guild/emojis/$emoji"; body = kwargs)
 
 """
     delete_guild_emoji(c::Client, guild::Integer, emoji::Integer)
 
 Delete an [`Emoji`](@ref) from a [`Guild`](@ref).
 """
-function delete_guild_emoji(c::Client, guild::Integer, emoji::Integer)
-    return Response(c, :DELETE, "/guilds/$guild/emojis/$emoji")
-end
+delete_guild_emoji(c::Client, guild::Integer, emoji::Integer) = Response(c, :DELETE, "/guilds/$guild/emojis/$emoji")
