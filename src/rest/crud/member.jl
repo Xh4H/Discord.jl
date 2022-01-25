@@ -1,24 +1,10 @@
-function create(c::Client, ::Type{Member}, g::AbstractGuild, u::User; kwargs...)
-    return add_guild_member(c, g.id, u.id; kwargs...)
-end
+create(c::Client, ::Type{Member}, g::AbstractGuild, u::User; kwargs...) = add_guild_member(c, g.id, u.id; kwargs...)
 
-function retrieve(c::Client, ::Type{Member}, g::AbstractGuild, u::User)
-    return get_guild_member(c, g.id, u.id)
-end
-function retrieve(c::Client, ::Type{Member}, g::AbstractGuild)
-    return list_guild_members(c, g.id)
-end
+retrieve(c::Client, ::Type{Member}, g::AbstractGuild, u::User) = get_guild_member(c, g.id, u.id)
+retrieve(c::Client, ::Type{Member}, g::AbstractGuild) = list_guild_members(c, g.id)
 
-function update(c::Client, m::Member, g::AbstractGuild; kwargs...)
-    return modify_guild_member(c, g.id, m.user.id; kwargs...)
-end
-function update(c::Client, m::Member, r::Role, g::AbstractGuild)
-    return add_guild_member_role(c, g.id, m.user.id, r.id)
-end
+update(c::Client, m::Member, g::AbstractGuild; kwargs...) = modify_guild_member(c, g.id, m.user.id; kwargs...)
+update(c::Client, m::Member, r::Role, g::AbstractGuild) = add_guild_member_role(c, g.id, m.user.id, r.id)
 
-function delete(c::Client, m::Member, g::AbstractGuild)
-    return remove_guild_member(c, g.id, m.user.id)
-end
-function delete(c::Client, m::Member, r::Role, g::AbstractGuild)
-    return remove_guild_member_role(c, g.id, m.user.id, r.id)
-end
+delete(c::Client, m::Member, g::AbstractGuild) = remove_guild_member(c, g.id, m.user.id)
+delete(c::Client, m::Member, r::Role, g::AbstractGuild) = remove_guild_member_role(c, g.id, m.user.id, r.id)

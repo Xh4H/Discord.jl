@@ -1,9 +1,5 @@
-function create(c::Client, ::Type{DiscordChannel}, g::AbstractGuild; kwargs...)
-    return create_guild_channel(c, g.id; kwargs...)
-end
-function create(c::Client, ::Type{DiscordChannel}, u::User; kwargs...)
-    return create_dm(c; kwargs..., recipient_id=u.id)
-end
+create(c::Client, ::Type{DiscordChannel}, g::AbstractGuild; kwargs...) = create_guild_channel(c, g.id; kwargs...)
+create(c::Client, ::Type{DiscordChannel}, u::User; kwargs...) = create_dm(c; kwargs..., recipient_id = u.id)
 
 retrieve(c::Client, ::Type{DiscordChannel}, channel::Integer) = get_channel(c, channel)
 retrieve(c::Client, ::Type{DiscordChannel}, g::AbstractGuild) = get_guild_channels(c, g.id)

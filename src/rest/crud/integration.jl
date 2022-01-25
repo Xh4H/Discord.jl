@@ -1,13 +1,7 @@
-function create(c::Client, ::Type{Integration}, g::AbstractGuild; kwargs...)
-    return create_guild_integration(c, g.id; kwargs...)
-end
+create(c::Client, ::Type{Integration}, g::AbstractGuild; kwargs...) = create_guild_integration(c, g.id; kwargs...)
 
 retrieve(c::Client, ::Type{Integration}, g::AbstractGuild) = get_guild_integrations(c, g.id)
 
-function update(c::Client, i::Integration, g::AbstractGuild; kwargs...)
-    return modify_guild_integration(c, g.id, i.id; kwargs...)
-end
+update(c::Client, i::Integration, g::AbstractGuild; kwargs...) = modify_guild_integration(c, g.id, i.id; kwargs...)
 
-function delete(c::Client, i::Integration, g::AbstractGuild)
-    return delete_guild_integration(c, g.id, i.id)
-end
+delete(c::Client, i::Integration, g::AbstractGuild) = delete_guild_integration(c, g.id, i.id)

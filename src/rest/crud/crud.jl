@@ -22,7 +22,7 @@ Banning a [`Member`](@ref):
 create(c, Ban, guild, member; reason="baz")
 ```
 """
-function create end
+create() = ()
 
 """
     retrieve(c::Client, ::Type{T}, args...; kwargs...) -> Future{Response}
@@ -43,7 +43,7 @@ Getting an [`Invite`](@ref) to a [`Guild`](@ref) by code:
 retrieve(c, Invite, "abcdef")
 ```
 """
-function retrieve end
+retrieve() = ()
 
 """
     update(c::Client, x::T, args...; kwargs...) -> Future{Response}
@@ -64,7 +64,7 @@ Updating a [`Role`](@ref):
 update(c, role, guild; permissions=8)
 ```
 """
-function update end
+update() = ()
 
 """
     delete(c::Client, x::T, args...) -> Future{Response}
@@ -86,7 +86,7 @@ update/delete method which takes a type parameter):
 delete(c, Reaction, message)
 ```
 """
-function delete end
+delete() = ()
 
 include("audit_log.jl")
 include("ban.jl")
