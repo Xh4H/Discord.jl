@@ -26,7 +26,7 @@ const STYLES = [
 Bitwise permission flags.
 More details [here](https://discordapp.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags).
 """
-@enum Permission begin
+@enum Permission::Int64 begin
     PERM_CREATE_INSTANT_INVITE=1<<0
     PERM_KICK_MEMBERS=1<<1
     PERM_BAN_MEMBERS=1<<2
