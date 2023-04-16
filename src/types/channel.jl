@@ -19,6 +19,8 @@ at https://discord.com/developers/docs/resources/channel#channel-object-channel-
     CT_GUILD_PUBLIC_THREAD=11
     CT_GUILD_PRIVATE_THREAD=12
     CT_GUILD_STAGE_VOICE=13
+    CT_GUILD_DIRECTORY=14
+    CT_GUILD_FORUM=15
 end
 @boilerplate ChannelType :export :lower
 
